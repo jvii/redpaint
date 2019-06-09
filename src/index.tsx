@@ -1,13 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
+import App from './components/App';
 import * as serviceWorker from './serviceWorker';
-import Hello from './components/Hello';
-
 
 ReactDOM.render(
-    <Hello name="DPaint" enthusiasmLevel={10} />,
+    <App/>,
     document.getElementById('root') as HTMLElement
   );
 

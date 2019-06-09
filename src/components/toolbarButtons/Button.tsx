@@ -11,9 +11,9 @@ function Button({name, image, onClick}: Props) {
 
   return (
     <button
-    className = {'button {name}'}
-    onClick={onClick}
-    >
+      //className = {'button {name}'}
+      onClick={onClick}
+      >
       <img src={image} />
     </button>
   );

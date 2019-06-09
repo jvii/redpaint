@@ -1,48 +1,48 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import React, { useState, useRef } from 'react';
+import { useTool } from './hooks';
 
-export interface ICanvasProps {
-  height?: number;
-  width?: number;
-}
+function Canvas() {
 
-class Canvas extends React.Component<ICanvasProps> {
+  type Point = {x:number, y:number}
 
-  private ctx?: (CanvasRenderingContext2D | null);
-  private canvas?: HTMLCanvasElement;
-  /*
-  refs?: {
-    canvas: HTMLCanvasElement;
-  };
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [previousPosition, setPreviousPosition] = useState<Point | null>(null);
+  const [currentPosition, setCurrentPosition] = useState<Point | null>(null);
 
-    componentDidMount() {
-    this.canvas = (ReactDOM.findDOMNode(this.refs.canvas) as HTMLCanvasElement);
-    this.ctx = this.canvas.getContext('2d')!;
-    this.canvas.width = this.props.height;
-    this.canvas.height = this.props.width;
+  const canvasRef = useRef(null);
+
+  useTool(isMouseDown, previousPosition, currentPosition, canvasRef.current!);
+
+  function onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    setIsMouseDown(true);
   }
 
-  render() {
-    return (
-        <div className='center-children'>
-            <canvas ref='canvas' className='render-canvas'></canvas>
-        </div>
-    );
-  } */
-
-  componentDidMount() {
-    this.canvas = (ReactDOM.findDOMNode(this.refs.canvas) as HTMLCanvasElement);
-    this.ctx = this.canvas.getContext("2d")
-
-}
-
-  render() {
-    return(
-      <div>
-        <canvas ref="canvas" width={640} height={425} />
-      </div>
-    )
+  function onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+    const position : Point = {
+      x: event.nativeEvent.offsetX,
+      y: event.nativeEvent.offsetY
+    }
+    setPreviousPosition(currentPosition);
+    setCurrentPosition(position)
   }
+
+  function onMouseUp() {
+    if (isMouseDown) {
+      setIsMouseDown(false);
+    }
+  }
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={1000}
+      height={window.innerHeight}
+      onMouseMove={onMouseMove}
+      onMouseDown={onMouseDown}
+      onMouseUp={onMouseUp}
+      onMouseLeave={onMouseUp}
+    />
+  )
 }
 
 export default Canvas;
