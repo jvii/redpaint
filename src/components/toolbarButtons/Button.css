@@ -1,8 +1,33 @@
-button {
-    display: inline-block;
-    height: 25px;
-    padding: 0;
-    margin: 0;
-    vertical-align: top;
-    width: 25px;
+.Freehand {
+  background: url(../../resources/freehandButton.png) no-repeat;
+  cursor: pointer;
+  border: none;
+  display: inline-block;
+  height: 25px;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  width: 25px;
+  outline: none;
+}
+
+.Freehand:active {
+  background: url(../../resources/freehandButtonActive.png) no-repeat;
+}
+
+.Line {
+  background: url(../../resources/lineButton.png) no-repeat;
+  cursor: pointer;
+  border: none;
+  display: inline-block;
+  height: 25px;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  width: 25px;
+  outline: none;
+}
+
+.Line:active {
+  background: url(../../resources/lineButtonActive.png) no-repeat;
 }

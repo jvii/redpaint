@@ -1,5 +1,5 @@
 .ToolbarArea {
-    display: grid;
-    grid-template-columns: 25px 25px;
-    grid-template-rows: 25px;
+  display: grid;
+  grid-template-columns: 25px 25px;
+  grid-template-rows: 25px;
 }

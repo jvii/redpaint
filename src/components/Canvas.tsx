@@ -1,32 +1,42 @@
 import React, { useState, useRef } from 'react';
 import { useTool } from './hooks';
+import { Point, PointerState, Tool } from '../types';
 
-function Canvas() {
+interface Props {
+  selectedTool: Tool;
+}
 
-  type Point = {x:number, y:number}
-
+function Canvas({ selectedTool }: Props): JSX.Element {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [previousPosition, setPreviousPosition] = useState<Point | null>(null);
   const [currentPosition, setCurrentPosition] = useState<Point | null>(null);
 
   const canvasRef = useRef(null);
 
-  useTool(isMouseDown, previousPosition, currentPosition, canvasRef.current!);
+  const pointerState: PointerState = {
+    isMouseDown: isMouseDown,
+    previousPosition: previousPosition,
+    currentPosition: currentPosition
+  };
 
-  function onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
+  useTool(selectedTool, pointerState, canvasRef.current);
+
+  function onMouseDown(): void {
     setIsMouseDown(true);
   }
 
-  function onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) {
-    const position : Point = {
+  function onMouseMove(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+  ): void {
+    const position: Point = {
       x: event.nativeEvent.offsetX,
       y: event.nativeEvent.offsetY
-    }
+    };
     setPreviousPosition(currentPosition);
-    setCurrentPosition(position)
+    setCurrentPosition(position);
   }
 
-  function onMouseUp() {
+  function onMouseUp(): void {
     if (isMouseDown) {
       setIsMouseDown(false);
     }
@@ -42,7 +52,7 @@ function Canvas() {
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
     />
-  )
+  );
 }
 
 export default Canvas;
