@@ -1,3 +1,5 @@
+import { ToolState, Action } from './tools/ToolState';
+
 export interface Point {
   x: number;
   y: number;
@@ -10,24 +12,17 @@ export interface PointerState {
 }
 
 export interface Tool {
-  use: (
+  use(
     pointerState: PointerState,
     canvas: HTMLCanvasElement,
-    toolState: ToolState,
-    setToolState: React.Dispatch<React.SetStateAction<ToolState>>
-  ) => void;
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void;
+  use(
+    pointerState: PointerState,
+    canvas: HTMLCanvasElement,
+    state?: ToolState,
+    dispatch?: React.Dispatch<Action>
+  ): void;
 }
 
-export class LineToolState {
-  public startingPosition: Point | null;
-  public constructor() {
-    this.startingPosition = null;
-  }
-}
-
-export class ToolState {
-  public lineToolState: LineToolState;
-  public constructor() {
-    this.lineToolState = new LineToolState();
-  }
-}

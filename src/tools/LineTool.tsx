@@ -1,35 +1,32 @@
-import { PointerState, ToolState } from '../types';
+import { PointerState, Tool } from '../types';
+import { ToolState, Action } from './ToolState';
 
-export class LineTool {
+export class LineTool implements Tool {
   public use(
     pointerState: PointerState,
     canvas: HTMLCanvasElement,
-    toolState: ToolState,
-    setToolState: React.Dispatch<React.SetStateAction<ToolState>>
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
   ): void {
     if (!pointerState.currentPosition) {
       return;
     }
-    if (pointerState.isMouseDown && !toolState.lineToolState.startingPosition) {
-      const updatedToolState = toolState;
-      updatedToolState.lineToolState.startingPosition =
-        pointerState.currentPosition;
-      setToolState(updatedToolState);
-
+    if (pointerState.isMouseDown && !state.lineToolState.startingPosition) {
+      dispatch({ type: 'lineToolStart', point: pointerState.currentPosition });
       return;
     }
-    if (!toolState.lineToolState.startingPosition) {
+    if (!state.lineToolState.startingPosition) {
       return;
     }
-    if (!pointerState.isMouseDown && toolState.lineToolState.startingPosition) {
+    if (!pointerState.isMouseDown && state.lineToolState.startingPosition) {
       const ctx = canvas.getContext('2d');
       if (ctx === null) {
         return;
       }
       ctx.beginPath();
       ctx.moveTo(
-        toolState.lineToolState.startingPosition.x,
-        toolState.lineToolState.startingPosition.y
+        state.lineToolState.startingPosition.x,
+        state.lineToolState.startingPosition.y
       );
       ctx.lineTo(
         pointerState.currentPosition.x,
@@ -37,9 +34,7 @@ export class LineTool {
       );
       ctx.stroke();
 
-      const updatedToolState = toolState;
-      updatedToolState.lineToolState.startingPosition = null;
-      setToolState(updatedToolState);
+      dispatch({ type: 'lineToolStart', point: null });
     }
   }
 }

@@ -1,12 +1,8 @@
-import { PointerState, ToolState } from '../types';
+import { PointerState, Tool } from '../types';
+import { ToolState, Action } from './ToolState';
 
-export class FreehandTool {
-  public use(
-    pointerState: PointerState,
-    canvas: HTMLCanvasElement,
-    toolState: ToolState,
-    setToolState: React.Dispatch<React.SetStateAction<ToolState>>
-  ): void {
+export class FreehandTool implements Tool {
+  public use(pointerState: PointerState, canvas: HTMLCanvasElement): void {
     if (!pointerState.isMouseDown) {
       return;
     }
