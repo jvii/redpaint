@@ -25,4 +25,3 @@ export interface Tool {
     dispatch?: React.Dispatch<Action>
   ): void;
 }
-

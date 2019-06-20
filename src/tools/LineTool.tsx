@@ -24,14 +24,8 @@ export class LineTool implements Tool {
         return;
       }
       ctx.beginPath();
-      ctx.moveTo(
-        state.lineToolState.startingPosition.x,
-        state.lineToolState.startingPosition.y
-      );
-      ctx.lineTo(
-        pointerState.currentPosition.x,
-        pointerState.currentPosition.y
-      );
+      ctx.moveTo(state.lineToolState.startingPosition.x, state.lineToolState.startingPosition.y);
+      ctx.lineTo(pointerState.currentPosition.x, pointerState.currentPosition.y);
       ctx.stroke();
 
       dispatch({ type: 'lineToolStart', point: null });

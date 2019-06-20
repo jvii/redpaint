@@ -25,8 +25,8 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         ...state,
         lineToolState: {
           ...state.lineToolState,
-          startingPosition: action.point
-        }
+          startingPosition: action.point,
+        },
       };
     case 'other':
       return state;

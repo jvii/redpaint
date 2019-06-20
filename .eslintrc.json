@@ -13,7 +13,8 @@
     "jest": true
   },
   "rules": {
-    "prettier/prettier": ["error", { "singleQuote": true }]
+    "prettier/prettier": ["error", { "singleQuote": true }],
+    "max-len": ["error", { "code": 100 }]
   },
   "settings": {
     "react": {

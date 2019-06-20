@@ -16,7 +16,7 @@ function Canvas({ selectedTool }: Props): JSX.Element {
   const pointerState: PointerState = {
     isMouseDown: isMouseDown,
     previousPosition: previousPosition,
-    currentPosition: currentPosition
+    currentPosition: currentPosition,
   };
 
   useTool(selectedTool, pointerState, canvasRef.current);
@@ -25,12 +25,10 @@ function Canvas({ selectedTool }: Props): JSX.Element {
     setIsMouseDown(true);
   }
 
-  function onMouseMove(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-  ): void {
+  function onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const position: Point = {
       x: event.nativeEvent.offsetX,
-      y: event.nativeEvent.offsetY
+      y: event.nativeEvent.offsetY,
     };
     setPreviousPosition(currentPosition);
     setCurrentPosition(position);

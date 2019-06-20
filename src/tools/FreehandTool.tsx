@@ -1,5 +1,4 @@
 import { PointerState, Tool } from '../types';
-import { ToolState, Action } from './ToolState';
 
 export class FreehandTool implements Tool {
   public use(pointerState: PointerState, canvas: HTMLCanvasElement): void {
@@ -18,10 +17,7 @@ export class FreehandTool implements Tool {
       return;
     }
     ctx.beginPath();
-    ctx.moveTo(
-      pointerState.previousPosition.x,
-      pointerState.previousPosition.y
-    );
+    ctx.moveTo(pointerState.previousPosition.x, pointerState.previousPosition.y);
     ctx.lineTo(pointerState.currentPosition.x, pointerState.currentPosition.y);
     ctx.stroke();
   }

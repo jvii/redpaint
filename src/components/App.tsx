@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Canvas from './Canvas';
-import Toolbar from './Toolbar';
+import Toolbar from './toolbar/Toolbar';
 import { Tool } from '../types';
 import { FreehandTool } from '../tools/FreehandTool';
 import './App.css';
