@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Canvas from './Canvas';
 import Toolbar from './toolbar/Toolbar';
-import { Tool } from '../types';
+import { Tool } from '../tools/Tool';
 import { FreehandTool } from '../tools/FreehandTool';
 import './App.css';
 

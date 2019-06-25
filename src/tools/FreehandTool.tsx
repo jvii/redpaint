@@ -1,4 +1,5 @@
-import { PointerState, Tool } from '../types';
+import { Tool } from './Tool';
+import { PointerState } from '../types';
 
 export class FreehandTool implements Tool {
   public use(pointerState: PointerState, canvas: HTMLCanvasElement): void {

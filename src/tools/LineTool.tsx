@@ -1,5 +1,6 @@
-import { PointerState, Tool } from '../types';
+import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
+import { PointerState } from '../types';
 
 export class LineTool implements Tool {
   public use(

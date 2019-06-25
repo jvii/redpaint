@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { useTool } from './hooks';
-import { Point, PointerState, Tool } from '../types';
+import { Tool, useTool } from '../tools/Tool';
+import { Point, PointerState } from '../types';
 
 interface Props {
   selectedTool: Tool;

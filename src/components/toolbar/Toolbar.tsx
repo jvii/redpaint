@@ -2,7 +2,7 @@ import React from 'react';
 import { ButtonFreehand, ButtonLine } from './toolBarButtons';
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
-import { Tool } from '../../types';
+import { Tool } from '../../tools/Tool';
 import './Toolbar.css';
 
 export interface Props {
