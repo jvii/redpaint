@@ -1,10 +1,11 @@
 import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
-import { PointerState } from '../types';
+import { PointerState, Color } from '../types';
 import { drawLine } from './util';
 
 export class LineTool implements Tool {
   public use(
+    color: Color,
     pointerState: PointerState,
     canvas: HTMLCanvasElement,
     state: ToolState,
@@ -20,8 +21,9 @@ export class LineTool implements Tool {
     if (!state.lineToolState.startingPosition) {
       return;
     }
+
     if (!pointerState.isMouseDown && state.lineToolState.startingPosition) {
-      drawLine(canvas, state.lineToolState.startingPosition, pointerState.currentPosition);
+      drawLine(canvas, color, state.lineToolState.startingPosition, pointerState.currentPosition);
       dispatch({ type: 'lineToolStart', point: null });
     }
   }

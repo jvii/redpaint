@@ -9,7 +9,7 @@ import './App.css';
 
 function App(): JSX.Element {
   const [selectedTool, setSelectedTool] = useState(new FreehandTool());
-  const [selectedColor, setSelectedColor] = useState();
+  const [selectedColor, setSelectedColor] = useState({ r: 255, g: 0, b: 0 });
 
   function handleToolSet(tool: Tool): void {
     setSelectedTool(tool);
@@ -21,7 +21,7 @@ function App(): JSX.Element {
 
   return (
     <div className="App">
-      <Canvas selectedTool={selectedTool} />
+      <Canvas selectedTool={selectedTool} selectedColor={selectedColor} />
       <Toolbar setSelectedTool={handleToolSet} />
       <Palette setSelectedColor={handleColorSet} />
     </div>

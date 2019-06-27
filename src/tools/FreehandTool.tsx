@@ -1,9 +1,9 @@
 import { Tool } from './Tool';
-import { PointerState } from '../types';
+import { PointerState, Color } from '../types';
 import { drawLine } from './util';
 
 export class FreehandTool implements Tool {
-  public use(pointerState: PointerState, canvas: HTMLCanvasElement): void {
+  public use(color: Color, pointerState: PointerState, canvas: HTMLCanvasElement): void {
     if (!pointerState.isMouseDown) {
       return;
     }
@@ -13,6 +13,7 @@ export class FreehandTool implements Tool {
     if (!pointerState.currentPosition) {
       return;
     }
-    drawLine(canvas, pointerState.previousPosition, pointerState.currentPosition);
+
+    drawLine(canvas, color, pointerState.previousPosition, pointerState.currentPosition);
   }
 }

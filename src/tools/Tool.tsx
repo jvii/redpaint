@@ -1,15 +1,17 @@
 import { useReducer } from 'react';
-import { PointerState } from '../types';
+import { PointerState, Color } from '../types';
 import { ToolState, Action, toolStateReducer } from './ToolState';
 
 export interface Tool {
   use(
+    color: Color,
     pointerState: PointerState,
     canvas: HTMLCanvasElement,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void;
   use(
+    color: Color,
     pointerState: PointerState,
     canvas: HTMLCanvasElement,
     state?: ToolState,
@@ -19,6 +21,7 @@ export interface Tool {
 
 export function useTool(
   selectedTool: Tool,
+  selectedColor: Color,
   pointerState: PointerState,
   canvas: HTMLCanvasElement | null
 ): void {
@@ -26,5 +29,5 @@ export function useTool(
   if (canvas === null) {
     return;
   }
-  selectedTool.use(pointerState, canvas, state, dispatch);
+  selectedTool.use(selectedColor, pointerState, canvas, state, dispatch);
 }

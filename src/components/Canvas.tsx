@@ -1,13 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { Tool, useTool } from '../tools/Tool';
-import { Point, PointerState } from '../types';
+import { Point, PointerState, Color } from '../types';
 import './Canvas.css';
 
 interface Props {
   selectedTool: Tool;
+  selectedColor: Color;
 }
 
-function Canvas({ selectedTool }: Props): JSX.Element {
+function Canvas({ selectedTool, selectedColor }: Props): JSX.Element {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [previousPosition, setPreviousPosition] = useState<Point | null>(null);
   const [currentPosition, setCurrentPosition] = useState<Point | null>(null);
@@ -20,7 +21,7 @@ function Canvas({ selectedTool }: Props): JSX.Element {
     currentPosition: currentPosition,
   };
 
-  useTool(selectedTool, pointerState, canvasRef.current);
+  useTool(selectedTool, selectedColor, pointerState, canvasRef.current);
 
   function onMouseDown(): void {
     setIsMouseDown(true);

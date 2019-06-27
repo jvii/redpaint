@@ -1,5 +1,6 @@
 import React from 'react';
 import { Color } from '../../types';
+import { rgb } from '../../tools/util';
 
 interface Props {
   color: Color;
@@ -14,8 +15,4 @@ export function ColorButton({ color, onClick }: Props): JSX.Element {
     border: 'none',
   };
   return <button className="ColorButton" onClick={onClick} style={buttonStyle}></button>;
-}
-
-function rgb(color: Color): string {
-  return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
 }
