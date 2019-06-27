@@ -1,5 +1,6 @@
 import { Tool } from './Tool';
 import { PointerState } from '../types';
+import { drawLine } from './util';
 
 export class FreehandTool implements Tool {
   public use(pointerState: PointerState, canvas: HTMLCanvasElement): void {
@@ -12,14 +13,6 @@ export class FreehandTool implements Tool {
     if (!pointerState.currentPosition) {
       return;
     }
-
-    const ctx = canvas.getContext('2d');
-    if (ctx === null) {
-      return;
-    }
-    ctx.beginPath();
-    ctx.moveTo(pointerState.previousPosition.x, pointerState.previousPosition.y);
-    ctx.lineTo(pointerState.currentPosition.x, pointerState.currentPosition.y);
-    ctx.stroke();
+    drawLine(canvas, pointerState.previousPosition, pointerState.currentPosition);
   }
 }

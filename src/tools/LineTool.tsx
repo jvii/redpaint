@@ -1,6 +1,7 @@
 import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
 import { PointerState } from '../types';
+import { drawLine } from './util';
 
 export class LineTool implements Tool {
   public use(
@@ -20,15 +21,7 @@ export class LineTool implements Tool {
       return;
     }
     if (!pointerState.isMouseDown && state.lineToolState.startingPosition) {
-      const ctx = canvas.getContext('2d');
-      if (ctx === null) {
-        return;
-      }
-      ctx.beginPath();
-      ctx.moveTo(state.lineToolState.startingPosition.x, state.lineToolState.startingPosition.y);
-      ctx.lineTo(pointerState.currentPosition.x, pointerState.currentPosition.y);
-      ctx.stroke();
-
+      drawLine(canvas, state.lineToolState.startingPosition, pointerState.currentPosition);
       dispatch({ type: 'lineToolStart', point: null });
     }
   }

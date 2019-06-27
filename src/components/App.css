@@ -1,4 +1,9 @@
 .App {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 50px;
+  grid-template-rows: 50% 50%;
+  grid-template-areas:
+    "canvas toolbar"
+    "canvas palette";
   cursor: crosshair;
 }

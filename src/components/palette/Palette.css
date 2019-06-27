@@ -1,5 +1,5 @@
-.ToolbarArea {
-  grid-area: toolbar;
+.PaletteArea {
+  grid-area: palette;
   display: grid;
   grid-template-columns: 25px 25px;
   grid-template-rows: 25px;

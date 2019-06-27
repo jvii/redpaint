@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Tool, useTool } from '../tools/Tool';
 import { Point, PointerState } from '../types';
+import './Canvas.css';
 
 interface Props {
   selectedTool: Tool;
@@ -43,7 +44,8 @@ function Canvas({ selectedTool }: Props): JSX.Element {
   return (
     <canvas
       ref={canvasRef}
-      width={1000}
+      className="Canvas"
+      width={window.innerWidth - 50}
       height={window.innerHeight}
       onMouseMove={onMouseMove}
       onMouseDown={onMouseDown}
