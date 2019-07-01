@@ -1,6 +1,7 @@
 import React from 'react';
 import { ColorButton } from './ColorButton';
 import { Color } from '../../types';
+import { hslToColor } from '../../tools/util';
 import './Palette.css';
 
 export interface Props {
@@ -8,19 +9,30 @@ export interface Props {
 }
 
 function Palette({ setSelectedColor }: Props): JSX.Element {
-  const red: Color = { r: 255, g: 0, b: 0 };
-  const blue: Color = { r: 0, g: 0, b: 255 };
-  const green: Color = { r: 0, g: 255, b: 0 };
-  const cyan: Color = { r: 0, g: 255, b: 255 };
+  const palette = createPalette(200);
 
-  return (
-    <div className="Palette">
-      <ColorButton color={red} onClick={(): void => setSelectedColor(red)} />
-      <ColorButton color={blue} onClick={(): void => setSelectedColor(blue)} />
-      <ColorButton color={green} onClick={(): void => setSelectedColor(green)} />
-      <ColorButton color={cyan} onClick={(): void => setSelectedColor(cyan)} />
-    </div>
-  );
+  const createColorButton = (color: Color): JSX.Element => {
+    return <ColorButton color={color} onClick={(): void => setSelectedColor(color)} />;
+  };
+
+  return <div className="PaletteArea"> {palette.map(createColorButton)}</div>;
+}
+
+function createColor(range: number, value: number): Color {
+  const minHue = 0;
+  const maxHue = 360;
+  const currentPercent = value / range;
+  const hue = currentPercent * (maxHue - minHue) + minHue;
+  return hslToColor(hue, 1, 0.5);
+}
+
+function createPalette(colors: number): Color[] {
+  const palette: Color[] = [];
+  for (let i = 0; i < colors; i++) {
+    const color = createColor(colors, i);
+    palette.push(color);
+  }
+  return palette;
 }
 
 export default Palette;

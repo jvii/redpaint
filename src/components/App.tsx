@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Canvas from './Canvas';
 import Toolbar from './toolbar/Toolbar';
 import Palette from './palette/Palette';
+import ColorIndicator from './palette/ColorIndicator';
 import { Tool } from '../tools/Tool';
 import { FreehandTool } from '../tools/FreehandTool';
 import { Color } from '../types';
@@ -23,6 +24,7 @@ function App(): JSX.Element {
     <div className="App">
       <Canvas selectedTool={selectedTool} selectedColor={selectedColor} />
       <Toolbar setSelectedTool={handleToolSet} />
+      <ColorIndicator color={selectedColor} />
       <Palette setSelectedColor={handleColorSet} />
     </div>
   );

@@ -12,8 +12,8 @@ export interface Props {
 function Toolbar({ setSelectedTool }: Props): JSX.Element {
   return (
     <div className="ToolbarArea">
-      <ButtonFreehand onClick={(): void => setSelectedTool(new FreehandTool())} />
       <ButtonLine onClick={(): void => setSelectedTool(new LineTool())} />
+      <ButtonFreehand onClick={(): void => setSelectedTool(new FreehandTool())} />
     </div>
   );
 }
