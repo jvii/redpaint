@@ -19,13 +19,15 @@ export interface Tool {
   ): void;
 }
 
+const initialToolState = new ToolState();
+
 export function useTool(
   selectedTool: Tool,
   selectedColor: Color,
   pointerState: PointerState,
   canvas: HTMLCanvasElement | null
 ): void {
-  const [state, dispatch] = useReducer(toolStateReducer, new ToolState());
+  const [state, dispatch] = useReducer(toolStateReducer, initialToolState);
   if (canvas === null) {
     return;
   }

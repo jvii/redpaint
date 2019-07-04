@@ -12,3 +12,7 @@ export function ButtonFreehand({ onClick }: Props): JSX.Element {
 export function ButtonLine({ onClick }: Props): JSX.Element {
   return <button className="ToolbarButton Line" onClick={onClick}></button>;
 }
+
+export function ButtonCLR({ onClick }: Props): JSX.Element {
+  return <button className="ToolbarButton CLR" onClick={onClick}></button>;
+}

@@ -1,38 +1,31 @@
 import React from 'react';
 import { ColorButton } from './ColorButton';
 import { Color } from '../../types';
-import { hslToColor } from '../../tools/util';
+import { PaletteState, Action } from './PaletteState';
 import './Palette.css';
 
 export interface Props {
-  setSelectedColor: (color: Color) => void;
+  state: PaletteState;
+  dispatch: React.Dispatch<Action>;
 }
 
-function Palette({ setSelectedColor }: Props): JSX.Element {
-  const palette = createPalette(200);
-
-  const createColorButton = (color: Color): JSX.Element => {
-    return <ColorButton color={color} onClick={(): void => setSelectedColor(color)} />;
+function Palette({ state, dispatch }: Props): JSX.Element {
+  const createColorButton = (color: Color, index: number): JSX.Element => {
+    return (
+      <ColorButton
+        color={color}
+        onClick={(): void => dispatch({ type: 'setForegroundColor', color: color })}
+        onRightClick={(): void => dispatch({ type: 'setBackgroundColor', color: color })}
+        key={index}
+      />
+    );
   };
 
-  return <div className="PaletteArea"> {palette.map(createColorButton)}</div>;
-}
-
-function createColor(range: number, value: number): Color {
-  const minHue = 0;
-  const maxHue = 360;
-  const currentPercent = value / range;
-  const hue = currentPercent * (maxHue - minHue) + minHue;
-  return hslToColor(hue, 1, 0.5);
-}
-
-function createPalette(colors: number): Color[] {
-  const palette: Color[] = [];
-  for (let i = 0; i < colors; i++) {
-    const color = createColor(colors, i);
-    palette.push(color);
-  }
-  return palette;
+  return (
+    <div className="PaletteArea">
+      {state.palette.map((color, index): JSX.Element => createColorButton(color, index))}
+    </div>
+  );
 }
 
 export default Palette;

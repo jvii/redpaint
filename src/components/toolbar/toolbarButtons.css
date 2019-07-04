@@ -24,3 +24,11 @@
 .Line:active {
   background: url(../../resources/lineButtonActive.png) no-repeat;
 }
+
+.CLR {
+  background: url(../../resources/clrButton.png) no-repeat;
+}
+
+.CLR:active {
+  background: url(../../resources/clrButtonActive.png) no-repeat;
+}

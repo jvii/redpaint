@@ -1,16 +1,16 @@
 import { Point } from '../types';
 
-export class LineToolState {
-  public startingPosition: Point | null;
-  public constructor() {
-    this.startingPosition = null;
-  }
-}
-
 export class ToolState {
   public lineToolState: LineToolState;
   public constructor() {
     this.lineToolState = new LineToolState();
+  }
+}
+
+export class LineToolState {
+  public startingPosition: Point | null;
+  public constructor() {
+    this.startingPosition = null;
   }
 }
 
@@ -32,3 +32,5 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
       return state;
   }
 }
+
+export default ToolState;

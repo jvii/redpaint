@@ -1,5 +1,5 @@
 import React from 'react';
-import { ButtonFreehand, ButtonLine } from './toolBarButtons';
+import { ButtonFreehand, ButtonLine, ButtonCLR } from './toolBarButtons';
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
 import { Tool } from '../../tools/Tool';
@@ -14,6 +14,7 @@ function Toolbar({ setSelectedTool }: Props): JSX.Element {
     <div className="ToolbarArea">
       <ButtonLine onClick={(): void => setSelectedTool(new LineTool())} />
       <ButtonFreehand onClick={(): void => setSelectedTool(new FreehandTool())} />
+      <ButtonCLR onClick={(): void => setSelectedTool(new FreehandTool())} />
     </div>
   );
 }

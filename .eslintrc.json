@@ -13,14 +13,14 @@
     "jest": true
   },
   "rules": {
-    "prettier/prettier": ["error", { "singleQuote": true }],
-    "max-len": ["error", { "code": 100 }]
+    "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true }],
+    "max-len": ["error", { "code": 100 }],
+    "prettier/prettier": ["error", { "singleQuote": true }]
   },
   "settings": {
     "react": {
       "pragma": "React",
       "version": "detect"
     }
-  },
-  "parser": "@typescript-eslint/parser"
+  }
 }

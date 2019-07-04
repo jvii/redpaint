@@ -1,35 +1,34 @@
 import React from 'react';
-import { Color } from '../../types';
+import { PaletteState } from '../palette/PaletteState';
 import { colorToRGBString } from '../../tools/util';
 
 interface Props {
-  color: Color;
+  paletteState: PaletteState;
 }
 
-export function ColorIndicator({ color }: Props): JSX.Element {
+export function ColorIndicator({ paletteState }: Props): JSX.Element {
   const background = {
-    textAlign: 'center' as 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     gridArea: 'colorIndicator',
-    backgroundColor: 'white',
     width: '50px',
-    height: '23px',
+    height: '25px',
     borderWidth: '0px',
     padding: 0,
     margin: 0,
+    backgroundColor: colorToRGBString(paletteState.backgroundColor),
   };
   const foreground = {
-    lineHeight: '23px',
-    verticalAlign: 'middle',
-    height: '22px',
-    width: '22px',
-    backgroundColor: colorToRGBString(color),
+    height: '20px',
+    width: '20px',
     borderRadius: '50%',
-    display: 'inline-block',
+    backgroundColor: colorToRGBString(paletteState.foregroundColor),
   };
 
   return (
     <div style={background}>
-      <span style={foreground}></span>
+      <div style={foreground}></div>
     </div>
   );
 }
