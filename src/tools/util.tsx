@@ -16,3 +16,17 @@ export function drawLine(canvas: HTMLCanvasElement, color: Color, start: Point, 
   ctx.lineTo(end.x, end.y);
   ctx.stroke();
 }
+
+export function clearCanvas(canvas: HTMLCanvasElement | null, color: Color): void {
+  if (canvas === null) {
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  if (ctx === null) {
+    return;
+  }
+
+  ctx.rect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = colorToRGBString(color);
+  ctx.fill();
+}

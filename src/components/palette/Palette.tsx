@@ -5,11 +5,11 @@ import { PaletteState, Action } from './PaletteState';
 import './Palette.css';
 
 export interface Props {
-  state: PaletteState;
+  paletteState: PaletteState;
   dispatch: React.Dispatch<Action>;
 }
 
-function Palette({ state, dispatch }: Props): JSX.Element {
+function Palette({ paletteState, dispatch }: Props): JSX.Element {
   const createColorButton = (color: Color, index: number): JSX.Element => {
     return (
       <ColorButton
@@ -23,7 +23,7 @@ function Palette({ state, dispatch }: Props): JSX.Element {
 
   return (
     <div className="PaletteArea">
-      {state.palette.map((color, index): JSX.Element => createColorButton(color, index))}
+      {paletteState.palette.map((color, index): JSX.Element => createColorButton(color, index))}
     </div>
   );
 }

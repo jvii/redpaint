@@ -1,30 +1,28 @@
-import React, { useState, useReducer } from 'react';
-import Canvas from './Canvas';
+import React, { useReducer } from 'react';
+import Canvas from './canvas/Canvas';
 import Toolbar from './toolbar/Toolbar';
 import Palette from './palette/Palette';
 import ColorIndicator from './palette/ColorIndicator';
-import { Tool } from '../tools/Tool';
-import { FreehandTool } from '../tools/FreehandTool';
 import { PaletteState, paletteStateReducer } from './palette/PaletteState';
+import { CanvasState, canvasStateReducer } from './canvas/CanvasState';
+import { ToolbarState, toolbarStateReducer } from './toolbar/ToolbarState';
 import './App.css';
 
-const initialTool = new FreehandTool(); //TODO ToolbarState?
+const initialToolbarState = new ToolbarState();
 const initialPaletteState = new PaletteState();
+const initialCanvasState = new CanvasState();
 
 function App(): JSX.Element {
-  const [selectedTool, setSelectedTool] = useState(initialTool);
+  const [toolbarState, toolbarDispatch] = useReducer(toolbarStateReducer, initialToolbarState);
   const [paletteState, paletteDispatch] = useReducer(paletteStateReducer, initialPaletteState);
-
-  function handleToolSet(tool: Tool): void {
-    setSelectedTool(tool);
-  }
+  const [canvasState, canvasDispatch] = useReducer(canvasStateReducer, initialCanvasState);
 
   return (
     <div className="App">
-      <Canvas selectedTool={selectedTool} selectedColor={paletteState.foregroundColor} />
-      <Toolbar setSelectedTool={handleToolSet} />
+      <Canvas dispatch={canvasDispatch} toolbarState={toolbarState} paletteState={paletteState} />
+      <Toolbar dispatch={toolbarDispatch} canvasState={canvasState} paletteState={paletteState} />
       <ColorIndicator paletteState={paletteState} />
-      <Palette state={paletteState} dispatch={paletteDispatch} />
+      <Palette dispatch={paletteDispatch} paletteState={paletteState} />
     </div>
   );
 }

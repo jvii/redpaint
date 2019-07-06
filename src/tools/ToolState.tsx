@@ -14,9 +14,7 @@ export class LineToolState {
   }
 }
 
-export type Action =
-  | { type: 'lineToolStart'; point: Point | null }
-  | { type: 'other'; param: string };
+export type Action = { type: 'lineToolStart'; point: Point | null };
 
 export function toolStateReducer(state: ToolState, action: Action): ToolState {
   switch (action.type) {
@@ -28,7 +26,7 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
           startingPosition: action.point,
         },
       };
-    case 'other':
+    default:
       return state;
   }
 }

@@ -28,6 +28,8 @@ export function paletteStateReducer(state: PaletteState, action: Action): Palett
         ...state,
         backgroundColor: action.color,
       };
+    default:
+      return state;
   }
 }
 

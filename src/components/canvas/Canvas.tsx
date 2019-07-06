@@ -1,19 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { Tool, useTool } from '../tools/Tool';
-import { Point, PointerState, Color } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTool } from '../../tools/Tool';
+import { Point, PointerState } from '../../types';
+import { Action } from './CanvasState';
+import { ToolbarState } from '../toolbar/ToolbarState';
+import { PaletteState } from '../palette/PaletteState';
 import './Canvas.css';
 
 interface Props {
-  selectedTool: Tool;
-  selectedColor: Color;
+  dispatch: React.Dispatch<Action>;
+  toolbarState: ToolbarState;
+  paletteState: PaletteState;
 }
 
-function Canvas({ selectedTool, selectedColor }: Props): JSX.Element {
+function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [previousPosition, setPreviousPosition] = useState<Point | null>(null);
   const [currentPosition, setCurrentPosition] = useState<Point | null>(null);
 
   const canvasRef = useRef(null);
+  useEffect((): void => {
+    dispatch({ type: 'setCanvasRef', canvasRef: canvasRef });
+  }, [canvasRef]);
 
   const pointerState: PointerState = {
     isMouseDown: isMouseDown,
@@ -21,7 +28,7 @@ function Canvas({ selectedTool, selectedColor }: Props): JSX.Element {
     currentPosition: currentPosition,
   };
 
-  useTool(selectedTool, selectedColor, pointerState, canvasRef.current);
+  useTool(toolbarState.selectedTool, paletteState.foregroundColor, pointerState, canvasRef.current);
 
   function onMouseDown(): void {
     setIsMouseDown(true);
