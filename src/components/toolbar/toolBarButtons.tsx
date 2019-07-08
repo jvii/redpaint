@@ -13,6 +13,10 @@ export function ButtonLine({ onClick }: Props): JSX.Element {
   return <button className="ToolbarButton Line" onClick={onClick}></button>;
 }
 
+export function ButtonFloodFill({ onClick }: Props): JSX.Element {
+  return <button className="ToolbarButton FloodFill" onClick={onClick}></button>;
+}
+
 export function ButtonCLR({ onClick }: Props): JSX.Element {
   return <button className="ToolbarButton CLR" onClick={onClick}></button>;
 }

@@ -1,35 +1,47 @@
-import { useReducer } from 'react';
-import { PointerState, Color } from '../types';
-import { ToolState, Action, toolStateReducer } from './ToolState';
+import { Color } from '../types';
+import { ToolState, Action } from './ToolState';
 
 export interface Tool {
-  use(
+  onClick(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
     color: Color,
-    pointerState: PointerState,
-    canvas: HTMLCanvasElement,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void;
-  use(
+  onMouseMove(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
     color: Color,
-    pointerState: PointerState,
-    canvas: HTMLCanvasElement,
-    state?: ToolState,
-    dispatch?: React.Dispatch<Action>
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
   ): void;
-}
-
-const initialToolState = new ToolState();
-
-export function useTool(
-  selectedTool: Tool,
-  selectedColor: Color,
-  pointerState: PointerState,
-  canvas: HTMLCanvasElement | null
-): void {
-  const [state, dispatch] = useReducer(toolStateReducer, initialToolState);
-  if (canvas === null) {
-    return;
-  }
-  selectedTool.use(selectedColor, pointerState, canvas, state, dispatch);
+  onMouseUp(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void;
+  onMouseDown(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void;
+  onMouseLeave(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void;
+  onMouseEnter(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void;
 }

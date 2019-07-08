@@ -1,7 +1,8 @@
 import React from 'react';
-import { ButtonFreehand, ButtonLine, ButtonCLR } from './toolBarButtons';
+import { ButtonFreehand, ButtonLine, ButtonFloodFill, ButtonCLR } from './toolBarButtons';
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
+import { FloodFillTool } from '../../tools/FloodFillTool';
 import { Action } from './ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { CanvasState } from '../canvas/CanvasState';
@@ -22,6 +23,9 @@ function Toolbar({ dispatch, canvasState, paletteState }: Props): JSX.Element {
       />
       <ButtonFreehand
         onClick={(): void => dispatch({ type: 'setSelectedTool', tool: new FreehandTool() })}
+      />
+      <ButtonFloodFill
+        onClick={(): void => dispatch({ type: 'setSelectedTool', tool: new FloodFillTool() })}
       />
       <ButtonCLR
         onClick={(): void => {

@@ -1,6 +1,6 @@
 import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
-import { PointerState, Color } from '../types';
+import { PointerState, Color, Point } from '../types';
 import { drawLine } from './util';
 
 export class LineTool implements Tool {
@@ -26,5 +26,71 @@ export class LineTool implements Tool {
       drawLine(canvas, color, state.lineToolState.startingPosition, pointerState.currentPosition);
       dispatch({ type: 'lineToolStart', point: null });
     }
+  }
+
+  public onClick(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onClick LineTool');
+    console.log('state: ' + state.lineToolState.startingPosition);
+    const position: Point = {
+      x: event.nativeEvent.offsetX,
+      y: event.nativeEvent.offsetY,
+    };
+    dispatch({ type: 'lineToolStart', point: position });
+  }
+
+  public onMouseMove(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseMove LineTool');
+  }
+
+  public onMouseUp(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseUp LineTool');
+  }
+
+  public onMouseDown(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseDown LineTool');
+  }
+
+  public onMouseLeave(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseLeave LineTool');
+  }
+
+  public onMouseEnter(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    color: Color,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseEnter LineTool');
   }
 }
