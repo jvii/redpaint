@@ -3,31 +3,38 @@ import { ButtonFreehand, ButtonLine, ButtonFloodFill, ButtonCLR } from './toolBa
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
 import { FloodFillTool } from '../../tools/FloodFillTool';
-import { Action } from './ToolbarState';
+import { Action, ToolbarState } from './ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { CanvasState } from '../canvas/CanvasState';
 import { clearCanvas } from '../../tools/util';
 import './Toolbar.css';
 
 export interface Props {
-  dispatch: React.Dispatch<Action>;
+  toolbarDispatch: React.Dispatch<Action>;
+  toolbarState: ToolbarState;
   canvasState: CanvasState;
   paletteState: PaletteState;
 }
 
-function Toolbar({ dispatch, canvasState, paletteState }: Props): JSX.Element {
+function Toolbar({ toolbarDispatch, toolbarState, canvasState, paletteState }: Props): JSX.Element {
   return (
     <div className="ToolbarArea">
       <ButtonLine
-        onClick={(): void => dispatch({ type: 'setSelectedTool', tool: new LineTool() })}
+        isSelected={toolbarState.selectedTool instanceof LineTool}
+        onClick={(): void => toolbarDispatch({ type: 'setSelectedTool', tool: new LineTool() })}
       />
       <ButtonFreehand
-        onClick={(): void => dispatch({ type: 'setSelectedTool', tool: new FreehandTool() })}
+        isSelected={toolbarState.selectedTool instanceof FreehandTool}
+        onClick={(): void => toolbarDispatch({ type: 'setSelectedTool', tool: new FreehandTool() })}
       />
       <ButtonFloodFill
-        onClick={(): void => dispatch({ type: 'setSelectedTool', tool: new FloodFillTool() })}
+        isSelected={toolbarState.selectedTool instanceof FloodFillTool}
+        onClick={(): void =>
+          toolbarDispatch({ type: 'setSelectedTool', tool: new FloodFillTool() })
+        }
       />
       <ButtonCLR
+        isSelected={false}
         onClick={(): void => {
           if (canvasState.canvasRef === null) {
             return;

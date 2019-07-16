@@ -1,53 +1,28 @@
 import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
-import { PointerState, Color, Point } from '../types';
-import { drawLine } from './util';
+import { PaletteState } from '../components/palette/PaletteState';
+import { Color, Point } from '../types';
+import { drawLineNoAliasing } from './util';
 
 export class LineTool implements Tool {
-  public use(
-    color: Color,
-    pointerState: PointerState,
-    canvas: HTMLCanvasElement,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
-    if (!pointerState.currentPosition) {
-      return;
-    }
-    if (pointerState.isMouseDown && !state.lineToolState.startingPosition) {
-      dispatch({ type: 'lineToolStart', point: pointerState.currentPosition });
-      return;
-    }
-    if (!state.lineToolState.startingPosition) {
-      return;
-    }
-
-    if (!pointerState.isMouseDown && state.lineToolState.startingPosition) {
-      drawLine(canvas, color, state.lineToolState.startingPosition, pointerState.currentPosition);
-      dispatch({ type: 'lineToolStart', point: null });
-    }
-  }
-
   public onClick(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
     console.log('onClick LineTool');
-    console.log('state: ' + state.lineToolState.startingPosition);
-    const position: Point = {
-      x: event.nativeEvent.offsetX,
-      y: event.nativeEvent.offsetY,
-    };
-    dispatch({ type: 'lineToolStart', point: position });
+  }
+
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    event.preventDefault();
   }
 
   public onMouseMove(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
@@ -57,40 +32,74 @@ export class LineTool implements Tool {
   public onMouseUp(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
-    console.log('onMouseUp LineTool');
+    console.log('onMouseUp LineTool ' + event.button);
+    if (!canvas) {
+      return;
+    }
+    if (state.lineToolState.startingPosition) {
+      const position: Point = {
+        x: event.nativeEvent.offsetX,
+        y: event.nativeEvent.offsetY,
+      };
+      drawLineNoAliasing(
+        canvas,
+        chooseColor(event, paletteState),
+        state.lineToolState.startingPosition,
+        position
+      );
+      dispatch({ type: 'lineToolStart', point: null });
+    }
   }
 
   public onMouseDown(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
     console.log('onMouseDown LineTool');
+    const position: Point = {
+      x: event.nativeEvent.offsetX,
+      y: event.nativeEvent.offsetY,
+    };
+    dispatch({ type: 'lineToolStart', point: position });
   }
 
   public onMouseLeave(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
-    console.log('onMouseLeave LineTool');
+    console.log('onMouseLeave LineTool ' + event.button);
   }
 
   public onMouseEnter(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
     console.log('onMouseEnter LineTool');
   }
+}
+
+function chooseColor(
+  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+  paletteState: PaletteState
+): Color {
+  if (event.button === 0) {
+    return paletteState.foregroundColor;
+  }
+  if (event.button === 2) {
+    return paletteState.backgroundColor;
+  }
+  return paletteState.foregroundColor;
 }

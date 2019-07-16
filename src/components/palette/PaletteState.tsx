@@ -4,17 +4,24 @@ import { createPalette } from './util';
 export class PaletteState {
   public foregroundColor: Color;
   public backgroundColor: Color;
+  public foregroundColorKey: number;
+  public backgroundColorKey: number;
   public palette: Color[];
+
   public constructor() {
-    this.foregroundColor = { r: 255, g: 0, b: 0 };
-    this.backgroundColor = { r: 255, g: 255, b: 255 };
     this.palette = createPalette(200);
+
+    this.foregroundColor = this.palette[0];
+    this.foregroundColorKey = 0;
+
+    this.backgroundColor = this.palette[100];
+    this.backgroundColorKey = 100;
   }
 }
 
 export type Action =
-  | { type: 'setForegroundColor'; color: Color }
-  | { type: 'setBackgroundColor'; color: Color };
+  | { type: 'setForegroundColor'; color: Color; colorKey: number }
+  | { type: 'setBackgroundColor'; color: Color; colorKey: number };
 
 export function paletteStateReducer(state: PaletteState, action: Action): PaletteState {
   switch (action.type) {
@@ -22,11 +29,13 @@ export function paletteStateReducer(state: PaletteState, action: Action): Palett
       return {
         ...state,
         foregroundColor: action.color,
+        foregroundColorKey: action.colorKey,
       };
     case 'setBackgroundColor':
       return {
         ...state,
         backgroundColor: action.color,
+        backgroundColorKey: action.colorKey,
       };
     default:
       return state;

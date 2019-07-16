@@ -1,6 +1,8 @@
 import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
-import { Color } from '../types';
+import { PaletteState } from '../components/palette/PaletteState';
+import { Point, Color } from '../types';
+import { getMousePos } from './util';
 
 interface ColorRGBA {
   r: number;
@@ -10,21 +12,53 @@ interface ColorRGBA {
 }
 
 export class FloodFillTool implements Tool {
-
   public onClick(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
-    console.log('onClick FloodFillTool');
+    if (!canvas) {
+      return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (ctx === null) {
+      return;
+    }
+
+    const position = getMousePos(canvas, event);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    floodFill(imageData, paletteState.foregroundColor, position);
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  public onContextMenu(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    paletteState: PaletteState,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    event.preventDefault();
+    if (!canvas) {
+      return;
+    }
+    const ctx = canvas.getContext('2d');
+    if (ctx === null) {
+      return;
+    }
+
+    const position = getMousePos(canvas, event);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    floodFill(imageData, paletteState.backgroundColor, position);
+    ctx.putImageData(imageData, 0, 0);
   }
 
   public onMouseMove(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
@@ -34,7 +68,7 @@ export class FloodFillTool implements Tool {
   public onMouseUp(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
@@ -44,7 +78,7 @@ export class FloodFillTool implements Tool {
   public onMouseDown(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
@@ -54,7 +88,7 @@ export class FloodFillTool implements Tool {
   public onMouseLeave(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
@@ -64,7 +98,7 @@ export class FloodFillTool implements Tool {
   public onMouseEnter(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
-    color: Color,
+    paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
@@ -72,9 +106,7 @@ export class FloodFillTool implements Tool {
   }
 }
 
-
-
-/* function getColorAtPixel(imageData, x, y): ColorRGBA {
+function getColorAtPixel(imageData: ImageData, x: number, y: number): ColorRGBA {
   const { width, data } = imageData;
 
   return {
@@ -85,7 +117,7 @@ export class FloodFillTool implements Tool {
   };
 }
 
-function setColorAtPixel(imageData, color: ColorRGBA, x, y): void {
+function setColorAtPixel(imageData: ImageData, color: ColorRGBA, x: number, y: number): void {
   const { width, data } = imageData;
 
   data[4 * (width * y + x) + 0] = color.r & 0xff;
@@ -95,14 +127,15 @@ function setColorAtPixel(imageData, color: ColorRGBA, x, y): void {
 }
 
 function colorMatch(a: ColorRGBA, b: ColorRGBA): boolean {
-  return a.r === b.r && a.g === b.g && a.b === b.b && a.a === b.a;
+  return a.r === b.r && a.g === b.g && a.b === b.b;
 }
 
-function floodFill(imageData, newColor: ColorRGBA, x, y): void {
-  const { width, height, data } = imageData;
+function floodFill(imageData: ImageData, color: Color, point: Point): void {
+  const { width, height } = imageData;
+  const newColor = { ...color, a: 255 };
   const stack = [];
-  const baseColor = getColorAtPixel(imageData, x, y);
-  let operator = { x, y };
+  const baseColor = getColorAtPixel(imageData, point.x, point.y);
+  let position: Point | undefined = { x: point.x, y: point.y };
 
   // Check if base color and new color are the same
   if (colorMatch(baseColor, newColor)) {
@@ -110,33 +143,37 @@ function floodFill(imageData, newColor: ColorRGBA, x, y): void {
   }
 
   // Add the clicked location to stack
-  stack.push({ x: operator.x, y: operator.y });
+  stack.push({ x: position.x, y: position.y });
 
   while (stack.length) {
-    operator = stack.pop();
+    position = stack.pop();
+    if (!position) {
+      return;
+    }
     let contiguousDown = true; // Vertical is assumed to be true
     let contiguousUp = true; // Vertical is assumed to be true
     let contiguousLeft = false;
     let contiguousRight = false;
 
-    // Move to top most contiguousDown pixel
-    while (contiguousUp && operator.y >= 0) {
-      operator.y--;
-      contiguousUp = colorMatch(getColorAtPixel(imageData, operator.x, operator.y), baseColor);
+    // Move to top most contiguousUp pixel
+    while (contiguousUp && position.y >= 0) {
+      position.y--;
+      contiguousUp = colorMatch(getColorAtPixel(imageData, position.x, position.y), baseColor);
     }
+    position.y++;
 
-    // Move downward
-    while (contiguousDown && operator.y < height) {
-      setColorAtPixel(imageData, newColor, operator.x, operator.y);
+    // Move down
+    while (contiguousDown && position.y < height) {
+      setColorAtPixel(imageData, newColor, position.x, position.y);
 
       // Check left
       if (
-        operator.x - 1 >= 0 &&
-        colorMatch(getColorAtPixel(imageData, operator.x - 1, operator.y), baseColor)
+        position.x - 1 >= 0 &&
+        colorMatch(getColorAtPixel(imageData, position.x - 1, position.y), baseColor)
       ) {
         if (!contiguousLeft) {
           contiguousLeft = true;
-          stack.push({ x: operator.x - 1, y: operator.y });
+          stack.push({ x: position.x - 1, y: position.y });
         }
       } else {
         contiguousLeft = false;
@@ -144,19 +181,19 @@ function floodFill(imageData, newColor: ColorRGBA, x, y): void {
 
       // Check right
       if (
-        operator.x + 1 < width &&
-        colorMatch(getColorAtPixel(imageData, operator.x + 1, operator.y), baseColor)
+        position.x + 1 < width &&
+        colorMatch(getColorAtPixel(imageData, position.x + 1, position.y), baseColor)
       ) {
         if (!contiguousRight) {
-          stack.push({ x: operator.x + 1, y: operator.y });
+          stack.push({ x: position.x + 1, y: position.y });
           contiguousRight = true;
         }
       } else {
         contiguousRight = false;
       }
 
-      operator.y++;
-      contiguousDown = colorMatch(getColorAtPixel(imageData, operator.x, operator.y), baseColor);
+      position.y++;
+      contiguousDown = colorMatch(getColorAtPixel(imageData, position.x, position.y), baseColor);
     }
   }
-} */
+}

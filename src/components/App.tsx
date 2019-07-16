@@ -19,10 +19,19 @@ function App(): JSX.Element {
 
   return (
     <div className="App">
-      <Canvas dispatch={canvasDispatch} toolbarState={toolbarState} paletteState={paletteState} />
-      <Toolbar dispatch={toolbarDispatch} canvasState={canvasState} paletteState={paletteState} />
+      <Canvas
+        canvasDispatch={canvasDispatch}
+        toolbarState={toolbarState}
+        paletteState={paletteState}
+      />
+      <Toolbar
+        toolbarDispatch={toolbarDispatch}
+        toolbarState={toolbarState}
+        canvasState={canvasState}
+        paletteState={paletteState}
+      />
       <ColorIndicator paletteState={paletteState} />
-      <Palette dispatch={paletteDispatch} paletteState={paletteState} />
+      <Palette paletteDispatch={paletteDispatch} paletteState={paletteState} />
     </div>
   );
 }

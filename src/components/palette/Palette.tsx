@@ -5,17 +5,22 @@ import { PaletteState, Action } from './PaletteState';
 import './Palette.css';
 
 export interface Props {
+  paletteDispatch: React.Dispatch<Action>;
   paletteState: PaletteState;
-  dispatch: React.Dispatch<Action>;
 }
 
-function Palette({ paletteState, dispatch }: Props): JSX.Element {
+function Palette({ paletteDispatch, paletteState }: Props): JSX.Element {
   const createColorButton = (color: Color, index: number): JSX.Element => {
     return (
       <ColorButton
         color={color}
-        onClick={(): void => dispatch({ type: 'setForegroundColor', color: color })}
-        onRightClick={(): void => dispatch({ type: 'setBackgroundColor', color: color })}
+        isSelected={index === paletteState.foregroundColorKey}
+        onClick={(): void =>
+          paletteDispatch({ type: 'setForegroundColor', color: color, colorKey: index })
+        }
+        onRightClick={(): void =>
+          paletteDispatch({ type: 'setBackgroundColor', color: color, colorKey: index })
+        }
         key={index}
       />
     );

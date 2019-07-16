@@ -12,7 +12,7 @@
   background: url(../../resources/freehandButton.png) no-repeat;
 }
 
-.Freehand:active {
+.FreehandSelected {
   background: url(../../resources/freehandButtonActive.png) no-repeat;
 }
 
@@ -20,8 +20,16 @@
   background: url(../../resources/lineButton.png) no-repeat;
 }
 
-.Line:active {
+.LineSelected {
   background: url(../../resources/lineButtonActive.png) no-repeat;
+}
+
+.FloodFill {
+  background: url(../../resources/floodFillButton.png) no-repeat;
+}
+
+.FloodFillSelected {
+  background: url(../../resources/floodFillButtonActive.png) no-repeat;
 }
 
 .CLR {

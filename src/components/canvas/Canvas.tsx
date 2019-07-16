@@ -6,17 +6,17 @@ import { ToolState, toolStateReducer } from '../../tools/ToolState';
 import './Canvas.css';
 
 interface Props {
-  dispatch: React.Dispatch<Action>;
+  canvasDispatch: React.Dispatch<Action>;
   toolbarState: ToolbarState;
   paletteState: PaletteState;
 }
 
 const initialToolState = new ToolState();
 
-function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
+function Canvas({ canvasDispatch, toolbarState, paletteState }: Props): JSX.Element {
   const canvasRef = useRef(null);
   useEffect((): void => {
-    dispatch({ type: 'setCanvasRef', canvasRef: canvasRef });
+    canvasDispatch({ type: 'setCanvasRef', canvasRef: canvasRef });
   }, [canvasRef]);
 
   const [toolState, toolStatedispatch] = useReducer(toolStateReducer, initialToolState);
@@ -31,7 +31,7 @@ function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
         toolbarState.selectedTool.onClick(
           event,
           canvasRef.current,
-          paletteState.foregroundColor,
+          paletteState,
           toolState,
           toolStatedispatch
         )
@@ -40,7 +40,7 @@ function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
         toolbarState.selectedTool.onMouseMove(
           event,
           canvasRef.current,
-          paletteState.foregroundColor,
+          paletteState,
           toolState,
           toolStatedispatch
         )
@@ -49,7 +49,7 @@ function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
         toolbarState.selectedTool.onMouseDown(
           event,
           canvasRef.current,
-          paletteState.foregroundColor,
+          paletteState,
           toolState,
           toolStatedispatch
         )
@@ -58,7 +58,7 @@ function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
         toolbarState.selectedTool.onMouseUp(
           event,
           canvasRef.current,
-          paletteState.foregroundColor,
+          paletteState,
           toolState,
           toolStatedispatch
         )
@@ -67,7 +67,7 @@ function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
         toolbarState.selectedTool.onMouseUp(
           event,
           canvasRef.current,
-          paletteState.foregroundColor,
+          paletteState,
           toolState,
           toolStatedispatch
         )
@@ -76,7 +76,16 @@ function Canvas({ dispatch, toolbarState, paletteState }: Props): JSX.Element {
         toolbarState.selectedTool.onMouseEnter(
           event,
           canvasRef.current,
-          paletteState.foregroundColor,
+          paletteState,
+          toolState,
+          toolStatedispatch
+        )
+      }
+      onContextMenu={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
+        toolbarState.selectedTool.onContextMenu(
+          event,
+          canvasRef.current,
+          paletteState,
           toolState,
           toolStatedispatch
         )

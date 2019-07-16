@@ -6,5 +6,5 @@
     'canvas toolbar'
     'canvas colorIndicator'
     'canvas palette';
-  cursor: crosshair;
+  cursor: url(../resources/cursorCrosshairTransp.png) 9 9, auto;
 }

@@ -8,6 +8,7 @@ interface Props {
 
 export function ColorIndicator({ paletteState }: Props): JSX.Element {
   const background = {
+    backgroundColor: colorToRGBString(paletteState.backgroundColor),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -17,13 +18,12 @@ export function ColorIndicator({ paletteState }: Props): JSX.Element {
     borderWidth: '0px',
     padding: 0,
     margin: 0,
-    backgroundColor: colorToRGBString(paletteState.backgroundColor),
   };
   const foreground = {
+    backgroundColor: colorToRGBString(paletteState.foregroundColor),
     height: '20px',
     width: '20px',
     borderRadius: '50%',
-    backgroundColor: colorToRGBString(paletteState.foregroundColor),
   };
 
   return (
