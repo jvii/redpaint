@@ -36,10 +36,14 @@ function Toolbar({ toolbarDispatch, toolbarState, canvasState, paletteState }: P
       <ButtonCLR
         isSelected={false}
         onClick={(): void => {
-          if (canvasState.canvasRef === null) {
+          if (canvasState.mainCanvasRef === null) {
             return;
           }
-          clearCanvas(canvasState.canvasRef.current, paletteState.backgroundColor);
+          clearCanvas(canvasState.mainCanvasRef.current, paletteState.backgroundColor);
+          if (canvasState.zoomCanvasRef === null) {
+            return;
+          }
+          clearCanvas(canvasState.zoomCanvasRef.current, paletteState.backgroundColor);
         }}
       />
     </div>

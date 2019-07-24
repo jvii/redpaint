@@ -134,8 +134,8 @@ function floodFill(imageData: ImageData, color: Color, point: Point): void {
   const { width, height } = imageData;
   const newColor = { ...color, a: 255 };
   const stack = [];
-  const baseColor = getColorAtPixel(imageData, point.x, point.y);
-  let position: Point | undefined = { x: point.x, y: point.y };
+  const baseColor = getColorAtPixel(imageData, Math.floor(point.x), Math.floor(point.y));
+  let position: Point | undefined = { x: Math.floor(point.x), y: Math.floor(point.y) };
 
   // Check if base color and new color are the same
   if (colorMatch(baseColor, newColor)) {

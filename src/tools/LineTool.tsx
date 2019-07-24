@@ -1,8 +1,8 @@
 import { Tool } from './Tool';
 import { ToolState, Action } from './ToolState';
 import { PaletteState } from '../components/palette/PaletteState';
-import { Color, Point } from '../types';
-import { drawLineNoAliasing } from './util';
+import { Color } from '../types';
+import { drawLineNoAliasing, getMousePos } from './util';
 
 export class LineTool implements Tool {
   public onClick(
@@ -41,10 +41,7 @@ export class LineTool implements Tool {
       return;
     }
     if (state.lineToolState.startingPosition) {
-      const position: Point = {
-        x: event.nativeEvent.offsetX,
-        y: event.nativeEvent.offsetY,
-      };
+      const position = getMousePos(canvas, event);
       drawLineNoAliasing(
         canvas,
         chooseColor(event, paletteState),
@@ -63,10 +60,10 @@ export class LineTool implements Tool {
     dispatch: React.Dispatch<Action>
   ): void {
     console.log('onMouseDown LineTool');
-    const position: Point = {
-      x: event.nativeEvent.offsetX,
-      y: event.nativeEvent.offsetY,
-    };
+    if (!canvas) {
+      return;
+    }
+    const position = getMousePos(canvas, event);
     dispatch({ type: 'lineToolStart', point: position });
   }
 

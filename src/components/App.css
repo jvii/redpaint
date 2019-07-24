@@ -8,3 +8,9 @@
     'canvas palette';
   cursor: url(../resources/cursorCrosshairTransp.png) 9 9, auto;
 }
+
+.CanvasArea {
+  overflow: hidden;
+  grid-area: canvas;
+  display: flex;
+}

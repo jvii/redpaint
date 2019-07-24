@@ -1,5 +1,6 @@
 import React, { useReducer } from 'react';
-import Canvas from './canvas/Canvas';
+import MainCanvas from './canvas/MainCanvas';
+import ZoomCanvas from './canvas/ZoomCanvas';
 import Toolbar from './toolbar/Toolbar';
 import Palette from './palette/Palette';
 import ColorIndicator from './palette/ColorIndicator';
@@ -19,11 +20,20 @@ function App(): JSX.Element {
 
   return (
     <div className="App">
-      <Canvas
-        canvasDispatch={canvasDispatch}
-        toolbarState={toolbarState}
-        paletteState={paletteState}
-      />
+      <div className="CanvasArea">
+        <MainCanvas
+          canvasDispatch={canvasDispatch}
+          canvasState={canvasState}
+          toolbarState={toolbarState}
+          paletteState={paletteState}
+        />
+        <ZoomCanvas
+          canvasDispatch={canvasDispatch}
+          canvasState={canvasState}
+          toolbarState={toolbarState}
+          paletteState={paletteState}
+        />
+      </div>
       <Toolbar
         toolbarDispatch={toolbarDispatch}
         toolbarState={toolbarState}

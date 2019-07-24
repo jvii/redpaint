@@ -1,18 +1,34 @@
 export class CanvasState {
-  public canvasRef: React.MutableRefObject<null> | null;
+  public mainCanvasRef: React.MutableRefObject<null> | null;
+  public zoomCanvasRef: React.MutableRefObject<null> | null;
+  public canvasResolution: { width: number; height: number };
   public constructor() {
-    this.canvasRef = null;
+    this.mainCanvasRef = null;
+    this.zoomCanvasRef = null;
+    this.canvasResolution = { width: 0, height: 0 };
   }
 }
 
-export type Action = { type: 'setCanvasRef'; canvasRef: React.MutableRefObject<null> };
+export type Action =
+  | { type: 'setMainCanvasRef' | 'setZoomCanvasRef'; canvasRef: React.MutableRefObject<null> }
+  | { type: 'setCanvasResolution'; canvasResolution: { width: number; height: number } };
 
 export function canvasStateReducer(state: CanvasState, action: Action): CanvasState {
   switch (action.type) {
-    case 'setCanvasRef':
+    case 'setMainCanvasRef':
       return {
         ...state,
-        canvasRef: action.canvasRef,
+        mainCanvasRef: action.canvasRef,
+      };
+    case 'setZoomCanvasRef':
+      return {
+        ...state,
+        zoomCanvasRef: action.canvasRef,
+      };
+    case 'setCanvasResolution':
+      return {
+        ...state,
+        canvasResolution: action.canvasResolution,
       };
     default:
       return state;

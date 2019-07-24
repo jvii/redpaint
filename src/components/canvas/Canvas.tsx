@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useReducer } from 'react';
-import { Action } from './CanvasState';
+import { CanvasState, Action } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
@@ -7,26 +7,52 @@ import './Canvas.css';
 
 interface Props {
   canvasDispatch: React.Dispatch<Action>;
+  canvasState: CanvasState;
   toolbarState: ToolbarState;
   paletteState: PaletteState;
+  isZoomCanvas: boolean;
 }
 
 const initialToolState = new ToolState();
 
-function Canvas({ canvasDispatch, toolbarState, paletteState }: Props): JSX.Element {
+export function Canvas({
+  canvasDispatch,
+  canvasState,
+  toolbarState,
+  paletteState,
+  isZoomCanvas,
+}: Props): JSX.Element {
   const canvasRef = useRef(null);
   useEffect((): void => {
-    canvasDispatch({ type: 'setCanvasRef', canvasRef: canvasRef });
+    console.log('setting canvas size');
+    canvasDispatch({
+      type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
+      canvasRef: canvasRef,
+    });
+    if (isZoomCanvas) {
+      return;
+    }
+    canvasDispatch({
+      type: 'setCanvasResolution',
+      canvasResolution: { width: window.innerWidth - 50, height: window.innerHeight - 3 },
+    });
   }, [canvasRef]);
 
   const [toolState, toolStatedispatch] = useReducer(toolStateReducer, initialToolState);
 
+  const zoomFactor = isZoomCanvas ? 30 : 1;
+  const CSSZoom = {
+    width: canvasState.canvasResolution.width * zoomFactor,
+    height: canvasState.canvasResolution.height * zoomFactor,
+  };
+
   return (
     <canvas
-      ref={canvasRef}
       className="Canvas"
-      width={window.innerWidth - 50}
-      height={window.innerHeight}
+      ref={canvasRef}
+      width={canvasState.canvasResolution.width}
+      height={canvasState.canvasResolution.height}
+      style={CSSZoom}
       onClick={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
         toolbarState.selectedTool.onClick(
           event,
