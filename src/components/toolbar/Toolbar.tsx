@@ -1,5 +1,11 @@
 import React from 'react';
-import { ButtonFreehand, ButtonLine, ButtonFloodFill, ButtonCLR } from './toolBarButtons';
+import {
+  ButtonFreehand,
+  ButtonLine,
+  ButtonFloodFill,
+  ButtonCLR,
+  ButtonZoom,
+} from './toolBarButtons';
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
 import { FloodFillTool } from '../../tools/FloodFillTool';
@@ -46,6 +52,13 @@ function Toolbar({ toolbarDispatch, toolbarState, canvasState, paletteState }: P
           clearCanvas(canvasState.zoomCanvasRef.current, paletteState.backgroundColor);
         }}
       />
+      <ButtonZoom
+        isSelected={toolbarState.zoomModeOn}
+        onClick={(): void =>
+          toolbarDispatch({ type: 'zoomModeOn', on: toolbarState.zoomModeOn ? false : true })
+        }
+      />
+
     </div>
   );
 }

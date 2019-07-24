@@ -2,6 +2,7 @@ export class CanvasState {
   public mainCanvasRef: React.MutableRefObject<null> | null;
   public zoomCanvasRef: React.MutableRefObject<null> | null;
   public canvasResolution: { width: number; height: number };
+
   public constructor() {
     this.mainCanvasRef = null;
     this.zoomCanvasRef = null;

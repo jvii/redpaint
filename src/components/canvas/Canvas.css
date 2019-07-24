@@ -5,15 +5,15 @@
   image-rendering: crisp-edges;
 }
 
-.CanvasDiv {
+.MainCanvasDiv {
   overflow: auto;
-  width: 100vh;
+  min-width: 50%;
   height: 100vh;
 }
 
 .ZoomCanvasDiv {
   overflow: auto;
-  width: 100vh;
+  min-width: 50%;
   height: 100vh;
   border-left: 2px solid black;
 }

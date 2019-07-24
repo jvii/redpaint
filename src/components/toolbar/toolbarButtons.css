@@ -32,6 +32,14 @@
   background: url(../../resources/floodFillButtonActive.png) no-repeat;
 }
 
+.Zoom {
+  background: url(../../resources/zoomButton.png) no-repeat;
+}
+
+.ZoomSelected {
+  background: url(../../resources/zoomButtonActive.png) no-repeat;
+}
+
 .CLR {
   background: url(../../resources/clrButton.png) no-repeat;
 }

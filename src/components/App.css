@@ -10,7 +10,7 @@
 }
 
 .CanvasArea {
-  overflow: hidden;
   grid-area: canvas;
+  overflow: hidden;
   display: flex;
 }

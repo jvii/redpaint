@@ -19,7 +19,10 @@ export function ZoomCanvas({
   paletteState,
 }: Props): JSX.Element {
   return (
-    <div className="ZoomCanvasDiv">
+    <div
+      className="ZoomCanvasDiv"
+      style={{ display: toolbarState.zoomModeOn ? 'initial' : 'none' }}
+    >
       <Canvas
         canvasDispatch={canvasDispatch}
         canvasState={canvasState}

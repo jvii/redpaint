@@ -19,7 +19,7 @@ export function MainCanvas({
   paletteState,
 }: Props): JSX.Element {
   return (
-    <div className="CanvasDiv">
+    <div className="MainCanvasDiv">
       <Canvas
         canvasDispatch={canvasDispatch}
         canvasState={canvasState}

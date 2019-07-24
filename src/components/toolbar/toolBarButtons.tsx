@@ -33,6 +33,15 @@ export function ButtonFloodFill({ isSelected, onClick }: Props): JSX.Element {
   );
 }
 
+export function ButtonZoom({ isSelected, onClick }: Props): JSX.Element {
+  return (
+    <button
+      className={'ToolbarButton ' + (isSelected ? 'ZoomSelected' : 'Zoom')}
+      onClick={onClick}
+    ></button>
+  );
+}
+
 export function ButtonCLR({ onClick }: Props): JSX.Element {
   return <button className="ToolbarButton CLR" onClick={onClick}></button>;
 }
