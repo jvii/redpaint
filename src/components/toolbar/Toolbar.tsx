@@ -58,7 +58,6 @@ function Toolbar({ toolbarDispatch, toolbarState, canvasState, paletteState }: P
           toolbarDispatch({ type: 'zoomModeOn', on: toolbarState.zoomModeOn ? false : true })
         }
       />
-
     </div>
   );
 }

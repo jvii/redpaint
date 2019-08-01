@@ -24,7 +24,7 @@ export class LineToolState {
 
 export type Action =
   | { type: 'lineToolStart'; point: Point | null }
-  | { type: 'freehandToolPrevious'; point: Point };
+  | { type: 'freehandToolPrevious'; point: Point | null };
 
 export function toolStateReducer(state: ToolState, action: Action): ToolState {
   switch (action.type) {

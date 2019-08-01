@@ -19,6 +19,7 @@ export interface Tool {
   onMouseMove(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
+    setEdited: React.Dispatch<React.SetStateAction<number>>,
     paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>

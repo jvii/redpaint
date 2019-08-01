@@ -1,6 +1,6 @@
 export class CanvasState {
-  public mainCanvasRef: React.MutableRefObject<null> | null;
-  public zoomCanvasRef: React.MutableRefObject<null> | null;
+  public mainCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
+  public zoomCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
   public canvasResolution: { width: number; height: number };
 
   public constructor() {
@@ -11,7 +11,10 @@ export class CanvasState {
 }
 
 export type Action =
-  | { type: 'setMainCanvasRef' | 'setZoomCanvasRef'; canvasRef: React.MutableRefObject<null> }
+  | {
+      type: 'setMainCanvasRef' | 'setZoomCanvasRef';
+      canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
+    }
   | { type: 'setCanvasResolution'; canvasResolution: { width: number; height: number } };
 
 export function canvasStateReducer(state: CanvasState, action: Action): CanvasState {

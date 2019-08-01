@@ -58,6 +58,7 @@ export class FloodFillTool implements Tool {
   public onMouseMove(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
+    setEdited: React.Dispatch<React.SetStateAction<number>>,
     paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>

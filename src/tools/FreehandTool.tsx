@@ -9,12 +9,11 @@ export class FreehandTool implements Tool {
   public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
-  public onMouseLeave(): void {}
-  public onMouseUp(): void {}
 
   public onMouseMove(
     event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
     canvas: HTMLCanvasElement | null,
+    setEdited: React.Dispatch<React.SetStateAction<number>>,
     paletteState: PaletteState,
     state: ToolState,
     dispatch: React.Dispatch<Action>
@@ -31,6 +30,9 @@ export class FreehandTool implements Tool {
         state.freehandToolState.previousPosition,
         position
       );
+      dispatch({ type: 'freehandToolPrevious', point: position });
+      setEdited(Date.now());
+      return;
     }
     dispatch({ type: 'freehandToolPrevious', point: position });
   }
@@ -48,6 +50,18 @@ export class FreehandTool implements Tool {
     }
     const position = getMousePos(canvas, event);
     drawDot(canvas, chooseColor(event, paletteState), position);
+    dispatch({ type: 'freehandToolPrevious', point: position });
+  }
+
+  public onMouseUp(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    paletteState: PaletteState,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseUp FreehandTool ' + event.button);
+    dispatch({ type: 'freehandToolPrevious', point: null });
   }
 
   public onMouseEnter(
@@ -57,11 +71,17 @@ export class FreehandTool implements Tool {
     state: ToolState,
     dispatch: React.Dispatch<Action>
   ): void {
-    if (!canvas) {
-      return;
-    }
-    const position = getMousePos(canvas, event);
-    dispatch({ type: 'freehandToolPrevious', point: position });
+    console.log('onMouseEnter FreehandTool ' + event.button);
+  }
+
+  public onMouseLeave(
+    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+    canvas: HTMLCanvasElement | null,
+    paletteState: PaletteState,
+    state: ToolState,
+    dispatch: React.Dispatch<Action>
+  ): void {
+    console.log('onMouseLeave FreehandTool ' + event.button);
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useReducer } from 'react';
+import React, { useRef, useEffect, useReducer, useState, useMemo } from 'react';
 import { CanvasState, Action } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
@@ -22,23 +22,42 @@ export function Canvas({
   paletteState,
   isZoomCanvas,
 }: Props): JSX.Element {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
-    console.log('setting canvas size');
     canvasDispatch({
       type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
       canvasRef: canvasRef,
     });
-    if (isZoomCanvas) {
+  }, [canvasRef, canvasDispatch, isZoomCanvas]);
+
+  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
+
+  console.log('render, isZoomCanvas=' + isZoomCanvas);
+
+  const destinationCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
+  const destinationCtx = useMemo((): CanvasRenderingContext2D | null => {
+    console.log('memo');
+    if (destinationCanvasRef === null) {
+      return null;
+    }
+    if (destinationCanvasRef.current === null) {
+      return null;
+    }
+    const destinationCanvas = destinationCanvasRef.current;
+    return destinationCanvas.getContext('2d');
+  }, [destinationCanvasRef]);
+
+  const [edited, setEdited] = useState(0);
+  useEffect((): void => {
+    if (!toolbarState.zoomModeOn) {
       return;
     }
-    canvasDispatch({
-      type: 'setCanvasResolution',
-      canvasResolution: { width: window.innerWidth - 50, height: window.innerHeight - 3 },
-    });
-  }, [canvasRef]);
-
-  const [toolState, toolStatedispatch] = useReducer(toolStateReducer, initialToolState);
+    console.log('hook, isZoomCanvas=' + isZoomCanvas);
+    if (destinationCtx && canvasRef.current) {
+      console.log('hook, isZoomCanvas=' + isZoomCanvas);
+      destinationCtx.drawImage(canvasRef.current, 0, 0);
+    }
+  }, [edited]);
 
   const zoomFactor = isZoomCanvas ? 30 : 1;
   const CSSZoom = {
@@ -59,16 +78,17 @@ export function Canvas({
           canvasRef.current,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
       onMouseMove={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
         toolbarState.selectedTool.onMouseMove(
           event,
           canvasRef.current,
+          setEdited,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
       onMouseDown={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
@@ -77,7 +97,7 @@ export function Canvas({
           canvasRef.current,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
       onMouseUp={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
@@ -86,7 +106,7 @@ export function Canvas({
           canvasRef.current,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
       onMouseLeave={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
@@ -95,7 +115,7 @@ export function Canvas({
           canvasRef.current,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
       onMouseEnter={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
@@ -104,7 +124,7 @@ export function Canvas({
           canvasRef.current,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
       onContextMenu={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
@@ -113,7 +133,7 @@ export function Canvas({
           canvasRef.current,
           paletteState,
           toolState,
-          toolStatedispatch
+          toolStateDispatch
         )
       }
     />

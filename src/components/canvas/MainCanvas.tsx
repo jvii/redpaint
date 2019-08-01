@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, Action } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
@@ -18,6 +18,13 @@ export function MainCanvas({
   toolbarState,
   paletteState,
 }: Props): JSX.Element {
+  useEffect((): void => {
+    canvasDispatch({
+      type: 'setCanvasResolution',
+      canvasResolution: { width: window.innerWidth - 50, height: window.innerHeight - 3 },
+    });
+  }, [canvasDispatch]);
+
   return (
     <div className="MainCanvasDiv">
       <Canvas
