@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, Action } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
@@ -18,14 +18,31 @@ export function ZoomCanvas({
   toolbarState,
   paletteState,
 }: Props): JSX.Element {
+  const [zoomFactor, setZoomFactor] = useState(20);
+
+  const zoomIn = (): void => {
+    setZoomFactor(zoomFactor + 2);
+  };
+
+  const zoomOut = (): void => {
+    if (zoomFactor <= 2) {
+      return;
+    }
+    setZoomFactor(zoomFactor - 2);
+  };
+
   return (
     <>
       <div
         className="ZoomCanvasSideBar"
         style={{ display: toolbarState.zoomModeOn ? 'initial' : 'none' }}
       >
-        <button className="ButtonPlus">+</button>
-        <button className="ButtonMinus">-</button>
+        <button className="ButtonPlus" onClick={zoomIn}>
+          +
+        </button>
+        <button className="ButtonMinus" onClick={zoomOut}>
+          -
+        </button>
       </div>
       <div
         className="ZoomCanvasDiv"
@@ -37,6 +54,7 @@ export function ZoomCanvas({
           toolbarState={toolbarState}
           paletteState={paletteState}
           isZoomCanvas={true}
+          zoomFactor={zoomFactor}
         />
       </div>
     </>

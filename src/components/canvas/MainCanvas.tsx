@@ -33,6 +33,7 @@ export function MainCanvas({
         toolbarState={toolbarState}
         paletteState={paletteState}
         isZoomCanvas={false}
+        zoomFactor={1}
       />
     </div>
   );

@@ -11,6 +11,7 @@ interface Props {
   toolbarState: ToolbarState;
   paletteState: PaletteState;
   isZoomCanvas: boolean;
+  zoomFactor: number;
 }
 
 const initialToolState = new ToolState();
@@ -21,6 +22,7 @@ export function Canvas({
   toolbarState,
   paletteState,
   isZoomCanvas,
+  zoomFactor,
 }: Props): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
@@ -59,7 +61,6 @@ export function Canvas({
     }
   }, [edited]);
 
-  const zoomFactor = isZoomCanvas ? 30 : 1;
   const CSSZoom = {
     width: canvasState.canvasResolution.width * zoomFactor,
     height: canvasState.canvasResolution.height * zoomFactor,
