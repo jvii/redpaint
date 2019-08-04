@@ -1,12 +1,13 @@
 import React, { useRef, useEffect, useReducer, useState, useMemo } from 'react';
-import { CanvasState, Action } from './CanvasState';
+import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
-import { ToolState, toolStateReducer } from '../../tools/ToolState';
+import { ToolState, toolStateReducer, Action } from '../../tools/ToolState';
+import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import './Canvas.css';
 
 interface Props {
-  canvasDispatch: React.Dispatch<Action>;
+  canvasDispatch: React.Dispatch<CanvasStateAction>;
   canvasState: CanvasState;
   toolbarState: ToolbarState;
   paletteState: PaletteState;
@@ -49,6 +50,35 @@ export function Canvas({
     return destinationCanvas.getContext('2d');
   }, [destinationCanvasRef]);
 
+  useEffect((): void => {
+    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
+    console.log('set activeTool');
+  }, [toolbarState]);
+  useResolveActiveTool(isZoomCanvas, toolbarState, canvasDispatch, toolStateDispatch);
+  /* let selectedTool = toolbarState.selectedTool;
+  useEffect((): void => {
+    console.log('zoomMode toggled');
+    // Temporarily switch selectedTool to zoomInitialPointSelection
+    if (toolbarState.zoomModeOn) {
+      selectedTool = new ZoomInitialPointSelectorTool();
+    } else {
+      canvasDispatch({
+        type: 'setZoomFocusPoint',
+        point: null,
+      });
+    }
+  }, [toolbarState.zoomModeOn]); */
+
+  useEffect((): void => {
+    console.log('zoomInitialPoint changed');
+    // set zoom center point
+    canvasDispatch({
+      type: 'setZoomFocusPoint',
+      point: toolState.zoomToolState.zoomInitialPoint,
+    });
+    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
+  }, [toolState.zoomToolState.zoomInitialPoint]);
+
   const [edited, setEdited] = useState(0);
   useEffect((): void => {
     if (!toolbarState.zoomModeOn) {
@@ -74,7 +104,7 @@ export function Canvas({
       height={canvasState.canvasResolution.height}
       style={CSSZoom}
       onClick={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onClick(
+        toolState.activeTool.onClick(
           event,
           canvasRef.current,
           paletteState,
@@ -83,7 +113,7 @@ export function Canvas({
         )
       }
       onMouseMove={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onMouseMove(
+        toolState.activeTool.onMouseMove(
           event,
           canvasRef.current,
           setEdited,
@@ -93,7 +123,7 @@ export function Canvas({
         )
       }
       onMouseDown={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onMouseDown(
+        toolState.activeTool.onMouseDown(
           event,
           canvasRef.current,
           paletteState,
@@ -102,7 +132,7 @@ export function Canvas({
         )
       }
       onMouseUp={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onMouseUp(
+        toolState.activeTool.onMouseUp(
           event,
           canvasRef.current,
           paletteState,
@@ -111,7 +141,7 @@ export function Canvas({
         )
       }
       onMouseLeave={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onMouseUp(
+        toolState.activeTool.onMouseUp(
           event,
           canvasRef.current,
           paletteState,
@@ -120,7 +150,7 @@ export function Canvas({
         )
       }
       onMouseEnter={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onMouseEnter(
+        toolState.activeTool.onMouseEnter(
           event,
           canvasRef.current,
           paletteState,
@@ -129,7 +159,7 @@ export function Canvas({
         )
       }
       onContextMenu={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolbarState.selectedTool.onContextMenu(
+        toolState.activeTool.onContextMenu(
           event,
           canvasRef.current,
           paletteState,
@@ -139,6 +169,33 @@ export function Canvas({
       }
     />
   );
+}
+
+function useResolveActiveTool(
+  isZoomCanvas: boolean,
+  toolbarState: ToolbarState,
+  canvasDispatch: React.Dispatch<CanvasStateAction>,
+  toolStateDispatch: React.Dispatch<Action>
+): void {
+  useEffect((): void => {
+    if (isZoomCanvas) {
+      return;
+    }
+    console.log('zoomMode toggled');
+    // Temporarily switch selectedTool to zoomInitialPointSelection
+    if (toolbarState.zoomModeOn) {
+      console.log('zoomMode on');
+      toolStateDispatch({ type: 'setActiveTool', tool: new ZoomInitialPointSelectorTool() });
+      console.log('tool set');
+    } else {
+      console.log('zoomMode off');
+      canvasDispatch({
+        type: 'setZoomFocusPoint',
+        point: null,
+      });
+    }
+    console.log('end of useEffect');
+  }, [toolbarState.zoomModeOn]);
 }
 
 export default Canvas;

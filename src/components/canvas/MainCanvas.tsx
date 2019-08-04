@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { Canvas } from './Canvas';
-import { CanvasState, Action } from './CanvasState';
+import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import './Canvas.css';
 
 interface Props {
-  canvasDispatch: React.Dispatch<Action>;
+  canvasDispatch: React.Dispatch<CanvasStateAction>;
   canvasState: CanvasState;
   toolbarState: ToolbarState;
   paletteState: PaletteState;

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Canvas } from './Canvas';
-import { CanvasState, Action } from './CanvasState';
+import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
+
 import './Canvas.css';
 
 interface Props {
-  canvasDispatch: React.Dispatch<Action>;
+  canvasDispatch: React.Dispatch<CanvasStateAction>;
   canvasState: CanvasState;
   toolbarState: ToolbarState;
   paletteState: PaletteState;
@@ -31,12 +32,11 @@ export function ZoomCanvas({
     setZoomFactor(zoomFactor - 2);
   };
 
+  const visible = toolbarState.zoomModeOn && canvasState.zoomFocusPoint;
+
   return (
     <>
-      <div
-        className="ZoomCanvasSideBar"
-        style={{ display: toolbarState.zoomModeOn ? 'initial' : 'none' }}
-      >
+      <div className="ZoomCanvasSideBar" style={{ display: visible ? 'initial' : 'none' }}>
         <button className="ButtonPlus" onClick={zoomIn}>
           +
         </button>
@@ -44,10 +44,7 @@ export function ZoomCanvas({
           -
         </button>
       </div>
-      <div
-        className="ZoomCanvasDiv"
-        style={{ display: toolbarState.zoomModeOn ? 'initial' : 'none' }}
-      >
+      <div className="ZoomCanvasDiv" style={{ display: visible ? 'initial' : 'none' }}>
         <Canvas
           canvasDispatch={canvasDispatch}
           canvasState={canvasState}
