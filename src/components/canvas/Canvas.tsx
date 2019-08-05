@@ -25,6 +25,8 @@ export function Canvas({
   isZoomCanvas,
   zoomFactor,
 }: Props): JSX.Element {
+  console.log('render, isZoomCanvas=' + isZoomCanvas);
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
     canvasDispatch({
@@ -33,22 +35,20 @@ export function Canvas({
     });
   }, [canvasRef, canvasDispatch, isZoomCanvas]);
 
-  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
-
-  console.log('render, isZoomCanvas=' + isZoomCanvas);
-
   const destinationCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
-  const destinationCtx = useMemo((): CanvasRenderingContext2D | null => {
-    console.log('memo');
-    if (destinationCanvasRef === null) {
-      return null;
+  const destinationCanvasContext = useDestinationCanvasContext(destinationCanvasRef);
+
+  const [edited, setEdited] = useState(0);
+  useEffect((): void => {
+    if (!toolbarState.zoomModeOn) {
+      return;
     }
-    if (destinationCanvasRef.current === null) {
-      return null;
+    if (destinationCanvasContext && canvasRef.current) {
+      destinationCanvasContext.drawImage(canvasRef.current, 0, 0);
     }
-    const destinationCanvas = destinationCanvasRef.current;
-    return destinationCanvas.getContext('2d');
-  }, [destinationCanvasRef]);
+  }, [edited]);
+
+  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
 
   useEffect((): void => {
     toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
@@ -61,41 +61,6 @@ export function Canvas({
     toolState,
     toolStateDispatch
   );
-  /* let selectedTool = toolbarState.selectedTool;
-  useEffect((): void => {
-    console.log('zoomMode toggled');
-    // Temporarily switch selectedTool to zoomInitialPointSelection
-    if (toolbarState.zoomModeOn) {
-      selectedTool = new ZoomInitialPointSelectorTool();
-    } else {
-      canvasDispatch({
-        type: 'setZoomFocusPoint',
-        point: null,
-      });
-    }
-  }, [toolbarState.zoomModeOn]); */
-
-  useEffect((): void => {
-    console.log('zoomInitialPoint changed');
-    // set zoom center point
-    canvasDispatch({
-      type: 'setZoomFocusPoint',
-      point: toolState.zoomToolState.zoomInitialPoint,
-    });
-    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
-  }, [toolState.zoomToolState.zoomInitialPoint]);
-
-  const [edited, setEdited] = useState(0);
-  useEffect((): void => {
-    if (!toolbarState.zoomModeOn) {
-      return;
-    }
-    console.log('hook, isZoomCanvas=' + isZoomCanvas);
-    if (destinationCtx && canvasRef.current) {
-      console.log('hook, isZoomCanvas=' + isZoomCanvas);
-      destinationCtx.drawImage(canvasRef.current, 0, 0);
-    }
-  }, [edited]);
 
   const CSSZoom = {
     width: canvasState.canvasResolution.width * zoomFactor,
@@ -175,6 +140,21 @@ export function Canvas({
       }
     />
   );
+}
+
+function useDestinationCanvasContext(
+  destinationCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null
+): CanvasRenderingContext2D | null {
+  return useMemo((): CanvasRenderingContext2D | null => {
+    if (destinationCanvasRef === null) {
+      return null;
+    }
+    if (destinationCanvasRef.current === null) {
+      return null;
+    }
+    const destinationCanvas = destinationCanvasRef.current;
+    return destinationCanvas.getContext('2d');
+  }, [destinationCanvasRef]);
 }
 
 function useZoomToolInitialSelection(
