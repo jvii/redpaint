@@ -52,9 +52,15 @@ export function Canvas({
 
   useEffect((): void => {
     toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
-    console.log('set activeTool');
   }, [toolbarState]);
-  useResolveActiveTool(isZoomCanvas, toolbarState, canvasDispatch, toolStateDispatch);
+
+  useZoomToolInitialSelection(
+    isZoomCanvas,
+    toolbarState,
+    canvasDispatch,
+    toolState,
+    toolStateDispatch
+  );
   /* let selectedTool = toolbarState.selectedTool;
   useEffect((): void => {
     console.log('zoomMode toggled');
@@ -171,10 +177,11 @@ export function Canvas({
   );
 }
 
-function useResolveActiveTool(
+function useZoomToolInitialSelection(
   isZoomCanvas: boolean,
   toolbarState: ToolbarState,
   canvasDispatch: React.Dispatch<CanvasStateAction>,
+  toolState: ToolState,
   toolStateDispatch: React.Dispatch<Action>
 ): void {
   useEffect((): void => {
@@ -196,6 +203,15 @@ function useResolveActiveTool(
     }
     console.log('end of useEffect');
   }, [toolbarState.zoomModeOn]);
+
+  useEffect((): void => {
+    console.log('zoomInitialPoint changed');
+    canvasDispatch({
+      type: 'setZoomFocusPoint',
+      point: toolState.zoomToolState.zoomInitialPoint,
+    });
+    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
+  }, [toolState.zoomToolState.zoomInitialPoint]);
 }
 
 export default Canvas;
