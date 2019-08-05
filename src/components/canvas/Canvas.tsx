@@ -39,14 +39,7 @@ export function Canvas({
   const destinationCanvasContext = useDestinationCanvasContext(destinationCanvasRef);
 
   const [edited, setEdited] = useState(0);
-  useEffect((): void => {
-    if (!toolbarState.zoomModeOn) {
-      return;
-    }
-    if (destinationCanvasContext && canvasRef.current) {
-      destinationCanvasContext.drawImage(canvasRef.current, 0, 0);
-    }
-  }, [edited]);
+  useSyncToDestinationCanvas(toolbarState, destinationCanvasContext, canvasRef, edited);
 
   const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
 
@@ -155,6 +148,22 @@ function useDestinationCanvasContext(
     const destinationCanvas = destinationCanvasRef.current;
     return destinationCanvas.getContext('2d');
   }, [destinationCanvasRef]);
+}
+
+function useSyncToDestinationCanvas(
+  toolbarState: ToolbarState,
+  destinationCanvasContext: CanvasRenderingContext2D | null,
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  edited: number
+): void {
+  useEffect((): void => {
+    if (!toolbarState.zoomModeOn) {
+      return;
+    }
+    if (destinationCanvasContext && canvasRef.current) {
+      destinationCanvasContext.drawImage(canvasRef.current, 0, 0);
+    }
+  }, [edited]);
 }
 
 function useZoomToolInitialSelection(
