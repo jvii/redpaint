@@ -35,11 +35,10 @@ export function Canvas({
     });
   }, [canvasRef, canvasDispatch, isZoomCanvas]);
 
-  const destinationCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
-  const destinationCanvasContext = useDestinationCanvasContext(destinationCanvasRef);
-
-  const [edited, setEdited] = useState(0);
-  useSyncToDestinationCanvas(toolbarState, destinationCanvasContext, canvasRef, edited);
+  const [syncPoint, setSyncPoint] = useState(0);
+  const syncTargetCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
+  const syncTargetCanvasContext = useDestinationCanvasContext(syncTargetCanvasRef);
+  useSyncToTargetCanvas(toolbarState, syncTargetCanvasContext, canvasRef, syncPoint);
 
   const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
 
@@ -80,7 +79,7 @@ export function Canvas({
         toolState.activeTool.onMouseMove(
           event,
           canvasRef.current,
-          setEdited,
+          setSyncPoint,
           paletteState,
           toolState,
           toolStateDispatch
@@ -150,11 +149,11 @@ function useDestinationCanvasContext(
   }, [destinationCanvasRef]);
 }
 
-function useSyncToDestinationCanvas(
+function useSyncToTargetCanvas(
   toolbarState: ToolbarState,
   destinationCanvasContext: CanvasRenderingContext2D | null,
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  edited: number
+  syncPoint: number
 ): void {
   useEffect((): void => {
     if (!toolbarState.zoomModeOn) {
@@ -163,7 +162,7 @@ function useSyncToDestinationCanvas(
     if (destinationCanvasContext && canvasRef.current) {
       destinationCanvasContext.drawImage(canvasRef.current, 0, 0);
     }
-  }, [edited]);
+  }, [syncPoint]);
 }
 
 function useZoomToolInitialSelection(
@@ -177,24 +176,18 @@ function useZoomToolInitialSelection(
     if (isZoomCanvas) {
       return;
     }
-    console.log('zoomMode toggled');
-    // Temporarily switch selectedTool to zoomInitialPointSelection
+    // Switch active tool to zoomInitialPointSelection for next render cycle
     if (toolbarState.zoomModeOn) {
-      console.log('zoomMode on');
       toolStateDispatch({ type: 'setActiveTool', tool: new ZoomInitialPointSelectorTool() });
-      console.log('tool set');
     } else {
-      console.log('zoomMode off');
       canvasDispatch({
         type: 'setZoomFocusPoint',
         point: null,
       });
     }
-    console.log('end of useEffect');
   }, [toolbarState.zoomModeOn]);
 
   useEffect((): void => {
-    console.log('zoomInitialPoint changed');
     canvasDispatch({
       type: 'setZoomFocusPoint',
       point: toolState.zoomToolState.zoomInitialPoint,
