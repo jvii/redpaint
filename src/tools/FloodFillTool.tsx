@@ -1,7 +1,5 @@
 import { Tool } from './Tool';
-import { ToolState, Action } from './ToolState';
-import { PaletteState } from '../components/palette/PaletteState';
-import { Point, Color } from '../types';
+import { Point, Color, EventHandlerParams } from '../types';
 import { getMousePos } from './util';
 
 interface ColorRGBA {
@@ -12,13 +10,8 @@ interface ColorRGBA {
 }
 
 export class FloodFillTool implements Tool {
-  public onClick(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onClick(params: EventHandlerParams): void {
+    const { event, canvas, setSyncPoint } = params;
     if (!canvas) {
       return;
     }
@@ -29,17 +22,13 @@ export class FloodFillTool implements Tool {
 
     const position = getMousePos(canvas, event);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    floodFill(imageData, paletteState.foregroundColor, position);
+    floodFill(imageData, params.paletteState.foregroundColor, position);
     ctx.putImageData(imageData, 0, 0);
+    setSyncPoint(Date.now());
   }
 
-  public onContextMenu(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onContextMenu(params: EventHandlerParams): void {
+    const { event, canvas, paletteState, setSyncPoint } = params;
     event.preventDefault();
     if (!canvas) {
       return;
@@ -53,56 +42,26 @@ export class FloodFillTool implements Tool {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     floodFill(imageData, paletteState.backgroundColor, position);
     ctx.putImageData(imageData, 0, 0);
+    setSyncPoint(Date.now());
   }
 
-  public onMouseMove(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    setEdited: React.Dispatch<React.SetStateAction<number>>,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onMouseMove(params: EventHandlerParams): void {
     console.log('onMouseMove FloodFillTool');
   }
 
-  public onMouseUp(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onMouseUp(params: EventHandlerParams): void {
     console.log('onMouseUp FloodFillTool');
   }
 
-  public onMouseDown(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onMouseDown(params: EventHandlerParams): void {
     console.log('onMouseDown FloodFillTool');
   }
 
-  public onMouseLeave(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onMouseLeave(params: EventHandlerParams): void {
     console.log('onMouseLeave FloodFillTool');
   }
 
-  public onMouseEnter(
-    event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-    canvas: HTMLCanvasElement | null,
-    paletteState: PaletteState,
-    state: ToolState,
-    dispatch: React.Dispatch<Action>
-  ): void {
+  public onMouseEnter(params: EventHandlerParams): void {
     console.log('onMouseEnter FloodFillTool');
   }
 }

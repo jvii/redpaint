@@ -14,7 +14,7 @@ export function drawLineNoAliasing(
   if (ctx === null) {
     return;
   }
-  ctx.imageSmoothingEnabled = false;
+  //ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = colorToRGBString(color);
   const dist = distance(start, end);
   for (let i = 0; i < dist; i++) {
