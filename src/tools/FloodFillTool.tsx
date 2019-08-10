@@ -24,7 +24,7 @@ export class FloodFillTool implements Tool {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     floodFill(imageData, params.paletteState.foregroundColor, position);
     ctx.putImageData(imageData, 0, 0);
-    setSyncPoint(Date.now());
+    setSyncPoint();
   }
 
   public onContextMenu(params: EventHandlerParams): void {
@@ -42,7 +42,7 @@ export class FloodFillTool implements Tool {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     floodFill(imageData, paletteState.backgroundColor, position);
     ctx.putImageData(imageData, 0, 0);
-    setSyncPoint(Date.now());
+    setSyncPoint();
   }
 
   public onMouseMove(params: EventHandlerParams): void {

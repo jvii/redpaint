@@ -5,6 +5,7 @@ import { PaletteState } from '../palette/PaletteState';
 import { ToolState, toolStateReducer, Action } from '../../tools/ToolState';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import './Canvas.css';
+import { Tool } from '../../tools/Tool';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
@@ -61,7 +62,7 @@ export function Canvas({
 
   const eventHandlerParamsWithoutEvent = {
     canvas: canvasRef.current,
-    setSyncPoint: setSyncPoint,
+    setSyncPoint: (): void => setSyncPoint(Date.now()),
     paletteState: paletteState,
     state: toolState,
     dispatch: toolStateDispatch,
@@ -98,6 +99,18 @@ export function Canvas({
     />
   );
 }
+
+/* function getEventHandler(
+  tool: Tool,
+  eventHandlerName: string,
+  eventHandlerParamsWithoutEvent: any
+): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
+  if (eventHandlerName in tool) {
+    return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
+      tool[eventHandlerName]({ event: event, ...eventHandlerParamsWithoutEvent });
+  }
+  return void;
+} */
 
 function useDestinationCanvasContext(
   destinationCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null
@@ -148,7 +161,7 @@ function useZoomToolInitialSelection(
     if (isZoomCanvas) {
       return;
     }
-    // Switch active tool to zoomInitialPointSelection for next render cycle
+    // switch active tool to zoomInitialPointSelection for next render cycle
     if (toolbarState.zoomModeOn) {
       toolStateDispatch({ type: 'setActiveTool', tool: new ZoomInitialPointSelectorTool() });
     } else {

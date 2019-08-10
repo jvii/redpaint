@@ -21,7 +21,7 @@ export interface PointerState {
 export interface EventHandlerParams {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
   canvas: HTMLCanvasElement | null;
-  setSyncPoint: React.Dispatch<React.SetStateAction<number>>;
+  setSyncPoint: () => void;
   paletteState: PaletteState;
   state: ToolState;
   dispatch: React.Dispatch<Action>;

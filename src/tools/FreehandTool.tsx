@@ -26,7 +26,7 @@ export class FreehandTool implements Tool {
         position
       );
       dispatch({ type: 'freehandToolPrevious', point: position });
-      setSyncPoint(Date.now());
+      setSyncPoint();
       return;
     }
     dispatch({ type: 'freehandToolPrevious', point: position });
@@ -41,7 +41,7 @@ export class FreehandTool implements Tool {
     const position = getMousePos(canvas, event);
     drawDot(canvas, chooseColor(event, paletteState), position);
     dispatch({ type: 'freehandToolPrevious', point: position });
-    setSyncPoint(Date.now());
+    setSyncPoint();
   }
 
   public onMouseUp(params: EventHandlerParams): void {

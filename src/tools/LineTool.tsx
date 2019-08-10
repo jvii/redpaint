@@ -31,7 +31,7 @@ export class LineTool implements Tool {
         state.lineToolState.startingPosition,
         position
       );
-      setSyncPoint(Date.now());
+      setSyncPoint();
       dispatch({ type: 'lineToolStart', point: null });
     }
   }
