@@ -16,8 +16,6 @@ interface Props {
   zoomFactor: number;
 }
 
-const initialToolState = new ToolState();
-
 export function Canvas({
   canvasDispatch,
   canvasState,
@@ -26,23 +24,19 @@ export function Canvas({
   isZoomCanvas,
   zoomFactor,
 }: Props): JSX.Element {
-  console.log('render, isZoomCanvas=' + isZoomCanvas);
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  useEffect((): void => {
-    canvasDispatch({
-      type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
-      canvasRef: canvasRef,
-    });
-  }, [canvasRef, canvasDispatch, isZoomCanvas]);
-
-  const [setSyncPoint] = useSyncToTargetCanvas(isZoomCanvas, toolbarState, canvasState, canvasRef);
-
-  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
-
+  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, new ToolState());
   useEffect((): void => {
     toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
   }, [toolbarState]);
+
+  const [canvasRef] = useCanvasRef(canvasDispatch, isZoomCanvas);
+
+  const [setSyncPoint] = useSyncToTargetCanvas(
+    isZoomCanvas,
+    toolbarState,
+    canvasState,
+    canvasRef.current
+  );
 
   useZoomToolInitialSelection(
     isZoomCanvas,
@@ -99,45 +93,52 @@ function hasKey<O>(obj: O, key: keyof any): key is keyof O {
   return key in obj;
 }
 
+function useCanvasRef(
+  canvasDispatch: React.Dispatch<CanvasStateAction>,
+  isZoomCanvas: boolean
+): [React.RefObject<HTMLCanvasElement>] {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect((): void => {
+    if (!canvasRef.current) {
+      return;
+    }
+    canvasDispatch({
+      type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
+      canvas: canvasRef.current,
+    });
+  }, [canvasRef, canvasDispatch, isZoomCanvas]);
+  return [canvasRef];
+}
+
 function useSyncToTargetCanvas(
   isZoomCanvas: boolean,
   toolbarState: ToolbarState,
   canvasState: CanvasState,
-  canvasRef: React.RefObject<HTMLCanvasElement>
+  sourceCanvas: HTMLCanvasElement | null
 ): React.Dispatch<React.SetStateAction<number>>[] {
   const [syncPoint, setSyncPoint] = useState(0);
-  const syncTargetCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
-  const syncTargetCanvasContext = useDestinationCanvasContext(syncTargetCanvasRef);
+  const syncTargetCanvas = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
+  const syncTargetCanvasContext = useMemo((): CanvasRenderingContext2D | null => {
+    if (syncTargetCanvas === null) {
+      return null;
+    }
+    return syncTargetCanvas.getContext('2d');
+  }, [syncTargetCanvas]);
   useEffect((): void => {
     if (!toolbarState.zoomModeOn) {
       return;
     }
-    syncToTargetCanvas(syncTargetCanvasContext, canvasRef);
+    syncToCanvas(syncTargetCanvasContext, sourceCanvas);
   }, [syncPoint, toolbarState.zoomModeOn]); // sync if syncPoint set or zoomMode activated
   return [setSyncPoint];
 }
 
-function useDestinationCanvasContext(
-  destinationCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null
-): CanvasRenderingContext2D | null {
-  return useMemo((): CanvasRenderingContext2D | null => {
-    if (destinationCanvasRef === null) {
-      return null;
-    }
-    if (destinationCanvasRef.current === null) {
-      return null;
-    }
-    const destinationCanvas = destinationCanvasRef.current;
-    return destinationCanvas.getContext('2d');
-  }, [destinationCanvasRef]);
-}
-
-function syncToTargetCanvas(
+function syncToCanvas(
   targetCanvasContext: CanvasRenderingContext2D | null,
-  sourceCanvasRef: React.RefObject<HTMLCanvasElement>
+  sourceCanvas: HTMLCanvasElement | null
 ): void {
-  if (targetCanvasContext && sourceCanvasRef.current) {
-    targetCanvasContext.drawImage(sourceCanvasRef.current, 0, 0);
+  if (targetCanvasContext && sourceCanvas) {
+    targetCanvasContext.drawImage(sourceCanvas, 0, 0);
   }
 }
 

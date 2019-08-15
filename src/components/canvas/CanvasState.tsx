@@ -1,8 +1,8 @@
 import { Point } from '../../types';
 
 export class CanvasState {
-  public mainCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
-  public zoomCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null;
+  public mainCanvasRef: HTMLCanvasElement | null;
+  public zoomCanvasRef: HTMLCanvasElement | null;
   public canvasResolution: { width: number; height: number };
   public zoomFocusPoint: Point | null;
 
@@ -17,7 +17,7 @@ export class CanvasState {
 export type CanvasStateAction =
   | {
       type: 'setMainCanvasRef' | 'setZoomCanvasRef';
-      canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
+      canvas: HTMLCanvasElement | null;
     }
   | { type: 'setCanvasResolution'; canvasResolution: { width: number; height: number } }
   | { type: 'setZoomFocusPoint'; point: Point | null };
@@ -27,12 +27,12 @@ export function canvasStateReducer(state: CanvasState, action: CanvasStateAction
     case 'setMainCanvasRef':
       return {
         ...state,
-        mainCanvasRef: action.canvasRef,
+        mainCanvasRef: action.canvas,
       };
     case 'setZoomCanvasRef':
       return {
         ...state,
-        zoomCanvasRef: action.canvasRef,
+        zoomCanvasRef: action.canvas,
       };
     case 'setCanvasResolution':
       return {
