@@ -1,61 +1,57 @@
-import { Tool } from './Tool';
+import { Tool, EventHandlerParams } from './Tool';
 import { PaletteState } from '../components/palette/PaletteState';
 import { drawDot, drawLineNoAliasing, getMousePos } from './util';
-import { Color, EventHandlerParams } from '../types';
+import { Color } from '../types';
 
 export class FreehandTool implements Tool {
-  public onClick(): void {}
-
   public onContextMenu(params: EventHandlerParams): void {
     const { event } = params;
     event.preventDefault();
   }
 
   public onMouseMove(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, setSyncPoint, state, dispatch } = params;
+    const { event, canvas, paletteState, setSyncPoint, toolState, toolStateDispatch } = params;
     console.log('onMouseMove FreehandTool ' + event.button);
     if (!canvas) {
       return;
     }
     const position = getMousePos(canvas, event);
-    if (event.buttons && state.freehandToolState.previousPosition) {
+    if (event.buttons && toolState.freehandToolState.previousPosition) {
       drawLineNoAliasing(
         canvas,
         chooseColor(event, paletteState),
-        state.freehandToolState.previousPosition,
+        toolState.freehandToolState.previousPosition,
         position
       );
-      dispatch({ type: 'freehandToolPrevious', point: position });
+      toolStateDispatch({ type: 'freehandToolPrevious', point: position });
       setSyncPoint();
       return;
     }
-    dispatch({ type: 'freehandToolPrevious', point: position });
+    toolStateDispatch({ type: 'freehandToolPrevious', point: position });
   }
 
   public onMouseDown(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, setSyncPoint, dispatch } = params;
+    const { event, canvas, paletteState, setSyncPoint, toolStateDispatch } = params;
     console.log('onMouseDown FreehandTool ' + event.button);
     if (!canvas) {
       return;
     }
     const position = getMousePos(canvas, event);
     drawDot(canvas, chooseColor(event, paletteState), position);
-    dispatch({ type: 'freehandToolPrevious', point: position });
+    toolStateDispatch({ type: 'freehandToolPrevious', point: position });
     setSyncPoint();
   }
 
   public onMouseUp(params: EventHandlerParams): void {
-    const { event, dispatch } = params;
+    const { event, toolStateDispatch } = params;
     console.log('onMouseUp FreehandTool ' + event.button);
-    dispatch({ type: 'freehandToolPrevious', point: null });
-  }
-
-  public onMouseEnter(params: EventHandlerParams): void {
-    console.log('onMouseEnter FreehandTool');
+    toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 
   public onMouseLeave(params: EventHandlerParams): void {
-    console.log('onMouseLeave FreehandTool');
+    const { event, toolStateDispatch } = params;
+    console.log('onMouseLeave FreehandTool ' + event.button);
+    toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 }
 

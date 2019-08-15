@@ -1,58 +1,41 @@
-import { Tool } from './Tool';
+import { Tool, EventHandlerParams } from './Tool';
 import { PaletteState } from '../components/palette/PaletteState';
-import { Color, EventHandlerParams } from '../types';
+import { Color } from '../types';
 import { drawLineNoAliasing, getMousePos } from './util';
 
 export class LineTool implements Tool {
-  public onClick(params: EventHandlerParams): void {
-    console.log('onClick LineTool');
-  }
-
   public onContextMenu(params: EventHandlerParams): void {
     const { event } = params;
     event.preventDefault();
   }
 
-  public onMouseMove(params: EventHandlerParams): void {
-    console.log('onMouseMove LineTool');
-  }
-
   public onMouseUp(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, setSyncPoint, state, dispatch } = params;
+    const { event, canvas, paletteState, setSyncPoint, toolState, toolStateDispatch } = params;
     console.log('onMouseUp LineTool ' + event.button);
     if (!canvas) {
       return;
     }
-    if (state.lineToolState.startingPosition) {
+    if (toolState.lineToolState.startingPosition) {
       const position = getMousePos(canvas, event);
       drawLineNoAliasing(
         canvas,
         chooseColor(event, paletteState),
-        state.lineToolState.startingPosition,
+        toolState.lineToolState.startingPosition,
         position
       );
       setSyncPoint();
-      dispatch({ type: 'lineToolStart', point: null });
+      toolStateDispatch({ type: 'lineToolStart', point: null });
     }
   }
 
   public onMouseDown(params: EventHandlerParams): void {
-    const { event, canvas, dispatch } = params;
+    const { event, canvas, toolStateDispatch } = params;
     console.log('onMouseDown LineTool');
     if (!canvas) {
       return;
     }
     const position = getMousePos(canvas, event);
-    dispatch({ type: 'lineToolStart', point: position });
-  }
-
-  public onMouseLeave(params: EventHandlerParams): void {
-    const { event } = params;
-    console.log('onMouseLeave LineTool ' + event.button);
-  }
-
-  public onMouseEnter(params: EventHandlerParams): void {
-    console.log('onMouseEnter LineTool');
+    toolStateDispatch({ type: 'lineToolStart', point: position });
   }
 }
 
