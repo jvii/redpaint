@@ -1,5 +1,5 @@
-import { Tool } from './Tool';
-import { Point, Color, EventHandlerParams } from '../types';
+import { Tool, EventHandlerParams } from './Tool';
+import { Point, Color } from '../types';
 import { getMousePos } from './util';
 
 interface ColorRGBA {
@@ -43,26 +43,6 @@ export class FloodFillTool implements Tool {
     floodFill(imageData, paletteState.backgroundColor, position);
     ctx.putImageData(imageData, 0, 0);
     setSyncPoint();
-  }
-
-  public onMouseMove(params: EventHandlerParams): void {
-    console.log('onMouseMove FloodFillTool');
-  }
-
-  public onMouseUp(params: EventHandlerParams): void {
-    console.log('onMouseUp FloodFillTool');
-  }
-
-  public onMouseDown(params: EventHandlerParams): void {
-    console.log('onMouseDown FloodFillTool');
-  }
-
-  public onMouseLeave(params: EventHandlerParams): void {
-    console.log('onMouseLeave FloodFillTool');
-  }
-
-  public onMouseEnter(params: EventHandlerParams): void {
-    console.log('onMouseEnter FloodFillTool');
   }
 }
 

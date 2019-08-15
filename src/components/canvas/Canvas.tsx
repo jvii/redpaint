@@ -36,10 +36,7 @@ export function Canvas({
     });
   }, [canvasRef, canvasDispatch, isZoomCanvas]);
 
-  const [syncPoint, setSyncPoint] = useState(0);
-  const syncTargetCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
-  const syncTargetCanvasContext = useDestinationCanvasContext(syncTargetCanvasRef);
-  useSyncToTargetCanvas(toolbarState, syncTargetCanvasContext, canvasRef, syncPoint);
+  const [setSyncPoint] = useSyncToTargetCanvas(isZoomCanvas, toolbarState, canvasState, canvasRef);
 
   const [toolState, toolStateDispatch] = useReducer(toolStateReducer, initialToolState);
 
@@ -60,12 +57,12 @@ export function Canvas({
     height: canvasState.canvasResolution.height * zoomFactor,
   };
 
-  const eventHandlerParamsWithoutEvent = {
+  const eventHandlerParams = {
     canvas: canvasRef.current,
     setSyncPoint: (): void => setSyncPoint(Date.now()),
     paletteState: paletteState,
-    state: toolState,
-    dispatch: toolStateDispatch,
+    toolState: toolState,
+    toolStateDispatch: toolStateDispatch,
   };
 
   return (
@@ -75,42 +72,50 @@ export function Canvas({
       width={canvasState.canvasResolution.width}
       height={canvasState.canvasResolution.height}
       style={CSSZoom}
-      onClick={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onClick({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
-      onMouseMove={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onMouseMove({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
-      onMouseDown={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onMouseDown({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
-      onMouseUp={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onMouseUp({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
-      onMouseLeave={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onMouseUp({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
-      onMouseEnter={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onMouseEnter({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
-      onContextMenu={(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-        toolState.activeTool.onContextMenu({ event: event, ...eventHandlerParamsWithoutEvent })
-      }
+      onClick={getEventHandler(toolState.activeTool, 'onClick', eventHandlerParams)}
+      onMouseMove={getEventHandler(toolState.activeTool, 'onMouseMove', eventHandlerParams)}
+      onMouseDown={getEventHandler(toolState.activeTool, 'onMouseDown', eventHandlerParams)}
+      onMouseUp={getEventHandler(toolState.activeTool, 'onMouseUp', eventHandlerParams)}
+      onMouseLeave={getEventHandler(toolState.activeTool, 'onMouseLeave', eventHandlerParams)}
+      onMouseEnter={getEventHandler(toolState.activeTool, 'onMouseEnter', eventHandlerParams)}
+      onContextMenu={getEventHandler(toolState.activeTool, 'onContextMenu', eventHandlerParams)}
     />
   );
 }
 
-/* function getEventHandler(
+function getEventHandler(
   tool: Tool,
   eventHandlerName: string,
   eventHandlerParamsWithoutEvent: any
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
-  if (eventHandlerName in tool) {
+  if (hasKey(tool, eventHandlerName)) {
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-      tool[eventHandlerName]({ event: event, ...eventHandlerParamsWithoutEvent });
+      tool[eventHandlerName]!({ event: event, ...eventHandlerParamsWithoutEvent });
   }
-  return void;
-} */
+  return (): void => {};
+}
+
+function hasKey<O>(obj: O, key: keyof any): key is keyof O {
+  return key in obj;
+}
+
+function useSyncToTargetCanvas(
+  isZoomCanvas: boolean,
+  toolbarState: ToolbarState,
+  canvasState: CanvasState,
+  canvasRef: React.RefObject<HTMLCanvasElement>
+): React.Dispatch<React.SetStateAction<number>>[] {
+  const [syncPoint, setSyncPoint] = useState(0);
+  const syncTargetCanvasRef = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
+  const syncTargetCanvasContext = useDestinationCanvasContext(syncTargetCanvasRef);
+  useEffect((): void => {
+    if (!toolbarState.zoomModeOn) {
+      return;
+    }
+    syncToTargetCanvas(syncTargetCanvasContext, canvasRef);
+  }, [syncPoint, toolbarState.zoomModeOn]); // sync if syncPoint set or zoomMode activated
+  return [setSyncPoint];
+}
 
 function useDestinationCanvasContext(
   destinationCanvasRef: React.MutableRefObject<HTMLCanvasElement | null> | null
@@ -125,20 +130,6 @@ function useDestinationCanvasContext(
     const destinationCanvas = destinationCanvasRef.current;
     return destinationCanvas.getContext('2d');
   }, [destinationCanvasRef]);
-}
-
-function useSyncToTargetCanvas(
-  toolbarState: ToolbarState,
-  destinationCanvasContext: CanvasRenderingContext2D | null,
-  canvasRef: React.RefObject<HTMLCanvasElement>,
-  syncPoint: number
-): void {
-  useEffect((): void => {
-    if (!toolbarState.zoomModeOn) {
-      return;
-    }
-    syncToTargetCanvas(destinationCanvasContext, canvasRef);
-  }, [syncPoint, toolbarState.zoomModeOn]); // sync if syncPoint set or zoomMode activated
 }
 
 function syncToTargetCanvas(
