@@ -4,8 +4,8 @@ import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
 import { useSyncToTargetCanvas, useCanvasRef, useZoomToolInitialSelection } from './hooks';
+import { getEventHandler } from '../../tools/util';
 import './Canvas.css';
-import { Tool } from '../../tools/Tool';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
@@ -75,22 +75,6 @@ export function Canvas({
       onContextMenu={getEventHandler(toolState.activeTool, 'onContextMenu', eventHandlerParams)}
     />
   );
-}
-
-function getEventHandler(
-  tool: Tool,
-  eventHandlerName: string,
-  eventHandlerParamsWithoutEvent: any
-): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
-  if (hasKey(tool, eventHandlerName)) {
-    return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-      tool[eventHandlerName]!({ event: event, ...eventHandlerParamsWithoutEvent });
-  }
-  return (): void => {};
-}
-
-function hasKey<O>(obj: O, key: keyof any): key is keyof O {
-  return key in obj;
 }
 
 export default Canvas;

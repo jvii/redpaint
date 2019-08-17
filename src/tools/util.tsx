@@ -1,4 +1,5 @@
 import { Point, Color } from '../types';
+import { Tool } from './Tool';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -79,4 +80,20 @@ export function clearCanvas(canvas: HTMLCanvasElement | null, color: Color): voi
   ctx.rect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = colorToRGBString(color);
   ctx.fill();
+}
+
+export function getEventHandler(
+  tool: Tool,
+  eventHandlerName: string,
+  eventHandlerParamsWithoutEvent: any
+): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
+  if (hasKey(tool, eventHandlerName)) {
+    return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
+      tool[eventHandlerName]!({ event: event, ...eventHandlerParamsWithoutEvent });
+  }
+  return (): void => {};
+}
+
+function hasKey<O>(obj: O, key: keyof any): key is keyof O {
+  return key in obj;
 }
