@@ -11,7 +11,6 @@ export class FreehandTool implements Tool {
 
   public onMouseMove(params: EventHandlerParams): void {
     const { event, canvas, paletteState, setSyncPoint, toolState, toolStateDispatch } = params;
-    console.log('onMouseMove FreehandTool ' + event.button);
     if (!canvas) {
       return;
     }
@@ -32,7 +31,6 @@ export class FreehandTool implements Tool {
 
   public onMouseDown(params: EventHandlerParams): void {
     const { event, canvas, paletteState, setSyncPoint, toolStateDispatch } = params;
-    console.log('onMouseDown FreehandTool ' + event.button);
     if (!canvas) {
       return;
     }
@@ -43,14 +41,12 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParams): void {
-    const { event, toolStateDispatch } = params;
-    console.log('onMouseUp FreehandTool ' + event.button);
+    const { toolStateDispatch } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 
   public onMouseLeave(params: EventHandlerParams): void {
-    const { event, toolStateDispatch } = params;
-    console.log('onMouseLeave FreehandTool ' + event.button);
+    const { toolStateDispatch } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 }
@@ -59,7 +55,6 @@ function chooseColor(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
   paletteState: PaletteState
 ): Color {
-  console.log(event.buttons);
   if (event.buttons === 1) {
     return paletteState.foregroundColor;
   }
