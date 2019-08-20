@@ -3,6 +3,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import ToolbarState from '../toolbar/ToolbarState';
 import { ToolState, Action } from '../../tools/ToolState';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
+import { Point } from '../../types';
 
 export function useCanvasRef(
   canvasDispatch: React.Dispatch<CanvasStateAction>,
@@ -82,4 +83,24 @@ export function useZoomToolInitialSelection(
     });
     toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
   }, [toolState.zoomToolState.zoomInitialPoint]);
+}
+
+export function useScrollToFocusPoint(
+  canvasDivRef: React.RefObject<HTMLDivElement>,
+  zoomFactor: number,
+  focusPoint: Point | null
+): void {
+  useEffect((): void => {
+    if (canvasDivRef === null || canvasDivRef.current === null) {
+      return;
+    }
+    if (focusPoint === null) {
+      return;
+    }
+    const scrollOptions = {
+      left: focusPoint.x * zoomFactor - canvasDivRef.current.clientWidth / 2,
+      top: focusPoint.y * zoomFactor - canvasDivRef.current.clientHeight / 2,
+    };
+    canvasDivRef.current.scrollTo(scrollOptions);
+  }, [focusPoint]);
 }

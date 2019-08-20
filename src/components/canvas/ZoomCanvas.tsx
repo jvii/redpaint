@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
+import { useScrollToFocusPoint } from './hooks';
 
 import './Canvas.css';
+import { Point } from '../../types';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
@@ -19,17 +21,34 @@ export function ZoomCanvas({
   toolbarState,
   paletteState,
 }: Props): JSX.Element {
+  const canvasDivRef = useRef<HTMLDivElement>(null);
   const [zoomFactor, setZoomFactor] = useState(20);
 
+  useScrollToFocusPoint(canvasDivRef, zoomFactor, canvasState.zoomFocusPoint);
+
+  const zoom = (newZoomFactor: number): void => {
+    if (canvasDivRef === null || canvasDivRef.current === null) {
+      return;
+    }
+    if (newZoomFactor <= 0) {
+      return;
+    }
+    const centerPoint = getCenterPoint(canvasDivRef.current, zoomFactor);
+    canvasDispatch({
+      type: 'setZoomFocusPoint',
+      point: centerPoint,
+    });
+    setZoomFactor(newZoomFactor);
+  };
+
   const zoomIn = (): void => {
-    setZoomFactor(zoomFactor + 2);
+    const newZoomFactor = zoomFactor + 2;
+    zoom(newZoomFactor);
   };
 
   const zoomOut = (): void => {
-    if (zoomFactor <= 2) {
-      return;
-    }
-    setZoomFactor(zoomFactor - 2);
+    const newZoomFactor = zoomFactor - 2;
+    zoom(newZoomFactor);
   };
 
   const visible = toolbarState.zoomModeOn && canvasState.zoomFocusPoint;
@@ -44,7 +63,11 @@ export function ZoomCanvas({
           -
         </button>
       </div>
-      <div className="ZoomCanvasDiv" style={{ display: visible ? 'initial' : 'none' }}>
+      <div
+        className="ZoomCanvasDiv"
+        ref={canvasDivRef}
+        style={{ display: visible ? 'initial' : 'none' }}
+      >
         <Canvas
           canvasDispatch={canvasDispatch}
           canvasState={canvasState}
@@ -56,6 +79,13 @@ export function ZoomCanvas({
       </div>
     </>
   );
+}
+
+function getCenterPoint(canvasDiv: HTMLDivElement, zoomFactor: number): Point {
+  return {
+    x: (canvasDiv.scrollLeft + canvasDiv.clientWidth / 2) / zoomFactor,
+    y: (canvasDiv.scrollTop + canvasDiv.clientHeight / 2) / zoomFactor,
+  };
 }
 
 export default ZoomCanvas;
