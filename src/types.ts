@@ -8,9 +8,3 @@ export interface Color {
   g: number;
   b: number;
 }
-
-export interface PointerState {
-  isMouseDown: boolean;
-  previousPosition: Point | null;
-  currentPosition: Point | null;
-}

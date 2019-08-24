@@ -1,7 +1,5 @@
 import { Tool, EventHandlerParams } from './Tool';
-import { PaletteState } from '../components/palette/PaletteState';
-import { drawDot, drawLineNoAliasing, getMousePos } from './util';
-import { Color } from '../types';
+import { drawDot, drawLineNoAliasing, getMousePos, chooseColor } from './util';
 
 export class FreehandTool implements Tool {
   public onContextMenu(params: EventHandlerParams): void {
@@ -49,17 +47,4 @@ export class FreehandTool implements Tool {
     const { toolStateDispatch } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
-}
-
-function chooseColor(
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-  paletteState: PaletteState
-): Color {
-  if (event.buttons === 1) {
-    return paletteState.foregroundColor;
-  }
-  if (event.buttons === 2) {
-    return paletteState.backgroundColor;
-  }
-  return paletteState.foregroundColor;
 }

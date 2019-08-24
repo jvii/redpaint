@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
+import { useScrollToFocusPoint } from './hooks';
 import './Canvas.css';
 
 interface Props {
@@ -18,6 +19,8 @@ export function MainCanvas({
   toolbarState,
   paletteState,
 }: Props): JSX.Element {
+  const canvasDivRef = useRef<HTMLDivElement>(null);
+
   useEffect((): void => {
     canvasDispatch({
       type: 'setCanvasResolution',
@@ -25,15 +28,16 @@ export function MainCanvas({
     });
   }, [canvasDispatch]);
 
+  useScrollToFocusPoint(canvasDivRef, canvasState.scrollFocusPoint);
+
   return (
-    <div className="MainCanvasDiv">
+    <div className="MainCanvasDiv" ref={canvasDivRef}>
       <Canvas
         canvasDispatch={canvasDispatch}
         canvasState={canvasState}
         toolbarState={toolbarState}
         paletteState={paletteState}
         isZoomCanvas={false}
-        zoomFactor={1}
       />
     </div>
   );

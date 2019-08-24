@@ -13,7 +13,7 @@ interface Props {
   toolbarState: ToolbarState;
   paletteState: PaletteState;
   isZoomCanvas: boolean;
-  zoomFactor: number;
+  zoomFactor?: number;
 }
 
 export function Canvas({
@@ -22,7 +22,7 @@ export function Canvas({
   toolbarState,
   paletteState,
   isZoomCanvas,
-  zoomFactor,
+  zoomFactor = 1,
 }: Props): JSX.Element {
   const [toolState, toolStateDispatch] = useReducer(toolStateReducer, new ToolState());
   useEffect((): void => {

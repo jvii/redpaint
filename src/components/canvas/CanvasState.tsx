@@ -4,12 +4,14 @@ export class CanvasState {
   public mainCanvasRef: HTMLCanvasElement | null;
   public zoomCanvasRef: HTMLCanvasElement | null;
   public canvasResolution: { width: number; height: number };
+  public scrollFocusPoint: Point | null;
   public zoomFocusPoint: Point | null;
 
   public constructor() {
     this.mainCanvasRef = null;
     this.zoomCanvasRef = null;
     this.canvasResolution = { width: 0, height: 0 };
+    this.scrollFocusPoint = null;
     this.zoomFocusPoint = null;
   }
 }
@@ -20,6 +22,7 @@ export type CanvasStateAction =
       canvas: HTMLCanvasElement | null;
     }
   | { type: 'setCanvasResolution'; canvasResolution: { width: number; height: number } }
+  | { type: 'setScrollFocusPoint'; point: Point | null }
   | { type: 'setZoomFocusPoint'; point: Point | null };
 
 export function canvasStateReducer(state: CanvasState, action: CanvasStateAction): CanvasState {
@@ -38,6 +41,11 @@ export function canvasStateReducer(state: CanvasState, action: CanvasStateAction
       return {
         ...state,
         canvasResolution: action.canvasResolution,
+      };
+    case 'setScrollFocusPoint':
+      return {
+        ...state,
+        scrollFocusPoint: action.point,
       };
     case 'setZoomFocusPoint':
       return {
