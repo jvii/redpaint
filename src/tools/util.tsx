@@ -1,5 +1,6 @@
 import { Point, Color } from '../types';
 import { Tool } from './Tool';
+import { PaletteState } from '../components/palette/PaletteState';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -15,7 +16,6 @@ export function drawLineNoAliasing(
   if (ctx === null) {
     return;
   }
-  //ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = colorToRGBString(color);
   const dist = distance(start, end);
   for (let i = 0; i < dist; i++) {
@@ -66,6 +66,19 @@ export function getMousePos(
     x: (event.clientX - rect.left) * scaleX, // scale mouse coordinates after they have
     y: (event.clientY - rect.top) * scaleY, // been adjusted to be relative to element
   };
+}
+
+export function chooseColor(
+  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+  paletteState: PaletteState
+): Color {
+  if (event.buttons === 1) {
+    return paletteState.foregroundColor;
+  }
+  if (event.buttons === 2) {
+    return paletteState.backgroundColor;
+  }
+  return paletteState.foregroundColor;
 }
 
 export function clearCanvas(canvas: HTMLCanvasElement | null, color: Color): void {

@@ -4,7 +4,6 @@ import { getMousePos } from './util';
 export class ZoomInitialPointSelectorTool implements Tool {
   public onClick(params: EventHandlerParams): void {
     const { event, canvas, toolStateDispatch } = params;
-    console.log('onClick ZoomInitialPointSelectorTool');
     if (!canvas) {
       return;
     }

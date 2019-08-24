@@ -87,8 +87,8 @@ export function useZoomToolInitialSelection(
 
 export function useScrollToFocusPoint(
   canvasDivRef: React.RefObject<HTMLDivElement>,
-  zoomFactor: number,
-  focusPoint: Point | null
+  focusPoint: Point | null,
+  zoomFactor: number = 1
 ): void {
   useEffect((): void => {
     if (canvasDivRef === null || canvasDivRef.current === null) {
