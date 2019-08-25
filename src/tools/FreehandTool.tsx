@@ -8,7 +8,7 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, setSyncPoint, toolState, toolStateDispatch } = params;
+    const { event, canvas, paletteState, onDraw, toolState, toolStateDispatch } = params;
     if (!canvas) {
       return;
     }
@@ -21,21 +21,21 @@ export class FreehandTool implements Tool {
         position
       );
       toolStateDispatch({ type: 'freehandToolPrevious', point: position });
-      setSyncPoint();
+      onDraw();
       return;
     }
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
   }
 
   public onMouseDown(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, setSyncPoint, toolStateDispatch } = params;
+    const { event, canvas, paletteState, onDraw, toolStateDispatch } = params;
     if (!canvas) {
       return;
     }
     const position = getMousePos(canvas, event);
     drawDot(canvas, chooseColor(event, paletteState), position);
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
-    setSyncPoint();
+    onDraw();
   }
 
   public onMouseUp(params: EventHandlerParams): void {

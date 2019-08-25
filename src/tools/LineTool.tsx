@@ -10,7 +10,7 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, setSyncPoint, toolState, toolStateDispatch } = params;
+    const { event, canvas, paletteState, onDraw, toolState, toolStateDispatch } = params;
     console.log('onMouseUp LineTool ' + event.button);
     if (!canvas) {
       return;
@@ -23,7 +23,7 @@ export class LineTool implements Tool {
         toolState.lineToolState.startingPosition,
         position
       );
-      setSyncPoint();
+      onDraw();
       toolStateDispatch({ type: 'lineToolStart', point: null });
     }
   }
