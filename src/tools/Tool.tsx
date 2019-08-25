@@ -4,6 +4,7 @@ import { ToolState, Action } from './ToolState';
 export interface EventHandlerParams {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
   canvas: HTMLCanvasElement | null;
+  overlayCanvas: HTMLCanvasElement | null;
   onDraw: () => void;
   paletteState: PaletteState;
   toolState: ToolState;

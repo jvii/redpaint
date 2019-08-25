@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
@@ -30,6 +30,7 @@ export function Canvas({
   }, [toolbarState]);
 
   const [canvasRef] = useCanvasRef(canvasDispatch, isZoomCanvas);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const [setSyncPoint] = useSyncToTargetCanvas(
     isZoomCanvas,
@@ -53,6 +54,7 @@ export function Canvas({
 
   const eventHandlerParams = {
     canvas: canvasRef.current,
+    overlayCanvas: overlayCanvasRef.current,
     onDraw: (): void => setSyncPoint(Date.now()),
     paletteState: paletteState,
     toolState: toolState,
@@ -60,20 +62,29 @@ export function Canvas({
   };
 
   return (
-    <canvas
-      className="Canvas"
-      ref={canvasRef}
-      width={canvasState.canvasResolution.width}
-      height={canvasState.canvasResolution.height}
-      style={CSSZoom}
-      onClick={getEventHandler(toolState.activeTool, 'onClick', eventHandlerParams)}
-      onMouseMove={getEventHandler(toolState.activeTool, 'onMouseMove', eventHandlerParams)}
-      onMouseDown={getEventHandler(toolState.activeTool, 'onMouseDown', eventHandlerParams)}
-      onMouseUp={getEventHandler(toolState.activeTool, 'onMouseUp', eventHandlerParams)}
-      onMouseLeave={getEventHandler(toolState.activeTool, 'onMouseLeave', eventHandlerParams)}
-      onMouseEnter={getEventHandler(toolState.activeTool, 'onMouseEnter', eventHandlerParams)}
-      onContextMenu={getEventHandler(toolState.activeTool, 'onContextMenu', eventHandlerParams)}
-    />
+    <div className="CanvasContainer">
+      <canvas
+        className="Canvas"
+        ref={canvasRef}
+        width={canvasState.canvasResolution.width}
+        height={canvasState.canvasResolution.height}
+        style={CSSZoom}
+        onClick={getEventHandler(toolState.activeTool, 'onClick', eventHandlerParams)}
+        onMouseMove={getEventHandler(toolState.activeTool, 'onMouseMove', eventHandlerParams)}
+        onMouseDown={getEventHandler(toolState.activeTool, 'onMouseDown', eventHandlerParams)}
+        onMouseUp={getEventHandler(toolState.activeTool, 'onMouseUp', eventHandlerParams)}
+        onMouseLeave={getEventHandler(toolState.activeTool, 'onMouseLeave', eventHandlerParams)}
+        onMouseEnter={getEventHandler(toolState.activeTool, 'onMouseEnter', eventHandlerParams)}
+        onContextMenu={getEventHandler(toolState.activeTool, 'onContextMenu', eventHandlerParams)}
+      />
+      <canvas
+        className="OverlayCanvas Canvas"
+        ref={overlayCanvasRef}
+        width={canvasState.canvasResolution.width}
+        height={canvasState.canvasResolution.height}
+        style={CSSZoom}
+      />
+    </div>
   );
 }
 

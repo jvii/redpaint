@@ -95,6 +95,18 @@ export function clearCanvas(canvas: HTMLCanvasElement | null, color: Color): voi
   ctx.fill();
 }
 
+export function clearOverlayCanvas(canvas: HTMLCanvasElement | null): void {
+  if (canvas === null) {
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  if (ctx === null) {
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
 export function getEventHandler(
   tool: Tool,
   eventHandlerName: string,
