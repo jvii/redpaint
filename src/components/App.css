@@ -6,7 +6,7 @@
     'canvas toolbar'
     'canvas colorIndicator'
     'canvas palette';
-  cursor: url(../resources/cursorCrosshairTransp.png) 9 9, auto;
+  cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;
 }
 
 .CanvasArea {
