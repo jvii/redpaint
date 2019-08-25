@@ -1,9 +1,29 @@
 import { Tool, EventHandlerParams } from './Tool';
 import { PaletteState } from '../components/palette/PaletteState';
 import { Color } from '../types';
-import { drawLineNoAliasing, getMousePos } from './util';
+import { drawLineNoAliasing, getMousePos, clearOverlayCanvas, drawDot } from './util';
 
 export class LineTool implements Tool {
+  public onMouseMove(params: EventHandlerParams): void {
+    const { event, canvas, overlayCanvas, toolState, paletteState } = params;
+    if (!canvas || !overlayCanvas) {
+      return;
+    }
+    const position = getMousePos(canvas, event);
+
+    clearOverlayCanvas(overlayCanvas);
+    if (toolState.lineToolState.startingPosition) {
+      const position = getMousePos(canvas, event);
+      drawLineNoAliasing(
+        overlayCanvas,
+        paletteState.foregroundColor,
+        toolState.lineToolState.startingPosition,
+        position
+      );
+    } else {
+      drawDot(overlayCanvas, paletteState.foregroundColor, position);
+    }
+  }
   public onContextMenu(params: EventHandlerParams): void {
     const { event } = params;
     event.preventDefault();

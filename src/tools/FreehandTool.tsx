@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParams } from './Tool';
-import { drawDot, drawLineNoAliasing, getMousePos, chooseColor } from './util';
+import { drawDot, drawLineNoAliasing, getMousePos, chooseColor, clearOverlayCanvas } from './util';
 
 export class FreehandTool implements Tool {
   public onContextMenu(params: EventHandlerParams): void {
@@ -8,11 +8,23 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, onDraw, toolState, toolStateDispatch } = params;
-    if (!canvas) {
+    const {
+      event,
+      canvas,
+      overlayCanvas,
+      paletteState,
+      onDraw,
+      toolState,
+      toolStateDispatch,
+    } = params;
+    if (!canvas || !overlayCanvas) {
       return;
     }
     const position = getMousePos(canvas, event);
+
+    clearOverlayCanvas(overlayCanvas);
+    drawDot(overlayCanvas, paletteState.foregroundColor, position);
+
     if (event.buttons && toolState.freehandToolState.previousPosition) {
       drawLineNoAliasing(
         canvas,
@@ -44,7 +56,8 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseLeave(params: EventHandlerParams): void {
-    const { toolStateDispatch } = params;
+    const { overlayCanvas, toolStateDispatch } = params;
+    clearOverlayCanvas(overlayCanvas);
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 }
