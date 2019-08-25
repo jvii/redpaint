@@ -53,7 +53,7 @@ export function Canvas({
 
   const eventHandlerParams = {
     canvas: canvasRef.current,
-    setSyncPoint: (): void => setSyncPoint(Date.now()),
+    onDraw: (): void => setSyncPoint(Date.now()),
     paletteState: paletteState,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,

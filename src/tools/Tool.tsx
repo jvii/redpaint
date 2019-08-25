@@ -4,7 +4,7 @@ import { ToolState, Action } from './ToolState';
 export interface EventHandlerParams {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
   canvas: HTMLCanvasElement | null;
-  setSyncPoint: () => void;
+  onDraw: () => void;
   paletteState: PaletteState;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
