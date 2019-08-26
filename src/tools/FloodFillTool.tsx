@@ -11,7 +11,7 @@ interface ColorRGBA {
 
 export class FloodFillTool implements Tool {
   public onClick(params: EventHandlerParams): void {
-    const { event, canvas, onDraw } = params;
+    const { event, canvas, onDrawToCanvas } = params;
     if (!canvas) {
       return;
     }
@@ -24,11 +24,11 @@ export class FloodFillTool implements Tool {
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     floodFill(imageData, params.paletteState.foregroundColor, position);
     ctx.putImageData(imageData, 0, 0);
-    onDraw();
+    onDrawToCanvas();
   }
 
   public onContextMenu(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, onDraw } = params;
+    const { event, canvas, paletteState, onDrawToCanvas: onDraw } = params;
     event.preventDefault();
     if (!canvas) {
       return;

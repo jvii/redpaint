@@ -13,7 +13,6 @@ export class LineTool implements Tool {
 
     clearOverlayCanvas(overlayCanvas);
     if (toolState.lineToolState.startingPosition) {
-      const position = getMousePos(canvas, event);
       drawLineNoAliasing(
         overlayCanvas,
         paletteState.foregroundColor,
@@ -30,7 +29,7 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, onDraw, toolState, toolStateDispatch } = params;
+    const { event, canvas, paletteState, onDrawToCanvas, toolState, toolStateDispatch } = params;
     console.log('onMouseUp LineTool ' + event.button);
     if (!canvas) {
       return;
@@ -43,7 +42,7 @@ export class LineTool implements Tool {
         toolState.lineToolState.startingPosition,
         position
       );
-      onDraw();
+      onDrawToCanvas();
       toolStateDispatch({ type: 'lineToolStart', point: null });
     }
   }

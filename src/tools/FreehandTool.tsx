@@ -13,7 +13,8 @@ export class FreehandTool implements Tool {
       canvas,
       overlayCanvas,
       paletteState,
-      onDraw,
+      onDrawToCanvas,
+      onDrawToOverlayCanvas,
       toolState,
       toolStateDispatch,
     } = params;
@@ -24,6 +25,7 @@ export class FreehandTool implements Tool {
 
     clearOverlayCanvas(overlayCanvas);
     drawDot(overlayCanvas, paletteState.foregroundColor, position);
+    onDrawToOverlayCanvas();
 
     if (event.buttons && toolState.freehandToolState.previousPosition) {
       drawLineNoAliasing(
@@ -33,21 +35,21 @@ export class FreehandTool implements Tool {
         position
       );
       toolStateDispatch({ type: 'freehandToolPrevious', point: position });
-      onDraw();
+      onDrawToCanvas();
       return;
     }
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
   }
 
   public onMouseDown(params: EventHandlerParams): void {
-    const { event, canvas, paletteState, onDraw, toolStateDispatch } = params;
+    const { event, canvas, paletteState, onDrawToCanvas, toolStateDispatch } = params;
     if (!canvas) {
       return;
     }
     const position = getMousePos(canvas, event);
     drawDot(canvas, chooseColor(event, paletteState), position);
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
-    onDraw();
+    onDrawToCanvas();
   }
 
   public onMouseUp(params: EventHandlerParams): void {

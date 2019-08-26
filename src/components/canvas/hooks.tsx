@@ -1,35 +1,33 @@
-import { CanvasState, CanvasStateAction } from './CanvasState';
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { CanvasStateAction } from './CanvasState';
+import { useEffect, useState, useMemo } from 'react';
 import ToolbarState from '../toolbar/ToolbarState';
 import { ToolState, Action } from '../../tools/ToolState';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import { Point } from '../../types';
 
-export function useCanvasRef(
+export function useDispatchCanvasRefToCanvasState(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
   canvasDispatch: React.Dispatch<CanvasStateAction>,
-  isZoomCanvas: boolean
-): [React.RefObject<HTMLCanvasElement>] {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  canvasDispatchType:
+    | 'setMainCanvasRef'
+    | 'setZoomCanvasRef'
+    | 'setMainOverlayCanvasRef'
+    | 'setZoomOverlayCanvasRef'
+): void {
   useEffect((): void => {
-    if (!canvasRef.current) {
-      return;
-    }
     canvasDispatch({
-      type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
+      type: canvasDispatchType,
       canvas: canvasRef.current,
     });
-  }, [canvasRef, canvasDispatch, isZoomCanvas]);
-  return [canvasRef];
+  }, [canvasRef, canvasDispatch]);
 }
 
-export function useSyncToTargetCanvas(
-  isZoomCanvas: boolean,
-  toolbarState: ToolbarState,
-  canvasState: CanvasState,
-  sourceCanvas: HTMLCanvasElement | null
+export function useCanvasSync(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  syncTargetCanvas: HTMLCanvasElement | null,
+  toolbarState: ToolbarState
 ): React.Dispatch<React.SetStateAction<number>>[] {
   const [syncPoint, setSyncPoint] = useState(0);
-  const syncTargetCanvas = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
   const syncTargetCanvasContext = useMemo((): CanvasRenderingContext2D | null => {
     if (syncTargetCanvas === null) {
       return null;
@@ -40,7 +38,7 @@ export function useSyncToTargetCanvas(
     if (!toolbarState.zoomModeOn) {
       return;
     }
-    syncToCanvas(syncTargetCanvasContext, sourceCanvas);
+    syncToCanvas(syncTargetCanvasContext, canvasRef.current);
   }, [syncPoint, toolbarState.zoomModeOn]); // sync if syncPoint set or zoomMode activated
   return [setSyncPoint];
 }
@@ -50,6 +48,12 @@ function syncToCanvas(
   sourceCanvas: HTMLCanvasElement | null
 ): void {
   if (targetCanvasContext && sourceCanvas) {
+    targetCanvasContext.clearRect(
+      0,
+      0,
+      targetCanvasContext.canvas.width,
+      targetCanvasContext.canvas.height
+    );
     targetCanvasContext.drawImage(sourceCanvas, 0, 0);
   }
 }

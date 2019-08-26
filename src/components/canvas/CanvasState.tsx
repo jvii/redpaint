@@ -3,6 +3,8 @@ import { Point } from '../../types';
 export class CanvasState {
   public mainCanvasRef: HTMLCanvasElement | null;
   public zoomCanvasRef: HTMLCanvasElement | null;
+  public mainOverlayCanvasRef: HTMLCanvasElement | null;
+  public zoomOverlayCanvasRef: HTMLCanvasElement | null;
   public canvasResolution: { width: number; height: number };
   public scrollFocusPoint: Point | null;
   public zoomFocusPoint: Point | null;
@@ -10,6 +12,8 @@ export class CanvasState {
   public constructor() {
     this.mainCanvasRef = null;
     this.zoomCanvasRef = null;
+    this.mainOverlayCanvasRef = null;
+    this.zoomOverlayCanvasRef = null;
     this.canvasResolution = { width: 0, height: 0 };
     this.scrollFocusPoint = null;
     this.zoomFocusPoint = null;
@@ -18,7 +22,11 @@ export class CanvasState {
 
 export type CanvasStateAction =
   | {
-      type: 'setMainCanvasRef' | 'setZoomCanvasRef';
+      type:
+        | 'setMainCanvasRef'
+        | 'setZoomCanvasRef'
+        | 'setMainOverlayCanvasRef'
+        | 'setZoomOverlayCanvasRef';
       canvas: HTMLCanvasElement | null;
     }
   | { type: 'setCanvasResolution'; canvasResolution: { width: number; height: number } }
@@ -36,6 +44,16 @@ export function canvasStateReducer(state: CanvasState, action: CanvasStateAction
       return {
         ...state,
         zoomCanvasRef: action.canvas,
+      };
+    case 'setMainOverlayCanvasRef':
+      return {
+        ...state,
+        mainOverlayCanvasRef: action.canvas,
+      };
+    case 'setZoomOverlayCanvasRef':
+      return {
+        ...state,
+        zoomOverlayCanvasRef: action.canvas,
       };
     case 'setCanvasResolution':
       return {

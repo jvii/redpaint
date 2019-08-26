@@ -3,7 +3,7 @@ import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
-import { useSyncToTargetCanvas, useCanvasRef, useZoomToolInitialSelection } from './hooks';
+import { useCanvasSync, useZoomToolInitialSelection } from './hooks';
 import { getEventHandler } from '../../tools/util';
 import './Canvas.css';
 
@@ -29,14 +29,32 @@ export function Canvas({
     toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
   }, [toolbarState]);
 
-  const [canvasRef] = useCanvasRef(canvasDispatch, isZoomCanvas);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+  //const localOverlayCanvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [setSyncPoint] = useSyncToTargetCanvas(
-    isZoomCanvas,
-    toolbarState,
-    canvasState,
-    canvasRef.current
+  useEffect((): void => {
+    canvasDispatch({
+      type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
+      canvas: canvasRef.current,
+    });
+  }, [canvasRef, canvasDispatch]);
+  useEffect((): void => {
+    canvasDispatch({
+      type: isZoomCanvas ? 'setZoomOverlayCanvasRef' : 'setMainOverlayCanvasRef',
+      canvas: overlayCanvasRef.current,
+    });
+  }, [overlayCanvasRef, canvasDispatch]);
+
+  const syncTargetCanvas = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
+  const syncTargetOverlayCanvas = isZoomCanvas
+    ? canvasState.mainOverlayCanvasRef
+    : canvasState.zoomOverlayCanvasRef;
+  const [setCanvasSyncPoint] = useCanvasSync(canvasRef, syncTargetCanvas, toolbarState);
+  const [setOverlayCanvasSyncPoint] = useCanvasSync(
+    overlayCanvasRef,
+    syncTargetOverlayCanvas,
+    toolbarState
   );
 
   useZoomToolInitialSelection(
@@ -55,7 +73,8 @@ export function Canvas({
   const eventHandlerParams = {
     canvas: canvasRef.current,
     overlayCanvas: overlayCanvasRef.current,
-    onDraw: (): void => setSyncPoint(Date.now()),
+    onDrawToCanvas: (): void => setCanvasSyncPoint(Date.now()),
+    onDrawToOverlayCanvas: (): void => setOverlayCanvasSyncPoint(Date.now()),
     paletteState: paletteState,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
