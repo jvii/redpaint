@@ -5,7 +5,8 @@ export interface EventHandlerParams {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
   canvas: HTMLCanvasElement | null;
   overlayCanvas: HTMLCanvasElement | null;
-  onDraw: () => void;
+  onDrawToCanvas: () => void;
+  onDrawToOverlayCanvas: () => void;
   paletteState: PaletteState;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
