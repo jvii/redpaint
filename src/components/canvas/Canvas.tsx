@@ -72,13 +72,21 @@ export function Canvas({
 
   const eventHandlerParams = {
     canvas: canvasRef.current,
-    overlayCanvas: overlayCanvasRef.current,
     onDrawToCanvas: (): void => setCanvasSyncPoint(Date.now()),
-    onDrawToOverlayCanvas: (): void => setOverlayCanvasSyncPoint(Date.now()),
     paletteState: paletteState,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
   };
+
+  const eventHandlerParamsOverlay = {
+    canvas: overlayCanvasRef.current,
+    onDrawToCanvas: (): void => setOverlayCanvasSyncPoint(Date.now()),
+    paletteState: paletteState,
+    toolState: toolState,
+    toolStateDispatch: toolStateDispatch,
+  };
+
+  const tool = toolState.activeTool;
 
   return (
     <div className="CanvasContainer">
@@ -88,13 +96,19 @@ export function Canvas({
         width={canvasState.canvasResolution.width}
         height={canvasState.canvasResolution.height}
         style={CSSZoom}
-        onClick={getEventHandler(toolState.activeTool, 'onClick', eventHandlerParams)}
-        onMouseMove={getEventHandler(toolState.activeTool, 'onMouseMove', eventHandlerParams)}
-        onMouseDown={getEventHandler(toolState.activeTool, 'onMouseDown', eventHandlerParams)}
-        onMouseUp={getEventHandler(toolState.activeTool, 'onMouseUp', eventHandlerParams)}
-        onMouseLeave={getEventHandler(toolState.activeTool, 'onMouseLeave', eventHandlerParams)}
-        onMouseEnter={getEventHandler(toolState.activeTool, 'onMouseEnter', eventHandlerParams)}
-        onContextMenu={getEventHandler(toolState.activeTool, 'onContextMenu', eventHandlerParams)}
+        onClick={getEventHandler(tool, 'onClick', eventHandlerParams)}
+        onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
+        onMouseDown={getEventHandler(tool, 'onMouseDown', eventHandlerParams)}
+        onMouseUp={getEventHandler(tool, 'onMouseUp', eventHandlerParams)}
+        onMouseEnter={getEventHandler(tool, 'onMouseEnter', eventHandlerParams)}
+        onMouseLeave={(event): void => {
+          getEventHandler(tool, 'onMouseLeave', eventHandlerParams)(event);
+          getEventHandler(tool, 'onMouseLeaveOverlay', eventHandlerParamsOverlay)(event);
+        }}
+        onMouseMove={(event): void => {
+          getEventHandler(tool, 'onMouseMove', eventHandlerParams)(event);
+          getEventHandler(tool, 'onMouseMoveOverlay', eventHandlerParamsOverlay)(event);
+        }}
       />
       <canvas
         className="OverlayCanvas Canvas"

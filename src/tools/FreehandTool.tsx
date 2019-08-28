@@ -1,31 +1,18 @@
-import { Tool, EventHandlerParams } from './Tool';
+import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { drawDot, drawLineNoAliasing, getMousePos, chooseColor, clearOverlayCanvas } from './util';
 
 export class FreehandTool implements Tool {
-  public onContextMenu(params: EventHandlerParams): void {
+  public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event } = params;
     event.preventDefault();
   }
 
-  public onMouseMove(params: EventHandlerParams): void {
-    const {
-      event,
-      canvas,
-      overlayCanvas,
-      paletteState,
-      onDrawToCanvas,
-      onDrawToOverlayCanvas,
-      toolState,
-      toolStateDispatch,
-    } = params;
-    if (!canvas || !overlayCanvas) {
+  public onMouseMove(params: EventHandlerParamsWithEvent): void {
+    const { event, canvas, paletteState, onDrawToCanvas, toolState, toolStateDispatch } = params;
+    if (!canvas) {
       return;
     }
     const position = getMousePos(canvas, event);
-
-    clearOverlayCanvas(overlayCanvas);
-    drawDot(overlayCanvas, paletteState.foregroundColor, position);
-    onDrawToOverlayCanvas();
 
     if (event.buttons && toolState.freehandToolState.previousPosition) {
       drawLineNoAliasing(
@@ -41,7 +28,7 @@ export class FreehandTool implements Tool {
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
   }
 
-  public onMouseDown(params: EventHandlerParams): void {
+  public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, paletteState, onDrawToCanvas, toolStateDispatch } = params;
     if (!canvas) {
       return;
@@ -52,14 +39,33 @@ export class FreehandTool implements Tool {
     onDrawToCanvas();
   }
 
-  public onMouseUp(params: EventHandlerParams): void {
+  public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const { toolStateDispatch } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 
-  public onMouseLeave(params: EventHandlerParams): void {
-    const { overlayCanvas, toolStateDispatch } = params;
-    clearOverlayCanvas(overlayCanvas);
+  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
+    const { toolStateDispatch } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
+  }
+
+  // Overlay
+
+  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
+    const { event, canvas, paletteState, onDrawToCanvas } = params;
+    if (!canvas) {
+      return;
+    }
+    const position = getMousePos(canvas, event);
+
+    clearOverlayCanvas(canvas);
+    drawDot(canvas, paletteState.foregroundColor, position);
+    onDrawToCanvas();
+  }
+
+  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
+    const { canvas, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
+    onDrawToCanvas();
   }
 }

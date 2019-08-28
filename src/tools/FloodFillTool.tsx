@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParams } from './Tool';
+import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { Point, Color } from '../types';
 import { getMousePos } from './util';
 
@@ -10,7 +10,7 @@ interface ColorRGBA {
 }
 
 export class FloodFillTool implements Tool {
-  public onClick(params: EventHandlerParams): void {
+  public onClick(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, onDrawToCanvas } = params;
     if (!canvas) {
       return;
@@ -27,7 +27,7 @@ export class FloodFillTool implements Tool {
     onDrawToCanvas();
   }
 
-  public onContextMenu(params: EventHandlerParams): void {
+  public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, paletteState, onDrawToCanvas: onDraw } = params;
     event.preventDefault();
     if (!canvas) {
@@ -45,6 +45,8 @@ export class FloodFillTool implements Tool {
     onDraw();
   }
 }
+
+// Helpers
 
 function getColorAtPixel(imageData: ImageData, x: number, y: number): ColorRGBA {
   const { width, data } = imageData;
