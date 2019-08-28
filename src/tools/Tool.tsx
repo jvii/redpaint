@@ -2,22 +2,25 @@ import { PaletteState } from '../components/palette/PaletteState';
 import { ToolState, Action } from './ToolState';
 
 export interface EventHandlerParams {
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
   canvas: HTMLCanvasElement | null;
-  overlayCanvas: HTMLCanvasElement | null;
   onDrawToCanvas: () => void;
-  onDrawToOverlayCanvas: () => void;
   paletteState: PaletteState;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
 }
 
+export interface EventHandlerParamsWithEvent extends EventHandlerParams {
+  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
+}
+
 export interface Tool {
-  onClick?(params: EventHandlerParams): void;
-  onContextMenu?(params: EventHandlerParams): void;
-  onMouseMove?(params: EventHandlerParams): void;
-  onMouseUp?(params: EventHandlerParams): void;
-  onMouseDown?(params: EventHandlerParams): void;
-  onMouseLeave?(params: EventHandlerParams): void;
-  onMouseEnter?(params: EventHandlerParams): void;
+  onClick?(params: EventHandlerParamsWithEvent): void;
+  onContextMenu?(params: EventHandlerParamsWithEvent): void;
+  onMouseMove?(params: EventHandlerParamsWithEvent): void;
+  onMouseUp?(params: EventHandlerParamsWithEvent): void;
+  onMouseDown?(params: EventHandlerParamsWithEvent): void;
+  onMouseLeave?(params: EventHandlerParamsWithEvent): void;
+  onMouseEnter?(params: EventHandlerParamsWithEvent): void;
+  onMouseMoveOverlay?(params: EventHandlerParamsWithEvent): void;
+  onMouseLeaveOverlay?(params: EventHandlerParamsWithEvent): void;
 }

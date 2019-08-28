@@ -1,34 +1,15 @@
-import { Tool, EventHandlerParams } from './Tool';
+import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { PaletteState } from '../components/palette/PaletteState';
 import { Color } from '../types';
 import { drawLineNoAliasing, getMousePos, clearOverlayCanvas, drawDot } from './util';
 
 export class LineTool implements Tool {
-  public onMouseMove(params: EventHandlerParams): void {
-    const { event, canvas, overlayCanvas, toolState, paletteState } = params;
-    if (!canvas || !overlayCanvas) {
-      return;
-    }
-    const position = getMousePos(canvas, event);
-
-    clearOverlayCanvas(overlayCanvas);
-    if (toolState.lineToolState.startingPosition) {
-      drawLineNoAliasing(
-        overlayCanvas,
-        paletteState.foregroundColor,
-        toolState.lineToolState.startingPosition,
-        position
-      );
-    } else {
-      drawDot(overlayCanvas, paletteState.foregroundColor, position);
-    }
-  }
-  public onContextMenu(params: EventHandlerParams): void {
+  public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event } = params;
     event.preventDefault();
   }
 
-  public onMouseUp(params: EventHandlerParams): void {
+  public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, paletteState, onDrawToCanvas, toolState, toolStateDispatch } = params;
     console.log('onMouseUp LineTool ' + event.button);
     if (!canvas) {
@@ -47,7 +28,7 @@ export class LineTool implements Tool {
     }
   }
 
-  public onMouseDown(params: EventHandlerParams): void {
+  public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolStateDispatch } = params;
     console.log('onMouseDown LineTool');
     if (!canvas) {
@@ -56,7 +37,31 @@ export class LineTool implements Tool {
     const position = getMousePos(canvas, event);
     toolStateDispatch({ type: 'lineToolStart', point: position });
   }
+
+  // Overlay
+
+  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
+    const { event, canvas, toolState, paletteState } = params;
+    if (!canvas) {
+      return;
+    }
+    const position = getMousePos(canvas, event);
+
+    clearOverlayCanvas(canvas);
+    if (toolState.lineToolState.startingPosition) {
+      drawLineNoAliasing(
+        canvas,
+        paletteState.foregroundColor,
+        toolState.lineToolState.startingPosition,
+        position
+      );
+    } else {
+      drawDot(canvas, paletteState.foregroundColor, position);
+    }
+  }
 }
+
+// Helpers
 
 function chooseColor(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,

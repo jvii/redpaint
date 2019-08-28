@@ -1,5 +1,5 @@
 import { Point, Color } from '../types';
-import { Tool } from './Tool';
+import { Tool, EventHandlerParams } from './Tool';
 import { PaletteState } from '../components/palette/PaletteState';
 
 export function colorToRGBString(color: Color): string {
@@ -103,18 +103,17 @@ export function clearOverlayCanvas(canvas: HTMLCanvasElement | null): void {
   if (ctx === null) {
     return;
   }
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 export function getEventHandler(
   tool: Tool,
   eventHandlerName: string,
-  eventHandlerParamsWithoutEvent: any
+  eventHandlerParams: EventHandlerParams
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
   if (hasKey(tool, eventHandlerName)) {
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-      tool[eventHandlerName]!({ event: event, ...eventHandlerParamsWithoutEvent });
+      tool[eventHandlerName]!({ event: event, ...eventHandlerParams });
   }
   return (): void => {};
 }
