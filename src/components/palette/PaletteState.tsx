@@ -9,13 +9,13 @@ export class PaletteState {
   public palette: Color[];
 
   public constructor() {
-    this.palette = createPalette(200);
+    this.palette = createPalette(100);
 
     this.foregroundColor = this.palette[0];
     this.foregroundColorKey = 0;
 
-    this.backgroundColor = this.palette[100];
-    this.backgroundColorKey = 100;
+    this.backgroundColor = this.palette[20];
+    this.backgroundColorKey = 20;
   }
 }
 

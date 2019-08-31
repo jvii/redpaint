@@ -40,8 +40,9 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
+    const { toolStateDispatch, undoPoint } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
+    undoPoint();
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {

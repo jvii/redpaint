@@ -3,6 +3,7 @@ import { Canvas } from './Canvas';
 import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
+import { UndoState, UndoStateAction } from './UndoState';
 import { useScrollToFocusPoint } from './hooks';
 import './Canvas.css';
 
@@ -11,6 +12,8 @@ interface Props {
   canvasState: CanvasState;
   toolbarState: ToolbarState;
   paletteState: PaletteState;
+  undoState: UndoState;
+  undoDispatch: React.Dispatch<UndoStateAction>;
 }
 
 export function MainCanvas({
@@ -18,6 +21,8 @@ export function MainCanvas({
   canvasState,
   toolbarState,
   paletteState,
+  undoState,
+  undoDispatch,
 }: Props): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(null);
 
@@ -37,6 +42,8 @@ export function MainCanvas({
         canvasState={canvasState}
         toolbarState={toolbarState}
         paletteState={paletteState}
+        undoState={undoState}
+        undoDispatch={undoDispatch}
         isZoomCanvas={false}
       />
     </div>

@@ -7,16 +7,19 @@ import ColorIndicator from './palette/ColorIndicator';
 import { PaletteState, paletteStateReducer } from './palette/PaletteState';
 import { CanvasState, canvasStateReducer } from './canvas/CanvasState';
 import { ToolbarState, toolbarStateReducer } from './toolbar/ToolbarState';
+import { UndoState, undoStateReducer } from './canvas/UndoState';
 import './App.css';
 
 const initialToolbarState = new ToolbarState();
 const initialPaletteState = new PaletteState();
 const initialCanvasState = new CanvasState();
+const initialUndoState = new UndoState();
 
 function App(): JSX.Element {
   const [toolbarState, toolbarDispatch] = useReducer(toolbarStateReducer, initialToolbarState);
   const [paletteState, paletteDispatch] = useReducer(paletteStateReducer, initialPaletteState);
   const [canvasState, canvasDispatch] = useReducer(canvasStateReducer, initialCanvasState);
+  const [undoState, undoDispatch] = useReducer(undoStateReducer, initialUndoState);
 
   return (
     <div className="App">
@@ -26,12 +29,16 @@ function App(): JSX.Element {
           canvasState={canvasState}
           toolbarState={toolbarState}
           paletteState={paletteState}
+          undoState={undoState}
+          undoDispatch={undoDispatch}
         />
         <ZoomCanvas
           canvasDispatch={canvasDispatch}
           canvasState={canvasState}
           toolbarState={toolbarState}
           paletteState={paletteState}
+          undoState={undoState}
+          undoDispatch={undoDispatch}
         />
       </div>
       <Toolbar
@@ -39,6 +46,7 @@ function App(): JSX.Element {
         toolbarState={toolbarState}
         canvasState={canvasState}
         paletteState={paletteState}
+        undoDispatch={undoDispatch}
       />
       <ColorIndicator paletteState={paletteState} />
       <Palette paletteDispatch={paletteDispatch} paletteState={paletteState} />

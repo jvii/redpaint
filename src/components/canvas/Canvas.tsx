@@ -2,8 +2,9 @@ import React, { useEffect, useReducer, useRef } from 'react';
 import { CanvasState, CanvasStateAction } from './CanvasState';
 import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
+import { UndoState, UndoStateAction } from './UndoState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
-import { useCanvasSync, useZoomToolInitialSelection } from './hooks';
+import { useCanvasSync, useZoomToolInitialSelection, useUndo } from './hooks';
 import { getEventHandler } from '../../tools/util';
 import './Canvas.css';
 
@@ -12,6 +13,8 @@ interface Props {
   canvasState: CanvasState;
   toolbarState: ToolbarState;
   paletteState: PaletteState;
+  undoState: UndoState;
+  undoDispatch: React.Dispatch<UndoStateAction>;
   isZoomCanvas: boolean;
   zoomFactor?: number;
 }
@@ -21,6 +24,8 @@ export function Canvas({
   canvasState,
   toolbarState,
   paletteState,
+  undoState,
+  undoDispatch,
   isZoomCanvas,
   zoomFactor = 1,
 }: Props): JSX.Element {
@@ -57,6 +62,15 @@ export function Canvas({
     toolbarState
   );
 
+  const [setUndoPoint] = useUndo(undoState, undoDispatch, canvasRef.current);
+  useEffect((): void => {
+    if (isZoomCanvas) {
+      return;
+    }
+    setUndoPoint(); // initial undo point
+    console.log('initial undo point, isZoomCanvas=' + isZoomCanvas)
+  }, [canvasRef.current]);
+
   useZoomToolInitialSelection(
     isZoomCanvas,
     toolbarState,
@@ -73,6 +87,7 @@ export function Canvas({
   const eventHandlerParams = {
     canvas: canvasRef.current,
     onDrawToCanvas: (): void => setCanvasSyncPoint(Date.now()),
+    undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
@@ -81,6 +96,7 @@ export function Canvas({
   const eventHandlerParamsOverlay = {
     canvas: overlayCanvasRef.current,
     onDrawToCanvas: (): void => setOverlayCanvasSyncPoint(Date.now()),
+    undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
@@ -96,9 +112,15 @@ export function Canvas({
         width={canvasState.canvasResolution.width}
         height={canvasState.canvasResolution.height}
         style={CSSZoom}
-        onClick={getEventHandler(tool, 'onClick', eventHandlerParams)}
+        onClick={(event): void => {
+          getEventHandler(tool, 'onClick', eventHandlerParams)(event);
+          getEventHandler(tool, 'onClickOverlay', eventHandlerParamsOverlay)(event);
+        }}
         onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
-        onMouseDown={getEventHandler(tool, 'onMouseDown', eventHandlerParams)}
+        onMouseDown={(event): void => {
+          getEventHandler(tool, 'onMouseDown', eventHandlerParams)(event);
+          getEventHandler(tool, 'onMouseDownOverlay', eventHandlerParamsOverlay)(event);
+        }}
         onMouseUp={getEventHandler(tool, 'onMouseUp', eventHandlerParams)}
         onMouseEnter={getEventHandler(tool, 'onMouseEnter', eventHandlerParams)}
         onMouseLeave={(event): void => {
