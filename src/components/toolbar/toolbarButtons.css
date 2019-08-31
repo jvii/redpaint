@@ -42,6 +42,14 @@
   background: url(../../resources/zoomButtonActive.png) no-repeat;
 }
 
+.Undo {
+  background: url(../../resources/undoButton.png) no-repeat;
+}
+
+.Undo:active {
+  background: url(../../resources/undoButtonActive.png) no-repeat;
+}
+
 .CLR {
   background: url(../../resources/clrButton.png) no-repeat;
 }

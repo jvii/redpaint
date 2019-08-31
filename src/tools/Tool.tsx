@@ -4,6 +4,7 @@ import { ToolState, Action } from './ToolState';
 export interface EventHandlerParams {
   canvas: HTMLCanvasElement | null;
   onDrawToCanvas: () => void;
+  undoPoint: () => void;
   paletteState: PaletteState;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;

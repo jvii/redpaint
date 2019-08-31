@@ -4,6 +4,7 @@ import './toolbarButtons.css';
 interface Props {
   isSelected: boolean;
   onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
+  onRightClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
 }
 
 export function ButtonFreehand({ isSelected, onClick }: Props): JSX.Element {
@@ -38,6 +39,22 @@ export function ButtonZoom({ isSelected, onClick }: Props): JSX.Element {
     <button
       className={'ToolbarButton ' + (isSelected ? 'ZoomSelected' : 'Zoom')}
       onClick={onClick}
+    ></button>
+  );
+}
+
+export function ButtonUndo({ onClick, onRightClick }: Props): JSX.Element {
+  const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+    if (onRightClick !== undefined) {
+      onRightClick(event);
+    }
+    event.preventDefault();
+  };
+  return (
+    <button
+      className="ToolbarButton Undo"
+      onClick={onClick}
+      onContextMenu={handleRightClick}
     ></button>
   );
 }

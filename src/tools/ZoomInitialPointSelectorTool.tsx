@@ -38,4 +38,10 @@ export class ZoomInitialPointSelectorTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
+
+  public onClickOverlay(params: EventHandlerParamsWithEvent): void {
+    const { canvas, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
+    onDrawToCanvas();
+  }
 }

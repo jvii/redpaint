@@ -2,8 +2,10 @@ import { CanvasStateAction } from './CanvasState';
 import { useEffect, useState, useMemo } from 'react';
 import ToolbarState from '../toolbar/ToolbarState';
 import { ToolState, Action } from '../../tools/ToolState';
+import { UndoState, UndoStateAction } from './UndoState';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import { Point } from '../../types';
+import { clearCanvas } from '../../tools/util';
 
 export function useDispatchCanvasRefToCanvasState(
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -26,7 +28,7 @@ export function useCanvasSync(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   syncTargetCanvas: HTMLCanvasElement | null,
   toolbarState: ToolbarState
-): React.Dispatch<React.SetStateAction<number>>[] {
+): [React.Dispatch<React.SetStateAction<number>>] {
   const [syncPoint, setSyncPoint] = useState(0);
   const syncTargetCanvasContext = useMemo((): CanvasRenderingContext2D | null => {
     if (syncTargetCanvas === null) {
@@ -107,4 +109,49 @@ export function useScrollToFocusPoint(
     };
     canvasDivRef.current.scrollTo(scrollOptions);
   }, [focusPoint]);
+}
+
+export function useUndo(
+  undoState: UndoState,
+  undoDispatch: React.Dispatch<UndoStateAction>,
+  canvas: HTMLCanvasElement | null
+): [() => void] {
+  const ctx = useMemo((): CanvasRenderingContext2D | null => {
+    if (canvas === null) {
+      return null;
+    }
+    return canvas.getContext('2d');
+  }, [canvas]);
+  useEffect((): void => {
+    if (undoState.currentIndex === null) {
+      return;
+    }
+    if (!ctx) {
+      return;
+    }
+    console.log(
+      'undo or redo, redraw canvas from undo buffer: ' +
+        undoState.undoBuffer[undoState.currentIndex]
+    );
+    clearCanvas(canvas, { r: 255, g: 255, b: 255 });
+    var img = new Image();
+    img.onload = function(): void {
+      ctx.drawImage(img, 0, 0);
+    };
+    img.src = URL.createObjectURL(undoState.undoBuffer[undoState.currentIndex]);
+  }, [undoState.lastUndoRedoTime]);
+
+  const setUndoPoint = (): void => {
+    console.log('set undo point');
+    if (!canvas) {
+      return;
+    }
+    canvas.toBlob((blob): void => {
+      if (blob === null) {
+        return;
+      }
+      undoDispatch({ type: 'setUndoPoint', canvasAsBlob: blob });
+    });
+  };
+  return [setUndoPoint];
 }
