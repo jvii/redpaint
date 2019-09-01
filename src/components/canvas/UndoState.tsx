@@ -17,14 +17,15 @@ export type UndoStateAction =
 
 export function undoStateReducer(state: UndoState, action: UndoStateAction): UndoState {
   switch (action.type) {
+    // no branching history, i.e. always clears the buffer above currentIndex (redos)
     case 'setUndoPoint':
       return {
         ...state,
+        currentIndex: state.currentIndex === null ? 0 : ++state.currentIndex,
         undoBuffer:
           state.currentIndex === null
             ? [action.canvasAsBlob]
             : state.undoBuffer.slice(0, state.currentIndex + 1).concat(action.canvasAsBlob),
-        currentIndex: state.currentIndex === null ? 0 : ++state.currentIndex,
       };
     case 'undo':
       return {
@@ -35,17 +36,22 @@ export function undoStateReducer(state: UndoState, action: UndoStateAction): Und
     case 'redo':
       return {
         ...state,
-        currentIndex:
-          state.currentIndex === state.undoBuffer.length - 1
-            ? state.currentIndex
-            : state.currentIndex === null
-            ? 0
-            : ++state.currentIndex,
+        currentIndex: getNewIndexOnRedo(state.currentIndex, state.undoBuffer.length),
         lastUndoRedoTime: Date.now(),
       };
     default:
       return state;
   }
+}
+
+function getNewIndexOnRedo(oldIndex: number | null, bufferLength: number): number {
+  if (oldIndex === null) {
+    return 0;
+  }
+  if (oldIndex === bufferLength - 1) {
+    return oldIndex;
+  }
+  return ++oldIndex;
 }
 
 export default UndoState;
