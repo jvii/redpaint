@@ -7,40 +7,18 @@ import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelect
 import { Point } from '../../types';
 import { clearCanvas } from '../../tools/util';
 
-export function useDispatchCanvasRefToCanvasState(
-  canvasRef: React.RefObject<HTMLCanvasElement>,
-  canvasDispatch: React.Dispatch<CanvasStateAction>,
-  canvasDispatchType:
-    | 'setMainCanvasRef'
-    | 'setZoomCanvasRef'
-    | 'setMainOverlayCanvasRef'
-    | 'setZoomOverlayCanvasRef'
-): void {
-  useEffect((): void => {
-    canvasDispatch({
-      type: canvasDispatchType,
-      canvas: canvasRef.current,
-    });
-  }, [canvasRef, canvasDispatch]);
-}
-
 export function useCanvasSync(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   syncTargetCanvas: HTMLCanvasElement | null,
   toolbarState: ToolbarState
 ): [React.Dispatch<React.SetStateAction<number>>] {
   const [syncPoint, setSyncPoint] = useState(0);
-  const syncTargetCanvasContext = useMemo((): CanvasRenderingContext2D | null => {
-    if (syncTargetCanvas === null) {
-      return null;
-    }
-    return syncTargetCanvas.getContext('2d');
-  }, [syncTargetCanvas]);
+  const targetCtx = useCanvasContext(syncTargetCanvas);
   useEffect((): void => {
     if (!toolbarState.zoomModeOn) {
       return;
     }
-    syncToCanvas(syncTargetCanvasContext, canvasRef.current);
+    syncToCanvas(targetCtx, canvasRef.current);
   }, [syncPoint, toolbarState.zoomModeOn]); // sync if syncPoint set or zoomMode activated
   return [setSyncPoint];
 }
@@ -58,6 +36,16 @@ function syncToCanvas(
     );
     targetCanvasContext.drawImage(sourceCanvas, 0, 0);
   }
+}
+
+function useCanvasContext(canvas: HTMLCanvasElement | null): CanvasRenderingContext2D | null {
+  const context = useMemo((): CanvasRenderingContext2D | null => {
+    if (canvas === null) {
+      return null;
+    }
+    return canvas.getContext('2d');
+  }, [canvas]);
+  return context;
 }
 
 export function useZoomToolInitialSelection(
@@ -116,12 +104,9 @@ export function useUndo(
   undoDispatch: React.Dispatch<UndoStateAction>,
   canvas: HTMLCanvasElement | null
 ): [() => void] {
-  const ctx = useMemo((): CanvasRenderingContext2D | null => {
-    if (canvas === null) {
-      return null;
-    }
-    return canvas.getContext('2d');
-  }, [canvas]);
+  const ctx = useCanvasContext(canvas);
+
+  // draw undo buffer state to canvas if user has clicked undo/redo
   useEffect((): void => {
     if (undoState.currentIndex === null) {
       return;
@@ -129,10 +114,6 @@ export function useUndo(
     if (!ctx) {
       return;
     }
-    console.log(
-      'undo or redo, redraw canvas from undo buffer: ' +
-        undoState.undoBuffer[undoState.currentIndex]
-    );
     clearCanvas(canvas, { r: 255, g: 255, b: 255 });
     var img = new Image();
     img.onload = function(): void {
@@ -141,8 +122,8 @@ export function useUndo(
     img.src = URL.createObjectURL(undoState.undoBuffer[undoState.currentIndex]);
   }, [undoState.lastUndoRedoTime]);
 
+  // return a callback for setting an undo point
   const setUndoPoint = (): void => {
-    console.log('set undo point');
     if (!canvas) {
       return;
     }

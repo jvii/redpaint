@@ -68,7 +68,6 @@ export function Canvas({
       return;
     }
     setUndoPoint(); // initial undo point
-    console.log('initial undo point, isZoomCanvas=' + isZoomCanvas)
   }, [canvasRef.current]);
 
   useZoomToolInitialSelection(

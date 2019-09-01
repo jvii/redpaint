@@ -10,8 +10,15 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, paletteState, onDrawToCanvas, toolState, toolStateDispatch } = params;
-    console.log('onMouseUp LineTool ' + event.button);
+    const {
+      event,
+      canvas,
+      paletteState,
+      onDrawToCanvas,
+      toolState,
+      toolStateDispatch,
+      undoPoint,
+    } = params;
     if (!canvas) {
       return;
     }
@@ -23,6 +30,7 @@ export class LineTool implements Tool {
         toolState.lineToolState.startingPosition,
         position
       );
+      undoPoint();
       onDrawToCanvas();
       toolStateDispatch({ type: 'lineToolStart', point: null });
     }
@@ -30,7 +38,6 @@ export class LineTool implements Tool {
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolStateDispatch } = params;
-    console.log('onMouseDown LineTool');
     if (!canvas) {
       return;
     }
@@ -41,7 +48,7 @@ export class LineTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, paletteState } = params;
+    const { event, canvas, toolState, paletteState, onDrawToCanvas } = params;
     if (!canvas) {
       return;
     }
@@ -51,13 +58,20 @@ export class LineTool implements Tool {
     if (toolState.lineToolState.startingPosition) {
       drawLineNoAliasing(
         canvas,
-        paletteState.foregroundColor,
+        paletteState.foregroundColor, // TODO: fix chooseColor
         toolState.lineToolState.startingPosition,
         position
       );
     } else {
       drawDot(canvas, paletteState.foregroundColor, position);
     }
+    onDrawToCanvas();
+  }
+
+  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
+    const { canvas, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
+    onDrawToCanvas();
   }
 }
 
