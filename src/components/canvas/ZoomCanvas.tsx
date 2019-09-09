@@ -25,15 +25,12 @@ export const ZoomCanvas = ({
   undoState,
   undoDispatch,
 }: Props): JSX.Element => {
-  const canvasDivRef = useRef<HTMLDivElement>(null);
+  const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(20);
 
-  useScrollToFocusPoint(canvasDivRef, canvasState.zoomFocusPoint, zoomFactor);
+  useScrollToFocusPoint(canvasDivRef.current, canvasState.zoomFocusPoint, zoomFactor);
 
   const updateZoomFocusPoint = (): void => {
-    if (canvasDivRef === null || canvasDivRef.current === null) {
-      return;
-    }
     canvasDispatch({
       type: 'setZoomFocusPoint',
       point: getDivFocusPoint(canvasDivRef.current, zoomFactor),
@@ -41,9 +38,6 @@ export const ZoomCanvas = ({
   };
 
   const updateScrollFocusPoint = (): void => {
-    if (canvasDivRef === null || canvasDivRef.current === null) {
-      return;
-    }
     canvasDispatch({
       type: 'setScrollFocusPoint',
       point: getDivFocusPoint(canvasDivRef.current, zoomFactor),

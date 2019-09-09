@@ -1,5 +1,5 @@
 import { CanvasStateAction } from './CanvasState';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import ToolbarState from '../toolbar/ToolbarState';
 import { ToolState, Action } from '../../tools/ToolState';
 import { UndoState, UndoStateAction } from './UndoState';
@@ -8,44 +8,27 @@ import { Point } from '../../types';
 import { clearCanvas } from '../../tools/util';
 
 export function useCanvasSync(
-  canvasRef: React.RefObject<HTMLCanvasElement>,
-  syncTargetCanvas: HTMLCanvasElement | null,
+  syncSourceCanvas: HTMLCanvasElement,
+  syncTargetCanvas: HTMLCanvasElement,
   toolbarState: ToolbarState
 ): [React.Dispatch<React.SetStateAction<number>>] {
   const [syncPoint, setSyncPoint] = useState(0);
-  const targetCtx = useCanvasContext(syncTargetCanvas);
   useEffect((): void => {
     if (!toolbarState.zoomModeOn) {
       return;
     }
-    syncToCanvas(targetCtx, canvasRef.current);
-  }, [syncPoint, toolbarState.zoomModeOn]); // sync if syncPoint set or zoomMode activated
+    copyToCanvas(syncSourceCanvas, syncTargetCanvas);
+  }, [syncPoint, toolbarState.zoomModeOn]); // sync if sync point set or zoomMode activated
+  // return a callback for setting a sync point
   return [setSyncPoint];
 }
 
-function syncToCanvas(
-  targetCanvasContext: CanvasRenderingContext2D | null,
-  sourceCanvas: HTMLCanvasElement | null
-): void {
-  if (targetCanvasContext && sourceCanvas) {
-    targetCanvasContext.clearRect(
-      0,
-      0,
-      targetCanvasContext.canvas.width,
-      targetCanvasContext.canvas.height
-    );
-    targetCanvasContext.drawImage(sourceCanvas, 0, 0);
+function copyToCanvas(sourceCanvas: HTMLCanvasElement, targetCanvas: HTMLCanvasElement): void {
+  const targetContext = targetCanvas.getContext('2d');
+  if (targetContext) {
+    targetContext.clearRect(0, 0, targetContext.canvas.width, targetContext.canvas.height);
+    targetContext.drawImage(sourceCanvas, 0, 0);
   }
-}
-
-function useCanvasContext(canvas: HTMLCanvasElement | null): CanvasRenderingContext2D | null {
-  const context = useMemo((): CanvasRenderingContext2D | null => {
-    if (canvas === null) {
-      return null;
-    }
-    return canvas.getContext('2d');
-  }, [canvas]);
-  return context;
 }
 
 export function useZoomToolInitialSelection(
@@ -80,53 +63,46 @@ export function useZoomToolInitialSelection(
 }
 
 export function useScrollToFocusPoint(
-  canvasDivRef: React.RefObject<HTMLDivElement>,
+  canvasDiv: HTMLDivElement,
   focusPoint: Point | null,
   zoomFactor: number = 1
 ): void {
   useEffect((): void => {
-    if (canvasDivRef === null || canvasDivRef.current === null) {
-      return;
-    }
     if (focusPoint === null) {
       return;
     }
     const scrollOptions = {
-      left: focusPoint.x * zoomFactor - canvasDivRef.current.clientWidth / 2,
-      top: focusPoint.y * zoomFactor - canvasDivRef.current.clientHeight / 2,
+      left: focusPoint.x * zoomFactor - canvasDiv.clientWidth / 2,
+      top: focusPoint.y * zoomFactor - canvasDiv.clientHeight / 2,
     };
-    canvasDivRef.current.scrollTo(scrollOptions);
+    canvasDiv.scrollTo(scrollOptions);
   }, [focusPoint]);
 }
 
 export function useUndo(
   undoState: UndoState,
   undoDispatch: React.Dispatch<UndoStateAction>,
-  canvas: HTMLCanvasElement | null
+  canvas: HTMLCanvasElement
 ): [() => void] {
-  const ctx = useCanvasContext(canvas);
-
   // draw undo buffer state to canvas if user has clicked undo/redo
   useEffect((): void => {
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return;
+    }
     if (undoState.currentIndex === null) {
       return;
     }
-    if (!ctx) {
-      return;
-    }
     clearCanvas(canvas, { r: 255, g: 255, b: 255 });
-    var img = new Image();
-    img.onload = function(): void {
-      ctx.drawImage(img, 0, 0);
+    const image = new Image();
+    image.onload = function(): void {
+      context.drawImage(image, 0, 0);
     };
-    img.src = URL.createObjectURL(undoState.undoBuffer[undoState.currentIndex]);
+    image.src = URL.createObjectURL(undoState.undoBuffer[undoState.currentIndex]);
   }, [undoState.lastUndoRedoTime]);
 
   // return a callback for setting an undo point
   const setUndoPoint = (): void => {
-    if (!canvas) {
-      return;
-    }
     canvas.toBlob((blob): void => {
       if (blob === null) {
         return;

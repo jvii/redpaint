@@ -1,19 +1,20 @@
 import { Point } from '../../types';
 
 export class CanvasState {
-  public mainCanvasRef: HTMLCanvasElement | null;
-  public zoomCanvasRef: HTMLCanvasElement | null;
-  public mainOverlayCanvasRef: HTMLCanvasElement | null;
-  public zoomOverlayCanvasRef: HTMLCanvasElement | null;
+  public mainCanvasRef: HTMLCanvasElement;
+  public zoomCanvasRef: HTMLCanvasElement;
+  public mainOverlayCanvasRef: HTMLCanvasElement;
+  public zoomOverlayCanvasRef: HTMLCanvasElement;
   public canvasResolution: { width: number; height: number };
   public scrollFocusPoint: Point | null;
   public zoomFocusPoint: Point | null;
 
   public constructor() {
-    this.mainCanvasRef = null;
-    this.zoomCanvasRef = null;
-    this.mainOverlayCanvasRef = null;
-    this.zoomOverlayCanvasRef = null;
+    // create placeholder HTMLCanvasElements to avoid null values
+    this.mainCanvasRef = document.createElement('canvas');
+    this.zoomCanvasRef = document.createElement('canvas');
+    this.mainOverlayCanvasRef = document.createElement('canvas');
+    this.zoomOverlayCanvasRef = document.createElement('canvas');
     this.canvasResolution = { width: 0, height: 0 };
     this.scrollFocusPoint = null;
     this.zoomFocusPoint = null;
@@ -27,7 +28,7 @@ export type CanvasStateAction =
         | 'setZoomCanvasRef'
         | 'setMainOverlayCanvasRef'
         | 'setZoomOverlayCanvasRef';
-      canvas: HTMLCanvasElement | null;
+      canvas: HTMLCanvasElement;
     }
   | { type: 'setCanvasResolution'; canvasResolution: { width: number; height: number } }
   | { type: 'setScrollFocusPoint'; point: Point | null }
