@@ -2,7 +2,7 @@ import { PaletteState } from '../components/palette/PaletteState';
 import { ToolState, Action } from './ToolState';
 
 export interface EventHandlerParams {
-  canvas: HTMLCanvasElement | null;
+  canvas: HTMLCanvasElement;
   onDrawToCanvas: () => void;
   undoPoint: () => void;
   paletteState: PaletteState;

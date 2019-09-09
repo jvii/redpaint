@@ -4,9 +4,6 @@ import { getMousePos, clearOverlayCanvas } from './util';
 export class ZoomInitialPointSelectorTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolStateDispatch } = params;
-    if (!canvas) {
-      return;
-    }
     const position = getMousePos(canvas, event);
     toolStateDispatch({ type: 'zoomInitialPoint', point: position });
   }
@@ -20,13 +17,10 @@ export class ZoomInitialPointSelectorTool implements Tool {
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
     const { event, canvas } = params;
-    if (!canvas) {
-      return;
-    }
     const position = getMousePos(canvas, event);
 
     const ctx = canvas.getContext('2d');
-    if (ctx === null) {
+    if (!ctx) {
       return;
     }
     clearOverlayCanvas(canvas);

@@ -24,7 +24,7 @@ export function MainCanvas({
   undoState,
   undoDispatch,
 }: Props): JSX.Element {
-  const canvasDivRef = useRef<HTMLDivElement>(null);
+  const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
 
   useEffect((): void => {
     canvasDispatch({
@@ -33,7 +33,7 @@ export function MainCanvas({
     });
   }, [canvasDispatch]);
 
-  useScrollToFocusPoint(canvasDivRef, canvasState.scrollFocusPoint);
+  useScrollToFocusPoint(canvasDivRef.current, canvasState.scrollFocusPoint);
 
   return (
     <div className="MainCanvasDiv" ref={canvasDivRef}>

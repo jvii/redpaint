@@ -19,9 +19,7 @@ export class LineTool implements Tool {
       toolStateDispatch,
       undoPoint,
     } = params;
-    if (!canvas) {
-      return;
-    }
+
     if (toolState.lineToolState.startingPosition) {
       const position = getMousePos(canvas, event);
       drawLineNoAliasing(
@@ -38,20 +36,19 @@ export class LineTool implements Tool {
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolStateDispatch } = params;
-    if (!canvas) {
-      return;
-    }
     const position = getMousePos(canvas, event);
     toolStateDispatch({ type: 'lineToolStart', point: position });
+  }
+
+  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
+    const { toolStateDispatch } = params;
+    toolStateDispatch({ type: 'lineToolStart', point: null });
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolState, paletteState, onDrawToCanvas } = params;
-    if (!canvas) {
-      return;
-    }
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);

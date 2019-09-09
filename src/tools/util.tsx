@@ -13,7 +13,7 @@ export function drawLineNoAliasing(
   end: Point
 ): void {
   const ctx = canvas.getContext('2d');
-  if (ctx === null) {
+  if (!ctx) {
     return;
   }
   ctx.fillStyle = colorToRGBString(color);
@@ -34,10 +34,9 @@ function distance(start: Point, end: Point): number {
 
 export function drawLine(canvas: HTMLCanvasElement, color: Color, start: Point, end: Point): void {
   const ctx = canvas.getContext('2d');
-  if (ctx === null) {
+  if (!ctx) {
     return;
   }
-
   ctx.strokeStyle = colorToRGBString(color);
   ctx.beginPath();
   ctx.moveTo(start.x, start.y);
@@ -47,7 +46,7 @@ export function drawLine(canvas: HTMLCanvasElement, color: Color, start: Point, 
 
 export function drawDot(canvas: HTMLCanvasElement, color: Color, point: Point): void {
   const ctx = canvas.getContext('2d');
-  if (ctx === null) {
+  if (!ctx) {
     return;
   }
   ctx.fillStyle = colorToRGBString(color);
@@ -81,26 +80,19 @@ export function chooseColor(
   return paletteState.foregroundColor;
 }
 
-export function clearCanvas(canvas: HTMLCanvasElement | null, color: Color): void {
-  if (canvas === null) {
-    return;
-  }
+export function clearCanvas(canvas: HTMLCanvasElement, color: Color): void {
   const ctx = canvas.getContext('2d');
-  if (ctx === null) {
+  if (!ctx) {
     return;
   }
-
   ctx.rect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = colorToRGBString(color);
   ctx.fill();
 }
 
-export function clearOverlayCanvas(canvas: HTMLCanvasElement | null): void {
-  if (canvas === null) {
-    return;
-  }
+export function clearOverlayCanvas(canvas: HTMLCanvasElement): void {
   const ctx = canvas.getContext('2d');
-  if (ctx === null) {
+  if (!ctx) {
     return;
   }
   ctx.clearRect(0, 0, canvas.width, canvas.height);

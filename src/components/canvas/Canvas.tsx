@@ -34,8 +34,8 @@ export function Canvas({
     toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
   }, [toolbarState]);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   //const localOverlayCanvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect((): void => {
@@ -51,18 +51,22 @@ export function Canvas({
     });
   }, [overlayCanvasRef, canvasDispatch]);
 
-  const syncTargetCanvas = isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef;
-  const syncTargetOverlayCanvas = isZoomCanvas
-    ? canvasState.mainOverlayCanvasRef
-    : canvasState.zoomOverlayCanvasRef;
-  const [setCanvasSyncPoint] = useCanvasSync(canvasRef, syncTargetCanvas, toolbarState);
+  const [setCanvasSyncPoint] = useCanvasSync(
+    canvasRef.current,
+    isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef,
+    toolbarState
+  );
   const [setOverlayCanvasSyncPoint] = useCanvasSync(
-    overlayCanvasRef,
-    syncTargetOverlayCanvas,
+    overlayCanvasRef.current,
+    isZoomCanvas ? canvasState.mainOverlayCanvasRef : canvasState.zoomOverlayCanvasRef,
     toolbarState
   );
 
-  const [setUndoPoint] = useUndo(undoState, undoDispatch, canvasRef.current);
+  const [setUndoPoint] = useUndo(
+    undoState,
+    undoDispatch,
+    isZoomCanvas ? canvasState.zoomCanvasRef : canvasState.mainCanvasRef
+  );
   useEffect((): void => {
     if (isZoomCanvas) {
       return;
@@ -84,7 +88,7 @@ export function Canvas({
   };
 
   const eventHandlerParams = {
-    canvas: canvasRef.current,
+    canvas: isZoomCanvas ? canvasState.zoomCanvasRef : canvasState.mainCanvasRef,
     onDrawToCanvas: (): void => setCanvasSyncPoint(Date.now()),
     undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
@@ -93,7 +97,7 @@ export function Canvas({
   };
 
   const eventHandlerParamsOverlay = {
-    canvas: overlayCanvasRef.current,
+    canvas: isZoomCanvas ? canvasState.zoomOverlayCanvasRef : canvasState.mainOverlayCanvasRef,
     onDrawToCanvas: (): void => setOverlayCanvasSyncPoint(Date.now()),
     undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
