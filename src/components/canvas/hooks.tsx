@@ -1,35 +1,11 @@
 import { CanvasStateAction } from './CanvasState';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import ToolbarState from '../toolbar/ToolbarState';
 import { ToolState, Action } from '../../tools/ToolState';
 import { UndoState, UndoStateAction } from './UndoState';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import { Point } from '../../types';
 import { clearCanvas } from '../../tools/util';
-
-export function useCanvasSync(
-  syncSourceCanvas: HTMLCanvasElement,
-  syncTargetCanvas: HTMLCanvasElement,
-  toolbarState: ToolbarState
-): [React.Dispatch<React.SetStateAction<number>>] {
-  const [syncPoint, setSyncPoint] = useState(0);
-  useEffect((): void => {
-    if (!toolbarState.zoomModeOn) {
-      return;
-    }
-    copyToCanvas(syncSourceCanvas, syncTargetCanvas);
-  }, [syncPoint, toolbarState.zoomModeOn]); // sync if sync point set or zoomMode activated
-  // return a callback for setting a sync point
-  return [setSyncPoint];
-}
-
-function copyToCanvas(sourceCanvas: HTMLCanvasElement, targetCanvas: HTMLCanvasElement): void {
-  const targetContext = targetCanvas.getContext('2d');
-  if (targetContext) {
-    targetContext.clearRect(0, 0, targetContext.canvas.width, targetContext.canvas.height);
-    targetContext.drawImage(sourceCanvas, 0, 0);
-  }
-}
 
 export function useZoomToolInitialSelection(
   isZoomCanvas: boolean,

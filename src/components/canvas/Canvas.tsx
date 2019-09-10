@@ -4,7 +4,7 @@ import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { UndoState, UndoStateAction } from './UndoState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
-import { useCanvasSync, useZoomToolInitialSelection, useUndo } from './hooks';
+import { useZoomToolInitialSelection, useUndo } from './hooks';
 import { getEventHandler } from '../../tools/util';
 import './Canvas.css';
 
@@ -29,50 +29,39 @@ export function Canvas({
   isZoomCanvas,
   zoomFactor = 1,
 }: Props): JSX.Element {
-  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, new ToolState());
-  useEffect((): void => {
-    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
-  }, [toolbarState]);
-
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
-  //const localOverlayCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, new ToolState());
+
+  const canvasId = isZoomCanvas ? 'zoomCanvas' : 'mainCanvas';
 
   useEffect((): void => {
-    canvasDispatch({
-      type: isZoomCanvas ? 'setZoomCanvasRef' : 'setMainCanvasRef',
-      canvas: canvasRef.current,
-    });
-  }, [canvasRef, canvasDispatch]);
+    if (canvasState.lastModified.modifiedBy === canvasId) {
+      return;
+    }
+    copyToCanvas(canvasState.sourceCanvas, canvasRef.current);
+  }, [canvasState.lastModified.timestamp]);
+
   useEffect((): void => {
-    canvasDispatch({
-      type: isZoomCanvas ? 'setZoomOverlayCanvasRef' : 'setMainOverlayCanvasRef',
-      canvas: overlayCanvasRef.current,
-    });
-  }, [overlayCanvasRef, canvasDispatch]);
+    if (canvasState.lastModifiedOverlay.modifiedBy === canvasId) {
+      return;
+    }
+    copyToCanvas(canvasState.sourceOverlayCanvas, overlayCanvasRef.current);
+  }, [canvasState.lastModifiedOverlay.timestamp]);
 
-  const [setCanvasSyncPoint] = useCanvasSync(
-    canvasRef.current,
-    isZoomCanvas ? canvasState.mainCanvasRef : canvasState.zoomCanvasRef,
-    toolbarState
-  );
-  const [setOverlayCanvasSyncPoint] = useCanvasSync(
-    overlayCanvasRef.current,
-    isZoomCanvas ? canvasState.mainOverlayCanvasRef : canvasState.zoomOverlayCanvasRef,
-    toolbarState
-  );
-
-  const [setUndoPoint] = useUndo(
-    undoState,
-    undoDispatch,
-    isZoomCanvas ? canvasState.zoomCanvasRef : canvasState.mainCanvasRef
-  );
+  const [setUndoPoint] = useUndo(undoState, undoDispatch, canvasRef.current);
+  // TODO: move undo to canvasState?
   useEffect((): void => {
     if (isZoomCanvas) {
       return;
     }
     setUndoPoint(); // initial undo point
   }, [canvasRef.current]);
+
+  useEffect((): void => {
+    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
+  }, [toolbarState]);
 
   useZoomToolInitialSelection(
     isZoomCanvas,
@@ -83,13 +72,18 @@ export function Canvas({
   );
 
   const CSSZoom = {
-    width: canvasState.canvasResolution.width * zoomFactor,
-    height: canvasState.canvasResolution.height * zoomFactor,
+    width: canvasState.resolution.width * zoomFactor,
+    height: canvasState.resolution.height * zoomFactor,
   };
 
   const eventHandlerParams = {
-    canvas: isZoomCanvas ? canvasState.zoomCanvasRef : canvasState.mainCanvasRef,
-    onDrawToCanvas: (): void => setCanvasSyncPoint(Date.now()),
+    canvas: canvasRef.current,
+    onDrawToCanvas: (): void =>
+      canvasDispatch({
+        type: 'setModified',
+        canvas: canvasRef.current,
+        modifiedBy: canvasId,
+      }),
     undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
     toolState: toolState,
@@ -97,8 +91,13 @@ export function Canvas({
   };
 
   const eventHandlerParamsOverlay = {
-    canvas: isZoomCanvas ? canvasState.zoomOverlayCanvasRef : canvasState.mainOverlayCanvasRef,
-    onDrawToCanvas: (): void => setOverlayCanvasSyncPoint(Date.now()),
+    canvas: overlayCanvasRef.current,
+    onDrawToCanvas: (): void =>
+      canvasDispatch({
+        type: 'setOverlayModified',
+        canvas: overlayCanvasRef.current,
+        modifiedBy: canvasId,
+      }),
     undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
     toolState: toolState,
@@ -112,8 +111,8 @@ export function Canvas({
       <canvas
         className="Canvas"
         ref={canvasRef}
-        width={canvasState.canvasResolution.width}
-        height={canvasState.canvasResolution.height}
+        width={canvasState.resolution.width}
+        height={canvasState.resolution.height}
         style={CSSZoom}
         onClick={(event): void => {
           getEventHandler(tool, 'onClick', eventHandlerParams)(event);
@@ -138,12 +137,20 @@ export function Canvas({
       <canvas
         className="OverlayCanvas Canvas"
         ref={overlayCanvasRef}
-        width={canvasState.canvasResolution.width}
-        height={canvasState.canvasResolution.height}
+        width={canvasState.resolution.width}
+        height={canvasState.resolution.height}
         style={CSSZoom}
       />
     </div>
   );
+}
+
+function copyToCanvas(sourceCanvas: HTMLCanvasElement, targetCanvas: HTMLCanvasElement): void {
+  const targetContext = targetCanvas.getContext('2d');
+  if (targetContext) {
+    targetContext.clearRect(0, 0, targetContext.canvas.width, targetContext.canvas.height);
+    targetContext.drawImage(sourceCanvas, 0, 0);
+  }
 }
 
 export default Canvas;
