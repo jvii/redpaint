@@ -66,8 +66,7 @@ function Toolbar({
       <ButtonCLR
         isSelected={false}
         onClick={(): void => {
-          clearCanvas(canvasState.mainCanvasRef, paletteState.backgroundColor);
-          clearCanvas(canvasState.zoomCanvasRef, paletteState.backgroundColor);
+          clearCanvas(canvasState.sourceCanvas, paletteState.backgroundColor);
         }}
       />
     </div>

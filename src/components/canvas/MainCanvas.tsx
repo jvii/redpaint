@@ -26,14 +26,14 @@ export function MainCanvas({
 }: Props): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
 
+  useScrollToFocusPoint(canvasDivRef.current, canvasState.scrollFocusPoint);
+
   useEffect((): void => {
     canvasDispatch({
-      type: 'setCanvasResolution',
-      canvasResolution: { width: window.innerWidth - 50, height: window.innerHeight - 3 },
+      type: 'setResolution',
+      resolution: { width: window.innerWidth - 50, height: window.innerHeight - 3 },
     });
   }, [canvasDispatch]);
-
-  useScrollToFocusPoint(canvasDivRef.current, canvasState.scrollFocusPoint);
 
   return (
     <div className="MainCanvasDiv" ref={canvasDivRef}>
