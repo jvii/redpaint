@@ -78,12 +78,13 @@ export function Canvas({
 
   const eventHandlerParams = {
     canvas: canvasRef.current,
-    onDrawToCanvas: (): void =>
+    onDrawToCanvas: (): void => {
       canvasDispatch({
         type: 'setModified',
         canvas: canvasRef.current,
         modifiedBy: canvasId,
-      }),
+      });
+    },
     undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
     toolState: toolState,
@@ -92,12 +93,13 @@ export function Canvas({
 
   const eventHandlerParamsOverlay = {
     canvas: overlayCanvasRef.current,
-    onDrawToCanvas: (): void =>
+    onDrawToCanvas: (): void => {
       canvasDispatch({
         type: 'setOverlayModified',
         canvas: overlayCanvasRef.current,
         modifiedBy: canvasId,
-      }),
+      });
+    },
     undoPoint: (): void => setUndoPoint(),
     paletteState: paletteState,
     toolState: toolState,
@@ -152,5 +154,3 @@ function copyToCanvas(sourceCanvas: HTMLCanvasElement, targetCanvas: HTMLCanvasE
     targetContext.drawImage(sourceCanvas, 0, 0);
   }
 }
-
-export default Canvas;
