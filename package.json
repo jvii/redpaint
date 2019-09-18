@@ -7,6 +7,8 @@
     "@types/node": "12.0.0",
     "@types/react-dom": "16.8.4",
     "jshint": "^2.10.2",
+    "overmind": "^19.1.1",
+    "overmind-react": "^20.1.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-scripts": "3.1.1",

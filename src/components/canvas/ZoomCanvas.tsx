@@ -1,47 +1,32 @@
 import React, { useState, useRef } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, CanvasStateAction } from './CanvasState';
-import { ToolbarState } from '../toolbar/ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
-import { UndoState, UndoStateAction } from './UndoState';
 import { useScrollToFocusPoint } from './hooks';
+import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
 import './Canvas.css';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
   canvasState: CanvasState;
-  toolbarState: ToolbarState;
   paletteState: PaletteState;
-  undoState: UndoState;
-  undoDispatch: React.Dispatch<UndoStateAction>;
 }
 
-export const ZoomCanvas = ({
-  canvasDispatch,
-  canvasState,
-  toolbarState,
-  paletteState,
-  undoState,
-  undoDispatch,
-}: Props): JSX.Element => {
+export function ZoomCanvas({ canvasDispatch, canvasState, paletteState }: Props): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(20);
 
-  useScrollToFocusPoint(canvasDivRef.current, canvasState.zoomFocusPoint, zoomFactor);
+  const { state, actions } = useOvermind();
+
+  useScrollToFocusPoint(canvasDivRef.current, state.canvas.zoomFocusPoint, zoomFactor);
 
   const updateZoomFocusPoint = (): void => {
-    canvasDispatch({
-      type: 'setZoomFocusPoint',
-      point: getDivFocusPoint(canvasDivRef.current, zoomFactor),
-    });
+    actions.canvas.setZoomFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));
   };
 
   const updateScrollFocusPoint = (): void => {
-    canvasDispatch({
-      type: 'setScrollFocusPoint',
-      point: getDivFocusPoint(canvasDivRef.current, zoomFactor),
-    });
+    actions.canvas.setScrollFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));
   };
 
   const zoomIn = (): void => {
@@ -62,7 +47,7 @@ export const ZoomCanvas = ({
     updateZoomFocusPoint();
   };
 
-  const visible = toolbarState.zoomModeOn && canvasState.zoomFocusPoint;
+  const visible = state.toolbar.zoomModeOn && state.canvas.zoomFocusPoint;
 
   return (
     <>
@@ -83,17 +68,14 @@ export const ZoomCanvas = ({
         <Canvas
           canvasDispatch={canvasDispatch}
           canvasState={canvasState}
-          toolbarState={toolbarState}
           paletteState={paletteState}
-          undoState={undoState}
-          undoDispatch={undoDispatch}
           isZoomCanvas={true}
           zoomFactor={zoomFactor}
         />
       </div>
     </>
   );
-};
+}
 
 function getDivFocusPoint(div: HTMLDivElement, zoomFactor: number): Point {
   return {

@@ -6,20 +6,16 @@ import Palette from './palette/Palette';
 import ColorIndicator from './palette/ColorIndicator';
 import { PaletteState, paletteStateReducer } from './palette/PaletteState';
 import { CanvasState, canvasStateReducer } from './canvas/CanvasState';
-import { ToolbarState, toolbarStateReducer } from './toolbar/ToolbarState';
-import { UndoState, undoStateReducer } from './canvas/UndoState';
 import './App.css';
+import { CanvasSyncHandler } from './canvas/CanvasSyncHandler';
 
-const initialToolbarState = new ToolbarState();
 const initialPaletteState = new PaletteState();
 const initialCanvasState = new CanvasState();
-const initialUndoState = new UndoState();
 
 function App(): JSX.Element {
-  const [toolbarState, toolbarDispatch] = useReducer(toolbarStateReducer, initialToolbarState);
+  console.log('render App');
   const [paletteState, paletteDispatch] = useReducer(paletteStateReducer, initialPaletteState);
   const [canvasState, canvasDispatch] = useReducer(canvasStateReducer, initialCanvasState);
-  const [undoState, undoDispatch] = useReducer(undoStateReducer, initialUndoState);
 
   return (
     <div className="App">
@@ -27,27 +23,16 @@ function App(): JSX.Element {
         <MainCanvas
           canvasDispatch={canvasDispatch}
           canvasState={canvasState}
-          toolbarState={toolbarState}
           paletteState={paletteState}
-          undoState={undoState}
-          undoDispatch={undoDispatch}
         />
         <ZoomCanvas
           canvasDispatch={canvasDispatch}
           canvasState={canvasState}
-          toolbarState={toolbarState}
           paletteState={paletteState}
-          undoState={undoState}
-          undoDispatch={undoDispatch}
         />
+        <CanvasSyncHandler canvasState={canvasState} />
       </div>
-      <Toolbar
-        toolbarDispatch={toolbarDispatch}
-        toolbarState={toolbarState}
-        canvasState={canvasState}
-        paletteState={paletteState}
-        undoDispatch={undoDispatch}
-      />
+      <Toolbar canvasState={canvasState} paletteState={paletteState} />
       <ColorIndicator paletteState={paletteState} />
       <Palette paletteDispatch={paletteDispatch} paletteState={paletteState} />
     </div>
