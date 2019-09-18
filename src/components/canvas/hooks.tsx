@@ -1,40 +1,30 @@
-import { CanvasStateAction } from './CanvasState';
 import { useEffect } from 'react';
-import ToolbarState from '../toolbar/ToolbarState';
 import { ToolState, Action } from '../../tools/ToolState';
-import { UndoState, UndoStateAction } from './UndoState';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
+import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
-import { clearCanvas } from '../../tools/util';
 
 export function useZoomToolInitialSelection(
   isZoomCanvas: boolean,
-  toolbarState: ToolbarState,
-  canvasDispatch: React.Dispatch<CanvasStateAction>,
   toolState: ToolState,
   toolStateDispatch: React.Dispatch<Action>
 ): void {
+  const { state, actions } = useOvermind();
   useEffect((): void => {
     if (isZoomCanvas) {
       return;
     }
     // switch active tool to zoomInitialPointSelection for next render cycle
-    if (toolbarState.zoomModeOn) {
+    if (state.toolbar.zoomModeOn) {
       toolStateDispatch({ type: 'setActiveTool', tool: new ZoomInitialPointSelectorTool() });
     } else {
-      canvasDispatch({
-        type: 'setZoomFocusPoint',
-        point: null,
-      });
+      actions.canvas.setZoomFocusPoint(null);
     }
-  }, [toolbarState.zoomModeOn]);
+  }, [state.toolbar.zoomModeOn]);
 
   useEffect((): void => {
-    canvasDispatch({
-      type: 'setZoomFocusPoint',
-      point: toolState.zoomToolState.zoomInitialPoint,
-    });
-    toolStateDispatch({ type: 'setActiveTool', tool: toolbarState.selectedTool });
+    actions.canvas.setZoomFocusPoint(toolState.zoomToolState.zoomInitialPoint);
+    toolStateDispatch({ type: 'setActiveTool', tool: state.toolbar.selectedTool });
   }, [toolState.zoomToolState.zoomInitialPoint]);
 }
 
@@ -53,38 +43,4 @@ export function useScrollToFocusPoint(
     };
     canvasDiv.scrollTo(scrollOptions);
   }, [focusPoint]);
-}
-
-export function useUndo(
-  undoState: UndoState,
-  undoDispatch: React.Dispatch<UndoStateAction>,
-  canvas: HTMLCanvasElement
-): [() => void] {
-  // draw undo buffer state to canvas if user has clicked undo/redo
-  useEffect((): void => {
-    const context = canvas.getContext('2d');
-    if (!context) {
-      return;
-    }
-    if (undoState.currentIndex === null) {
-      return;
-    }
-    clearCanvas(canvas, { r: 255, g: 255, b: 255 });
-    const image = new Image();
-    image.onload = function(): void {
-      context.drawImage(image, 0, 0);
-    };
-    image.src = URL.createObjectURL(undoState.undoBuffer[undoState.currentIndex]);
-  }, [undoState.lastUndoRedoTime]);
-
-  // return a callback for setting an undo point
-  const setUndoPoint = (): void => {
-    canvas.toBlob((blob): void => {
-      if (blob === null) {
-        return;
-      }
-      undoDispatch({ type: 'setUndoPoint', canvasAsBlob: blob });
-    });
-  };
-  return [setUndoPoint];
 }

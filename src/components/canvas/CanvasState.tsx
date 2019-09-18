@@ -1,75 +1,36 @@
-import { Point } from '../../types';
-
 export class CanvasState {
-  public sourceCanvas: HTMLCanvasElement;
-  public sourceOverlayCanvas: HTMLCanvasElement;
-  public resolution: { width: number; height: number };
-  public scrollFocusPoint: Point | null;
-  public zoomFocusPoint: Point | null;
-  public lastModified: {
-    timestamp: number;
-    modifiedBy: 'undoOrRedo' | 'zoomCanvas' | 'mainCanvas';
-  };
-  public lastModifiedOverlay: {
-    timestamp: number;
-    modifiedBy: 'zoomCanvas' | 'mainCanvas';
-  };
+  public mainCanvas: HTMLCanvasElement;
+  public mainOverlayCanvas: HTMLCanvasElement;
+  public zoomCanvas: HTMLCanvasElement;
+  public zoomOverlayCanvas: HTMLCanvasElement;
 
   public constructor() {
     // create placeholder HTMLCanvasElements to avoid null values
-    this.sourceCanvas = document.createElement('canvas');
-    this.sourceOverlayCanvas = document.createElement('canvas');
-    this.lastModified = { timestamp: 0, modifiedBy: 'mainCanvas' };
-    this.lastModifiedOverlay = { timestamp: 0, modifiedBy: 'mainCanvas' };
-    this.resolution = { width: 0, height: 0 };
-    this.scrollFocusPoint = null;
-    this.zoomFocusPoint = null;
+    this.mainCanvas = document.createElement('canvas');
+    this.mainOverlayCanvas = document.createElement('canvas');
+    this.zoomCanvas = document.createElement('canvas');
+    this.zoomOverlayCanvas = document.createElement('canvas');
   }
 }
 
-export type CanvasStateAction =
-  | { type: 'setResolution'; resolution: { width: number; height: number } }
-  | { type: 'setScrollFocusPoint'; point: Point | null }
-  | { type: 'setZoomFocusPoint'; point: Point | null }
-  | {
-      type: 'setModified';
-      canvas: HTMLCanvasElement;
-      modifiedBy: 'undoOrRedo' | 'zoomCanvas' | 'mainCanvas';
-    }
-  | {
-      type: 'setOverlayModified';
-      canvas: HTMLCanvasElement;
-      modifiedBy: 'zoomCanvas' | 'mainCanvas';
-    };
+export type CanvasStateAction = {
+  type: 'setMainCanvas' | 'setZoomCanvas';
+  elements: { canvas: HTMLCanvasElement; overlay: HTMLCanvasElement };
+};
 
 export function canvasStateReducer(state: CanvasState, action: CanvasStateAction): CanvasState {
   switch (action.type) {
-    case 'setModified':
+    case 'setMainCanvas':
       return {
         ...state,
-        sourceCanvas: action.canvas,
-        lastModified: { timestamp: Date.now(), modifiedBy: action.modifiedBy },
+        mainCanvas: action.elements.canvas,
+        mainOverlayCanvas: action.elements.overlay,
       };
-    case 'setOverlayModified':
+    case 'setZoomCanvas':
       return {
         ...state,
-        sourceOverlayCanvas: action.canvas,
-        lastModifiedOverlay: { timestamp: Date.now(), modifiedBy: action.modifiedBy },
-      };
-    case 'setResolution':
-      return {
-        ...state,
-        resolution: action.resolution,
-      };
-    case 'setScrollFocusPoint':
-      return {
-        ...state,
-        scrollFocusPoint: action.point,
-      };
-    case 'setZoomFocusPoint':
-      return {
-        ...state,
-        zoomFocusPoint: action.point,
+        zoomCanvas: action.elements.canvas,
+        zoomOverlayCanvas: action.elements.overlay,
       };
     default:
       return state;

@@ -22,7 +22,7 @@ export class FreehandTool implements Tool {
       onDrawToCanvas();
       return;
     }
-    toolStateDispatch({ type: 'freehandToolPrevious', point: position });
+    //toolStateDispatch({ type: 'freehandToolPrevious', point: position });
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {

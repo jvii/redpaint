@@ -10,63 +10,48 @@ import {
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
 import { FloodFillTool } from '../../tools/FloodFillTool';
-import { Action, ToolbarState } from './ToolbarState';
 import { PaletteState } from '../palette/PaletteState';
 import { CanvasState } from '../canvas/CanvasState';
-import { UndoStateAction } from '../canvas/UndoState';
 import { clearCanvas } from '../../tools/util';
+import { useOvermind } from '../../overmind';
 import './Toolbar.css';
 
 export interface Props {
-  toolbarDispatch: React.Dispatch<Action>;
-  toolbarState: ToolbarState;
   canvasState: CanvasState;
   paletteState: PaletteState;
-  undoDispatch: React.Dispatch<UndoStateAction>;
 }
 
-function Toolbar({
-  toolbarDispatch,
-  toolbarState,
-  canvasState,
-  paletteState,
-  undoDispatch,
-}: Props): JSX.Element {
+function Toolbar({ canvasState, paletteState }: Props): JSX.Element {
+  const { state, actions } = useOvermind();
   return (
     <div className="ToolbarArea">
       <ButtonLine
-        isSelected={toolbarState.selectedTool instanceof LineTool}
-        onClick={(): void => toolbarDispatch({ type: 'setSelectedTool', tool: new LineTool() })}
+        isSelected={state.toolbar.selectedTool instanceof LineTool}
+        onClick={(): void => actions.toolbar.setSelectedTool(new LineTool())}
       />
       <ButtonFreehand
-        isSelected={toolbarState.selectedTool instanceof FreehandTool}
-        onClick={(): void => toolbarDispatch({ type: 'setSelectedTool', tool: new FreehandTool() })}
+        isSelected={state.toolbar.selectedTool instanceof FreehandTool}
+        onClick={(): void => actions.toolbar.setSelectedTool(new FreehandTool())}
       />
       <ButtonFloodFill
-        isSelected={toolbarState.selectedTool instanceof FloodFillTool}
-        onClick={(): void =>
-          toolbarDispatch({ type: 'setSelectedTool', tool: new FloodFillTool() })
-        }
+        isSelected={state.toolbar.selectedTool instanceof FloodFillTool}
+        onClick={(): void => actions.toolbar.setSelectedTool(new FloodFillTool())}
       />
       <ButtonZoom
-        isSelected={toolbarState.zoomModeOn}
-        onClick={(): void =>
-          toolbarDispatch({ type: 'zoomModeOn', on: toolbarState.zoomModeOn ? false : true })
-        }
+        isSelected={state.toolbar.zoomModeOn}
+        onClick={(): void => actions.toolbar.toggleZoomMode()}
       />
       <ButtonUndo
         isSelected={false}
-        onClick={(): void => {
-          undoDispatch({ type: 'undo' });
-        }}
-        onRightClick={(): void => {
-          undoDispatch({ type: 'redo' });
-        }}
+        onClick={(): void => actions.undo.undo()}
+        onRightClick={(): void => actions.undo.redo()}
       />
       <ButtonCLR
         isSelected={false}
         onClick={(): void => {
-          clearCanvas(canvasState.sourceCanvas, paletteState.backgroundColor);
+          clearCanvas(canvasState.mainCanvas, paletteState.backgroundColor);
+          actions.canvas.setCanvasModified(false);
+          actions.undo.setUndoPoint(canvasState.mainCanvas);
         }}
       />
     </div>
