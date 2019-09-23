@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Canvas } from './Canvas';
-import { CanvasState, CanvasStateAction } from './CanvasState';
-import { PaletteState } from '../palette/PaletteState';
+import { CanvasStateAction } from './CanvasState';
 import { useScrollToFocusPoint } from './hooks';
 import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
@@ -9,11 +8,9 @@ import './Canvas.css';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
-  canvasState: CanvasState;
-  paletteState: PaletteState;
 }
 
-export function ZoomCanvas({ canvasDispatch, canvasState, paletteState }: Props): JSX.Element {
+export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(20);
 
@@ -65,13 +62,7 @@ export function ZoomCanvas({ canvasDispatch, canvasState, paletteState }: Props)
         onScroll={updateScrollFocusPoint}
         style={{ display: visible ? 'initial' : 'none' }}
       >
-        <Canvas
-          canvasDispatch={canvasDispatch}
-          canvasState={canvasState}
-          paletteState={paletteState}
-          isZoomCanvas={true}
-          zoomFactor={zoomFactor}
-        />
+        <Canvas canvasDispatch={canvasDispatch} isZoomCanvas={true} zoomFactor={zoomFactor} />
       </div>
     </>
   );

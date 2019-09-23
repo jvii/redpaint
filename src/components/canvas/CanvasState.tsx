@@ -13,10 +13,10 @@ export class CanvasState {
   }
 }
 
-export type CanvasStateAction = {
+export interface CanvasStateAction {
   type: 'setMainCanvas' | 'setZoomCanvas';
   elements: { canvas: HTMLCanvasElement; overlay: HTMLCanvasElement };
-};
+}
 
 export function canvasStateReducer(state: CanvasState, action: CanvasStateAction): CanvasState {
   switch (action.type) {

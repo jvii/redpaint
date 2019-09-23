@@ -1,7 +1,6 @@
 import { Action, AsyncAction } from 'overmind';
 
 export const setUndoPoint: AsyncAction<HTMLCanvasElement> = async ({ state }, canvas) => {
-  console.log('setUndoPoint');
   const blob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve));
   if (!blob) {
     return;
@@ -18,7 +17,6 @@ export const setUndoPoint: AsyncAction<HTMLCanvasElement> = async ({ state }, ca
 };
 
 export const undo: Action = ({ state }) => {
-  console.log('undo');
   if (!state.undo.currentIndex) {
     return;
   }
@@ -27,7 +25,6 @@ export const undo: Action = ({ state }) => {
 };
 
 export const redo: Action = ({ state }) => {
-  console.log('redo');
   if (state.undo.currentIndex === state.undo.undoBuffer.length - 1) {
     return;
   }

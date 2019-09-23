@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, CanvasStateAction } from './CanvasState';
-import { PaletteState } from '../palette/PaletteState';
 import { useScrollToFocusPoint } from './hooks';
 import { useOvermind } from '../../overmind';
 import './Canvas.css';
@@ -9,10 +8,9 @@ import './Canvas.css';
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
   canvasState: CanvasState;
-  paletteState: PaletteState;
 }
 
-export function MainCanvas({ canvasDispatch, canvasState, paletteState }: Props): JSX.Element {
+export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
 
   const { state, actions } = useOvermind();
@@ -30,12 +28,7 @@ export function MainCanvas({ canvasDispatch, canvasState, paletteState }: Props)
 
   return (
     <div className="MainCanvasDiv" ref={canvasDivRef}>
-      <Canvas
-        canvasDispatch={canvasDispatch}
-        canvasState={canvasState}
-        paletteState={paletteState}
-        isZoomCanvas={false}
-      />
+      <Canvas canvasDispatch={canvasDispatch} isZoomCanvas={false} />
     </div>
   );
 }

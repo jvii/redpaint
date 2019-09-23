@@ -2,11 +2,13 @@ import { IConfig } from 'overmind';
 import { namespaced } from 'overmind/config';
 import { createHook } from 'overmind-react';
 import * as canvas from './canvas';
+import * as palette from './palette';
 import * as undo from './undo';
 import * as toolbar from './toolbar';
 
 export const config = namespaced({
   canvas,
+  palette,
   undo,
   toolbar,
 });

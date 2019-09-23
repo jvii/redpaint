@@ -1,5 +1,20 @@
 import { Color } from '../../types';
 
+export function createPalette2(
+  colors: number
+): {
+  [id: string]: Color;
+} {
+  const palette: {
+    [id: string]: Color;
+  } = {};
+  for (let i = 0; i < colors; i++) {
+    const color = createColor(colors, i);
+    palette[i] = color;
+  }
+  return palette;
+}
+
 export function createPalette(colors: number): Color[] {
   const palette: Color[] = [];
   for (let i = 0; i < colors; i++) {

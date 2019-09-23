@@ -5,11 +5,12 @@ import { colorToRGBString } from '../../tools/util';
 interface Props {
   color: Color;
   isSelected: boolean;
-  onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
-  onRightClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
+  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onRightClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export function ColorButton({ color, isSelected, onClick, onRightClick }: Props): JSX.Element {
+
   const buttonStyle = {
     backgroundColor: colorToRGBString(color),
     border: isSelected ? '2px solid white' : 'none',
@@ -21,9 +22,7 @@ export function ColorButton({ color, isSelected, onClick, onRightClick }: Props)
   };
 
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    if (onRightClick !== undefined) {
-      onRightClick(event);
-    }
+    onRightClick(event);
     event.preventDefault();
   };
 

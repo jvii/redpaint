@@ -10,7 +10,6 @@ import {
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
 import { FloodFillTool } from '../../tools/FloodFillTool';
-import { PaletteState } from '../palette/PaletteState';
 import { CanvasState } from '../canvas/CanvasState';
 import { clearCanvas } from '../../tools/util';
 import { useOvermind } from '../../overmind';
@@ -18,10 +17,9 @@ import './Toolbar.css';
 
 export interface Props {
   canvasState: CanvasState;
-  paletteState: PaletteState;
 }
 
-function Toolbar({ canvasState, paletteState }: Props): JSX.Element {
+function Toolbar({ canvasState }: Props): JSX.Element {
   const { state, actions } = useOvermind();
   return (
     <div className="ToolbarArea">
@@ -49,7 +47,7 @@ function Toolbar({ canvasState, paletteState }: Props): JSX.Element {
       <ButtonCLR
         isSelected={false}
         onClick={(): void => {
-          clearCanvas(canvasState.mainCanvas, paletteState.backgroundColor);
+          clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
           actions.canvas.setCanvasModified(false);
           actions.undo.setUndoPoint(canvasState.mainCanvas);
         }}

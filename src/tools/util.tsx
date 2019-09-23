@@ -1,6 +1,5 @@
 import { Point, Color } from '../types';
 import { Tool, EventHandlerParams } from './Tool';
-import { PaletteState } from '../components/palette/PaletteState';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -69,7 +68,7 @@ export function getMousePos(
 
 export function chooseColor(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-  paletteState: PaletteState
+  paletteState: { foregroundColor: Color; backgroundColor: Color }
 ): Color {
   if (event.buttons === 1) {
     return paletteState.foregroundColor;

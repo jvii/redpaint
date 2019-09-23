@@ -1,6 +1,5 @@
 import React, { useEffect, useReducer, useRef } from 'react';
-import { CanvasState, CanvasStateAction } from './CanvasState';
-import { PaletteState } from '../palette/PaletteState';
+import { CanvasStateAction } from './CanvasState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
 import { useZoomToolInitialSelection } from './hooks';
 import { useOvermind } from '../../overmind';
@@ -10,19 +9,11 @@ import './Canvas.css';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
-  canvasState: CanvasState;
-  paletteState: PaletteState;
   isZoomCanvas: boolean;
   zoomFactor?: number;
 }
 
-export function Canvas({
-  canvasDispatch,
-  canvasState,
-  paletteState,
-  isZoomCanvas,
-  zoomFactor = 1,
-}: Props): JSX.Element {
+export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element {
   console.log('render ' + (isZoomCanvas ? 'ZoomCanvas' : 'MainCanvas'));
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
@@ -61,7 +52,7 @@ export function Canvas({
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    paletteState: paletteState,
+    paletteState: state.palette,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
   };
@@ -74,7 +65,7 @@ export function Canvas({
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    paletteState: paletteState,
+    paletteState: state.palette,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
   };
