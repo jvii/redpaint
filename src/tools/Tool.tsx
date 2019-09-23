@@ -1,11 +1,11 @@
-import { PaletteState } from '../components/palette/PaletteState';
 import { ToolState, Action } from './ToolState';
+import { Color } from '../types';
 
 export interface EventHandlerParams {
   canvas: HTMLCanvasElement;
   onDrawToCanvas: () => void;
   undoPoint: () => void;
-  paletteState: PaletteState;
+  paletteState: { foregroundColor: Color; backgroundColor: Color };
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
 }

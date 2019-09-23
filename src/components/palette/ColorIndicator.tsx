@@ -1,14 +1,12 @@
 import React from 'react';
-import { PaletteState } from '../palette/PaletteState';
+import { useOvermind } from '../../overmind';
 import { colorToRGBString } from '../../tools/util';
 
-interface Props {
-  paletteState: PaletteState;
-}
+export function ColorIndicator(): JSX.Element {
+  const { state } = useOvermind();
 
-export function ColorIndicator({ paletteState }: Props): JSX.Element {
   const background = {
-    backgroundColor: colorToRGBString(paletteState.backgroundColor),
+    backgroundColor: colorToRGBString(state.palette.backgroundColor),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -20,7 +18,7 @@ export function ColorIndicator({ paletteState }: Props): JSX.Element {
     margin: 0,
   };
   const foreground = {
-    backgroundColor: colorToRGBString(paletteState.foregroundColor),
+    backgroundColor: colorToRGBString(state.palette.foregroundColor),
     height: '20px',
     width: '20px',
     borderRadius: '50%',

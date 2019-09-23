@@ -1,5 +1,4 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { PaletteState } from '../components/palette/PaletteState';
 import { Color } from '../types';
 import { drawLineNoAliasing, getMousePos, clearOverlayCanvas, drawDot } from './util';
 
@@ -76,7 +75,7 @@ export class LineTool implements Tool {
 
 function chooseColor(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-  paletteState: PaletteState
+  paletteState: { foregroundColor: Color; backgroundColor: Color }
 ): Color {
   if (event.button === 0) {
     return paletteState.foregroundColor;
