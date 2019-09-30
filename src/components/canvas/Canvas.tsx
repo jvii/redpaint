@@ -5,6 +5,7 @@ import { useZoomToolInitialSelection } from './hooks';
 import { useOvermind } from '../../overmind';
 import { getEventHandler } from '../../tools/util';
 import { blobToCanvas } from './util';
+import { EventHandlerParams } from '../../tools/Tool';
 import './Canvas.css';
 
 interface Props {
@@ -44,7 +45,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     height: state.canvas.resolution.height * zoomFactor,
   };
 
-  const eventHandlerParams = {
+  const eventHandlerParams: EventHandlerParams = {
     canvas: canvasRef.current,
     onDrawToCanvas: (): void => {
       actions.canvas.setCanvasModified(isZoomCanvas);
@@ -53,11 +54,13 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
       actions.undo.setUndoPoint(canvasRef.current);
     },
     paletteState: state.palette,
+    brushState: state.brush,
+
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
   };
 
-  const eventHandlerParamsOverlay = {
+  const eventHandlerParamsOverlay: EventHandlerParams = {
     canvas: overlayCanvasRef.current,
     onDrawToCanvas: (): void => {
       actions.canvas.setOverlayCanvasModified(isZoomCanvas);
@@ -66,6 +69,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
       actions.undo.setUndoPoint(canvasRef.current);
     },
     paletteState: state.palette,
+    brushState: state.brush,
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
   };
