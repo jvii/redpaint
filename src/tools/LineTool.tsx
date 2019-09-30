@@ -1,6 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { Color } from '../types';
-import { drawLineNoAliasing, getMousePos, clearOverlayCanvas, drawDot } from './util';
+import { getMousePos, clearOverlayCanvas } from './util';
 
 export class LineTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -13,6 +13,7 @@ export class LineTool implements Tool {
       event,
       canvas,
       paletteState,
+      brushState,
       onDrawToCanvas,
       toolState,
       toolStateDispatch,
@@ -21,7 +22,7 @@ export class LineTool implements Tool {
 
     if (toolState.lineToolState.startingPosition) {
       const position = getMousePos(canvas, event);
-      drawLineNoAliasing(
+      brushState.brush.drawLine(
         canvas,
         chooseColor(event, paletteState),
         toolState.lineToolState.startingPosition,
@@ -47,19 +48,19 @@ export class LineTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, paletteState, onDrawToCanvas } = params;
+    const { event, canvas, toolState, paletteState, brushState, onDrawToCanvas } = params;
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
     if (toolState.lineToolState.startingPosition) {
-      drawLineNoAliasing(
+      brushState.brush.drawLine(
         canvas,
         paletteState.foregroundColor, // TODO: fix chooseColor
         toolState.lineToolState.startingPosition,
         position
       );
     } else {
-      drawDot(canvas, paletteState.foregroundColor, position);
+      brushState.brush.drawDot(canvas, paletteState.foregroundColor, position);
     }
     onDrawToCanvas();
   }

@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { drawDot, drawLineNoAliasing, getMousePos, chooseColor, clearOverlayCanvas } from './util';
+import { getMousePos, chooseColor, clearOverlayCanvas } from './util';
 
 export class FreehandTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -8,11 +8,18 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, paletteState, onDrawToCanvas, toolState, toolStateDispatch } = params;
+    const {
+      event,
+      canvas,
+      paletteState,
+      brushState,
+      onDrawToCanvas,
+      toolState,
+      toolStateDispatch,
+    } = params;
     const position = getMousePos(canvas, event);
-
     if (event.buttons && toolState.freehandToolState.previousPosition) {
-      drawLineNoAliasing(
+      brushState.brush.drawLine(
         canvas,
         chooseColor(event, paletteState),
         toolState.freehandToolState.previousPosition,
@@ -20,15 +27,13 @@ export class FreehandTool implements Tool {
       );
       toolStateDispatch({ type: 'freehandToolPrevious', point: position });
       onDrawToCanvas();
-      return;
     }
-    //toolStateDispatch({ type: 'freehandToolPrevious', point: position });
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, paletteState, onDrawToCanvas, toolStateDispatch } = params;
+    const { event, canvas, paletteState, brushState, onDrawToCanvas, toolStateDispatch } = params;
     const position = getMousePos(canvas, event);
-    drawDot(canvas, chooseColor(event, paletteState), position);
+    brushState.brush.drawDot(canvas, chooseColor(event, paletteState), position);
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
     onDrawToCanvas();
   }
@@ -47,11 +52,19 @@ export class FreehandTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, paletteState, onDrawToCanvas } = params;
-    const position = getMousePos(canvas, event);
-
+    const { event, canvas, paletteState, brushState, onDrawToCanvas } = params;
+    if (event.buttons) {
+      return;
+    }
     clearOverlayCanvas(canvas);
-    drawDot(canvas, paletteState.foregroundColor, position);
+    const position = getMousePos(canvas, event);
+    brushState.brush.drawDot(canvas, paletteState.foregroundColor, position);
+    onDrawToCanvas();
+  }
+
+  public onMouseDownOverlay(params: EventHandlerParamsWithEvent): void {
+    const { canvas, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
 

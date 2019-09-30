@@ -10,7 +10,6 @@ interface Props {
 }
 
 export function ColorButton({ color, isSelected, onClick, onRightClick }: Props): JSX.Element {
-
   const buttonStyle = {
     backgroundColor: colorToRGBString(color),
     border: isSelected ? '2px solid white' : 'none',

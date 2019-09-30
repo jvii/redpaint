@@ -1,11 +1,13 @@
 import { ToolState, Action } from './ToolState';
-import { Color } from '../types';
+import { State as PaletteState } from '../overmind/palette/state';
+import { State as BrushState } from '../overmind/brush/state';
 
 export interface EventHandlerParams {
   canvas: HTMLCanvasElement;
   onDrawToCanvas: () => void;
   undoPoint: () => void;
-  paletteState: { foregroundColor: Color; backgroundColor: Color };
+  paletteState: PaletteState;
+  brushState: BrushState;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
 }
