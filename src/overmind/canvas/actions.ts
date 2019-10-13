@@ -3,19 +3,19 @@ import { Point } from '../../types';
 
 type Resolution = { width: number; height: number };
 
-export const setResolution: Action<Resolution> = ({ state }, resolution) => {
+export const setResolution: Action<Resolution> = ({ state }, resolution): void => {
   state.canvas.resolution = resolution;
 };
 
-export const setScrollFocusPoint: Action<Point> = ({ state }, point) => {
+export const setScrollFocusPoint: Action<Point> = ({ state }, point): void => {
   state.canvas.scrollFocusPoint = point;
 };
 
-export const setZoomFocusPoint: Action<Point | null> = ({ state }, point) => {
+export const setZoomFocusPoint: Action<Point | null> = ({ state }, point): void => {
   state.canvas.zoomFocusPoint = point;
 };
 
-export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas) => {
+export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {
   if (isZoomCanvas) {
     state.canvas.zoomCanvas.lastModified = Date.now();
   } else {
@@ -23,7 +23,7 @@ export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas) => {
   }
 };
 
-export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanvas) => {
+export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {
   if (isZoomCanvas) {
     state.canvas.zoomCanvas.lastModifiedOverlay = Date.now();
   } else {

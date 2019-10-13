@@ -1,15 +1,14 @@
 import { ToolState, Action } from './ToolState';
-import { State as PaletteState } from '../overmind/palette/state';
-import { State as BrushState } from '../overmind/brush/state';
+import { OvermindState } from '../overmind';
 
 export interface EventHandlerParams {
   canvas: HTMLCanvasElement;
   onDrawToCanvas: () => void;
   undoPoint: () => void;
-  paletteState: PaletteState;
-  brushState: BrushState;
+  setSelectionComplete: () => void;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
+  state: OvermindState;
 }
 
 export interface EventHandlerParamsWithEvent extends EventHandlerParams {

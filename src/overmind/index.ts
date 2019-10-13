@@ -16,7 +16,10 @@ export const config = namespaced({
 });
 
 declare module 'overmind' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
   interface Config extends IConfig<typeof config> {}
 }
 
 export const useOvermind = createHook<typeof config>();
+
+export type OvermindState = typeof config.state;

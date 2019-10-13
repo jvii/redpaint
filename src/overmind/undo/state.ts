@@ -1,16 +1,14 @@
-import { Derive } from 'overmind'
-
 export type State = {
   undoBuffer: Blob[];
   currentIndex: number | null;
-  currentBufferItem: Derive<State, Blob | null>
+  readonly currentBufferItem: Blob | null;
   lastUndoRedoTime: number;
 };
 
 export const state: State = {
   undoBuffer: [],
   currentIndex: null,
-  currentBufferItem: (state): Blob | null => {
+  get currentBufferItem(this: State): Blob | null {
     if (!state.currentIndex) {
       return null;
     }

@@ -5,6 +5,7 @@ import {
   ButtonFloodFill,
   ButtonCLR,
   ButtonZoom,
+  ButtonBrushSelect,
   ButtonUndo,
 } from './toolBarButtons';
 import { FreehandTool } from '../../tools/FreehandTool';
@@ -25,19 +26,23 @@ function Toolbar({ canvasState }: Props): JSX.Element {
     <div className="ToolbarArea">
       <ButtonLine
         isSelected={state.toolbar.selectedTool instanceof LineTool}
-        onClick={(): void => actions.toolbar.setSelectedTool(new LineTool())}
+        onClick={(): void => actions.toolbar.setSelectedTool('lineTool')}
       />
       <ButtonFreehand
         isSelected={state.toolbar.selectedTool instanceof FreehandTool}
-        onClick={(): void => actions.toolbar.setSelectedTool(new FreehandTool())}
+        onClick={(): void => actions.toolbar.setSelectedTool('freeHandTool')}
       />
       <ButtonFloodFill
         isSelected={state.toolbar.selectedTool instanceof FloodFillTool}
-        onClick={(): void => actions.toolbar.setSelectedTool(new FloodFillTool())}
+        onClick={(): void => actions.toolbar.setSelectedTool('floodFillTool')}
       />
       <ButtonZoom
         isSelected={state.toolbar.zoomModeOn}
         onClick={(): void => actions.toolbar.toggleZoomMode()}
+      />
+      <ButtonBrushSelect
+        isSelected={state.toolbar.brushSelectionOn}
+        onClick={(): void => actions.toolbar.toggleBrushSelectionMode()}
       />
       <ButtonUndo
         isSelected={false}

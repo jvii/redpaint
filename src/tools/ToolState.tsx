@@ -1,17 +1,15 @@
 import { Point } from '../types';
-import { Tool } from './Tool';
-import { FreehandTool } from './FreehandTool';
 
 export class ToolState {
-  public activeTool: Tool;
   public lineToolState: LineToolState;
   public freehandToolState: FreehandToolState;
   public zoomToolState: ZoomToolState;
+  public brushSelectorState: BrushSelectorState;
   public constructor() {
-    this.activeTool = new FreehandTool();
     this.lineToolState = new LineToolState();
     this.freehandToolState = new FreehandToolState();
     this.zoomToolState = new ZoomToolState();
+    this.brushSelectorState = new BrushSelectorState();
   }
 }
 
@@ -36,19 +34,24 @@ export class ZoomToolState {
   }
 }
 
+export class BrushSelectorState {
+  public startingPosition: Point | null;
+  public dataURL: string;
+  public constructor() {
+    this.startingPosition = null;
+    this.dataURL = '';
+  }
+}
+
 export type Action =
-  | { type: 'setActiveTool'; tool: Tool }
   | { type: 'lineToolStart'; point: Point | null }
   | { type: 'freehandToolPrevious'; point: Point | null }
-  | { type: 'zoomInitialPoint'; point: Point | null };
+  | { type: 'zoomInitialPoint'; point: Point | null }
+  | { type: 'brushSelectionStart'; point: Point | null }
+  | { type: 'brushSelectionComplete'; dataURL: string };
 
 export function toolStateReducer(state: ToolState, action: Action): ToolState {
   switch (action.type) {
-    case 'setActiveTool':
-      return {
-        ...state,
-        activeTool: action.tool,
-      };
     case 'lineToolStart':
       return {
         ...state,
@@ -71,6 +74,22 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         zoomToolState: {
           ...state.zoomToolState,
           zoomInitialPoint: action.point,
+        },
+      };
+    case 'brushSelectionStart':
+      return {
+        ...state,
+        brushSelectorState: {
+          ...state.brushSelectorState,
+          startingPosition: action.point,
+        },
+      };
+    case 'brushSelectionComplete':
+      return {
+        ...state,
+        brushSelectorState: {
+          ...state.brushSelectorState,
+          dataURL: action.dataURL,
         },
       };
     default:

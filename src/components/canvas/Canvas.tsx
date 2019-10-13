@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
-import { useZoomToolInitialSelection } from './hooks';
+import { useZoomFocusPointSelection, useBrushSelection } from './hooks';
 import { useOvermind } from '../../overmind';
 import { getEventHandler } from '../../tools/util';
 import { blobToCanvas } from './util';
@@ -34,11 +34,8 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     blobToCanvas(state.undo.currentBufferItem, canvasRef.current);
   }, [state.undo.lastUndoRedoTime]);
 
-  useEffect((): void => {
-    toolStateDispatch({ type: 'setActiveTool', tool: state.toolbar.selectedTool });
-  }, [state.toolbar.selectedTool, toolStateDispatch]);
-
-  useZoomToolInitialSelection(isZoomCanvas, toolState, toolStateDispatch);
+  useZoomFocusPointSelection(toolState); // yhteinen useSelectionHooks?
+  useBrushSelection(toolState);
 
   const CSSZoom = {
     width: state.canvas.resolution.width * zoomFactor,
@@ -53,11 +50,12 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    paletteState: state.palette,
-    brushState: state.brush,
-
+    setSelectionComplete: (): void => {
+      actions.toolbar.setSelectionComplete();
+    },
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
+    state: state,
   };
 
   const eventHandlerParamsOverlay: EventHandlerParams = {
@@ -68,13 +66,15 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    paletteState: state.palette,
-    brushState: state.brush,
+    setSelectionComplete: (): void => {
+      actions.toolbar.setSelectionComplete();
+    },
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
+    state: state,
   };
 
-  const tool = toolState.activeTool;
+  const tool = state.toolbar.activeTool;
 
   return (
     <div className="CanvasContainer">
