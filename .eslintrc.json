@@ -10,17 +10,23 @@
   "env": {
     "browser": true,
     "jasmine": true,
-    "jest": true
+    "jest": true,
+    "es6": true
   },
   "rules": {
-    "@typescript-eslint/no-use-before-define": ["error", { "functions": false, "classes": false, "variables": false }],
+    "@typescript-eslint/no-use-before-define": [
+      "error",
+      { "functions": false, "classes": false, "variables": false }
+    ],
     "max-len": ["error", { "code": 100 }],
-    "prettier/prettier": ["error", { "singleQuote": true }]
+    "prettier/prettier": ["error", { "singleQuote": true }],
+    "@typescript-eslint/prefer-interface": "off"
   },
   "settings": {
     "react": {
       "pragma": "React",
       "version": "detect"
     }
-  }
+  },
+  "parserOptions": { "ecmaVersion": 6 }
 }

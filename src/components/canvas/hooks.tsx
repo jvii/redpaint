@@ -1,31 +1,25 @@
 import { useEffect } from 'react';
-import { ToolState, Action } from '../../tools/ToolState';
-import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
+import { ToolState } from '../../tools/ToolState';
 import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
+import { CustomBrush } from '../../brush/CustomBrush';
 
-export function useZoomToolInitialSelection(
-  isZoomCanvas: boolean,
-  toolState: ToolState,
-  toolStateDispatch: React.Dispatch<Action>
-): void {
-  const { state, actions } = useOvermind();
-  useEffect((): void => {
-    if (isZoomCanvas) {
-      return;
-    }
-    // switch active tool to zoomInitialPointSelection for next render cycle
-    if (state.toolbar.zoomModeOn) {
-      toolStateDispatch({ type: 'setActiveTool', tool: new ZoomInitialPointSelectorTool() });
-    } else {
-      actions.canvas.setZoomFocusPoint(null);
-    }
-  }, [state.toolbar.zoomModeOn]);
-
+export function useZoomFocusPointSelection(toolState: ToolState): void {
+  const { actions } = useOvermind();
   useEffect((): void => {
     actions.canvas.setZoomFocusPoint(toolState.zoomToolState.zoomInitialPoint);
-    toolStateDispatch({ type: 'setActiveTool', tool: state.toolbar.selectedTool });
   }, [toolState.zoomToolState.zoomInitialPoint]);
+}
+
+export function useBrushSelection(toolState: ToolState): void {
+  const { actions } = useOvermind();
+  useEffect((): void => {
+    if (!toolState.brushSelectorState.dataURL) {
+      return;
+    }
+    const brush = new CustomBrush(toolState.brushSelectorState.dataURL);
+    actions.brush.setBrush(brush);
+  }, [toolState.brushSelectorState.dataURL]);
 }
 
 export function useScrollToFocusPoint(

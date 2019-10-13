@@ -1,12 +1,10 @@
 import { Color } from '../../types';
-import { Derive } from 'overmind';
 import { createPalette } from '../../components/palette/util';
 
 export type State = {
   palette: {
     [id: string]: Color;
   };
-  //paletteArray: Derive<State, Color[]>
   readonly paletteArray: Color[];
   foregroundColorId: string;
   backgroundColorId: string;
@@ -16,15 +14,15 @@ export type State = {
 
 export const state: State = {
   palette: createPalette(100),
-  get paletteArray(this: State) {
+  get paletteArray(this: State): Color[] {
     return Object.values(this.palette);
   },
   foregroundColorId: '0',
   backgroundColorId: '20',
-  get foregroundColor(this: State) {
+  get foregroundColor(this: State): Color {
     return this.palette[this.foregroundColorId];
   },
-  get backgroundColor(this: State) {
+  get backgroundColor(this: State): Color {
     return this.palette[this.backgroundColorId];
   },
 };

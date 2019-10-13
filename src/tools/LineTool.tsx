@@ -12,8 +12,7 @@ export class LineTool implements Tool {
     const {
       event,
       canvas,
-      paletteState,
-      brushState,
+      state,
       onDrawToCanvas,
       toolState,
       toolStateDispatch,
@@ -22,9 +21,9 @@ export class LineTool implements Tool {
 
     if (toolState.lineToolState.startingPosition) {
       const position = getMousePos(canvas, event);
-      brushState.brush.drawLine(
+      state.brush.brush.drawLine(
         canvas,
-        chooseColor(event, paletteState),
+        chooseColor(event, state.palette),
         toolState.lineToolState.startingPosition,
         position
       );
@@ -48,19 +47,19 @@ export class LineTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, paletteState, brushState, onDrawToCanvas } = params;
+    const { event, canvas, toolState, state, onDrawToCanvas } = params;
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
     if (toolState.lineToolState.startingPosition) {
-      brushState.brush.drawLine(
+      state.brush.brush.drawLine(
         canvas,
-        paletteState.foregroundColor, // TODO: fix chooseColor
+        state.palette.foregroundColor, // TODO: fix chooseColor
         toolState.lineToolState.startingPosition,
         position
       );
     } else {
-      brushState.brush.drawDot(canvas, paletteState.foregroundColor, position);
+      state.brush.brush.drawDot(canvas, state.palette.foregroundColor, position);
     }
     onDrawToCanvas();
   }

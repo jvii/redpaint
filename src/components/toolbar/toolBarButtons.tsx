@@ -43,6 +43,15 @@ export function ButtonZoom({ isSelected, onClick }: Props): JSX.Element {
   );
 }
 
+export function ButtonBrushSelect({ isSelected, onClick }: Props): JSX.Element {
+  return (
+    <button
+      className={'ToolbarButton ' + (isSelected ? 'BrushSelectSelected' : 'BrushSelect')}
+      onClick={onClick}
+    ></button>
+  );
+}
+
 export function ButtonUndo({ onClick, onRightClick }: Props): JSX.Element {
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     if (onRightClick !== undefined) {

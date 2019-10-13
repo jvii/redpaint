@@ -42,6 +42,14 @@
   background: url(../../resources/zoomButtonActive.png) no-repeat;
 }
 
+.BrushSelect {
+  background: url(../../resources/lineButton.png) no-repeat;
+}
+
+.BrushSelectSelected {
+  background: url(../../resources/lineButtonActive.png) no-repeat;
+}
+
 .Undo {
   background: url(../../resources/undoButton.png) no-repeat;
 }
