@@ -25,11 +25,11 @@ export const state: State = {
     if (!this.selectionInProcess) {
       return this.tools[this.selectedToolId];
     }
-    if (this.zoomModeOn) {
-      return this.tools['zoomInitialPointSelectorTool'];
-    }
     if (this.brushSelectionOn) {
       return this.tools['brushSelectorTool'];
+    }
+    if (this.zoomModeOn) {
+      return this.tools['zoomInitialPointSelectorTool'];
     }
     return this.tools[this.selectedToolId];
   },

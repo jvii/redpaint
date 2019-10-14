@@ -111,7 +111,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
         onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
       />
       <canvas
-        className="OverlayCanvas Canvas"
+        className="Canvas OverlayCanvas"
         ref={overlayCanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}
