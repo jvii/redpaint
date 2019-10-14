@@ -13,6 +13,7 @@ export type State = {
   selectionInProcess: boolean;
   zoomModeOn: boolean;
   brushSelectionOn: boolean;
+  selectedBuiltInBrush: number;
 };
 
 export const state: State = {
@@ -21,7 +22,6 @@ export const state: State = {
     return this.tools[this.selectedToolId];
   },
   get activeTool(this: State): Tool {
-    console.log('laskee');
     if (!this.selectionInProcess) {
       return this.tools[this.selectedToolId];
     }
@@ -43,4 +43,5 @@ export const state: State = {
   selectionInProcess: false,
   zoomModeOn: false,
   brushSelectionOn: false,
+  selectedBuiltInBrush: 1,
 };
