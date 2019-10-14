@@ -43,11 +43,11 @@
 }
 
 .BrushSelect {
-  background: url(../../resources/lineButton.png) no-repeat;
+  background: url(../../resources/brushSelectButton.png) no-repeat;
 }
 
 .BrushSelectSelected {
-  background: url(../../resources/lineButtonActive.png) no-repeat;
+  background: url(../../resources/brushSelectButtonActive.png) no-repeat;
 }
 
 .Undo {

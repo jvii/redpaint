@@ -9,10 +9,10 @@ export const state: State = {
   undoBuffer: [],
   currentIndex: null,
   get currentBufferItem(this: State): Blob | null {
-    if (!state.currentIndex) {
+    if (!this.currentIndex) {
       return null;
     }
-    return state.undoBuffer[state.currentIndex];
+    return this.undoBuffer[this.currentIndex];
   },
   lastUndoRedoTime: 0,
 };

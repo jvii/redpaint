@@ -88,13 +88,18 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
           getEventHandler(tool, 'onClick', eventHandlerParams)(event);
           getEventHandler(tool, 'onClickOverlay', eventHandlerParamsOverlay)(event);
         }}
-        onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
         onMouseDown={(event): void => {
           getEventHandler(tool, 'onMouseDown', eventHandlerParams)(event);
           getEventHandler(tool, 'onMouseDownOverlay', eventHandlerParamsOverlay)(event);
         }}
-        onMouseUp={getEventHandler(tool, 'onMouseUp', eventHandlerParams)}
-        onMouseEnter={getEventHandler(tool, 'onMouseEnter', eventHandlerParams)}
+        onMouseUp={(event): void => {
+          getEventHandler(tool, 'onMouseUp', eventHandlerParams)(event);
+          getEventHandler(tool, 'onMouseUpOverlay', eventHandlerParamsOverlay)(event);
+        }}
+        onMouseEnter={(event): void => {
+          getEventHandler(tool, 'onMouseEnter', eventHandlerParams)(event);
+          getEventHandler(tool, 'onMouseEnterOverlay', eventHandlerParamsOverlay)(event);
+        }}
         onMouseLeave={(event): void => {
           getEventHandler(tool, 'onMouseLeave', eventHandlerParams)(event);
           getEventHandler(tool, 'onMouseLeaveOverlay', eventHandlerParamsOverlay)(event);
@@ -103,6 +108,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
           getEventHandler(tool, 'onMouseMove', eventHandlerParams)(event);
           getEventHandler(tool, 'onMouseMoveOverlay', eventHandlerParamsOverlay)(event);
         }}
+        onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
       />
       <canvas
         className="OverlayCanvas Canvas"

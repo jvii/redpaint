@@ -1,0 +1,41 @@
+.BuiltInBrush {
+  height: 12px;
+  width: 12px;
+  border-style: none;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  outline: none;
+}
+
+.Brush1 {
+  background: url(../../resources/brushPixel.png) no-repeat;
+}
+
+.Brush1Selected {
+  background: url(../../resources/brushPixelActive.png) no-repeat;
+}
+
+.Brush2 {
+  background: url(../../resources/brushPixel.png) no-repeat;
+}
+
+.Brush2Selected {
+  background: url(../../resources/brushPixelActive.png) no-repeat;
+}
+
+.Brush3 {
+  background: url(../../resources/brushPixel.png) no-repeat;
+}
+
+.Brush3Selected {
+  background: url(../../resources/brushPixelActive.png) no-repeat;
+}
+
+.Brush4 {
+  background: url(../../resources/brushPixel.png) no-repeat;
+}
+
+.Brush4Selected {
+  background: url(../../resources/brushPixelActive.png) no-repeat;
+}

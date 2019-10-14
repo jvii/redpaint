@@ -81,6 +81,7 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         ...state,
         brushSelectorState: {
           ...state.brushSelectorState,
+          dataURL: '',
           startingPosition: action.point,
         },
       };
@@ -90,6 +91,7 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         brushSelectorState: {
           ...state.brushSelectorState,
           dataURL: action.dataURL,
+          startingPosition: null,
         },
       };
     default:

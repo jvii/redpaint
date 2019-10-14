@@ -12,8 +12,8 @@ export class PixelBrush implements Brush {
     const dist = distance(start, end);
     for (let i = 0; i < dist; i++) {
       ctx.fillRect(
-        Math.floor(start.x + ((end.x - start.x) / dist) * i), // round for perfect pixels
-        Math.floor(start.y + ((end.y - start.y) / dist) * i), // thus no aliasing
+        Math.floor(start.x + ((end.x - start.x) / dist) * i), // round to avoid anti-aliasing
+        Math.floor(start.y + ((end.y - start.y) / dist) * i),
         1,
         1
       );

@@ -21,3 +21,7 @@ export const setSelectionComplete: Action = ({ state }): void => {
   state.toolbar.selectionInProcess = false;
   state.toolbar.brushSelectionOn = false;
 };
+
+export const selectBuiltInBrush: Action<number> = ({ state }, brushNumber): void => {
+  state.toolbar.selectedBuiltInBrush = brushNumber;
+};
