@@ -5,15 +5,21 @@ export const setSelectedTool: Action<string> = ({ state }, toolId): void => {
 };
 
 export const toggleZoomMode: Action = ({ state, actions }): void => {
+  if (state.toolbar.brushSelectionOn) {
+    state.toolbar.brushSelectionOn = false;
+  }
   const wasOn = state.toolbar.zoomModeOn;
   state.toolbar.zoomModeOn = wasOn ? false : true;
   state.toolbar.selectionInProcess = wasOn ? false : true;
   actions.canvas.setZoomFocusPoint(null);
 };
 
-export const toggleBrushSelectionMode: Action = ({ state }): void => {
+export const toggleBrushSelectionMode: Action = ({ state, actions }): void => {
   const wasOn = state.toolbar.brushSelectionOn;
   state.toolbar.brushSelectionOn = wasOn ? false : true;
+  if (state.toolbar.zoomModeOn && !wasOn && state.toolbar.selectionInProcess) {
+    state.toolbar.zoomModeOn = false;
+  }
   state.toolbar.selectionInProcess = wasOn ? false : true;
 };
 

@@ -61,8 +61,8 @@ export function getMousePos(
     scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
 
   return {
-    x: (event.clientX - rect.left) * scaleX, // scale mouse coordinates after they have
-    y: (event.clientY - rect.top) * scaleY, // been adjusted to be relative to element
+    x: Math.floor((event.clientX - rect.left) * scaleX), // scale mouse coordinates after they have
+    y: Math.floor((event.clientY - rect.top) * scaleY), // been adjusted to be relative to element
   };
 }
 
