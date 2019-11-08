@@ -13,12 +13,10 @@ export function cloneCanvas(
 
 export function blobToCanvas(blob: Blob | null, canvas: HTMLCanvasElement): void {
   const context = canvas.getContext('2d');
-  console.log('restoring from buffer')
   if (context === null) {
     return;
   }
   if (blob === null) {
-    console.log('blog is null')
     return;
   }
   clearCanvas(canvas, { r: 255, g: 255, b: 255 });

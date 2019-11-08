@@ -1,7 +1,7 @@
 .App {
   display: grid;
-  grid-template-columns: auto 50px;
-  grid-template-rows: auto 25px auto;
+  grid-template-columns: auto 70px;
+  grid-template-rows: auto 35px auto;
   grid-template-areas:
     'canvas toolbar'
     'canvas colorIndicator'
