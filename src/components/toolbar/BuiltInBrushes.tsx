@@ -1,7 +1,6 @@
 import React from 'react';
 import { useOvermind } from '../../overmind';
 import './BuiltInBrushes.css';
-import { PixelBrush } from '../../brush/PixelBrush';
 
 export function BuiltInBrushes(): JSX.Element {
   return (
@@ -22,8 +21,6 @@ function BrushButton({ brush }: ButtonProps): JSX.Element {
   const { state, actions } = useOvermind();
   const onClick = (): void => {
     actions.toolbar.selectBuiltInBrush(brush);
-    actions.brush.setBrush(new PixelBrush());
-    console.log('select built in brush');
   };
   const isSelected = state.toolbar.selectedBuiltInBrush === brush;
   return (

@@ -23,8 +23,11 @@ export class CustomBrush implements Brush {
     const startAdj = this.adjustHandle(start);
     const endAdj = this.adjustHandle(end);
 
-    const dist = distance(startAdj, endAdj);
-    for (let i = 0; i < dist; i += 1) {
+    let dist = Math.round(distance(startAdj, endAdj));
+    if (dist === 0) {
+      dist = 1; // does dpaint draw a point with line tool?
+    }
+    for (let i = 0; i <= dist; i++) {
       ctx.drawImage(
         this.brushImage,
         Math.floor(startAdj.x + ((endAdj.x - startAdj.x) / dist) * i),
@@ -43,6 +46,6 @@ export class CustomBrush implements Brush {
   }
 
   private adjustHandle(point: Point): Point {
-    return { x: point.x - this.width / 2, y: point.y - this.heigth / 2 };
+    return { x: point.x - (this.width - 1) / 2, y: point.y - (this.heigth - 2) / 2 };
   }
 }

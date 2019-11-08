@@ -17,25 +17,25 @@
 }
 
 .Brush2 {
-  background: url(../../resources/brushPixel.png) no-repeat;
+  background: url(../../resources/brushBuiltInCross.png) no-repeat;
 }
 
 .Brush2Selected {
-  background: url(../../resources/brushPixelActive.png) no-repeat;
+  background: url(../../resources/brushBuiltInCrossActive.png) no-repeat;
 }
 
 .Brush3 {
-  background: url(../../resources/brushPixel.png) no-repeat;
+  background: url(../../resources/brushBuiltInDot1.png) no-repeat;
 }
 
 .Brush3Selected {
-  background: url(../../resources/brushPixelActive.png) no-repeat;
+  background: url(../../resources/brushBuiltInDot1Active.png) no-repeat;
 }
 
 .Brush4 {
-  background: url(../../resources/brushPixel.png) no-repeat;
+  background: url(../../resources/brushBuiltInDot2.png) no-repeat;
 }
 
 .Brush4Selected {
-  background: url(../../resources/brushPixelActive.png) no-repeat;
+  background: url(../../resources/brushBuiltInDot2Active.png) no-repeat;
 }

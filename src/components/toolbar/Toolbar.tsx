@@ -2,6 +2,7 @@ import React from 'react';
 import {
   ButtonFreehand,
   ButtonLine,
+  ButtonRectangle,
   ButtonFloodFill,
   ButtonCLR,
   ButtonZoom,
@@ -34,6 +35,10 @@ function Toolbar({ canvasState }: Props): JSX.Element {
         <ButtonFreehand
           isSelected={state.toolbar.selectedTool instanceof FreehandTool}
           onClick={(): void => actions.toolbar.setSelectedTool('freeHandTool')}
+        />
+        <ButtonRectangle
+          isSelected={state.toolbar.selectedTool instanceof LineTool}
+          onLowerHalfClick={(): void => actions.toolbar.setSelectedTool('lineTool')}
         />
         <ButtonFloodFill
           isSelected={state.toolbar.selectedTool instanceof FloodFillTool}

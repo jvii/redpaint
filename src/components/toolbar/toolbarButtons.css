@@ -1,6 +1,6 @@
 .ToolbarButton {
-  height: 25px;
-  width: 25px;
+  height: 35px;
+  width: 35px;
   border-color: black;
   border-style: solid;
   border-width: 1px;
@@ -11,43 +11,51 @@
 }
 
 .Freehand {
-  background: url(../../resources/freehandButton.png) no-repeat;
+  background: url(../../resources/FreehandButton.svg) no-repeat;
 }
 
 .FreehandSelected {
-  background: url(../../resources/freehandButtonActive.png) no-repeat;
+  background: url(../../resources/FreehandButtonActive.svg) no-repeat;
 }
 
 .Line {
-  background: url(../../resources/lineButton.png) no-repeat;
+  background: url(../../resources/lineButton.svg) no-repeat;
 }
 
 .LineSelected {
-  background: url(../../resources/lineButtonActive.png) no-repeat;
+  background: url(../../resources/lineButtonActive.svg) no-repeat;
+}
+
+.Rectangle {
+  background: url(../../resources/rectangleButton.svg) no-repeat;
+}
+
+.RectangleSelected {
+  background: url(../../resources/rectangleButtonLowerActive.svg) no-repeat;
 }
 
 .FloodFill {
-  background: url(../../resources/floodFillButton.png) no-repeat;
+  background: url(../../resources/floodfillButton.svg) no-repeat;
 }
 
 .FloodFillSelected {
-  background: url(../../resources/floodFillButtonActive.png) no-repeat;
+  background: url(../../resources/floodfillButtonActive.svg) no-repeat;
 }
 
 .Zoom {
-  background: url(../../resources/zoomButton.png) no-repeat;
+  background: url(../../resources/zoomButton.svg) no-repeat;
 }
 
 .ZoomSelected {
-  background: url(../../resources/zoomButtonActive.png) no-repeat;
+  background: url(../../resources/zoomButtonActive.svg) no-repeat;
 }
 
 .BrushSelect {
-  background: url(../../resources/brushSelectButton.png) no-repeat;
+  background: url(../../resources/captureBrush.svg) no-repeat;
 }
 
 .BrushSelectSelected {
-  background: url(../../resources/brushSelectButtonActive.png) no-repeat;
+  background: url(../../resources/captureBrushActive.svg) no-repeat;
 }
 
 .Undo {
