@@ -2,11 +2,13 @@ import { Point } from '../types';
 
 export class ToolState {
   public lineToolState: LineToolState;
+  public rectangleToolState: RectangleToolState;
   public freehandToolState: FreehandToolState;
   public zoomToolState: ZoomToolState;
   public brushSelectorState: BrushSelectorState;
   public constructor() {
     this.lineToolState = new LineToolState();
+    this.rectangleToolState = new RectangleToolState();
     this.freehandToolState = new FreehandToolState();
     this.zoomToolState = new ZoomToolState();
     this.brushSelectorState = new BrushSelectorState();
@@ -21,6 +23,13 @@ export class FreehandToolState {
 }
 
 export class LineToolState {
+  public startingPosition: Point | null;
+  public constructor() {
+    this.startingPosition = null;
+  }
+}
+
+export class RectangleToolState {
   public startingPosition: Point | null;
   public constructor() {
     this.startingPosition = null;
@@ -45,6 +54,7 @@ export class BrushSelectorState {
 
 export type Action =
   | { type: 'lineToolStart'; point: Point | null }
+  | { type: 'rectangleToolStart'; point: Point | null }
   | { type: 'freehandToolPrevious'; point: Point | null }
   | { type: 'zoomInitialPoint'; point: Point | null }
   | { type: 'brushSelectionStart'; point: Point | null }
@@ -57,6 +67,14 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         ...state,
         lineToolState: {
           ...state.lineToolState,
+          startingPosition: action.point,
+        },
+      };
+    case 'rectangleToolStart':
+      return {
+        ...state,
+        rectangleToolState: {
+          ...state.rectangleToolState,
           startingPosition: action.point,
         },
       };
