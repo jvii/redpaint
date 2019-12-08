@@ -30,8 +30,12 @@
   background: url(../../resources/rectangleButton.svg) no-repeat;
 }
 
-.RectangleSelected {
-  background: url(../../resources/rectangleButtonLowerActive.svg) no-repeat;
+.RectangleLowerHalfSelected {
+  background: url(../../resources/rectangleButtonFilledActive.svg) no-repeat;
+}
+
+.RectangleUpperHalfSelected {
+  background: url(../../resources/rectangleButtonNoFillActive.svg) no-repeat;
 }
 
 .FloodFill {

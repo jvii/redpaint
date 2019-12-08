@@ -1,9 +1,13 @@
 import { Tool } from '../../tools/Tool';
 import { FreehandTool } from '../../tools/FreehandTool';
 import { LineTool } from '../../tools/LineTool';
+import { RectangleTool } from '../../tools/RectangleTool';
 import { FloodFillTool } from '../../tools/FloodFillTool';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import { BrushSelector } from '../../tools/BrushSelector';
+
+const filled = true;
+const noFill = false;
 
 export type State = {
   readonly selectedTool: Tool;
@@ -36,6 +40,8 @@ export const state: State = {
   tools: {
     freeHandTool: new FreehandTool(),
     lineTool: new LineTool(),
+    rectangleFilledTool: new RectangleTool(filled),
+    rectangleNoFillTool: new RectangleTool(noFill),
     floodFillTool: new FloodFillTool(),
     zoomInitialPointSelectorTool: new ZoomInitialPointSelectorTool(),
     brushSelectorTool: new BrushSelector(),
