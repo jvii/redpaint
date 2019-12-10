@@ -1,11 +1,8 @@
 import React from 'react';
-import { ToolbarButton } from './ToolbarButton';
-import { ToolbarButtonUnselectable } from './ToolbarButtonUnselectable';
-import { ToolbarButtonDivided } from '././ToolbarButtonDivided';
+import { ToolbarToggleButton } from './ToolbarToggleButton';
+import { ToolbarDualToggleButton } from './ToolbarDualToggleButton';
+import { ToolbarActionButton } from './ToolbarActionButton';
 import { BuiltInBrushes } from './BuiltInBrushes';
-import { FreehandTool } from '../../tools/FreehandTool';
-import { LineTool } from '../../tools/LineTool';
-import { FloodFillTool } from '../../tools/FloodFillTool';
 import { CanvasState } from '../canvas/CanvasState';
 import { clearCanvas } from '../../tools/util';
 import { useOvermind } from '../../overmind';
@@ -21,44 +18,44 @@ function Toolbar({ canvasState }: Props): JSX.Element {
     <div>
       <BuiltInBrushes />
       <div className="ToolbarArea">
-        <ToolbarButton
+        <ToolbarToggleButton
           buttonClass="Line"
-          isSelected={state.toolbar.selectedTool instanceof LineTool}
+          isSelected={state.toolbar.selectedToolId === 'lineTool'}
           onClick={(): void => actions.toolbar.setSelectedTool('lineTool')}
         />
-        <ToolbarButton
+        <ToolbarToggleButton
           buttonClass="Freehand"
-          isSelected={state.toolbar.selectedTool instanceof FreehandTool}
+          isSelected={state.toolbar.selectedToolId === 'freeHandTool'}
           onClick={(): void => actions.toolbar.setSelectedTool('freeHandTool')}
         />
-        <ToolbarButtonDivided
+        <ToolbarDualToggleButton
           buttonClass="Rectangle"
           isUpperHalfSelected={state.toolbar.selectedToolId === 'rectangleNoFillTool'}
           isLowerHalfSelected={state.toolbar.selectedToolId === 'rectangleFilledTool'}
           onUpperHalfClick={(): void => actions.toolbar.setSelectedTool('rectangleNoFillTool')}
           onLowerHalfClick={(): void => actions.toolbar.setSelectedTool('rectangleFilledTool')}
         />
-        <ToolbarButton
+        <ToolbarToggleButton
           buttonClass="FloodFill"
-          isSelected={state.toolbar.selectedTool instanceof FloodFillTool}
+          isSelected={state.toolbar.selectedToolId === 'floodFillTool'}
           onClick={(): void => actions.toolbar.setSelectedTool('floodFillTool')}
         />
-        <ToolbarButton
+        <ToolbarToggleButton
           buttonClass="Zoom"
           isSelected={state.toolbar.zoomModeOn}
           onClick={(): void => actions.toolbar.toggleZoomMode()}
         />
-        <ToolbarButton
+        <ToolbarToggleButton
           buttonClass="BrushSelect"
           isSelected={state.toolbar.brushSelectionOn}
           onClick={(): void => actions.toolbar.toggleBrushSelectionMode()}
         />
-        <ToolbarButtonUnselectable
+        <ToolbarActionButton
           buttonClass="Undo"
           onClick={(): void => actions.undo.undo()}
           onRightClick={(): void => actions.undo.redo()}
         />
-        <ToolbarButtonUnselectable
+        <ToolbarActionButton
           buttonClass="CLR"
           onClick={(): void => {
             clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);

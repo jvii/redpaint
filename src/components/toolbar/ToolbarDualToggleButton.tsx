@@ -9,7 +9,7 @@ interface Props {
   onLowerHalfClick: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
 }
 
-export function ToolbarButtonDivided({
+export function ToolbarDualToggleButton({
   buttonClass,
   isLowerHalfSelected,
   isUpperHalfSelected,
