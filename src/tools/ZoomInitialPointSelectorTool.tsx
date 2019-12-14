@@ -3,10 +3,9 @@ import { getMousePos, clearOverlayCanvas } from './util';
 
 export class ZoomInitialPointSelectorTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, setSelectionComplete, toolStateDispatch } = params;
+    const { event, canvas, toolStateDispatch } = params;
     const position = getMousePos(canvas, event);
     toolStateDispatch({ type: 'zoomInitialPoint', point: position });
-    setSelectionComplete();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {

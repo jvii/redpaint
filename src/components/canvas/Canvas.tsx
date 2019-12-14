@@ -34,7 +34,8 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     blobToCanvas(state.undo.currentBufferItem, canvasRef.current);
   }, [state.undo.lastUndoRedoTime]);
 
-  useZoomFocusPointSelection(toolState); // yhteinen useSelectionHooks?
+  // TODO: yhteinen useSelectionHooks tai useBridgeToolStateToGlobalState(toolState)
+  useZoomFocusPointSelection(toolState);
   useBrushSelection(toolState);
 
   const CSSZoom = {
@@ -50,9 +51,6 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    setSelectionComplete: (): void => {
-      actions.toolbar.setSelectionComplete();
-    },
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,
     state: state,
@@ -65,9 +63,6 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     },
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
-    },
-    setSelectionComplete: (): void => {
-      actions.toolbar.setSelectionComplete();
     },
     toolState: toolState,
     toolStateDispatch: toolStateDispatch,

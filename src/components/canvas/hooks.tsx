@@ -20,6 +20,7 @@ export function useBrushSelection(toolState: ToolState): void {
     const brush = new CustomBrush(toolState.brushSelectorState.dataURL);
     actions.brush.setBrush(brush);
     actions.toolbar.selectBuiltInBrush(0);
+    actions.toolbar.toggleBrushSelectionMode();
   }, [toolState.brushSelectorState.dataURL]);
 }
 

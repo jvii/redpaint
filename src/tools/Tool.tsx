@@ -5,7 +5,6 @@ export interface EventHandlerParams {
   canvas: HTMLCanvasElement;
   onDrawToCanvas: () => void;
   undoPoint: () => void;
-  setSelectionComplete: () => void;
   toolState: ToolState;
   toolStateDispatch: React.Dispatch<Action>;
   state: OvermindState;

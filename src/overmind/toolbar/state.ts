@@ -9,45 +9,45 @@ import { BrushSelector } from '../../tools/BrushSelector';
 const filled = true;
 const noFill = false;
 
+const drawingTools = {
+  freeHand: new FreehandTool(),
+  line: new LineTool(),
+  rectangleFilled: new RectangleTool(filled),
+  rectangleNoFill: new RectangleTool(noFill),
+  floodFill: new FloodFillTool(),
+};
+
+const selectorTools = {
+  zoomInitialPointSelectorTool: new ZoomInitialPointSelectorTool(),
+  brushSelectorTool: new BrushSelector(),
+};
+
+export type DrawingToolId = keyof typeof drawingTools;
+
 export type State = {
-  readonly selectedTool: Tool;
-  selectedToolId: string;
+  selectedDrawingToolId: DrawingToolId;
+  readonly selectedDrawingTool: Tool;
   readonly activeTool: Tool;
-  tools: { [id: string]: Tool };
-  selectionInProcess: boolean;
-  zoomModeOn: boolean;
-  brushSelectionOn: boolean;
+  zoomModeState: 'off' | 'on' | 'selectingInitialPoint';
+  brushSelectionModeOn: boolean;
   selectedBuiltInBrush: number;
 };
 
 export const state: State = {
-  selectedToolId: 'freeHandTool',
-  get selectedTool(this: State): Tool {
-    return this.tools[this.selectedToolId];
+  selectedDrawingToolId: 'freeHand',
+  get selectedDrawingTool(this: State): Tool {
+    return drawingTools[this.selectedDrawingToolId];
   },
   get activeTool(this: State): Tool {
-    if (!this.selectionInProcess) {
-      return this.tools[this.selectedToolId];
+    if (this.zoomModeState === 'selectingInitialPoint') {
+      return selectorTools['zoomInitialPointSelectorTool'];
     }
-    if (this.brushSelectionOn) {
-      return this.tools['brushSelectorTool'];
+    if (this.brushSelectionModeOn) {
+      return selectorTools['brushSelectorTool'];
     }
-    if (this.zoomModeOn) {
-      return this.tools['zoomInitialPointSelectorTool'];
-    }
-    return this.tools[this.selectedToolId];
+    return drawingTools[this.selectedDrawingToolId];
   },
-  tools: {
-    freeHandTool: new FreehandTool(),
-    lineTool: new LineTool(),
-    rectangleFilledTool: new RectangleTool(filled),
-    rectangleNoFillTool: new RectangleTool(noFill),
-    floodFillTool: new FloodFillTool(),
-    zoomInitialPointSelectorTool: new ZoomInitialPointSelectorTool(),
-    brushSelectorTool: new BrushSelector(),
-  },
-  selectionInProcess: false,
-  zoomModeOn: false,
-  brushSelectionOn: false,
+  zoomModeState: 'off',
+  brushSelectionModeOn: false,
   selectedBuiltInBrush: 1,
 };

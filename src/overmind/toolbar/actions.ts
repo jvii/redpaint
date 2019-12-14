@@ -1,33 +1,37 @@
 import { Action } from 'overmind';
+import { DrawingToolId } from './state';
 
-export const setSelectedTool: Action<string> = ({ state }, toolId): void => {
-  state.toolbar.selectedToolId = toolId;
-  state.toolbar.brushSelectionOn = false;
+export const setSelectedDrawingTool: Action<DrawingToolId> = ({ state }, toolId): void => {
+  state.toolbar.selectedDrawingToolId = toolId;
+  state.toolbar.brushSelectionModeOn = false;
 };
 
 export const toggleZoomMode: Action = ({ state, actions }): void => {
-  if (state.toolbar.brushSelectionOn) {
-    state.toolbar.brushSelectionOn = false;
+  const oldState = state.toolbar.zoomModeState;
+  switch (oldState) {
+    case 'off':
+      state.toolbar.zoomModeState = 'selectingInitialPoint';
+      break;
+    case 'selectingInitialPoint':
+      state.toolbar.zoomModeState = 'off';
+      break;
+    case 'on':
+      state.toolbar.zoomModeState = 'off';
+      break;
   }
-  const wasOn = state.toolbar.zoomModeOn;
-  state.toolbar.zoomModeOn = wasOn ? false : true;
-  state.toolbar.selectionInProcess = wasOn ? false : true;
+
+  state.toolbar.brushSelectionModeOn = false;
   actions.canvas.setZoomFocusPoint(null);
 };
 
 export const toggleBrushSelectionMode: Action = ({ state }): void => {
-  const wasOn = state.toolbar.brushSelectionOn;
-  state.toolbar.brushSelectionOn = wasOn ? false : true;
-  if (state.toolbar.zoomModeOn && !wasOn && state.toolbar.selectionInProcess) {
-    state.toolbar.zoomModeOn = false;
-  }
-  state.toolbar.selectionInProcess = wasOn ? false : true;
-};
+  const oldState = state.toolbar.brushSelectionModeOn;
+  state.toolbar.brushSelectionModeOn = oldState ? false : true;
 
-export const setSelectionComplete: Action = ({ state, actions }): void => {
-  state.toolbar.selectionInProcess = false;
-  state.toolbar.brushSelectionOn = false;
-  actions.toolbar.setSelectedTool('freeHandTool');
+  // deselect zoom mode if selecting zoom mode initial point in process
+  if (state.toolbar.zoomModeState === 'selectingInitialPoint') {
+    state.toolbar.zoomModeState = 'off';
+  }
 };
 
 export const selectBuiltInBrush: Action<number> = ({ state, actions }, brushNumber): void => {
