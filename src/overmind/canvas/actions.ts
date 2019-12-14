@@ -13,6 +13,9 @@ export const setScrollFocusPoint: Action<Point> = ({ state }, point): void => {
 
 export const setZoomFocusPoint: Action<Point | null> = ({ state }, point): void => {
   state.canvas.zoomFocusPoint = point;
+  if (point != null) {
+    state.toolbar.zoomModeState = 'on';
+  }
 };
 
 export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {

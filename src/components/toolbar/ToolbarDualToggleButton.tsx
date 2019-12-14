@@ -5,8 +5,8 @@ interface Props {
   buttonClass: string;
   isLowerHalfSelected: boolean;
   isUpperHalfSelected: boolean;
-  onUpperHalfClick: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
-  onLowerHalfClick: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
+  onUpperHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onLowerHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export function ToolbarDualToggleButton({
@@ -17,9 +17,9 @@ export function ToolbarDualToggleButton({
   onLowerHalfClick,
 }: Props): JSX.Element {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    if (isLowerHalfClick(event) && onLowerHalfClick !== undefined) {
+    if (isLowerHalfClick(event)) {
       onLowerHalfClick(event);
-    } else if (!isLowerHalfClick(event) && onUpperHalfClick !== undefined) {
+    } else {
       onUpperHalfClick(event);
     }
   };

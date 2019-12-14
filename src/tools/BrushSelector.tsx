@@ -8,7 +8,7 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, setSelectionComplete, toolStateDispatch, state } = params;
+    const { event, canvas, toolState, toolStateDispatch, state } = params;
 
     if (toolState.brushSelectorState.startingPosition) {
       const position = getMousePos(canvas, event);
@@ -56,7 +56,6 @@ export class BrushSelector implements Tool {
       theImageData.data.set(theImageDataClamped8TMP);
       bufferCanvasCtx.putImageData(theImageData, 0, 0);
       toolStateDispatch({ type: 'brushSelectionComplete', dataURL: bufferCanvas.toDataURL() });
-      setSelectionComplete();
     }
   }
 

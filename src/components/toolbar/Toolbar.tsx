@@ -20,34 +20,34 @@ function Toolbar({ canvasState }: Props): JSX.Element {
       <div className="ToolbarArea">
         <ToolbarToggleButton
           buttonClass="Line"
-          isSelected={state.toolbar.selectedToolId === 'lineTool'}
-          onClick={(): void => actions.toolbar.setSelectedTool('lineTool')}
+          isSelected={state.toolbar.selectedDrawingToolId === 'line'}
+          onClick={(): void => actions.toolbar.setSelectedDrawingTool('line')}
         />
         <ToolbarToggleButton
           buttonClass="Freehand"
-          isSelected={state.toolbar.selectedToolId === 'freeHandTool'}
-          onClick={(): void => actions.toolbar.setSelectedTool('freeHandTool')}
+          isSelected={state.toolbar.selectedDrawingToolId === 'freeHand'}
+          onClick={(): void => actions.toolbar.setSelectedDrawingTool('freeHand')}
         />
         <ToolbarDualToggleButton
           buttonClass="Rectangle"
-          isUpperHalfSelected={state.toolbar.selectedToolId === 'rectangleNoFillTool'}
-          isLowerHalfSelected={state.toolbar.selectedToolId === 'rectangleFilledTool'}
-          onUpperHalfClick={(): void => actions.toolbar.setSelectedTool('rectangleNoFillTool')}
-          onLowerHalfClick={(): void => actions.toolbar.setSelectedTool('rectangleFilledTool')}
+          isUpperHalfSelected={state.toolbar.selectedDrawingToolId === 'rectangleNoFill'}
+          isLowerHalfSelected={state.toolbar.selectedDrawingToolId === 'rectangleFilled'}
+          onUpperHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('rectangleNoFill')}
+          onLowerHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('rectangleFilled')}
         />
         <ToolbarToggleButton
           buttonClass="FloodFill"
-          isSelected={state.toolbar.selectedToolId === 'floodFillTool'}
-          onClick={(): void => actions.toolbar.setSelectedTool('floodFillTool')}
+          isSelected={state.toolbar.selectedDrawingToolId === 'floodFill'}
+          onClick={(): void => actions.toolbar.setSelectedDrawingTool('floodFill')}
         />
         <ToolbarToggleButton
           buttonClass="Zoom"
-          isSelected={state.toolbar.zoomModeOn}
+          isSelected={state.toolbar.zoomModeState !== 'off'}
           onClick={(): void => actions.toolbar.toggleZoomMode()}
         />
         <ToolbarToggleButton
           buttonClass="BrushSelect"
-          isSelected={state.toolbar.brushSelectionOn}
+          isSelected={state.toolbar.brushSelectionModeOn}
           onClick={(): void => actions.toolbar.toggleBrushSelectionMode()}
         />
         <ToolbarActionButton

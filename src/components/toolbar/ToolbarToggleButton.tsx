@@ -4,8 +4,8 @@ import './toolbarButtons.css';
 interface Props {
   buttonClass: string;
   isSelected: boolean;
-  onClick: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
-  onRightClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void) | undefined;
+  onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export function ToolbarToggleButton({
@@ -15,7 +15,7 @@ export function ToolbarToggleButton({
   onRightClick,
 }: Props): JSX.Element {
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    if (onRightClick !== undefined) {
+    if (onRightClick) {
       onRightClick(event);
     }
     event.preventDefault();

@@ -44,7 +44,7 @@ export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
     updateZoomFocusPoint();
   };
 
-  const visible = state.toolbar.zoomModeOn && state.canvas.zoomFocusPoint;
+  const visible = state.toolbar.zoomModeState === 'on';
 
   return (
     <>
