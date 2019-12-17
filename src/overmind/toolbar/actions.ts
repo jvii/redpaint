@@ -33,11 +33,3 @@ export const toggleBrushSelectionMode: Action = ({ state }): void => {
     state.toolbar.zoomModeState = 'off';
   }
 };
-
-export const selectBuiltInBrush: Action<number> = ({ state, actions }, brushNumber): void => {
-  state.toolbar.selectedBuiltInBrush = brushNumber;
-  if (brushNumber === 0) {
-    return;
-  }
-  actions.brush.setBrush(state.brush.builtInBrushes[brushNumber]);
-};

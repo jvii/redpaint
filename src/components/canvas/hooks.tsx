@@ -19,8 +19,9 @@ export function useBrushSelection(toolState: ToolState): void {
     }
     const brush = new CustomBrush(toolState.brushSelectorState.dataURL);
     actions.brush.setBrush(brush);
-    actions.toolbar.selectBuiltInBrush(0);
     actions.toolbar.toggleBrushSelectionMode();
+    // switch to Freehand tool after selection for simplicity (what does DPaint do?)
+    actions.toolbar.setSelectedDrawingTool('freeHand');
   }, [toolState.brushSelectorState.dataURL]);
 }
 
