@@ -1,3 +1,5 @@
+/// This thing only exists to hold the refs of different canvas elements
+/// TODO: maybe use forwarding refs instead?
 export class CanvasState {
   public mainCanvas: HTMLCanvasElement;
   public mainOverlayCanvas: HTMLCanvasElement;

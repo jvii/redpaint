@@ -1,31 +1,32 @@
 import React from 'react';
 import { useOvermind } from '../../overmind';
+import { BuiltInBrushId } from '../../brush/BuiltInBrushes';
 import './BuiltInBrushes.css';
 
 export function BuiltInBrushes(): JSX.Element {
   return (
     <div className="BuiltInBrushes">
-      <BrushButton brush={1} />
-      <BrushButton brush={2} />
-      <BrushButton brush={3} />
-      <BrushButton brush={4} />
+      <BrushButton brushId={1} />
+      <BrushButton brushId={2} />
+      <BrushButton brushId={3} />
+      <BrushButton brushId={4} />
     </div>
   );
 }
 
 interface ButtonProps {
-  brush: number;
+  brushId: BuiltInBrushId;
 }
 
-function BrushButton({ brush }: ButtonProps): JSX.Element {
+function BrushButton({ brushId }: ButtonProps): JSX.Element {
   const { state, actions } = useOvermind();
   const onClick = (): void => {
-    actions.toolbar.selectBuiltInBrush(brush);
+    actions.brush.selectBuiltInBrush(brushId);
   };
-  const isSelected = state.toolbar.selectedBuiltInBrush === brush;
+  const isSelected = state.brush.selectedBuiltInBrushId === brushId;
   return (
     <button
-      className={'BuiltInBrush ' + 'Brush' + brush.toString() + (isSelected ? 'Selected' : '')}
+      className={'BuiltInBrush ' + 'Brush' + brushId.toString() + (isSelected ? 'Selected' : '')}
       onClick={onClick}
     ></button>
   );
