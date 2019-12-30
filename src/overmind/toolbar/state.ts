@@ -25,15 +25,14 @@ const selectorTools = {
 export type DrawingToolId = keyof typeof drawingTools;
 
 export type State = {
-  selectedDrawingToolId: DrawingToolId;
   readonly activeTool: Tool;
+  selectedDrawingToolId: DrawingToolId;
   zoomModeState: 'off' | 'on' | 'selectingInitialPoint';
   brushSelectionModeOn: boolean;
   symmetryModeOn: boolean;
 };
 
 export const state: State = {
-  selectedDrawingToolId: 'freeHand',
   get activeTool(this: State): Tool {
     if (this.zoomModeState === 'selectingInitialPoint') {
       return selectorTools['zoomInitialPointSelectorTool'];
@@ -43,6 +42,7 @@ export const state: State = {
     }
     return drawingTools[this.selectedDrawingToolId];
   },
+  selectedDrawingToolId: 'freeHand',
   zoomModeState: 'off',
   brushSelectionModeOn: false,
   symmetryModeOn: false,

@@ -11,6 +11,7 @@ export const toggleZoomMode: Action = ({ state, actions }): void => {
   switch (oldState) {
     case 'off':
       state.toolbar.zoomModeState = 'selectingInitialPoint';
+      state.toolbar.brushSelectionModeOn = false; // can't be selecting brush while selecting zoom point
       break;
     case 'selectingInitialPoint':
       state.toolbar.zoomModeState = 'off';
@@ -20,7 +21,6 @@ export const toggleZoomMode: Action = ({ state, actions }): void => {
       break;
   }
 
-  state.toolbar.brushSelectionModeOn = false;
   actions.canvas.setZoomFocusPoint(null);
 };
 
@@ -28,8 +28,7 @@ export const toggleBrushSelectionMode: Action = ({ state }): void => {
   const oldState = state.toolbar.brushSelectionModeOn;
   state.toolbar.brushSelectionModeOn = oldState ? false : true;
 
-  // deselect zoom mode if selecting zoom mode initial point in process
   if (state.toolbar.zoomModeState === 'selectingInitialPoint') {
-    state.toolbar.zoomModeState = 'off';
+    state.toolbar.zoomModeState = 'off'; // can't be selecting zoom point while selecting brush
   }
 };
