@@ -1,5 +1,4 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { Color } from '../types';
 import { getMousePos, clearOverlayCanvas } from './util';
 
 export class LineTool implements Tool {
@@ -21,12 +20,9 @@ export class LineTool implements Tool {
 
     if (toolState.lineToolState.startingPosition) {
       const position = getMousePos(canvas, event);
-      state.brush.brush.drawLine(
-        canvas,
-        chooseColor(event, state.palette),
-        toolState.lineToolState.startingPosition,
-        position
-      );
+      const start = toolState.lineToolState.startingPosition;
+      const end = position;
+      state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
       undoPoint();
       onDrawToCanvas();
       toolStateDispatch({ type: 'lineToolStart', point: null });
@@ -52,14 +48,11 @@ export class LineTool implements Tool {
 
     clearOverlayCanvas(canvas);
     if (toolState.lineToolState.startingPosition) {
-      state.brush.brush.drawLine(
-        canvas,
-        state.palette.foregroundColor, // TODO: fix chooseColor
-        toolState.lineToolState.startingPosition,
-        position
-      );
+      const start = toolState.lineToolState.startingPosition;
+      const end = position;
+      state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
     } else {
-      state.brush.brush.drawDot(canvas, state.palette.foregroundColor, position);
+      state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
     }
     onDrawToCanvas();
   }
@@ -73,15 +66,6 @@ export class LineTool implements Tool {
 
 // Helpers
 
-function chooseColor(
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-  paletteState: { foregroundColor: Color; backgroundColor: Color }
-): Color {
-  if (event.button === 0) {
-    return paletteState.foregroundColor;
-  }
-  if (event.button === 2) {
-    return paletteState.backgroundColor;
-  }
-  return paletteState.foregroundColor;
+function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
+  return event.button === 2 || event.buttons === 2;
 }

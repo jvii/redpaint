@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, chooseColor, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas } from './util';
 
 export class FreehandTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -11,12 +11,9 @@ export class FreehandTool implements Tool {
     const { event, canvas, onDrawToCanvas, toolState, toolStateDispatch, state } = params;
     const position = getMousePos(canvas, event);
     if (event.buttons && toolState.freehandToolState.previousPosition) {
-      state.brush.brush.drawLine(
-        canvas,
-        chooseColor(event, state.palette),
-        toolState.freehandToolState.previousPosition,
-        position
-      );
+      const start = toolState.freehandToolState.previousPosition;
+      const end = position;
+      state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
       toolStateDispatch({ type: 'freehandToolPrevious', point: position });
       onDrawToCanvas();
     }
@@ -25,7 +22,7 @@ export class FreehandTool implements Tool {
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, onDrawToCanvas, toolStateDispatch, state } = params;
     const position = getMousePos(canvas, event);
-    state.brush.brush.drawDot(canvas, chooseColor(event, state.palette), position);
+    state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
     toolStateDispatch({ type: 'freehandToolPrevious', point: position });
     onDrawToCanvas();
   }
@@ -50,7 +47,7 @@ export class FreehandTool implements Tool {
     }
     clearOverlayCanvas(canvas);
     const position = getMousePos(canvas, event);
-    state.brush.brush.drawDot(canvas, state.palette.foregroundColor, position);
+    state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
     onDrawToCanvas();
   }
 
@@ -65,4 +62,10 @@ export class FreehandTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
+}
+
+// Helpers
+
+function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
+  return event.button === 2 || event.buttons === 2;
 }

@@ -1,6 +1,32 @@
-import { Point, Color } from '../types';
+import { Point } from '../types';
+import { OvermindState } from '../overmind';
 
 export interface Brush {
-  drawLine(canvas: HTMLCanvasElement, color: Color, start: Point, end: Point): void;
-  drawDot(canvas: HTMLCanvasElement, color: Color, point: Point): void;
+  drawLine(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+  drawDot(
+    canvas: HTMLCanvasElement,
+    point: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+  drawRect(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+  drawRectFilled(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
 }

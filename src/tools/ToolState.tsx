@@ -1,5 +1,7 @@
 import { Point } from '../types';
 
+// Local state for managing transient tool state.
+
 export class ToolState {
   public lineToolState: LineToolState;
   public rectangleToolState: RectangleToolState;

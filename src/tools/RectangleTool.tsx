@@ -1,6 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { Color } from '../types';
-import { getMousePos, clearOverlayCanvas, colorToRGBString } from './util';
+import { getMousePos, clearOverlayCanvas } from './util';
 
 export class RectangleTool implements Tool {
   public constructor(filled: boolean) {
@@ -26,31 +25,23 @@ export class RectangleTool implements Tool {
     } = params;
 
     if (toolState.rectangleToolState.startingPosition) {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return;
-      }
-
       const position = getMousePos(canvas, event);
-      const width = position.x - toolState.rectangleToolState.startingPosition.x;
-      const height = position.y - toolState.rectangleToolState.startingPosition.y;
 
       if (this.filled) {
-        ctx.fillStyle = colorToRGBString(chooseColor(event, state.palette));
-        ctx.fillRect(
-          toolState.rectangleToolState.startingPosition.x,
-          toolState.rectangleToolState.startingPosition.y,
-          width,
-          height
+        state.brush.brush.drawRectFilled(
+          canvas,
+          toolState.rectangleToolState.startingPosition,
+          position,
+          isRightMouseButton(event),
+          state
         );
       } else {
-        ctx.strokeStyle = colorToRGBString(chooseColor(event, state.palette));
-        ctx.lineWidth = 1;
-        ctx.strokeRect(
-          toolState.rectangleToolState.startingPosition.x,
-          toolState.rectangleToolState.startingPosition.y,
-          width,
-          height
+        state.brush.brush.drawRect(
+          canvas,
+          toolState.rectangleToolState.startingPosition,
+          position,
+          isRightMouseButton(event),
+          state
         );
       }
 
@@ -78,28 +69,23 @@ export class RectangleTool implements Tool {
     const position = getMousePos(canvas, event);
 
     if (toolState.rectangleToolState.startingPosition) {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return;
-      }
       clearOverlayCanvas(canvas);
-      const width = position.x - toolState.rectangleToolState.startingPosition.x;
-      const height = position.y - toolState.rectangleToolState.startingPosition.y;
+
       if (this.filled) {
-        ctx.fillStyle = colorToRGBString(chooseColor(event, state.palette));
-        ctx.fillRect(
-          toolState.rectangleToolState.startingPosition.x,
-          toolState.rectangleToolState.startingPosition.y,
-          width,
-          height
+        state.brush.brush.drawRectFilled(
+          canvas,
+          toolState.rectangleToolState.startingPosition,
+          position,
+          isRightMouseButton(event),
+          state
         );
       } else {
-        ctx.strokeStyle = colorToRGBString(chooseColor(event, state.palette));
-        ctx.strokeRect(
-          toolState.rectangleToolState.startingPosition.x,
-          toolState.rectangleToolState.startingPosition.y,
-          width,
-          height
+        state.brush.brush.drawRect(
+          canvas,
+          toolState.rectangleToolState.startingPosition,
+          position,
+          isRightMouseButton(event),
+          state
         );
       }
     }
@@ -121,15 +107,6 @@ export class RectangleTool implements Tool {
 
 // Helpers
 
-function chooseColor(
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-  paletteState: { foregroundColor: Color; backgroundColor: Color }
-): Color {
-  if (event.button === 0) {
-    return paletteState.foregroundColor;
-  }
-  if (event.button === 2) {
-    return paletteState.backgroundColor;
-  }
-  return paletteState.foregroundColor;
+function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
+  return event.button === 2 || event.buttons === 2;
 }
