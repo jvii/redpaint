@@ -26,7 +26,7 @@ function BrushButton({ brushId }: ButtonProps): JSX.Element {
   const isSelected = state.brush.selectedBuiltInBrushId === brushId;
   return (
     <button
-      className={'BuiltInBrush ' + 'Brush' + brushId.toString() + (isSelected ? 'Selected' : '')}
+      className={'BuiltInBrush Brush' + (brushId.toString() + (isSelected ? 'Selected' : ''))}
       onClick={onClick}
     ></button>
   );

@@ -1,101 +1,146 @@
 import { Brush } from './Brush';
-import { Color, Point } from '../types';
+import { Point } from '../types';
+import { OvermindState } from '../overmind';
 import { colorToRGBString, distance } from '../tools/util';
 
 export class PixelBrush implements Brush {
-  public drawLine(canvas: HTMLCanvasElement, color: Color, start: Point, end: Point): void {
+  public drawLine(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return;
     }
-    ctx.fillStyle = colorToRGBString(color);
-    //const dist = distance(start, end);
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
     let dist = Math.round(distance(start, end));
     if (dist === 0) {
-      dist = 1; // does dpaint draw a point with line tool?
+      dist = 1; // draws a dot
     }
     for (let i = 0; i <= dist; i++) {
-      ctx.fillRect(
-        Math.floor(start.x + ((end.x - start.x) / dist) * i), // round to avoid anti-aliasing
-        Math.floor(start.y + ((end.y - start.y) / dist) * i),
-        1,
-        1
-      );
-    }
-
-    const originOfSymmetry: Point = {
-      x: Math.round(canvas.width / 2),
-      y: Math.round(canvas.height / 2),
-    };
-
-    // mirror x and y
-    const start2 = {
-      x: originOfSymmetry.x + originOfSymmetry.x - start.x,
-      y: originOfSymmetry.y + originOfSymmetry.y - start.y,
-    };
-    const end2 = {
-      x: originOfSymmetry.x + originOfSymmetry.x - end.x,
-      y: originOfSymmetry.y + originOfSymmetry.y - end.y,
-    };
-    const dist2 = distance(start2, end2);
-    for (let i = 0; i < dist2; i++) {
-      ctx.fillRect(
-        Math.floor(start2.x + ((end2.x - start2.x) / dist2) * i), // round to avoid anti-aliasing
-        Math.floor(start2.y + ((end2.y - start2.y) / dist2) * i),
-        1,
-        1
-      );
-    }
-
-    // mirror x
-
-    const start3 = {
-      x: originOfSymmetry.x + originOfSymmetry.x - start.x,
-      y: start.y,
-    };
-    const end3 = {
-      x: originOfSymmetry.x + originOfSymmetry.x - end.x,
-      y: end.y,
-    };
-
-    const dist3 = distance(start3, end3);
-    for (let i = 0; i < dist3; i++) {
-      ctx.fillRect(
-        Math.floor(start3.x + ((end3.x - start3.x) / dist3) * i), // round to avoid anti-aliasing
-        Math.floor(start3.y + ((end3.y - start3.y) / dist3) * i),
-        1,
-        1
-      );
-    }
-
-    // mirror y
-
-    const start4 = {
-      x: start.x,
-      y: originOfSymmetry.y + originOfSymmetry.y - start.y,
-    };
-    const end4 = {
-      x: end.x,
-      y: originOfSymmetry.y + originOfSymmetry.y - end.y,
-    };
-
-    const dist4 = distance(start4, end4);
-    for (let i = 0; i < dist4; i++) {
-      ctx.fillRect(
-        Math.floor(start4.x + ((end4.x - start4.x) / dist4) * i), // round to avoid anti-aliasing
-        Math.floor(start4.y + ((end4.y - start4.y) / dist4) * i),
-        1,
-        1
+      this.drawDotWithCtx(
+        {
+          x: start.x + ((end.x - start.x) / dist) * i,
+          y: start.y + ((end.y - start.y) / dist) * i,
+        },
+        ctx,
+        state
       );
     }
   }
 
-  public drawDot(canvas: HTMLCanvasElement, color: Color, point: Point): void {
+  public drawDot(
+    canvas: HTMLCanvasElement,
+    point: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return;
     }
-    ctx.fillStyle = colorToRGBString(color);
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    this.drawDotWithCtx(point, ctx, state);
+  }
+
+  public drawRect(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    if (start === end) {
+      // just draw a dot
+      this.drawDot(canvas, start, withBackgroundColor, state);
+      return;
+    }
+
+    // calculate rectangle corner points
+
+    const point1 = start;
+    const point2 = { x: end.x, y: start.y };
+    const point3 = end;
+    const point4 = { x: start.x, y: end.y };
+
+    // draw lines
+
+    this.drawLine(canvas, point1, point2, withBackgroundColor, state);
+    this.drawLine(canvas, point2, point3, withBackgroundColor, state);
+    this.drawLine(canvas, point3, point4, withBackgroundColor, state);
+    this.drawLine(canvas, point4, point1, withBackgroundColor, state);
+  }
+
+  public drawRectFilled(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    if (start === end) {
+      // just draw a dot
+      this.drawDot(canvas, start, withBackgroundColor, state);
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    const width = end.x - start.x;
+    const height = end.y - start.y;
+    ctx.fillRect(start.x, start.y, width, height);
+  }
+
+  private drawDotWithCtx(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {
     ctx.fillRect(Math.floor(point.x), Math.floor(point.y), 1, 1);
+
+    if (!state.toolbar.symmetryModeOn) {
+      return;
+    }
+
+    const originOfSymmetry: Point = {
+      x: Math.round(ctx.canvas.width / 2),
+      y: Math.round(ctx.canvas.height / 2),
+    };
+
+    // mirror x and y
+    const sym1 = {
+      x: originOfSymmetry.x + originOfSymmetry.x - point.x,
+      y: originOfSymmetry.y + originOfSymmetry.y - point.y,
+    };
+
+    // mirror x
+    const sym2 = {
+      x: originOfSymmetry.x + originOfSymmetry.x - point.x,
+      y: point.y,
+    };
+
+    // mirror y
+    const sym3 = {
+      x: point.x,
+      y: originOfSymmetry.y + originOfSymmetry.y - point.y,
+    };
+
+    ctx.fillRect(Math.floor(sym1.x), Math.floor(sym1.y), 1, 1);
+    ctx.fillRect(Math.floor(sym2.x), Math.floor(sym2.y), 1, 1);
+    ctx.fillRect(Math.floor(sym3.x), Math.floor(sym3.y), 1, 1);
   }
 }
