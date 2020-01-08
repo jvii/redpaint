@@ -2,6 +2,7 @@ import { Brush } from './Brush';
 import { Point } from '../types';
 import { OvermindState } from '../overmind';
 import { colorToRGBString, distance } from '../tools/util';
+import { unfilledCircle, filledCircle } from '../algorithm/draw';
 
 export class PixelBrush implements Brush {
   public drawLine(
@@ -25,7 +26,7 @@ export class PixelBrush implements Brush {
       dist = 1; // draws a dot
     }
     for (let i = 0; i <= dist; i++) {
-      this.drawDotWithCtx(
+      this.draw(
         {
           x: start.x + ((end.x - start.x) / dist) * i,
           y: start.y + ((end.y - start.y) / dist) * i,
@@ -51,7 +52,7 @@ export class PixelBrush implements Brush {
       withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
     );
 
-    this.drawDotWithCtx(point, ctx, state);
+    this.draw(point, ctx, state);
   }
 
   public drawRect(
@@ -109,7 +110,57 @@ export class PixelBrush implements Brush {
     ctx.fillRect(start.x, start.y, width, height);
   }
 
-  private drawDotWithCtx(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {
+  public drawCircle(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radius: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    if (radius === 0) {
+      // just draw a dot
+      this.drawDot(canvas, center, withBackgroundColor, state);
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    unfilledCircle(ctx, this, center, radius, state);
+  }
+
+  public drawCircleFilled(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radius: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    if (radius === 0) {
+      // just draw a dot
+      this.drawDot(canvas, center, withBackgroundColor, state);
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    filledCircle(ctx, center, radius);
+  }
+
+  public draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {
     ctx.fillRect(Math.floor(point.x), Math.floor(point.y), 1, 1);
 
     if (!state.toolbar.symmetryModeOn) {

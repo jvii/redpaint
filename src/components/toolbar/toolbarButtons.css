@@ -38,6 +38,18 @@
   background: url(../../resources/rectangleButtonNoFillActive.svg) no-repeat;
 }
 
+.Circle {
+  background: url(../../resources/circleButton.svg) no-repeat;
+}
+
+.CircleLowerHalfSelected {
+  background: url(../../resources/circleButtonFilledActive.svg) no-repeat;
+}
+
+.CircleUpperHalfSelected {
+  background: url(../../resources/circleButtonNoFillActive.svg) no-repeat;
+}
+
 .FloodFill {
   background: url(../../resources/floodfillButton.svg) no-repeat;
 }
@@ -52,6 +64,14 @@
 
 .ZoomSelected {
   background: url(../../resources/zoomButtonActive.svg) no-repeat;
+}
+
+.Symmetry {
+  background: url(../../resources/symmetryButton.svg) no-repeat;
+}
+
+.SymmetrySelected {
+  background: url(../../resources/symmetryButtonActive.svg) no-repeat;
 }
 
 .BrushSelect {

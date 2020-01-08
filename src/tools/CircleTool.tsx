@@ -1,7 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, distance } from './util';
 
-export class RectangleTool implements Tool {
+export class CircleTool implements Tool {
   public constructor(filled: boolean) {
     this.filled = filled;
   }
@@ -24,22 +24,23 @@ export class RectangleTool implements Tool {
       undoPoint,
     } = params;
 
-    if (toolState.rectangleToolState.startingPosition) {
+    if (toolState.circleToolState.startingPosition) {
       const position = getMousePos(canvas, event);
+      let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
 
       if (this.filled) {
-        state.brush.brush.drawRectFilled(
+        state.brush.brush.drawCircleFilled(
           canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
+          toolState.circleToolState.startingPosition,
+          radius,
           isRightMouseButton(event),
           state
         );
       } else {
-        state.brush.brush.drawRect(
+        state.brush.brush.drawCircle(
           canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
+          toolState.circleToolState.startingPosition,
+          radius,
           isRightMouseButton(event),
           state
         );
@@ -47,19 +48,19 @@ export class RectangleTool implements Tool {
 
       undoPoint();
       onDrawToCanvas();
-      toolStateDispatch({ type: 'rectangleToolStart', point: null });
+      toolStateDispatch({ type: 'circleToolStart', point: null });
     }
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolStateDispatch } = params;
     const position = getMousePos(canvas, event);
-    toolStateDispatch({ type: 'rectangleToolStart', point: position });
+    toolStateDispatch({ type: 'circleToolStart', point: position });
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
     const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'rectangleToolStart', point: null });
+    toolStateDispatch({ type: 'circleToolStart', point: null });
   }
 
   // Overlay
@@ -69,20 +70,21 @@ export class RectangleTool implements Tool {
     const position = getMousePos(canvas, event);
     clearOverlayCanvas(canvas);
 
-    if (toolState.rectangleToolState.startingPosition) {
+    if (toolState.circleToolState.startingPosition) {
+      let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
       if (this.filled) {
-        state.brush.brush.drawRectFilled(
+        state.brush.brush.drawCircleFilled(
           canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
+          toolState.circleToolState.startingPosition,
+          radius,
           isRightMouseButton(event),
           state
         );
       } else {
-        state.brush.brush.drawRect(
+        state.brush.brush.drawCircle(
           canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
+          toolState.circleToolState.startingPosition,
+          radius,
           isRightMouseButton(event),
           state
         );

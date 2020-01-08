@@ -32,3 +32,8 @@ export const toggleBrushSelectionMode: Action = ({ state }): void => {
     state.toolbar.zoomModeState = 'off'; // can't be selecting zoom point while selecting brush
   }
 };
+
+export const toggleSymmetryMode: Action = ({ state }): void => {
+  const oldState = state.toolbar.symmetryModeOn;
+  state.toolbar.symmetryModeOn = oldState ? false : true;
+};

@@ -2,6 +2,7 @@ import { Point } from '../types';
 import { OvermindState } from '../overmind';
 
 export interface Brush {
+  draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void;
   drawLine(
     canvas: HTMLCanvasElement,
     start: Point,
@@ -26,6 +27,20 @@ export interface Brush {
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+  drawCircle(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radius: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+  drawCircleFilled(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radius: number,
     withBackgroundColor: boolean,
     state: OvermindState
   ): void;

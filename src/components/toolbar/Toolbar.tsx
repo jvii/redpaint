@@ -35,10 +35,22 @@ function Toolbar({ canvasState }: Props): JSX.Element {
           onUpperHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('rectangleNoFill')}
           onLowerHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('rectangleFilled')}
         />
+        <ToolbarDualToggleButton
+          buttonClass="Circle"
+          isUpperHalfSelected={state.toolbar.selectedDrawingToolId === 'circleNoFill'}
+          isLowerHalfSelected={state.toolbar.selectedDrawingToolId === 'circleFilled'}
+          onUpperHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('circleNoFill')}
+          onLowerHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('circleFilled')}
+        />
         <ToolbarToggleButton
           buttonClass="FloodFill"
           isSelected={state.toolbar.selectedDrawingToolId === 'floodFill'}
           onClick={(): void => actions.toolbar.setSelectedDrawingTool('floodFill')}
+        />
+        <ToolbarToggleButton
+          buttonClass="Symmetry"
+          isSelected={state.toolbar.symmetryModeOn}
+          onClick={(): void => actions.toolbar.toggleSymmetryMode()}
         />
         <ToolbarToggleButton
           buttonClass="Zoom"
