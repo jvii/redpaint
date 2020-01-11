@@ -1,8 +1,8 @@
 import { Brush } from './Brush';
 import { Point } from '../types';
 import { OvermindState } from '../overmind';
-import { colorToRGBString, distance } from '../tools/util';
-import { unfilledCircle, filledCircle } from '../algorithm/draw';
+import { colorToRGBString } from '../tools/util';
+import { line, unfilledRect, unfilledCircle, filledCircle, filledRect } from '../algorithm/draw';
 
 export class PixelBrush implements Brush {
   public drawLine(
@@ -21,20 +21,7 @@ export class PixelBrush implements Brush {
       withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
     );
 
-    let dist = Math.round(distance(start, end));
-    if (dist === 0) {
-      dist = 1; // draws a dot
-    }
-    for (let i = 0; i <= dist; i++) {
-      this.draw(
-        {
-          x: start.x + ((end.x - start.x) / dist) * i,
-          y: start.y + ((end.y - start.y) / dist) * i,
-        },
-        ctx,
-        state
-      );
-    }
+    line(ctx, this, start, end, state);
   }
 
   public drawDot(
@@ -55,35 +42,7 @@ export class PixelBrush implements Brush {
     this.draw(point, ctx, state);
   }
 
-  public drawRect(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
-  ): void {
-    if (start === end) {
-      // just draw a dot
-      this.drawDot(canvas, start, withBackgroundColor, state);
-      return;
-    }
-
-    // calculate rectangle corner points
-
-    const point1 = start;
-    const point2 = { x: end.x, y: start.y };
-    const point3 = end;
-    const point4 = { x: start.x, y: end.y };
-
-    // draw lines
-
-    this.drawLine(canvas, point1, point2, withBackgroundColor, state);
-    this.drawLine(canvas, point2, point3, withBackgroundColor, state);
-    this.drawLine(canvas, point3, point4, withBackgroundColor, state);
-    this.drawLine(canvas, point4, point1, withBackgroundColor, state);
-  }
-
-  public drawRectFilled(
+  public drawUnfilledRect(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
@@ -95,9 +54,22 @@ export class PixelBrush implements Brush {
       return;
     }
 
-    if (start === end) {
-      // just draw a dot
-      this.drawDot(canvas, start, withBackgroundColor, state);
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    unfilledRect(ctx, this, start, end, state);
+  }
+
+  public drawFilledRect(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
       return;
     }
 
@@ -105,12 +77,10 @@ export class PixelBrush implements Brush {
       withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
     );
 
-    const width = end.x - start.x;
-    const height = end.y - start.y;
-    ctx.fillRect(start.x, start.y, width, height);
+    filledRect(ctx, this, start, end, state);
   }
 
-  public drawCircle(
+  public drawUnfilledCircle(
     canvas: HTMLCanvasElement,
     center: Point,
     radius: number,
@@ -119,12 +89,6 @@ export class PixelBrush implements Brush {
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      return;
-    }
-
-    if (radius === 0) {
-      // just draw a dot
-      this.drawDot(canvas, center, withBackgroundColor, state);
       return;
     }
 
@@ -135,7 +99,7 @@ export class PixelBrush implements Brush {
     unfilledCircle(ctx, this, center, radius, state);
   }
 
-  public drawCircleFilled(
+  public drawFilledCircle(
     canvas: HTMLCanvasElement,
     center: Point,
     radius: number,
@@ -147,17 +111,11 @@ export class PixelBrush implements Brush {
       return;
     }
 
-    if (radius === 0) {
-      // just draw a dot
-      this.drawDot(canvas, center, withBackgroundColor, state);
-      return;
-    }
-
     ctx.fillStyle = colorToRGBString(
       withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
     );
 
-    filledCircle(ctx, center, radius);
+    filledCircle(ctx, this, center, radius, state);
   }
 
   public draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {

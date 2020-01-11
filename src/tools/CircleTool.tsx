@@ -1,5 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, distance } from './util';
+import { getMousePos, clearOverlayCanvas } from './util';
+import { distance } from '../algorithm/draw';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -29,7 +30,7 @@ export class CircleTool implements Tool {
       let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
 
       if (this.filled) {
-        state.brush.brush.drawCircleFilled(
+        state.brush.brush.drawFilledCircle(
           canvas,
           toolState.circleToolState.startingPosition,
           radius,
@@ -37,7 +38,7 @@ export class CircleTool implements Tool {
           state
         );
       } else {
-        state.brush.brush.drawCircle(
+        state.brush.brush.drawUnfilledCircle(
           canvas,
           toolState.circleToolState.startingPosition,
           radius,
@@ -73,7 +74,7 @@ export class CircleTool implements Tool {
     if (toolState.circleToolState.startingPosition) {
       let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
       if (this.filled) {
-        state.brush.brush.drawCircleFilled(
+        state.brush.brush.drawFilledCircle(
           canvas,
           toolState.circleToolState.startingPosition,
           radius,
@@ -81,7 +82,7 @@ export class CircleTool implements Tool {
           state
         );
       } else {
-        state.brush.brush.drawCircle(
+        state.brush.brush.drawUnfilledCircle(
           canvas,
           toolState.circleToolState.startingPosition,
           radius,
