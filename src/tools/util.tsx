@@ -5,10 +5,6 @@ export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
 }
 
-export function distance(start: Point, end: Point): number {
-  return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
-}
-
 export function getMousePos(
   canvas: HTMLCanvasElement,
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>

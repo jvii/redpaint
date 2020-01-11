@@ -28,7 +28,7 @@ export class RectangleTool implements Tool {
       const position = getMousePos(canvas, event);
 
       if (this.filled) {
-        state.brush.brush.drawRectFilled(
+        state.brush.brush.drawFilledRect(
           canvas,
           toolState.rectangleToolState.startingPosition,
           position,
@@ -36,7 +36,7 @@ export class RectangleTool implements Tool {
           state
         );
       } else {
-        state.brush.brush.drawRect(
+        state.brush.brush.drawUnfilledRect(
           canvas,
           toolState.rectangleToolState.startingPosition,
           position,
@@ -71,7 +71,7 @@ export class RectangleTool implements Tool {
 
     if (toolState.rectangleToolState.startingPosition) {
       if (this.filled) {
-        state.brush.brush.drawRectFilled(
+        state.brush.brush.drawFilledRect(
           canvas,
           toolState.rectangleToolState.startingPosition,
           position,
@@ -79,7 +79,7 @@ export class RectangleTool implements Tool {
           state
         );
       } else {
-        state.brush.brush.drawRect(
+        state.brush.brush.drawUnfilledRect(
           canvas,
           toolState.rectangleToolState.startingPosition,
           position,
