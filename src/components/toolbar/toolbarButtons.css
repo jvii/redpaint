@@ -26,6 +26,14 @@
   background: url(../../resources/lineButtonActive.svg) no-repeat;
 }
 
+.Curve {
+  background: url(../../resources/curveButton.svg) no-repeat;
+}
+
+.CurveSelected {
+  background: url(../../resources/curveButtonActive.svg) no-repeat;
+}
+
 .Rectangle {
   background: url(../../resources/rectangleButton.svg) no-repeat;
 }

@@ -2,7 +2,14 @@ import { Brush } from './Brush';
 import { Point } from '../types';
 import { OvermindState } from '../overmind';
 import { colorToRGBString } from '../tools/util';
-import { line, unfilledRect, filledRect, unfilledCircle, filledCircle } from '../algorithm/draw';
+import {
+  line,
+  unfilledRect,
+  filledRect,
+  unfilledCircle,
+  filledCircle,
+  curve,
+} from '../algorithm/draw';
 
 export class CustomBrush implements Brush {
   private brushImage = new Image();
@@ -29,6 +36,26 @@ export class CustomBrush implements Brush {
     }
 
     line(ctx, this, start, end, state);
+  }
+
+  public drawCurve(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    middlePoint: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    curve(ctx, this, start, end, middlePoint, state);
   }
 
   public drawDot(

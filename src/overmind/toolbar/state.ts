@@ -6,6 +6,7 @@ import { FloodFillTool } from '../../tools/FloodFillTool';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import { BrushSelector } from '../../tools/BrushSelector';
 import { CircleTool } from '../../tools/CircleTool';
+import { CurveTool } from '../../tools/CurveTool';
 
 const filled = true;
 const noFill = false;
@@ -13,6 +14,7 @@ const noFill = false;
 const drawingTools = {
   freeHand: new FreehandTool(),
   line: new LineTool(),
+  curve: new CurveTool(),
   rectangleFilled: new RectangleTool(filled),
   rectangleNoFill: new RectangleTool(noFill),
   circleFilled: new CircleTool(filled),
