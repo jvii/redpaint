@@ -91,6 +91,8 @@ export class RectangleTool implements Tool {
       if (!this.filled) {
         // DPaint doesn't draw filled shapes with the actual brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
+      } else {
+        // TODO should display something? Should probably display the edge to edge cross-hair
       }
     }
     onDrawToCanvas();

@@ -10,6 +10,14 @@ export interface Brush {
     withBackgroundColor: boolean,
     state: OvermindState
   ): void;
+  drawCurve(
+    canvas: HTMLCanvasElement,
+    start: Point,
+    end: Point,
+    middlePoint: Point,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
   drawDot(
     canvas: HTMLCanvasElement,
     point: Point,

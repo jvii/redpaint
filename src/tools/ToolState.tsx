@@ -4,6 +4,7 @@ import { Point } from '../types';
 
 export class ToolState {
   public lineToolState: LineToolState;
+  public curveToolState: CurveToolState;
   public rectangleToolState: RectangleToolState;
   public circleToolState: CircleToolState;
   public freehandToolState: FreehandToolState;
@@ -11,6 +12,7 @@ export class ToolState {
   public brushSelectorState: BrushSelectorState;
   public constructor() {
     this.lineToolState = new LineToolState();
+    this.curveToolState = new CurveToolState();
     this.rectangleToolState = new RectangleToolState();
     this.circleToolState = new CircleToolState();
     this.freehandToolState = new FreehandToolState();
@@ -30,6 +32,15 @@ export class LineToolState {
   public startingPosition: Point | null;
   public constructor() {
     this.startingPosition = null;
+  }
+}
+
+export class CurveToolState {
+  public startingPosition: Point | null;
+  public endPosition: Point | null;
+  public constructor() {
+    this.startingPosition = null;
+    this.endPosition = null;
   }
 }
 
@@ -65,6 +76,8 @@ export class BrushSelectorState {
 
 export type Action =
   | { type: 'lineToolStart'; point: Point | null }
+  | { type: 'curveToolStart'; point: Point | null }
+  | { type: 'curveToolEnd'; point: Point | null }
   | { type: 'rectangleToolStart'; point: Point | null }
   | { type: 'circleToolStart'; point: Point | null }
   | { type: 'freehandToolPrevious'; point: Point | null }
@@ -80,6 +93,22 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         lineToolState: {
           ...state.lineToolState,
           startingPosition: action.point,
+        },
+      };
+    case 'curveToolStart':
+      return {
+        ...state,
+        curveToolState: {
+          ...state.curveToolState,
+          startingPosition: action.point,
+        },
+      };
+    case 'curveToolEnd':
+      return {
+        ...state,
+        curveToolState: {
+          ...state.curveToolState,
+          endPosition: action.point,
         },
       };
     case 'rectangleToolStart':

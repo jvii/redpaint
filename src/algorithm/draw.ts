@@ -13,7 +13,7 @@ export function line(
   end: Point,
   state: OvermindState
 ): void {
-  // TODO: can be optimized to use fillRect if drawing horizontal or vertical lines
+  // TODO: horizontal or vertical lines could be further optimized (quick distance, fillRect for pixel brush)
   let dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
@@ -31,6 +31,39 @@ export function line(
       state
     );
   }
+}
+
+// Quadratic bezier curve with one control point.
+// DPaint used conic curves instead.
+export function curve(
+  ctx: CanvasRenderingContext2D,
+  brush: Brush,
+  start: Point,
+  end: Point,
+  middlePoint: Point,
+  state: OvermindState
+): void {
+  // calculate control point for the bezier curve when middlepoint given
+  let controlPoint: Point = {
+    x: 2 * middlePoint.x - 0.5 * start.x - 0.5 * end.x,
+    y: 2 * middlePoint.y - 0.5 * start.y - 0.5 * end.y,
+  };
+
+  let i: number;
+  let previous: Point = start;
+  for (i = 0; i <= 1; i = i + 0.02) {
+    let current = getQuadraticXY(i, start, controlPoint, end);
+    line(ctx, brush, previous, current, state);
+    previous = current;
+  }
+  line(ctx, brush, previous, end, state);
+}
+
+function getQuadraticXY(t: number, start: Point, controlPoint: Point, end: Point): Point {
+  return {
+    x: Math.round((1 - t) * (1 - t) * start.x + 2 * (1 - t) * t * controlPoint.x + t * t * end.x),
+    y: Math.round((1 - t) * (1 - t) * start.y + 2 * (1 - t) * t * controlPoint.y + t * t * end.y),
+  };
 }
 
 export function unfilledRect(
@@ -68,15 +101,14 @@ export function filledRect(
   end: Point,
   state: OvermindState
 ): void {
-  if (start === end) {
+  if (start == end) {
     // just draw a dot
-    brush.draw(start, ctx, state);
+    fillRectWithSymmetry(start.x, start.y, 1, 1, ctx, state);
     return;
   }
 
   const width = end.x - start.x;
   const height = end.y - start.y;
-  //ctx.fillRect(start.x, start.y, width, height);
   fillRectWithSymmetry(start.x, start.y, width, height, ctx, state);
 }
 
@@ -91,7 +123,7 @@ export function filledCircle(
 
   if (r === 0) {
     // just draw a dot
-    brush.draw(center, ctx, state);
+    fillRectWithSymmetry(center.x, center.y, 1, 1, ctx, state);
     return;
   }
 
