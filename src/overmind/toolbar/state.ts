@@ -7,6 +7,7 @@ import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelect
 import { BrushSelector } from '../../tools/BrushSelector';
 import { CircleTool } from '../../tools/CircleTool';
 import { CurveTool } from '../../tools/CurveTool';
+import { EllipseTool } from '../../tools/EllipseTool';
 
 const filled = true;
 const noFill = false;
@@ -17,6 +18,8 @@ const drawingTools = {
   curve: new CurveTool(),
   rectangleFilled: new RectangleTool(filled),
   rectangleNoFill: new RectangleTool(noFill),
+  ellipseFilled: new EllipseTool(filled),
+  ellipseNoFill: new EllipseTool(noFill),
   circleFilled: new CircleTool(filled),
   circleNoFill: new CircleTool(noFill),
   floodFill: new FloodFillTool(),

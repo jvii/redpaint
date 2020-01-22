@@ -9,6 +9,8 @@ import {
   unfilledCircle,
   filledCircle,
   curve,
+  unfilledEllipse,
+  filledEllipse,
 } from '../algorithm/draw';
 
 export class CustomBrush implements Brush {
@@ -147,6 +149,48 @@ export class CustomBrush implements Brush {
     );
 
     filledCircle(ctx, this, center, radius, state);
+  }
+
+  public drawUnfilledEllipse(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radiusX: number,
+    radiusY: number,
+    rotationAngle: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    unfilledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle, state);
+  }
+
+  public drawFilledEllipse(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radiusX: number,
+    radiusY: number,
+    rotationAngle: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(
+      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+    );
+
+    filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle, state);
   }
 
   public draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {
