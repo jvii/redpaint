@@ -7,6 +7,7 @@ export class ToolState {
   public curveToolState: CurveToolState;
   public rectangleToolState: RectangleToolState;
   public circleToolState: CircleToolState;
+  public ellipseToolState: EllipseToolState;
   public freehandToolState: FreehandToolState;
   public zoomToolState: ZoomToolState;
   public brushSelectorState: BrushSelectorState;
@@ -15,6 +16,7 @@ export class ToolState {
     this.curveToolState = new CurveToolState();
     this.rectangleToolState = new RectangleToolState();
     this.circleToolState = new CircleToolState();
+    this.ellipseToolState = new EllipseToolState();
     this.freehandToolState = new FreehandToolState();
     this.zoomToolState = new ZoomToolState();
     this.brushSelectorState = new BrushSelectorState();
@@ -58,6 +60,17 @@ export class CircleToolState {
   }
 }
 
+export class EllipseToolState {
+  public centerPoint: Point | null;
+  public radiusX: number;
+  public radiusY: number;
+  public constructor() {
+    this.centerPoint = null;
+    this.radiusX = 0;
+    this.radiusY = 0;
+  }
+}
+
 export class ZoomToolState {
   public zoomInitialPoint: Point | null;
   public constructor() {
@@ -80,6 +93,8 @@ export type Action =
   | { type: 'curveToolEnd'; point: Point | null }
   | { type: 'rectangleToolStart'; point: Point | null }
   | { type: 'circleToolStart'; point: Point | null }
+  | { type: 'ellipseToolCenter'; point: Point | null }
+  | { type: 'ellipseToolRadius'; radius: { radiusX: number; radiusY: number } }
   | { type: 'freehandToolPrevious'; point: Point | null }
   | { type: 'zoomInitialPoint'; point: Point | null }
   | { type: 'brushSelectionStart'; point: Point | null }
@@ -125,6 +140,23 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
         circleToolState: {
           ...state.circleToolState,
           startingPosition: action.point,
+        },
+      };
+    case 'ellipseToolCenter':
+      return {
+        ...state,
+        ellipseToolState: {
+          ...state.ellipseToolState,
+          centerPoint: action.point,
+        },
+      };
+    case 'ellipseToolRadius':
+      return {
+        ...state,
+        ellipseToolState: {
+          ...state.ellipseToolState,
+          radiusX: action.radius.radiusX,
+          radiusY: action.radius.radiusY,
         },
       };
     case 'freehandToolPrevious':

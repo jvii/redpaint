@@ -52,6 +52,13 @@ function Toolbar({ canvasState }: Props): JSX.Element {
           onUpperHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('circleNoFill')}
           onLowerHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('circleFilled')}
         />
+        <ToolbarDualToggleButton
+          buttonClass="Ellipse"
+          isUpperHalfSelected={state.toolbar.selectedDrawingToolId === 'ellipseNoFill'}
+          isLowerHalfSelected={state.toolbar.selectedDrawingToolId === 'ellipseFilled'}
+          onUpperHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('ellipseNoFill')}
+          onLowerHalfClick={(): void => actions.toolbar.setSelectedDrawingTool('ellipseFilled')}
+        />
         <ToolbarToggleButton
           buttonClass="Symmetry"
           isSelected={state.toolbar.symmetryModeOn}

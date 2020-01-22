@@ -52,4 +52,22 @@ export interface Brush {
     withBackgroundColor: boolean,
     state: OvermindState
   ): void;
+  drawUnfilledEllipse(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radiusX: number,
+    radiusY: number,
+    rotationAngle: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+  drawFilledEllipse(
+    canvas: HTMLCanvasElement,
+    center: Point,
+    radiusX: number,
+    radiusY: number,
+    rotationAngle: number,
+    withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
 }

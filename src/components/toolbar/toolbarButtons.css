@@ -58,6 +58,18 @@
   background: url(../../resources/circleButtonNoFillActive.svg) no-repeat;
 }
 
+.Ellipse {
+  background: url(../../resources/ellipseButton.svg) no-repeat;
+}
+
+.EllipseLowerHalfSelected {
+  background: url(../../resources/ellipseButtonFilledActive.svg) no-repeat;
+}
+
+.EllipseUpperHalfSelected {
+  background: url(../../resources/ellipseButtonNoFillActive.svg) no-repeat;
+}
+
 .FloodFill {
   background: url(../../resources/floodfillButton.svg) no-repeat;
 }

@@ -190,6 +190,69 @@ export function unfilledCircle(
   }
 }
 
+export function unfilledEllipse(
+  ctx: CanvasRenderingContext2D,
+  brush: Brush,
+  center: Point,
+  radiusX: number,
+  radiusY: number,
+  rotationAngle: number,
+  state: OvermindState
+): void {
+  let previous: Point = { x: 0, y: 0 };
+  for (let i = 0; i < 2 * Math.PI; i += 0.01) {
+    let xPos = Math.round(
+      center.x -
+        radiusY * Math.sin(i) * Math.sin(rotationAngle * Math.PI) +
+        radiusX * Math.cos(i) * Math.cos(rotationAngle * Math.PI)
+    );
+    let yPos = Math.round(
+      center.y +
+        radiusX * Math.cos(i) * Math.sin(rotationAngle * Math.PI) +
+        radiusY * Math.sin(i) * Math.cos(rotationAngle * Math.PI)
+    );
+
+    if (i > 0) {
+      line(ctx, brush, previous, { x: xPos, y: yPos }, state);
+    }
+    previous = { x: xPos, y: yPos };
+  }
+}
+
+export function filledEllipse(
+  ctx: CanvasRenderingContext2D,
+  brush: Brush,
+  center: Point,
+  radiusX: number,
+  radiusY: number,
+  rotationAngle: number,
+  state: OvermindState
+): void {
+  const a = radiusX;
+  const b = radiusY;
+  const phi = rotationAngle * (Math.PI / 180);
+
+  const xStart = Math.ceil(-Math.sqrt(a ** 2 * Math.cos(phi) ** 2 + b ** 2 * Math.sin(phi) ** 2));
+  const xEnd = -xStart;
+
+  const a2 = a ** 2;
+  const b2 = b ** 2;
+  const k = 2 * (Math.sin(phi) ** 2 / a2 + Math.cos(phi) ** 2 / b2);
+  const cos2phi = Math.cos(2 * phi);
+  const sinphicosphi = Math.sin(phi) * Math.cos(phi);
+
+  for (let x = xStart; x <= xEnd; x++) {
+    let nominator = Math.sqrt(2) * Math.sqrt(a2 * cos2phi + a2 - b2 * cos2phi + b2 - 2 * x ** 2);
+    let y1 = nominator / (a * b) - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    y1 = Math.round(y1 / k);
+    let y2 = -nominator / (a * b) - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    y2 = Math.round(y2 / k);
+    let h = Math.abs(y1 - y2);
+
+    fillRectWithSymmetry(x + center.x, y1 + center.y, 1, -h, ctx, state);
+  }
+}
+
 export function fillRectWithSymmetry(
   x: number,
   y: number,
