@@ -24,11 +24,86 @@ export class EllipseTool implements Tool {
       undoPoint,
     } = params;
 
-    if (toolState.ellipseToolState.centerPoint) {
+    // If radius has not been set, set it and return
+    if (
+      toolState.ellipseToolState.centerPoint !== null &&
+      toolState.ellipseToolState.radiusX === 0 &&
+      toolState.ellipseToolState.radiusY === 0
+    ) {
       const position = getMousePos(canvas, event);
       const radiusX = Math.abs(position.x - toolState.ellipseToolState.centerPoint.x);
       const radiusY = Math.abs(position.y - toolState.ellipseToolState.centerPoint.y);
+      toolStateDispatch({
+        type: 'ellipseToolRadius',
+        radius: { radiusX: radiusX, radiusY: radiusY },
+      });
+      return;
+    }
 
+    // If center point and radius has been set, draw the ellipse with current rotation
+    if (
+      toolState.ellipseToolState.centerPoint !== null &&
+      toolState.ellipseToolState.radiusX > 0 &&
+      toolState.ellipseToolState.radiusY > 0
+    ) {
+      const position = getMousePos(canvas, event);
+      const rotationAngle =
+        position.y - toolState.ellipseToolState.centerPoint.y - toolState.ellipseToolState.radiusY;
+
+      if (this.filled) {
+        state.brush.brush.drawFilledEllipse(
+          canvas,
+          toolState.ellipseToolState.centerPoint,
+          toolState.ellipseToolState.radiusX,
+          toolState.ellipseToolState.radiusY,
+          rotationAngle,
+          isRightMouseButton(event),
+          state
+        );
+      } else {
+        state.brush.brush.drawUnfilledEllipse(
+          canvas,
+          toolState.ellipseToolState.centerPoint,
+          toolState.ellipseToolState.radiusX,
+          toolState.ellipseToolState.radiusY,
+          rotationAngle,
+          isRightMouseButton(event),
+          state
+        );
+      }
+      undoPoint();
+      onDrawToCanvas();
+      toolStateDispatch({ type: 'ellipseToolCenter', point: null });
+      toolStateDispatch({
+        type: 'ellipseToolRadius',
+        radius: { radiusX: 0, radiusY: 0 },
+      });
+    }
+  }
+
+  public onMouseDown(params: EventHandlerParamsWithEvent): void {
+    const { event, canvas, toolState, toolStateDispatch } = params;
+    const position = getMousePos(canvas, event);
+    if (toolState.ellipseToolState.centerPoint === null) {
+      toolStateDispatch({ type: 'ellipseToolCenter', point: position });
+    }
+  }
+
+  // Overlay
+
+  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
+    const { event, canvas, state, toolState, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
+
+    // If radius has not been set, draw ellipse with no rotation
+    if (
+      toolState.ellipseToolState.centerPoint !== null &&
+      toolState.ellipseToolState.radiusX === 0 &&
+      toolState.ellipseToolState.radiusY === 0
+    ) {
+      const position = getMousePos(canvas, event);
+      const radiusX = Math.abs(position.x - toolState.ellipseToolState.centerPoint.x);
+      const radiusY = Math.abs(position.y - toolState.ellipseToolState.centerPoint.y);
       if (this.filled) {
         state.brush.brush.drawFilledEllipse(
           canvas,
@@ -50,42 +125,26 @@ export class EllipseTool implements Tool {
           state
         );
       }
-
-      undoPoint();
       onDrawToCanvas();
-      toolStateDispatch({ type: 'ellipseToolCenter', point: null });
     }
-  }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolStateDispatch } = params;
-    const position = getMousePos(canvas, event);
-    toolStateDispatch({ type: 'ellipseToolCenter', point: position });
-  }
-
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'ellipseToolCenter', point: null });
-  }
-
-  // Overlay
-
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, state, toolState, onDrawToCanvas } = params;
-    clearOverlayCanvas(canvas);
-
-    if (toolState.ellipseToolState.centerPoint) {
+    // If center point and radius has been set, draw the ellipse with current rotation
+    if (
+      toolState.ellipseToolState.centerPoint !== null &&
+      toolState.ellipseToolState.radiusX > 0 &&
+      toolState.ellipseToolState.radiusY > 0
+    ) {
       const position = getMousePos(canvas, event);
-      const radiusX = Math.abs(position.x - toolState.ellipseToolState.centerPoint.x);
-      const radiusY = Math.abs(position.y - toolState.ellipseToolState.centerPoint.y);
+      const rotationAngle =
+        position.y - toolState.ellipseToolState.centerPoint.y - toolState.ellipseToolState.radiusY;
 
       if (this.filled) {
         state.brush.brush.drawFilledEllipse(
           canvas,
           toolState.ellipseToolState.centerPoint,
-          radiusX,
-          radiusY,
-          0,
+          toolState.ellipseToolState.radiusX,
+          toolState.ellipseToolState.radiusY,
+          rotationAngle,
           isRightMouseButton(event),
           state
         );
@@ -93,9 +152,9 @@ export class EllipseTool implements Tool {
         state.brush.brush.drawUnfilledEllipse(
           canvas,
           toolState.ellipseToolState.centerPoint,
-          radiusX,
-          radiusY,
-          0,
+          toolState.ellipseToolState.radiusX,
+          toolState.ellipseToolState.radiusY,
+          rotationAngle,
           isRightMouseButton(event),
           state
         );
@@ -105,12 +164,6 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
-    clearOverlayCanvas(canvas);
-    onDrawToCanvas();
-  }
-
-  public onMouseUpOverlay(params: EventHandlerParamsWithEvent): void {
     const { canvas, onDrawToCanvas } = params;
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
