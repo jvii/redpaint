@@ -1,8 +1,6 @@
 import { Point } from '../types';
 import { Brush } from '../brush/Brush';
 import { OvermindState } from '../overmind';
-import { number } from 'prop-types';
-import { stat } from 'fs';
 
 export function distance(start: Point, end: Point): number {
   return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
@@ -92,12 +90,21 @@ export function unfilledRect(
   const point3 = end;
   const point4 = { x: start.x, y: end.y };
 
+  const y1 = start.y;
+  const y2 = end.y;
+  const x1 = start.x;
+  const x2 = end.x;
+
   // draw lines
 
-  line(ctx, brush, point1, point2, state);
-  line(ctx, brush, point2, point3, state);
-  line(ctx, brush, point3, point4, state);
-  line(ctx, brush, point4, point1, state);
+  //line(ctx, brush, point1, point2, state);
+  //line(ctx, brush, point2, point3, state);
+  //line(ctx, brush, point3, point4, state);
+  //line(ctx, brush, point4, point1, state);
+  brush.drawLineHorizontal(x1, x2, y1, ctx, state);
+  brush.drawLineHorizontal(x1, x2, y2, ctx, state);
+  brush.drawLineVertical(y1, y2, x1, ctx, state);
+  brush.drawLineVertical(y1, y2, x2, ctx, state);
 }
 
 export function filledRect(
@@ -191,108 +198,6 @@ export function unfilledCircle(
   }
 }
 
-export function unfilledEllipseOld(
-  ctx: CanvasRenderingContext2D,
-  brush: Brush,
-  center: Point,
-  radiusX: number,
-  radiusY: number,
-  rotationAngle: number,
-  state: OvermindState
-): void {
-  const phi = rotationAngle * (Math.PI / 180);
-  const sinPhi = Math.sin(phi * Math.PI);
-  const cosPhi = Math.cos(phi * Math.PI);
-
-  let previous: Point = { x: 0, y: 0 };
-  // TODO: get rid of the magic number
-  // TODO: use symmetry to only loop to Pi
-  for (let i = 0; i < 2 * Math.PI; i += 0.01) {
-    let xPos = Math.round(
-      center.x - radiusY * Math.sin(i) * sinPhi + radiusX * Math.cos(i) * cosPhi
-    );
-    let yPos = Math.round(
-      center.y + radiusX * Math.cos(i) * sinPhi + radiusY * Math.sin(i) * cosPhi
-    );
-
-    if (i > 0) {
-      line(ctx, brush, previous, { x: xPos, y: yPos }, state);
-    }
-    previous = { x: xPos, y: yPos };
-  }
-}
-
-export function unfilledEllipse1(
-  ctx: CanvasRenderingContext2D,
-  brush: Brush,
-  center: Point,
-  radiusX: number,
-  radiusY: number,
-  rotationAngle: number,
-  state: OvermindState
-): void {
-  // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
-  const a = radiusX;
-  const b = radiusY;
-  const phi = rotationAngle * (Math.PI / 180);
-
-  const xStart = Math.ceil(-Math.sqrt(a ** 2 * Math.cos(phi) ** 2 + b ** 2 * Math.sin(phi) ** 2));
-  const xEnd = -xStart;
-
-  // Define some constants for calculation
-
-  const a2 = a ** 2;
-  const b2 = b ** 2;
-  const ab = a * b;
-  const k = 2 * (Math.sin(phi) ** 2 / a2 + Math.cos(phi) ** 2 / b2);
-  const sinphicosphi = Math.sin(phi) * Math.cos(phi);
-  const cos2phi = Math.cos(2 * phi);
-  const c = a2 * cos2phi + a2 - b2 * cos2phi + b2;
-  const sqrt2 = Math.sqrt(2);
-
-  let h1 = 1;
-  let previousY = null;
-  let previousX = null;
-  for (let x = xStart; x <= xEnd; x++) {
-    let nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
-    let y1 = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
-    y1 = Math.round(y1 / k);
-    let y2 = -nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
-    y2 = Math.round(y2 / k);
-
-    h1 = 1;
-    if (previousY) {
-      if (previousY - y1 > 1) {
-        h1 = previousY - y1;
-      } else if (previousY - y1 < -1) {
-        h1 = previousY - y1;
-      } else if (previousY - y1 < 0) {
-        h1 = -1;
-      }
-    }
-
-    fillRectWithSymmetry(x + center.x, y1 + center.y, 1, 1, ctx, state);
-    fillRectWithSymmetry(0 - x + center.x, -y1 + center.y, 1, 1, ctx, state);
-
-    if (previousY && previousX && previousY != y1) {
-      line(
-        ctx,
-        brush,
-        { x: previousX + center.x, y: previousY + center.y },
-        { x: x + center.x, y: y1 + center.y },
-        state
-      );
-    }
-
-    previousY = y1;
-    previousX = x;
-    console.log('==========');
-    console.log('x=' + x);
-    console.log('y1=' + y1);
-    console.log('y2=' + y2);
-  }
-}
-
 export function unfilledEllipse(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
@@ -309,6 +214,9 @@ export function unfilledEllipse(
 
   const xStart = Math.ceil(-Math.sqrt(a ** 2 * Math.cos(phi) ** 2 + b ** 2 * Math.sin(phi) ** 2));
   const xEnd = -xStart;
+  if (xEnd === xStart) {
+    return;
+  }
 
   // Define some constants for calculation
 
@@ -327,17 +235,19 @@ export function unfilledEllipse(
   let ellipsePointsUpperHalf: Point[] = [];
   for (let x = xStart; x <= xEnd; x++) {
     let nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
-    let y = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
-    y = Math.round(y / k);
-    ellipsePointsLowerHalf.push({ x: x + center.x, y: y + center.y });
-    ellipsePointsUpperHalf.unshift({ x: 0 - x + center.x, y: -y + center.y });
+    let y1 = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    y1 = Math.round(y1 / k);
+    let y2 = -nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    y2 = Math.round(y2 / k);
+    ellipsePointsLowerHalf.push({ x: x + center.x, y: y1 + center.y });
+    ellipsePointsUpperHalf.push({ x: x + center.x, y: y2 + center.y });
   }
 
   // Draw ellipse
 
   // Lower half
 
-  for (let i = 2; i < ellipsePointsLowerHalf.length - 2; i++) {
+  for (let i = 1; i < ellipsePointsLowerHalf.length - 1; i++) {
     const point = ellipsePointsLowerHalf[i];
     const previousPoint = ellipsePointsLowerHalf[i - 1];
     const nextPoint = ellipsePointsLowerHalf[i + 1];
@@ -352,7 +262,7 @@ export function unfilledEllipse(
 
   // Upper half
 
-  for (let i = 2; i < ellipsePointsUpperHalf.length - 2; i++) {
+  for (let i = 1; i < ellipsePointsUpperHalf.length - 1; i++) {
     const point = ellipsePointsUpperHalf[i];
     const previousPoint = ellipsePointsUpperHalf[i - 1];
     const nextPoint = ellipsePointsUpperHalf[i + 1];
@@ -365,23 +275,30 @@ export function unfilledEllipse(
     }
   }
 
-  // TODO: endpoints
-  line(
-    ctx,
-    brush,
-    { x: xStart + center.x, y: ellipsePointsUpperHalf[1].y + 1 },
-    { x: xStart + center.x, y: ellipsePointsLowerHalf[1].y - 1 },
-    state
-  );
+  // Close both ends of ellipse by drawing a vertical line at x = 0 and x = length - 1
 
-  for (const point of ellipsePointsLowerHalf) {
+  const startYLower = ellipsePointsLowerHalf[0].y;
+  const startYUpper = ellipsePointsUpperHalf[0].y;
+  let h1 = Math.abs(startYLower - startYUpper);
+
+  fillRectWithSymmetry(xStart + center.x, startYLower, 1, -h1, ctx, state);
+  fillRectWithSymmetry(xStart + center.x, startYLower, 1, 1, ctx, state);
+
+  const endYLower = ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1].y;
+  const endYUpper = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].y;
+  let h2 = Math.abs(endYLower - endYUpper);
+
+  fillRectWithSymmetry(xEnd + center.x, endYLower, 1, -h2, ctx, state);
+  fillRectWithSymmetry(xEnd + center.x, endYLower, 1, 1, ctx, state);
+
+  /*   for (const point of ellipsePointsLowerHalf) {
     ctx.fillStyle = 'cyan';
     fillRectWithSymmetry(point.x, point.y, 1, 1, ctx, state);
   }
   for (const point of ellipsePointsUpperHalf) {
     ctx.fillStyle = 'cyan';
     fillRectWithSymmetry(point.x, point.y, 1, 1, ctx, state);
-  }
+  } */
 }
 
 export function filledEllipse(

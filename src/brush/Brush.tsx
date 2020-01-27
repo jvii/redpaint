@@ -2,7 +2,6 @@ import { Point } from '../types';
 import { OvermindState } from '../overmind';
 
 export interface Brush {
-  draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void;
   drawLine(
     canvas: HTMLCanvasElement,
     start: Point,
@@ -68,6 +67,24 @@ export interface Brush {
     radiusY: number,
     rotationAngle: number,
     withBackgroundColor: boolean,
+    state: OvermindState
+  ): void;
+
+  // Used with context
+
+  draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void;
+  drawLineVertical(
+    y1: number,
+    y2: number,
+    x: number,
+    ctx: CanvasRenderingContext2D,
+    state: OvermindState
+  ): void;
+  drawLineHorizontal(
+    x1: number,
+    x2: number,
+    y: number,
+    ctx: CanvasRenderingContext2D,
     state: OvermindState
   ): void;
 }

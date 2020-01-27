@@ -229,6 +229,46 @@ export class CustomBrush implements Brush {
     ctx.drawImage(this.brushImage, Math.floor(sym3.x), Math.floor(sym3.y));
   }
 
+  public drawLineVertical(
+    y1: number,
+    y2: number,
+    x: number,
+    ctx: CanvasRenderingContext2D,
+    state: OvermindState
+  ): void {
+    let startY = y1;
+    let endY = y2;
+
+    if (y2 < y1) {
+      startY = y2;
+      endY = y1;
+    }
+
+    for (let y = startY; y <= endY; y++) {
+      this.draw({ x: x, y: y }, ctx, state);
+    }
+  }
+
+  public drawLineHorizontal(
+    x1: number,
+    x2: number,
+    y: number,
+    ctx: CanvasRenderingContext2D,
+    state: OvermindState
+  ): void {
+    let startX = x1;
+    let endX = x2;
+
+    if (x2 < x1) {
+      startX = x2;
+      endX = x1;
+    }
+
+    for (let x = startX; x <= endX; x++) {
+      this.draw({ x: x, y: y }, ctx, state);
+    }
+  }
+
   private adjustHandle(point: Point): Point {
     return { x: point.x - (this.width - 1) / 2, y: point.y - (this.heigth - 2) / 2 };
   }

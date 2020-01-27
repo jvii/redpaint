@@ -193,4 +193,24 @@ export class PixelBrush implements Brush {
   public draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {
     fillRectWithSymmetry(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx, state);
   }
+
+  public drawLineVertical(
+    y1: number,
+    y2: number,
+    x: number,
+    ctx: CanvasRenderingContext2D,
+    state: OvermindState
+  ): void {
+    fillRectWithSymmetry(x, y1, 1, y2 - y1 + 1, ctx, state);
+  }
+
+  public drawLineHorizontal(
+    x1: number,
+    x2: number,
+    y: number,
+    ctx: CanvasRenderingContext2D,
+    state: OvermindState
+  ): void {
+    fillRectWithSymmetry(x1, y, x2 - x1 + 1, 1, ctx, state);
+  }
 }
