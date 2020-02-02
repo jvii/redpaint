@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
 
 export class FreehandTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -38,6 +38,12 @@ export class FreehandTool implements Tool {
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
   }
 
+  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
+    const { event, canvas, toolStateDispatch } = params;
+    const position = getMousePos(canvas, event);
+    toolStateDispatch({ type: 'freehandToolPrevious', point: position });
+  }
+
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
@@ -56,16 +62,4 @@ export class FreehandTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
-
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
-    clearOverlayCanvas(canvas);
-    onDrawToCanvas();
-  }
-}
-
-// Helpers
-
-function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
-  return event.button === 2 || event.buttons === 2;
 }

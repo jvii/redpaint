@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
 
 export class CurveTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -43,7 +43,7 @@ export class CurveTool implements Tool {
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolState, toolStateDispatch } = params;
 
-    if (!toolState.curveToolState.startingPosition && !toolState.curveToolState.endPosition) {
+    if (!toolState.curveToolState.endPosition) {
       const position = getMousePos(canvas, event);
       toolStateDispatch({ type: 'curveToolStart', point: position });
     }
@@ -53,21 +53,16 @@ export class CurveTool implements Tool {
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolState, state, onDrawToCanvas } = params;
-
+    clearOverlayCanvas(canvas);
     const position = getMousePos(canvas, event);
 
-    clearOverlayCanvas(canvas);
-    if (toolState.curveToolState.startingPosition && !toolState.curveToolState.endPosition) {
-      state.brush.brush.drawLine(
-        canvas,
-        toolState.curveToolState.startingPosition,
-        position,
-        isRightMouseButton(event),
-        state
-      );
+    if (!toolState.curveToolState.startingPosition) {
+      state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
       onDrawToCanvas();
+      return;
     }
-    if (toolState.curveToolState.startingPosition && toolState.curveToolState.endPosition) {
+
+    if (toolState.curveToolState.endPosition) {
       state.brush.brush.drawCurve(
         canvas,
         toolState.curveToolState.startingPosition,
@@ -76,8 +71,16 @@ export class CurveTool implements Tool {
         isRightMouseButton(event),
         state
       );
-      onDrawToCanvas();
+    } else if (isLeftMouseButton(event)) {
+      state.brush.brush.drawLine(
+        canvas,
+        toolState.curveToolState.startingPosition,
+        position,
+        isRightMouseButton(event),
+        state
+      );
     }
+    onDrawToCanvas();
   }
 
   public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
@@ -85,10 +88,4 @@ export class CurveTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
-}
-
-// Helpers
-
-function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
-  return event.button === 2 || event.buttons === 2;
 }

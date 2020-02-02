@@ -65,3 +65,13 @@ export function getEventHandler(
 function hasKey<O>(obj: O, key: keyof any): key is keyof O {
   return key in obj;
 }
+
+export function isRightMouseButton(
+  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+): boolean {
+  return event.button === 2 || event.buttons === 2;
+}
+
+export function isLeftMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
+  return event.button === 1 || event.buttons === 1;
+}

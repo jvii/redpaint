@@ -13,7 +13,6 @@ export function line(
   end: Point,
   state: OvermindState
 ): void {
-  // TODO: horizontal or vertical lines could be further optimized (quick distance, fillRect for pixel brush)
   let dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
@@ -83,12 +82,7 @@ export function unfilledRect(
     return;
   }
 
-  // calculate rectangle corner points
-
-  const point1 = start;
-  const point2 = { x: end.x, y: start.y };
-  const point3 = end;
-  const point4 = { x: start.x, y: end.y };
+  // rectangle limits
 
   const y1 = start.y;
   const y2 = end.y;
@@ -97,10 +91,6 @@ export function unfilledRect(
 
   // draw lines
 
-  //line(ctx, brush, point1, point2, state);
-  //line(ctx, brush, point2, point3, state);
-  //line(ctx, brush, point3, point4, state);
-  //line(ctx, brush, point4, point1, state);
   brush.drawLineHorizontal(x1, x2, y1, ctx, state);
   brush.drawLineHorizontal(x1, x2, y2, ctx, state);
   brush.drawLineVertical(y1, y2, x1, ctx, state);
@@ -252,11 +242,11 @@ export function unfilledEllipse(
     const previousPoint = ellipsePointsLowerHalf[i - 1];
     const nextPoint = ellipsePointsLowerHalf[i + 1];
     if (point.y > previousPoint.y + 1) {
-      fillRectWithSymmetry(point.x, previousPoint.y + 1, 1, point.y - previousPoint.y, ctx, state);
+      brush.drawLineVertical(previousPoint.y + 1, point.y, point.x, ctx, state);
     } else if (point.y > nextPoint.y + 1) {
-      fillRectWithSymmetry(point.x, nextPoint.y + 1, 1, point.y - nextPoint.y, ctx, state);
+      brush.drawLineVertical(nextPoint.y + 1, point.y, point.x, ctx, state);
     } else {
-      fillRectWithSymmetry(point.x, point.y, 1, 1, ctx, state);
+      brush.draw(point, ctx, state);
     }
   }
 
@@ -267,11 +257,11 @@ export function unfilledEllipse(
     const previousPoint = ellipsePointsUpperHalf[i - 1];
     const nextPoint = ellipsePointsUpperHalf[i + 1];
     if (point.y < previousPoint.y - 1) {
-      fillRectWithSymmetry(point.x, point.y, 1, previousPoint.y - point.y, ctx, state);
+      brush.drawLineVertical(point.y, previousPoint.y - 1, point.x, ctx, state);
     } else if (point.y < nextPoint.y - 1) {
-      fillRectWithSymmetry(point.x, point.y, 1, nextPoint.y - point.y, ctx, state);
+      brush.drawLineVertical(point.y, nextPoint.y - 1, point.x, ctx, state);
     } else {
-      fillRectWithSymmetry(point.x, point.y, 1, 1, ctx, state);
+      brush.draw(point, ctx, state);
     }
   }
 
@@ -279,26 +269,15 @@ export function unfilledEllipse(
 
   const startYLower = ellipsePointsLowerHalf[0].y;
   const startYUpper = ellipsePointsUpperHalf[0].y;
-  let h1 = Math.abs(startYLower - startYUpper);
-
-  fillRectWithSymmetry(xStart + center.x, startYLower, 1, -h1, ctx, state);
-  fillRectWithSymmetry(xStart + center.x, startYLower, 1, 1, ctx, state);
+  const startX = ellipsePointsUpperHalf[0].x;
+  brush.drawLineVertical(startYLower, startYUpper - 1, startX, ctx, state);
+  brush.draw(ellipsePointsLowerHalf[0], ctx, state);
 
   const endYLower = ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1].y;
   const endYUpper = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].y;
-  let h2 = Math.abs(endYLower - endYUpper);
-
-  fillRectWithSymmetry(xEnd + center.x, endYLower, 1, -h2, ctx, state);
-  fillRectWithSymmetry(xEnd + center.x, endYLower, 1, 1, ctx, state);
-
-  /*   for (const point of ellipsePointsLowerHalf) {
-    ctx.fillStyle = 'cyan';
-    fillRectWithSymmetry(point.x, point.y, 1, 1, ctx, state);
-  }
-  for (const point of ellipsePointsUpperHalf) {
-    ctx.fillStyle = 'cyan';
-    fillRectWithSymmetry(point.x, point.y, 1, 1, ctx, state);
-  } */
+  const endX = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].x;
+  brush.drawLineVertical(endYLower, endYUpper - 1, endX, ctx, state);
+  brush.draw(ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1], ctx, state);
 }
 
 export function filledEllipse(

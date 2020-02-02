@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
 
 export class LineTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -35,11 +35,6 @@ export class LineTool implements Tool {
     toolStateDispatch({ type: 'lineToolStart', point: position });
   }
 
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'lineToolStart', point: null });
-  }
-
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
@@ -47,7 +42,7 @@ export class LineTool implements Tool {
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
-    if (toolState.lineToolState.startingPosition) {
+    if (toolState.lineToolState.startingPosition && isLeftMouseButton(event)) {
       const start = toolState.lineToolState.startingPosition;
       const end = position;
       state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
@@ -62,10 +57,4 @@ export class LineTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
-}
-
-// Helpers
-
-function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
-  return event.button === 2 || event.buttons === 2;
 }
