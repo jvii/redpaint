@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
 
 export class RectangleTool implements Tool {
   public constructor(filled: boolean) {
@@ -69,31 +69,33 @@ export class RectangleTool implements Tool {
     const position = getMousePos(canvas, event);
     clearOverlayCanvas(canvas);
 
-    if (toolState.rectangleToolState.startingPosition) {
-      if (this.filled) {
-        state.brush.brush.drawFilledRect(
-          canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
-          isRightMouseButton(event),
-          state
-        );
-      } else {
-        state.brush.brush.drawUnfilledRect(
-          canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
-          isRightMouseButton(event),
-          state
-        );
-      }
-    } else {
+    if (!toolState.rectangleToolState.startingPosition) {
       if (!this.filled) {
         // DPaint doesn't draw filled shapes with the actual brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
       } else {
         // TODO should display something? Should probably display the edge to edge cross-hair
       }
+      onDrawToCanvas();
+      return;
+    }
+
+    if (this.filled) {
+      state.brush.brush.drawFilledRect(
+        canvas,
+        toolState.rectangleToolState.startingPosition,
+        position,
+        isRightMouseButton(event),
+        state
+      );
+    } else {
+      state.brush.brush.drawUnfilledRect(
+        canvas,
+        toolState.rectangleToolState.startingPosition,
+        position,
+        isRightMouseButton(event),
+        state
+      );
     }
     onDrawToCanvas();
   }
@@ -109,10 +111,4 @@ export class RectangleTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
-}
-
-// Helpers
-
-function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
-  return event.button === 2 || event.buttons === 2;
 }

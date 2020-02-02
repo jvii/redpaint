@@ -62,12 +62,14 @@ export class CircleToolState {
 
 export class EllipseToolState {
   public centerPoint: Point | null;
-  public radiusX: number;
-  public radiusY: number;
+  public radiusX: number | null;
+  public radiusY: number | null;
+  public rotationAngle: number;
   public constructor() {
     this.centerPoint = null;
-    this.radiusX = 0;
-    this.radiusY = 0;
+    this.radiusX = null;
+    this.radiusY = null;
+    this.rotationAngle = 0;
   }
 }
 
@@ -94,7 +96,9 @@ export type Action =
   | { type: 'rectangleToolStart'; point: Point | null }
   | { type: 'circleToolStart'; point: Point | null }
   | { type: 'ellipseToolCenter'; point: Point | null }
-  | { type: 'ellipseToolRadius'; radius: { radiusX: number; radiusY: number } }
+  | { type: 'ellipseToolRadius'; radius: { radiusX: number | null; radiusY: number | null } }
+  | { type: 'ellipseToolRotationAngle'; angle: number }
+  | { type: 'ellipseToolReset' }
   | { type: 'freehandToolPrevious'; point: Point | null }
   | { type: 'zoomInitialPoint'; point: Point | null }
   | { type: 'brushSelectionStart'; point: Point | null }
@@ -158,6 +162,19 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
           radiusX: action.radius.radiusX,
           radiusY: action.radius.radiusY,
         },
+      };
+    case 'ellipseToolRotationAngle':
+      return {
+        ...state,
+        ellipseToolState: {
+          ...state.ellipseToolState,
+          rotationAngle: action.angle,
+        },
+      };
+    case 'ellipseToolReset':
+      return {
+        ...state,
+        ellipseToolState: new EllipseToolState(),
       };
     case 'freehandToolPrevious':
       return {

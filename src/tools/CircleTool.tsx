@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
 import { distance } from '../algorithm/draw';
 
 export class CircleTool implements Tool {
@@ -110,10 +110,4 @@ export class CircleTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
-}
-
-// Helpers
-
-function isRightMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
-  return event.button === 2 || event.buttons === 2;
 }
