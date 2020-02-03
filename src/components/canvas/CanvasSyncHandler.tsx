@@ -10,29 +10,51 @@ interface Props {
 export function CanvasSyncHandler({ canvasState }: Props): null {
   console.log('render CanvasSyncHandler');
 
-  const { state } = useOvermind();
+  // Sync canvas and zoom canvas
+  // only required to sync if:
+  //  - either canvas was modified OR zoomMode was toggled
+  //  - zoomMode is on
 
+  const { state } = useOvermind();
   const { mainCanvas, zoomCanvas, mainOverlayCanvas, zoomOverlayCanvas } = canvasState;
 
-  // sync drawing canvas
+  // sync drawing canvas with zoom canvas
 
   useEffect((): void => {
-    cloneCanvas(mainCanvas, zoomCanvas);
-  }, [mainCanvas, zoomCanvas, state.canvas.mainCanvas.lastModified]);
+    if (state.toolbar.zoomModeState === 'on') {
+      cloneCanvas(mainCanvas, zoomCanvas);
+    }
+  }, [mainCanvas, zoomCanvas, state.toolbar.zoomModeState, state.canvas.mainCanvas.lastModified]);
 
   useEffect((): void => {
-    cloneCanvas(zoomCanvas, mainCanvas);
-  }, [mainCanvas, zoomCanvas, state.canvas.zoomCanvas.lastModified]);
+    if (state.toolbar.zoomModeState === 'on') {
+      cloneCanvas(zoomCanvas, mainCanvas);
+    }
+  }, [mainCanvas, zoomCanvas, state.toolbar.zoomModeState, state.canvas.zoomCanvas.lastModified]);
 
-  // sync overlay canvas
-
-  useEffect((): void => {
-    cloneCanvas(mainOverlayCanvas, zoomOverlayCanvas);
-  }, [mainOverlayCanvas, zoomOverlayCanvas, state.canvas.mainCanvas.lastModifiedOverlay]);
+  // sync overlay canvas with zoom overlay canvas
 
   useEffect((): void => {
-    cloneCanvas(zoomOverlayCanvas, mainOverlayCanvas);
-  }, [mainOverlayCanvas, zoomOverlayCanvas, state.canvas.zoomCanvas.lastModifiedOverlay]);
+    if (state.toolbar.zoomModeState === 'on') {
+      cloneCanvas(mainOverlayCanvas, zoomOverlayCanvas);
+    }
+  }, [
+    mainOverlayCanvas,
+    zoomOverlayCanvas,
+    state.toolbar.zoomModeState,
+    state.canvas.mainCanvas.lastModifiedOverlay,
+  ]);
+
+  useEffect((): void => {
+    if (state.toolbar.zoomModeState === 'on') {
+      cloneCanvas(zoomOverlayCanvas, mainOverlayCanvas);
+    }
+  }, [
+    mainOverlayCanvas,
+    zoomOverlayCanvas,
+    state.toolbar.zoomModeState,
+    state.canvas.zoomCanvas.lastModifiedOverlay,
+  ]);
 
   return null;
 }
