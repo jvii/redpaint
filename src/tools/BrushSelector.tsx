@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
 
 export class BrushSelector implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -16,8 +16,8 @@ export class BrushSelector implements Tool {
       const width = position.x - toolState.brushSelectorState.startingPosition.x;
       const height = position.y - toolState.brushSelectorState.startingPosition.y;
       var bufferCanvas = document.createElement('canvas');
-      bufferCanvas.width = width;
-      bufferCanvas.height = height;
+      bufferCanvas.width = Math.abs(width);
+      bufferCanvas.height = Math.abs(height);
       const bufferCanvasCtx = bufferCanvas.getContext('2d');
       if (!bufferCanvasCtx) {
         return;
@@ -30,8 +30,8 @@ export class BrushSelector implements Tool {
         height,
         0,
         0,
-        width,
-        height
+        bufferCanvas.width,
+        bufferCanvas.height
       );
 
       const transCode =
@@ -41,7 +41,12 @@ export class BrushSelector implements Tool {
         255 * 0x01000000;
 
       // from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja
-      let theImageData = bufferCanvasCtx.getImageData(0, 0, width, height),
+      let theImageData = bufferCanvasCtx.getImageData(
+          0,
+          0,
+          bufferCanvas.width,
+          bufferCanvas.height
+        ),
         theImageDataBufferTMP = new ArrayBuffer(theImageData.data.length),
         theImageDataClamped8TMP = new Uint8ClampedArray(theImageDataBufferTMP),
         theImageDataUint32TMP = new Uint32Array(theImageDataBufferTMP),
@@ -49,7 +54,6 @@ export class BrushSelector implements Tool {
       theImageDataClamped8TMP.set(theImageData.data);
 
       imgDataLoop: while (n--) {
-        // effciency at its finest:
         if (theImageDataUint32TMP[n] !== transCode) continue imgDataLoop;
         theImageDataUint32TMP[n] = 0x00000000; // make it transparent
       }
@@ -74,23 +78,27 @@ export class BrushSelector implements Tool {
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, toolState, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
     const position = getMousePos(canvas, event);
 
-    if (toolState.brushSelectorState.startingPosition) {
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        return;
-      }
-      clearOverlayCanvas(canvas);
-      const width = position.x - toolState.brushSelectorState.startingPosition.x;
-      const height = position.y - toolState.brushSelectorState.startingPosition.y;
-      ctx.strokeRect(
-        toolState.brushSelectorState.startingPosition.x,
-        toolState.brushSelectorState.startingPosition.y,
-        width,
-        height
-      );
+    if (!toolState.brushSelectorState.startingPosition) {
+      edgeToEdgeCrosshair(canvas, position);
+      onDrawToCanvas();
+      return;
     }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+    const width = position.x - toolState.brushSelectorState.startingPosition.x;
+    const height = position.y - toolState.brushSelectorState.startingPosition.y;
+    ctx.strokeRect(
+      toolState.brushSelectorState.startingPosition.x,
+      toolState.brushSelectorState.startingPosition.y,
+      width,
+      height
+    );
     onDrawToCanvas();
   }
 

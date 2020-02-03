@@ -1,5 +1,11 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isLeftMouseButton, isRightMouseButton } from './util';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  isLeftMouseButton,
+  isRightMouseButton,
+  edgeToEdgeCrosshair,
+} from './util';
 
 export class EllipseTool implements Tool {
   public constructor(filled: boolean) {
@@ -126,11 +132,10 @@ export class EllipseTool implements Tool {
 
     if (!toolState.ellipseToolState.centerPoint) {
       if (!this.filled) {
-        // DPaint doesn't draw filled shapes with the actual brush
+        // DPaint only draws unfilled shapes with the current brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
-      } else {
-        // TODO should display something? Should probably display the edge to edge cross-hair
       }
+      edgeToEdgeCrosshair(canvas, position);
       onDrawToCanvas();
       return;
     }

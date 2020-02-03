@@ -75,3 +75,12 @@ export function isRightMouseButton(
 export function isLeftMouseButton(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): boolean {
   return event.button === 1 || event.buttons === 1;
 }
+
+export function edgeToEdgeCrosshair(canvas: HTMLCanvasElement, position: Point): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    return;
+  }
+  ctx.fillRect(position.x, 0, 1, canvas.height);
+  ctx.fillRect(0, position.y, canvas.width, 1);
+}
