@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
 import { distance } from '../algorithm/draw';
 
 export class CircleTool implements Tool {
@@ -71,30 +71,33 @@ export class CircleTool implements Tool {
     const position = getMousePos(canvas, event);
     clearOverlayCanvas(canvas);
 
-    if (toolState.circleToolState.startingPosition) {
-      let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
-      if (this.filled) {
-        state.brush.brush.drawFilledCircle(
-          canvas,
-          toolState.circleToolState.startingPosition,
-          radius,
-          isRightMouseButton(event),
-          state
-        );
-      } else {
-        state.brush.brush.drawUnfilledCircle(
-          canvas,
-          toolState.circleToolState.startingPosition,
-          radius,
-          isRightMouseButton(event),
-          state
-        );
-      }
-    } else {
+    if (!toolState.circleToolState.startingPosition) {
       if (!this.filled) {
-        // DPaint doesn't draw filled shapes with the actual brush
+        // DPaint only draws unfilled shapes with the current brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
       }
+      edgeToEdgeCrosshair(canvas, position);
+      onDrawToCanvas();
+      return;
+    }
+
+    let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
+    if (this.filled) {
+      state.brush.brush.drawFilledCircle(
+        canvas,
+        toolState.circleToolState.startingPosition,
+        radius,
+        isRightMouseButton(event),
+        state
+      );
+    } else {
+      state.brush.brush.drawUnfilledCircle(
+        canvas,
+        toolState.circleToolState.startingPosition,
+        radius,
+        isRightMouseButton(event),
+        state
+      );
     }
     onDrawToCanvas();
   }

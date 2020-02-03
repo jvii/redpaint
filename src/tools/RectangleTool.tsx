@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
 
 export class RectangleTool implements Tool {
   public constructor(filled: boolean) {
@@ -71,11 +71,10 @@ export class RectangleTool implements Tool {
 
     if (!toolState.rectangleToolState.startingPosition) {
       if (!this.filled) {
-        // DPaint doesn't draw filled shapes with the actual brush
+        // DPaint only draws unfilled shapes with the current brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
-      } else {
-        // TODO should display something? Should probably display the edge to edge cross-hair
       }
+      edgeToEdgeCrosshair(canvas, position);
       onDrawToCanvas();
       return;
     }
