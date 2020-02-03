@@ -62,4 +62,10 @@ export class FreehandTool implements Tool {
     clearOverlayCanvas(canvas);
     onDrawToCanvas();
   }
+
+  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
+    const { canvas, onDrawToCanvas } = params;
+    clearOverlayCanvas(canvas);
+    onDrawToCanvas();
+  }
 }
