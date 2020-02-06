@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ToolState } from '../../tools/ToolState';
+import { ToolState, Action } from '../../tools/ToolState';
 import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
@@ -23,6 +23,21 @@ export function useBrushSelection(toolState: ToolState): void {
     // switch to Freehand tool after selection for simplicity (what does DPaint do?)
     actions.toolbar.setSelectedDrawingTool('freeHand');
   }, [toolState.brushSelectorState.dataURL]);
+}
+
+export function useInitTool(
+  canvas: HTMLCanvasElement,
+  toolState: ToolState,
+  toolStateDispatch: React.Dispatch<Action>,
+  isZoomCanvas: boolean
+): void {
+  const { state, actions } = useOvermind();
+  useEffect((): void => {
+    if (typeof state.toolbar.activeTool.onInit !== 'undefined') {
+      console.log('init');
+      state.toolbar.activeTool.onInit({ canvas, toolState, toolStateDispatch });
+    }
+  }, [state.toolbar.activeTool]);
 }
 
 export function useScrollToFocusPoint(

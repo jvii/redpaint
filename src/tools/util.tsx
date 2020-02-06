@@ -1,5 +1,6 @@
 import { Point, Color } from '../types';
 import { Tool, EventHandlerParams } from './Tool';
+import ToolState from './ToolState';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -52,7 +53,20 @@ export function clearOverlayCanvas(canvas: HTMLCanvasElement): void {
 
 export function getEventHandler(
   tool: Tool,
-  eventHandlerName: string,
+  eventHandlerName:
+    | 'onClick'
+    | 'onContextMenu'
+    | 'onMouseMove'
+    | 'onMouseUp'
+    | 'onMouseDown'
+    | 'onMouseLeave'
+    | 'onMouseEnter'
+    | 'onMouseMoveOverlay'
+    | 'onMouseLeaveOverlay'
+    | 'onMouseEnterOverlay'
+    | 'onMouseUpOverlay'
+    | 'onMouseDownOverlay'
+    | 'onClickOverlay',
   eventHandlerParams: EventHandlerParams
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
   if (hasKey(tool, eventHandlerName)) {
@@ -76,11 +90,19 @@ export function isLeftMouseButton(event: React.MouseEvent<HTMLCanvasElement, Mou
   return event.button === 1 || event.buttons === 1;
 }
 
-export function edgeToEdgeCrosshair(canvas: HTMLCanvasElement, position: Point): void {
+export function edgeToEdgeCrosshair(
+  canvas: HTMLCanvasElement,
+  position: Point,
+  toolState: ToolState
+): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     return;
   }
+  if (toolState.invertedCanvasPattern) {
+    ctx.fillStyle = toolState.invertedCanvasPattern;
+  }
+
   ctx.fillRect(position.x, 0, 1, canvas.height);
   ctx.fillRect(0, position.y, canvas.width, 1);
 }

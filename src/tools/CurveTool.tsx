@@ -18,13 +18,13 @@ export class CurveTool implements Tool {
       onDrawToCanvas,
     } = params;
 
-    const position = getMousePos(canvas, event);
-
-    if (toolState.curveToolState.startingPosition && !toolState.curveToolState.endPosition) {
-      toolStateDispatch({ type: 'curveToolEnd', point: position });
+    if (!toolState.curveToolState.startingPosition) {
+      return;
     }
 
-    if (toolState.curveToolState.startingPosition && toolState.curveToolState.endPosition) {
+    const position = getMousePos(canvas, event);
+
+    if (toolState.curveToolState.endPosition) {
       state.brush.brush.drawCurve(
         canvas,
         toolState.curveToolState.startingPosition,
@@ -37,6 +37,8 @@ export class CurveTool implements Tool {
       onDrawToCanvas();
       toolStateDispatch({ type: 'curveToolStart', point: null });
       toolStateDispatch({ type: 'curveToolEnd', point: null });
+    } else {
+      toolStateDispatch({ type: 'curveToolEnd', point: position });
     }
   }
 

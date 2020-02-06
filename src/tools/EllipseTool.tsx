@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OnInitParams } from './Tool';
 import {
   getMousePos,
   clearOverlayCanvas,
@@ -13,6 +13,37 @@ export class EllipseTool implements Tool {
   }
 
   private filled: boolean;
+
+  public onInit(params: OnInitParams): void {
+    const { canvas, toolStateDispatch } = params;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    let bufferCanvas = document.createElement('canvas');
+    bufferCanvas.width = canvas.width;
+    bufferCanvas.height = canvas.height;
+    const bufferCanvasCtx = bufferCanvas.getContext('2d');
+    if (!bufferCanvasCtx) {
+      return;
+    }
+    bufferCanvasCtx.filter = 'invert(1)';
+    bufferCanvasCtx.drawImage(canvas, 0, 0);
+    bufferCanvasCtx.globalCompositeOperation = 'difference';
+    bufferCanvasCtx.fillStyle = 'white';
+    bufferCanvasCtx.globalAlpha = 1; // alpha 0 = no effect 1 = full effect
+    bufferCanvasCtx.fillRect(0, 0, bufferCanvas.width, bufferCanvas.height);
+
+    const pattern = bufferCanvasCtx.createPattern(bufferCanvas, 'no-repeat');
+    if (pattern) {
+      console.log('pattern updated');
+      toolStateDispatch({
+        type: 'invertedCanvasPattern',
+        invertedCanvasPattern: pattern,
+      });
+    }
+  }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event } = params;
@@ -105,6 +136,7 @@ export class EllipseTool implements Tool {
     }
     undoPoint();
     onDrawToCanvas();
+    this.onInit({ canvas, toolState, toolStateDispatch });
 
     toolStateDispatch({ type: 'ellipseToolReset' });
   }
@@ -135,7 +167,7 @@ export class EllipseTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
       }
-      edgeToEdgeCrosshair(canvas, position);
+      edgeToEdgeCrosshair(canvas, position, toolState);
       onDrawToCanvas();
       return;
     }

@@ -7,7 +7,7 @@ import { config } from './overmind/';
 import * as serviceWorker from './serviceWorker';
 import './index.css';
 
-const overmind = createOvermind(config, {
+export const overmind = createOvermind(config, {
   devtools: true, // defaults to 'localhost:3031'
 });
 

@@ -21,7 +21,6 @@ export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
   const updateZoomFocusPoint = (): void => {
     actions.canvas.setZoomFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));
   };
-
   const updateScrollFocusPoint = (): void => {
     actions.canvas.setScrollFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));
   };
@@ -30,12 +29,10 @@ export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
     const newZoomFactor = zoomFactor + 2;
     zoom(newZoomFactor);
   };
-
   const zoomOut = (): void => {
     const newZoomFactor = zoomFactor - 2;
     zoom(newZoomFactor);
   };
-
   const zoom = (newZoomFactor: number): void => {
     if (newZoomFactor <= 0) {
       return;

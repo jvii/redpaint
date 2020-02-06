@@ -1,5 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
+import { overmind } from '../index';
 
 export class FreehandTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -9,8 +10,8 @@ export class FreehandTool implements Tool {
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
     const { event, canvas, onDrawToCanvas, toolState, toolStateDispatch, state } = params;
-    const position = getMousePos(canvas, event);
     if (event.buttons && toolState.freehandToolState.previousPosition) {
+      const position = getMousePos(canvas, event);
       const start = toolState.freehandToolState.previousPosition;
       const end = position;
       state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
@@ -28,9 +29,11 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch, undoPoint } = params;
+    const { canvas, toolStateDispatch, undoPoint } = params;
     toolStateDispatch({ type: 'freehandToolPrevious', point: null });
-    undoPoint();
+    //undoPoint();
+    overmind.actions.undo.setUndoPoint(canvas);
+    console.log('color:' + overmind.state.palette.backgroundColorId);
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {

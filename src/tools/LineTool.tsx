@@ -18,15 +18,17 @@ export class LineTool implements Tool {
       undoPoint,
     } = params;
 
-    if (toolState.lineToolState.startingPosition) {
-      const position = getMousePos(canvas, event);
-      const start = toolState.lineToolState.startingPosition;
-      const end = position;
-      state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
-      undoPoint();
-      onDrawToCanvas();
-      toolStateDispatch({ type: 'lineToolStart', point: null });
+    if (!toolState.lineToolState.startingPosition) {
+      return;
     }
+
+    const position = getMousePos(canvas, event);
+    const start = toolState.lineToolState.startingPosition;
+    const end = position;
+    state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
+    undoPoint();
+    onDrawToCanvas();
+    toolStateDispatch({ type: 'lineToolStart', point: null });
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
