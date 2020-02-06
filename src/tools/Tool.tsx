@@ -1,6 +1,5 @@
 import { ToolState, Action } from './ToolState';
 import { OvermindState } from '../overmind';
-
 export interface EventHandlerParams {
   canvas: HTMLCanvasElement;
   onDrawToCanvas: () => void;
@@ -14,7 +13,14 @@ export interface EventHandlerParamsWithEvent extends EventHandlerParams {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
 }
 
+export interface OnInitParams {
+  canvas: HTMLCanvasElement;
+  toolState: ToolState;
+  toolStateDispatch: React.Dispatch<Action>;
+}
+
 export interface Tool {
+  onInit?(params: OnInitParams): void;
   onClick?(params: EventHandlerParamsWithEvent): void;
   onContextMenu?(params: EventHandlerParamsWithEvent): void;
   onMouseMove?(params: EventHandlerParamsWithEvent): void;

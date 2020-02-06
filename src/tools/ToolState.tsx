@@ -11,6 +11,7 @@ export class ToolState {
   public freehandToolState: FreehandToolState;
   public zoomToolState: ZoomToolState;
   public brushSelectorState: BrushSelectorState;
+  public invertedCanvasPattern: CanvasPattern | null;
   public constructor() {
     this.lineToolState = new LineToolState();
     this.curveToolState = new CurveToolState();
@@ -20,6 +21,7 @@ export class ToolState {
     this.freehandToolState = new FreehandToolState();
     this.zoomToolState = new ZoomToolState();
     this.brushSelectorState = new BrushSelectorState();
+    this.invertedCanvasPattern = null;
   }
 }
 
@@ -102,7 +104,8 @@ export type Action =
   | { type: 'freehandToolPrevious'; point: Point | null }
   | { type: 'zoomInitialPoint'; point: Point | null }
   | { type: 'brushSelectionStart'; point: Point | null }
-  | { type: 'brushSelectionComplete'; dataURL: string };
+  | { type: 'brushSelectionComplete'; dataURL: string }
+  | { type: 'invertedCanvasPattern'; invertedCanvasPattern: CanvasPattern | null };
 
 export function toolStateReducer(state: ToolState, action: Action): ToolState {
   switch (action.type) {
@@ -209,6 +212,11 @@ export function toolStateReducer(state: ToolState, action: Action): ToolState {
           dataURL: action.dataURL,
           startingPosition: null,
         },
+      };
+    case 'invertedCanvasPattern':
+      return {
+        ...state,
+        invertedCanvasPattern: action.invertedCanvasPattern,
       };
     default:
       return state;

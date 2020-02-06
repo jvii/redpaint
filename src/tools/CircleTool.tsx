@@ -25,32 +25,33 @@ export class CircleTool implements Tool {
       undoPoint,
     } = params;
 
-    if (toolState.circleToolState.startingPosition) {
-      const position = getMousePos(canvas, event);
-      let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
-
-      if (this.filled) {
-        state.brush.brush.drawFilledCircle(
-          canvas,
-          toolState.circleToolState.startingPosition,
-          radius,
-          isRightMouseButton(event),
-          state
-        );
-      } else {
-        state.brush.brush.drawUnfilledCircle(
-          canvas,
-          toolState.circleToolState.startingPosition,
-          radius,
-          isRightMouseButton(event),
-          state
-        );
-      }
-
-      undoPoint();
-      onDrawToCanvas();
-      toolStateDispatch({ type: 'circleToolStart', point: null });
+    if (!toolState.circleToolState.startingPosition) {
+      return;
     }
+
+    const position = getMousePos(canvas, event);
+    let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
+
+    if (this.filled) {
+      state.brush.brush.drawFilledCircle(
+        canvas,
+        toolState.circleToolState.startingPosition,
+        radius,
+        isRightMouseButton(event),
+        state
+      );
+    } else {
+      state.brush.brush.drawUnfilledCircle(
+        canvas,
+        toolState.circleToolState.startingPosition,
+        radius,
+        isRightMouseButton(event),
+        state
+      );
+    }
+    undoPoint();
+    onDrawToCanvas();
+    toolStateDispatch({ type: 'circleToolStart', point: null });
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -76,7 +77,7 @@ export class CircleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
       }
-      edgeToEdgeCrosshair(canvas, position);
+      edgeToEdgeCrosshair(canvas, position, toolState);
       onDrawToCanvas();
       return;
     }

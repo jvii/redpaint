@@ -24,31 +24,32 @@ export class RectangleTool implements Tool {
       undoPoint,
     } = params;
 
-    if (toolState.rectangleToolState.startingPosition) {
-      const position = getMousePos(canvas, event);
-
-      if (this.filled) {
-        state.brush.brush.drawFilledRect(
-          canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
-          isRightMouseButton(event),
-          state
-        );
-      } else {
-        state.brush.brush.drawUnfilledRect(
-          canvas,
-          toolState.rectangleToolState.startingPosition,
-          position,
-          isRightMouseButton(event),
-          state
-        );
-      }
-
-      undoPoint();
-      onDrawToCanvas();
-      toolStateDispatch({ type: 'rectangleToolStart', point: null });
+    if (!toolState.rectangleToolState.startingPosition) {
+      return;
     }
+
+    const position = getMousePos(canvas, event);
+
+    if (this.filled) {
+      state.brush.brush.drawFilledRect(
+        canvas,
+        toolState.rectangleToolState.startingPosition,
+        position,
+        isRightMouseButton(event),
+        state
+      );
+    } else {
+      state.brush.brush.drawUnfilledRect(
+        canvas,
+        toolState.rectangleToolState.startingPosition,
+        position,
+        isRightMouseButton(event),
+        state
+      );
+    }
+    undoPoint();
+    onDrawToCanvas();
+    toolStateDispatch({ type: 'rectangleToolStart', point: null });
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -74,7 +75,7 @@ export class RectangleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
       }
-      edgeToEdgeCrosshair(canvas, position);
+      edgeToEdgeCrosshair(canvas, position, toolState);
       onDrawToCanvas();
       return;
     }

@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
 import { ToolState, toolStateReducer } from '../../tools/ToolState';
-import { useZoomFocusPointSelection, useBrushSelection } from './hooks';
+import { useZoomFocusPointSelection, useBrushSelection, useInitTool } from './hooks';
 import { useOvermind } from '../../overmind';
 import { getEventHandler } from '../../tools/util';
 import { blobToCanvas } from './util';
@@ -30,11 +30,13 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
 
   const { state, actions } = useOvermind();
 
+  // TODO: extract to hook useUndo()
   useEffect((): void => {
     blobToCanvas(state.undo.currentBufferItem, canvasRef.current);
   }, [state.undo.lastUndoRedoTime]);
 
   // TODO: yhteinen useSelectionHooks tai useBridgeToolStateToGlobalState(toolState)
+  // tai näiden toolStaten siirto overmindiin
   useZoomFocusPointSelection(toolState);
   useBrushSelection(toolState);
 
@@ -70,6 +72,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
   };
 
   const tool = state.toolbar.activeTool;
+  useInitTool(canvasRef.current, toolState, toolStateDispatch, isZoomCanvas);
 
   return (
     <div className="CanvasContainer">
