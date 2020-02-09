@@ -29,16 +29,14 @@ export class RectangleTool implements Tool {
         canvas,
         startPoint,
         endPoint,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else {
       overmind.state.brush.brush.drawUnfilledRect(
         canvas,
         startPoint,
         endPoint,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     }
     undoPoint();
@@ -68,12 +66,7 @@ export class RectangleTool implements Tool {
     if (!startPoint) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(
-          canvas,
-          position,
-          isRightMouseButton(event),
-          overmind.state
-        );
+        overmind.state.brush.brush.drawDot(canvas, position, isRightMouseButton(event));
       }
       edgeToEdgeCrosshair(canvas, position);
       onPaint();
@@ -85,16 +78,14 @@ export class RectangleTool implements Tool {
         canvas,
         startPoint,
         position,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else {
       overmind.state.brush.brush.drawUnfilledRect(
         canvas,
         startPoint,
         position,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     }
     onPaint();

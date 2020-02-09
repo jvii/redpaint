@@ -1,6 +1,5 @@
 import { Brush } from './Brush';
 import { Point } from '../types';
-import { OvermindState } from '../overmind';
 import { colorToRGBString } from '../tools/util';
 import {
   line,
@@ -13,14 +12,14 @@ import {
   unfilledEllipse,
   filledEllipse,
 } from '../algorithm/draw';
+import { overmind } from '../index';
 
 export class PixelBrush implements Brush {
   public drawLine(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -28,10 +27,12 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    line(ctx, this, start, end, state);
+    line(ctx, this, start, end);
   }
 
   public drawCurve(
@@ -39,8 +40,7 @@ export class PixelBrush implements Brush {
     start: Point,
     end: Point,
     middlePoint: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -48,36 +48,34 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    curve(ctx, this, start, end, middlePoint, state);
+    curve(ctx, this, start, end, middlePoint);
   }
 
-  public drawDot(
-    canvas: HTMLCanvasElement,
-    point: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
-  ): void {
+  public drawDot(canvas: HTMLCanvasElement, point: Point, withBackgroundColor: boolean): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return;
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    this.draw(point, ctx, state);
+    this.draw(point, ctx);
   }
 
   public drawUnfilledRect(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -85,18 +83,19 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    unfilledRect(ctx, this, start, end, state);
+    unfilledRect(ctx, this, start, end);
   }
 
   public drawFilledRect(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -104,18 +103,19 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    filledRect(ctx, this, start, end, state);
+    filledRect(ctx, this, start, end);
   }
 
   public drawUnfilledCircle(
     canvas: HTMLCanvasElement,
     center: Point,
     radius: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -123,18 +123,19 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    unfilledCircle(ctx, this, center, radius, state);
+    unfilledCircle(ctx, this, center, radius);
   }
 
   public drawFilledCircle(
     canvas: HTMLCanvasElement,
     center: Point,
     radius: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -142,10 +143,12 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    filledCircle(ctx, this, center, radius, state);
+    filledCircle(ctx, this, center, radius);
   }
 
   public drawUnfilledEllipse(
@@ -154,8 +157,7 @@ export class PixelBrush implements Brush {
     radiusX: number,
     radiusY: number,
     rotationAngle: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -163,10 +165,12 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    unfilledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle, state);
+    unfilledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
   }
 
   public drawFilledEllipse(
@@ -175,8 +179,7 @@ export class PixelBrush implements Brush {
     radiusX: number,
     radiusY: number,
     rotationAngle: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
@@ -184,33 +187,28 @@ export class PixelBrush implements Brush {
     }
 
     ctx.fillStyle = colorToRGBString(
-      withBackgroundColor ? state.palette.backgroundColor : state.palette.foregroundColor
+      withBackgroundColor
+        ? overmind.state.palette.backgroundColor
+        : overmind.state.palette.foregroundColor
     );
 
-    filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle, state);
+    filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
   }
 
-  public draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void {
-    fillRectWithSymmetry(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx, state);
+  public draw(point: Point, ctx: CanvasRenderingContext2D): void {
+    fillRectWithSymmetry(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx);
   }
 
-  public drawLineVertical(
-    y1: number,
-    y2: number,
-    x: number,
-    ctx: CanvasRenderingContext2D,
-    state: OvermindState
-  ): void {
-    fillRectWithSymmetry(x, y1, 1, y2 - y1 + 1, ctx, state);
+  public drawLineVertical(y1: number, y2: number, x: number, ctx: CanvasRenderingContext2D): void {
+    fillRectWithSymmetry(x, y1, 1, y2 - y1 + 1, ctx);
   }
 
   public drawLineHorizontal(
     x1: number,
     x2: number,
     y: number,
-    ctx: CanvasRenderingContext2D,
-    state: OvermindState
+    ctx: CanvasRenderingContext2D
   ): void {
-    fillRectWithSymmetry(x1, y, x2 - x1 + 1, 1, ctx, state);
+    fillRectWithSymmetry(x1, y, x2 - x1 + 1, 1, ctx);
   }
 }

@@ -25,8 +25,7 @@ export class CurveTool implements Tool {
         startPoint,
         endPoint,
         mousePos,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
       undoPoint();
       onPaint();
@@ -55,12 +54,7 @@ export class CurveTool implements Tool {
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
-      overmind.state.brush.brush.drawDot(
-        canvas,
-        mousePos,
-        isRightMouseButton(event),
-        overmind.state
-      );
+      overmind.state.brush.brush.drawDot(canvas, mousePos, isRightMouseButton(event));
       onPaint();
       return;
     }
@@ -72,17 +66,10 @@ export class CurveTool implements Tool {
         startPoint,
         endPoint,
         mousePos,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else if (isLeftMouseButton(event)) {
-      overmind.state.brush.brush.drawLine(
-        canvas,
-        startPoint,
-        mousePos,
-        isRightMouseButton(event),
-        overmind.state
-      );
+      overmind.state.brush.brush.drawLine(canvas, startPoint, mousePos, isRightMouseButton(event));
     }
     onPaint();
   }

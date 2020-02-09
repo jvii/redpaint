@@ -18,13 +18,7 @@ export class LineTool implements Tool {
     const position = getMousePos(canvas, event);
     const start = overmind.state.tool.lineTool.start;
     const end = position;
-    overmind.state.brush.brush.drawLine(
-      canvas,
-      start,
-      end,
-      isRightMouseButton(event),
-      overmind.state
-    );
+    overmind.state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event));
     undoPoint();
     onPaint();
     overmind.actions.tool.lineToolStart(null);
@@ -46,20 +40,9 @@ export class LineTool implements Tool {
     if (overmind.state.tool.lineTool.start && isLeftMouseButton(event)) {
       const start = overmind.state.tool.lineTool.start;
       const end = position;
-      overmind.state.brush.brush.drawLine(
-        canvas,
-        start,
-        end,
-        isRightMouseButton(event),
-        overmind.state
-      );
+      overmind.state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event));
     } else {
-      overmind.state.brush.brush.drawDot(
-        canvas,
-        position,
-        isRightMouseButton(event),
-        overmind.state
-      );
+      overmind.state.brush.brush.drawDot(canvas, position, isRightMouseButton(event));
     }
     onPaint();
   }
