@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent, OnInitParams } from './Tool';
+import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import {
   getMousePos,
   clearOverlayCanvas,
@@ -6,6 +6,7 @@ import {
   isRightMouseButton,
   edgeToEdgeCrosshair,
 } from './util';
+import { overmind } from '../index';
 
 export class EllipseTool implements Tool {
   public constructor(filled: boolean) {
@@ -14,8 +15,7 @@ export class EllipseTool implements Tool {
 
   private filled: boolean;
 
-  public onInit(params: OnInitParams): void {
-    const { canvas, toolStateDispatch } = params;
+  public onInit(canvas: HTMLCanvasElement): void {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return;
@@ -38,10 +38,11 @@ export class EllipseTool implements Tool {
     const pattern = bufferCanvasCtx.createPattern(bufferCanvas, 'no-repeat');
     if (pattern) {
       console.log('pattern updated');
-      toolStateDispatch({
+      /* toolStateDispatch({
         type: 'invertedCanvasPattern',
         invertedCanvasPattern: pattern,
-      });
+      }); */
+      overmind.actions.canvas.storeInvertedCanvas(pattern);
     }
   }
 
@@ -51,14 +52,15 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, toolStateDispatch } = params;
+    const { event, canvas } = params;
 
     // Do nothing if center point not set, or radius not yet set
 
-    if (!toolState.ellipseToolState.centerPoint) {
+    const origin = overmind.state.tool.ellipseTool.origin;
+    if (!origin) {
       return;
     }
-    if (!toolState.ellipseToolState.radiusX || !toolState.ellipseToolState.radiusY) {
+    if (!overmind.state.tool.ellipseTool.radiusX || !overmind.state.tool.ellipseTool.radiusY) {
       return;
     }
 
@@ -67,133 +69,141 @@ export class EllipseTool implements Tool {
     const position = getMousePos(canvas, event);
 
     if (isLeftMouseButton(event)) {
-      const rotationAngle =
-        position.y - toolState.ellipseToolState.centerPoint.y - toolState.ellipseToolState.radiusY;
-      toolStateDispatch({
+      const rotationAngle = position.y - origin.y - overmind.state.tool.ellipseTool.radiusY;
+      overmind.actions.tool.ellipseToolAngle(rotationAngle);
+      /*       toolStateDispatch({
         type: 'ellipseToolRotationAngle',
         angle: rotationAngle,
-      });
+      }); */
     } else {
-      const radiusX = Math.abs(position.x - toolState.ellipseToolState.centerPoint.x);
-      const radiusY = Math.abs(position.y - toolState.ellipseToolState.centerPoint.y);
-      toolStateDispatch({
+      const radiusX = Math.abs(position.x - origin.x);
+      const radiusY = Math.abs(position.y - origin.y);
+      overmind.actions.tool.ellipseToolRadius({ x: radiusX, y: radiusY });
+      /*       toolStateDispatch({
         type: 'ellipseToolRadius',
         radius: { radiusX: radiusX, radiusY: radiusY },
-      });
+      }); */
     }
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      canvas,
-      state,
-      onDrawToCanvas,
-      toolState,
-      toolStateDispatch,
-      undoPoint,
-    } = params;
+    const { event, canvas, onDrawToCanvas, undoPoint } = params;
 
-    if (!toolState.ellipseToolState.centerPoint) {
+    const origin = overmind.state.tool.ellipseTool.origin;
+    if (!origin) {
       return;
     }
 
     // If radius has not been set, set it and return
 
-    if (!toolState.ellipseToolState.radiusX || !toolState.ellipseToolState.radiusY) {
-      const position = getMousePos(canvas, event);
-      const radiusX = Math.abs(position.x - toolState.ellipseToolState.centerPoint.x);
-      const radiusY = Math.abs(position.y - toolState.ellipseToolState.centerPoint.y);
-      toolStateDispatch({
+    const radiusX = overmind.state.tool.ellipseTool.radiusX;
+    const radiusY = overmind.state.tool.ellipseTool.radiusY;
+    if (!radiusX || !radiusY) {
+      const mousePos = getMousePos(canvas, event);
+      overmind.actions.tool.ellipseToolRadius({
+        x: Math.abs(mousePos.x - origin.x),
+        y: Math.abs(mousePos.y - origin.y),
+      });
+      /*       toolStateDispatch({
         type: 'ellipseToolRadius',
         radius: { radiusX: radiusX, radiusY: radiusY },
-      });
+      }); */
       return;
     }
 
     // Draw ellipse
 
+    const angle = overmind.state.tool.ellipseTool.angle;
     if (this.filled) {
-      state.brush.brush.drawFilledEllipse(
+      overmind.state.brush.brush.drawFilledEllipse(
         canvas,
-        toolState.ellipseToolState.centerPoint,
-        toolState.ellipseToolState.radiusX,
-        toolState.ellipseToolState.radiusY,
-        toolState.ellipseToolState.rotationAngle,
+        origin,
+        radiusX,
+        radiusY,
+        angle,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else {
-      state.brush.brush.drawUnfilledEllipse(
+      overmind.state.brush.brush.drawUnfilledEllipse(
         canvas,
-        toolState.ellipseToolState.centerPoint,
-        toolState.ellipseToolState.radiusX,
-        toolState.ellipseToolState.radiusY,
-        toolState.ellipseToolState.rotationAngle,
+        origin,
+        radiusX,
+        radiusY,
+        angle,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     undoPoint();
     onDrawToCanvas();
-    this.onInit({ canvas, toolState, toolStateDispatch });
-
-    toolStateDispatch({ type: 'ellipseToolReset' });
+    this.onInit(canvas);
+    //toolStateDispatch({ type: 'ellipseToolReset' });
+    overmind.actions.tool.ellipseToolReset();
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, toolStateDispatch } = params;
-    const position = getMousePos(canvas, event);
-    if (!toolState.ellipseToolState.centerPoint) {
-      toolStateDispatch({ type: 'ellipseToolCenter', point: position });
+    const { event, canvas } = params;
+    const mousePos = getMousePos(canvas, event);
+    if (!overmind.state.tool.ellipseTool.origin) {
+      //toolStateDispatch({ type: 'ellipseToolCenter', point: mousePos });
+      overmind.actions.tool.ellipseToolOrigin(mousePos);
     }
   }
 
   // TODO: check how DPaint handles this
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'ellipseToolReset' });
+    overmind.actions.tool.ellipseToolReset();
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, state, toolState, onDrawToCanvas } = params;
+    const { event, canvas, onDrawToCanvas } = params;
     clearOverlayCanvas(canvas);
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
 
-    if (!toolState.ellipseToolState.centerPoint) {
+    const origin = overmind.state.tool.ellipseTool.origin;
+    if (!origin) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
+        overmind.state.brush.brush.drawDot(
+          canvas,
+          mousePos,
+          isRightMouseButton(event),
+          overmind.state
+        );
       }
-      edgeToEdgeCrosshair(canvas, position, toolState);
+      edgeToEdgeCrosshair(canvas, mousePos);
       onDrawToCanvas();
       return;
     }
 
-    const radiusX = Math.abs(position.x - toolState.ellipseToolState.centerPoint.x);
-    const radiusY = Math.abs(position.y - toolState.ellipseToolState.centerPoint.y);
+    const radiusX = overmind.state.tool.ellipseTool.radiusX;
+    const radiusY = overmind.state.tool.ellipseTool.radiusY;
+    const newRadiusX = Math.abs(mousePos.x - origin.x);
+    const newRadiusY = Math.abs(mousePos.y - origin.y);
+    const angle = overmind.state.tool.ellipseTool.angle;
 
     if (this.filled) {
-      state.brush.brush.drawFilledEllipse(
+      overmind.state.brush.brush.drawFilledEllipse(
         canvas,
-        toolState.ellipseToolState.centerPoint,
-        toolState.ellipseToolState.radiusX ? toolState.ellipseToolState.radiusX : radiusX,
-        toolState.ellipseToolState.radiusY ? toolState.ellipseToolState.radiusY : radiusY,
-        toolState.ellipseToolState.rotationAngle,
+        origin,
+        radiusX ? radiusX : newRadiusX,
+        radiusY ? radiusY : newRadiusY,
+        angle,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else {
-      state.brush.brush.drawUnfilledEllipse(
+      overmind.state.brush.brush.drawUnfilledEllipse(
         canvas,
-        toolState.ellipseToolState.centerPoint,
-        toolState.ellipseToolState.radiusX ? toolState.ellipseToolState.radiusX : radiusX,
-        toolState.ellipseToolState.radiusY ? toolState.ellipseToolState.radiusY : radiusY,
-        toolState.ellipseToolState.rotationAngle,
+        origin,
+        radiusX ? radiusX : newRadiusX,
+        radiusY ? radiusY : newRadiusY,
+        angle,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     onDrawToCanvas();

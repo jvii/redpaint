@@ -12,6 +12,7 @@ export type State = {
     lastModified: number;
     lastModifiedOverlay: number;
   };
+  invertedCanvas: CanvasPattern | null;
 };
 
 export const state: State = {
@@ -20,4 +21,5 @@ export const state: State = {
   zoomFocusPoint: null,
   mainCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
   zoomCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
+  invertedCanvas: null,
 };

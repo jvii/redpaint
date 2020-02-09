@@ -1,43 +1,22 @@
 import { useEffect } from 'react';
-import { ToolState, Action } from '../../tools/ToolState';
 import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
-import { CustomBrush } from '../../brush/CustomBrush';
+import { blobToCanvas } from './util';
 
-export function useZoomFocusPointSelection(toolState: ToolState): void {
-  const { actions } = useOvermind();
+export function useInitTool(canvas: HTMLCanvasElement, isZoomCanvas: boolean): void {
+  const { state } = useOvermind();
   useEffect((): void => {
-    actions.canvas.setZoomFocusPoint(toolState.zoomToolState.zoomInitialPoint);
-  }, [toolState.zoomToolState.zoomInitialPoint]);
-}
-
-export function useBrushSelection(toolState: ToolState): void {
-  const { actions } = useOvermind();
-  useEffect((): void => {
-    if (!toolState.brushSelectorState.dataURL) {
-      return;
-    }
-    const brush = new CustomBrush(toolState.brushSelectorState.dataURL);
-    actions.brush.setBrush(brush);
-    actions.toolbar.toggleBrushSelectionMode();
-    // switch to Freehand tool after selection for simplicity (what does DPaint do?)
-    actions.toolbar.setSelectedDrawingTool('freeHand');
-  }, [toolState.brushSelectorState.dataURL]);
-}
-
-export function useInitTool(
-  canvas: HTMLCanvasElement,
-  toolState: ToolState,
-  toolStateDispatch: React.Dispatch<Action>,
-  isZoomCanvas: boolean
-): void {
-  const { state, actions } = useOvermind();
-  useEffect((): void => {
-    if (typeof state.toolbar.activeTool.onInit !== 'undefined') {
-      console.log('init');
-      state.toolbar.activeTool.onInit({ canvas, toolState, toolStateDispatch });
+    if (typeof state.toolbar.activeTool.onInit !== 'undefined' && !isZoomCanvas) {
+      state.toolbar.activeTool.onInit(canvas);
     }
   }, [state.toolbar.activeTool]);
+}
+
+export function useUndo(canvas: HTMLCanvasElement): void {
+  const { state } = useOvermind();
+  useEffect((): void => {
+    blobToCanvas(state.undo.currentBufferItem, canvas);
+  }, [state.undo.lastUndoRedoTime]);
 }
 
 export function useScrollToFocusPoint(

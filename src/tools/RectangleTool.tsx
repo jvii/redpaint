@@ -1,5 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
+import { overmind } from '../index';
 
 export class RectangleTool implements Tool {
   public constructor(filled: boolean) {
@@ -14,87 +15,88 @@ export class RectangleTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      canvas,
-      state,
-      onDrawToCanvas,
-      toolState,
-      toolStateDispatch,
-      undoPoint,
-    } = params;
+    const { event, canvas, onDrawToCanvas, undoPoint } = params;
 
-    if (!toolState.rectangleToolState.startingPosition) {
+    const startPoint = overmind.state.tool.rectangleTool.start;
+    if (!startPoint) {
       return;
     }
 
-    const position = getMousePos(canvas, event);
+    const endPoint = getMousePos(canvas, event);
 
     if (this.filled) {
-      state.brush.brush.drawFilledRect(
+      overmind.state.brush.brush.drawFilledRect(
         canvas,
-        toolState.rectangleToolState.startingPosition,
-        position,
+        startPoint,
+        endPoint,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else {
-      state.brush.brush.drawUnfilledRect(
+      overmind.state.brush.brush.drawUnfilledRect(
         canvas,
-        toolState.rectangleToolState.startingPosition,
-        position,
+        startPoint,
+        endPoint,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     undoPoint();
     onDrawToCanvas();
-    toolStateDispatch({ type: 'rectangleToolStart', point: null });
+    //toolStateDispatch({ type: 'rectangleToolStart', point: null });
+    overmind.actions.tool.rectangleToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolStateDispatch } = params;
+    const { event, canvas } = params;
     const position = getMousePos(canvas, event);
-    toolStateDispatch({ type: 'rectangleToolStart', point: position });
+    //toolStateDispatch({ type: 'rectangleToolStart', point: position });
+    overmind.actions.tool.rectangleToolStart(position);
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'rectangleToolStart', point: null });
+    overmind.actions.tool.rectangleToolStart(null);
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, state, toolState, onDrawToCanvas } = params;
-    const position = getMousePos(canvas, event);
+    const { event, canvas, onDrawToCanvas } = params;
     clearOverlayCanvas(canvas);
 
-    if (!toolState.rectangleToolState.startingPosition) {
+    const position = getMousePos(canvas, event);
+
+    const startPoint = overmind.state.tool.rectangleTool.start;
+    if (!startPoint) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
+        overmind.state.brush.brush.drawDot(
+          canvas,
+          position,
+          isRightMouseButton(event),
+          overmind.state
+        );
       }
-      edgeToEdgeCrosshair(canvas, position, toolState);
+      edgeToEdgeCrosshair(canvas, position);
       onDrawToCanvas();
       return;
     }
 
     if (this.filled) {
-      state.brush.brush.drawFilledRect(
+      overmind.state.brush.brush.drawFilledRect(
         canvas,
-        toolState.rectangleToolState.startingPosition,
+        startPoint,
         position,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else {
-      state.brush.brush.drawUnfilledRect(
+      overmind.state.brush.brush.drawUnfilledRect(
         canvas,
-        toolState.rectangleToolState.startingPosition,
+        startPoint,
         position,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     onDrawToCanvas();

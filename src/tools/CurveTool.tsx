@@ -1,5 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
+import { overmind } from '../index';
 
 export class CurveTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -8,78 +9,82 @@ export class CurveTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      canvas,
-      toolState,
-      toolStateDispatch,
-      state,
-      undoPoint,
-      onDrawToCanvas,
-    } = params;
+    const { event, canvas, undoPoint, onDrawToCanvas } = params;
 
-    if (!toolState.curveToolState.startingPosition) {
+    const startPoint = overmind.state.tool.curveTool.start;
+    if (!startPoint) {
       return;
     }
 
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
+    const endPoint = overmind.state.tool.curveTool.end;
 
-    if (toolState.curveToolState.endPosition) {
-      state.brush.brush.drawCurve(
+    if (endPoint) {
+      overmind.state.brush.brush.drawCurve(
         canvas,
-        toolState.curveToolState.startingPosition,
-        toolState.curveToolState.endPosition,
-        position,
+        startPoint,
+        endPoint,
+        mousePos,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
       undoPoint();
       onDrawToCanvas();
-      toolStateDispatch({ type: 'curveToolStart', point: null });
-      toolStateDispatch({ type: 'curveToolEnd', point: null });
+      overmind.actions.tool.curveToolReset();
+      //toolStateDispatch({ type: 'curveToolStart', point: null });
+      //toolStateDispatch({ type: 'curveToolEnd', point: null });
     } else {
-      toolStateDispatch({ type: 'curveToolEnd', point: position });
+      //toolStateDispatch({ type: 'curveToolEnd', point: mousePos });
+      overmind.actions.tool.curveToolEnd(mousePos);
     }
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, toolStateDispatch } = params;
+    const { event, canvas } = params;
 
-    if (!toolState.curveToolState.endPosition) {
-      const position = getMousePos(canvas, event);
-      toolStateDispatch({ type: 'curveToolStart', point: position });
+    if (!overmind.state.tool.curveTool.end) {
+      const mousePos = getMousePos(canvas, event);
+      //toolStateDispatch({ type: 'curveToolStart', point: mousePos });
+      overmind.actions.tool.curveToolStart(mousePos);
     }
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, state, onDrawToCanvas } = params;
+    const { event, canvas, onDrawToCanvas } = params;
     clearOverlayCanvas(canvas);
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
 
-    if (!toolState.curveToolState.startingPosition) {
-      state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
+    const startPoint = overmind.state.tool.curveTool.start;
+    if (!startPoint) {
+      overmind.state.brush.brush.drawDot(
+        canvas,
+        mousePos,
+        isRightMouseButton(event),
+        overmind.state
+      );
       onDrawToCanvas();
       return;
     }
 
-    if (toolState.curveToolState.endPosition) {
-      state.brush.brush.drawCurve(
+    const endPoint = overmind.state.tool.curveTool.end;
+    if (endPoint) {
+      overmind.state.brush.brush.drawCurve(
         canvas,
-        toolState.curveToolState.startingPosition,
-        toolState.curveToolState.endPosition,
-        position,
+        startPoint,
+        endPoint,
+        mousePos,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else if (isLeftMouseButton(event)) {
-      state.brush.brush.drawLine(
+      overmind.state.brush.brush.drawLine(
         canvas,
-        toolState.curveToolState.startingPosition,
-        position,
+        startPoint,
+        mousePos,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     onDrawToCanvas();
