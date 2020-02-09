@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
 import { overmind } from '../index';
 
@@ -9,11 +9,7 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas, undoPoint } = params;
-
-    /*     if (!toolState.lineToolState.startingPosition) {
-      return;
-    } */
+    const { event, canvas, onPaint, undoPoint } = params;
 
     if (!overmind.state.tool.lineTool.start) {
       return;
@@ -30,22 +26,20 @@ export class LineTool implements Tool {
       overmind.state
     );
     undoPoint();
-    onDrawToCanvas();
-    //toolStateDispatch({ type: 'lineToolStart', point: null });
+    onPaint();
     overmind.actions.tool.lineToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas } = params;
     const position = getMousePos(canvas, event);
-    //toolStateDispatch({ type: 'lineToolStart', point: position });
     overmind.actions.tool.lineToolStart(position);
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event, canvas, onPaint } = params;
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
@@ -67,12 +61,12 @@ export class LineTool implements Tool {
         overmind.state
       );
     }
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 }

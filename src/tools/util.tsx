@@ -1,5 +1,5 @@
 import { Point, Color } from '../types';
-import { Tool, EventHandlerParams } from './Tool';
+import { Tool, EventHandlerParams, OverlayEventHandlerParams } from './Tool';
 import { overmind } from '../index';
 
 export function colorToRGBString(color: Color): string {
@@ -60,14 +60,26 @@ export function getEventHandler(
     | 'onMouseUp'
     | 'onMouseDown'
     | 'onMouseLeave'
-    | 'onMouseEnter'
+    | 'onMouseEnter',
+  eventHandlerParams: EventHandlerParams
+): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
+  if (hasKey(tool, eventHandlerName)) {
+    return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
+      tool[eventHandlerName]!({ event: event, ...eventHandlerParams });
+  }
+  return (): void => {};
+}
+
+export function getEventHandlerOverlay(
+  tool: Tool,
+  eventHandlerName:
     | 'onMouseMoveOverlay'
     | 'onMouseLeaveOverlay'
     | 'onMouseEnterOverlay'
     | 'onMouseUpOverlay'
     | 'onMouseDownOverlay'
     | 'onClickOverlay',
-  eventHandlerParams: EventHandlerParams
+  eventHandlerParams: OverlayEventHandlerParams
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
   if (hasKey(tool, eventHandlerName)) {
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>

@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas } from './util';
 import { overmind } from '../index';
 
@@ -6,7 +6,6 @@ export class ZoomInitialPointSelectorTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
     const { event, canvas } = params;
     const mousePos = getMousePos(canvas, event);
-    //toolStateDispatch({ type: 'zoomInitialPoint', point: mousePos });
     overmind.actions.canvas.setZoomFocusPoint(mousePos);
   }
 
@@ -17,26 +16,29 @@ export class ZoomInitialPointSelectorTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event, canvas, onPaint } = params;
+    clearOverlayCanvas(canvas);
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return;
     }
 
-    clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
     ctx.strokeRect(mousePos.x - 30, mousePos.y - 30, 60, 60);
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
+    onPaint();
   }
 
-  public onClickOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas } = params;
+  public onClickOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
+    onPaint();
   }
 }

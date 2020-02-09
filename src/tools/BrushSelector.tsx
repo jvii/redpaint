@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
 import { CustomBrush } from '../brush/CustomBrush';
 import { overmind } from '../index';
@@ -61,7 +61,6 @@ export class BrushSelector implements Tool {
     }
     theImageData.data.set(theImageDataClamped8TMP);
     bufferCanvasCtx.putImageData(theImageData, 0, 0);
-    //toolStateDispatch({ type: 'brushSelectionComplete', dataURL: bufferCanvas.toDataURL() });
 
     const brush = new CustomBrush(bufferCanvas.toDataURL());
     overmind.actions.brush.setBrush(brush);
@@ -73,7 +72,6 @@ export class BrushSelector implements Tool {
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas } = params;
     const mousePos = getMousePos(canvas, event);
-    //toolStateDispatch({ type: 'brushSelectionStart', point: position });
     overmind.actions.tool.brushSelectionStart(mousePos);
   }
 
@@ -83,15 +81,15 @@ export class BrushSelector implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event, canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
 
     const start = overmind.state.tool.brushSelectorTool.start;
     const mousePos = getMousePos(canvas, event);
     if (!start) {
       edgeToEdgeCrosshair(canvas, mousePos);
-      onDrawToCanvas();
+      onPaint();
       return;
     }
 
@@ -102,18 +100,18 @@ export class BrushSelector implements Tool {
     const width = mousePos.x - start.x;
     const height = mousePos.y - start.y;
     ctx.strokeRect(start.x, start.y, width, height);
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseUpOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 }
