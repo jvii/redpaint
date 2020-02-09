@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import {
   getMousePos,
   clearOverlayCanvas,
@@ -37,11 +37,6 @@ export class EllipseTool implements Tool {
 
     const pattern = bufferCanvasCtx.createPattern(bufferCanvas, 'no-repeat');
     if (pattern) {
-      console.log('pattern updated');
-      /* toolStateDispatch({
-        type: 'invertedCanvasPattern',
-        invertedCanvasPattern: pattern,
-      }); */
       overmind.actions.canvas.storeInvertedCanvas(pattern);
     }
   }
@@ -71,23 +66,15 @@ export class EllipseTool implements Tool {
     if (isLeftMouseButton(event)) {
       const rotationAngle = position.y - origin.y - overmind.state.tool.ellipseTool.radiusY;
       overmind.actions.tool.ellipseToolAngle(rotationAngle);
-      /*       toolStateDispatch({
-        type: 'ellipseToolRotationAngle',
-        angle: rotationAngle,
-      }); */
     } else {
       const radiusX = Math.abs(position.x - origin.x);
       const radiusY = Math.abs(position.y - origin.y);
       overmind.actions.tool.ellipseToolRadius({ x: radiusX, y: radiusY });
-      /*       toolStateDispatch({
-        type: 'ellipseToolRadius',
-        radius: { radiusX: radiusX, radiusY: radiusY },
-      }); */
     }
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas, undoPoint } = params;
+    const { event, canvas, onPaint, undoPoint } = params;
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
@@ -104,10 +91,6 @@ export class EllipseTool implements Tool {
         x: Math.abs(mousePos.x - origin.x),
         y: Math.abs(mousePos.y - origin.y),
       });
-      /*       toolStateDispatch({
-        type: 'ellipseToolRadius',
-        radius: { radiusX: radiusX, radiusY: radiusY },
-      }); */
       return;
     }
 
@@ -136,9 +119,8 @@ export class EllipseTool implements Tool {
       );
     }
     undoPoint();
-    onDrawToCanvas();
+    onPaint();
     this.onInit(canvas);
-    //toolStateDispatch({ type: 'ellipseToolReset' });
     overmind.actions.tool.ellipseToolReset();
   }
 
@@ -146,7 +128,6 @@ export class EllipseTool implements Tool {
     const { event, canvas } = params;
     const mousePos = getMousePos(canvas, event);
     if (!overmind.state.tool.ellipseTool.origin) {
-      //toolStateDispatch({ type: 'ellipseToolCenter', point: mousePos });
       overmind.actions.tool.ellipseToolOrigin(mousePos);
     }
   }
@@ -158,8 +139,8 @@ export class EllipseTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event, canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
 
@@ -175,7 +156,7 @@ export class EllipseTool implements Tool {
         );
       }
       edgeToEdgeCrosshair(canvas, mousePos);
-      onDrawToCanvas();
+      onPaint();
       return;
     }
 
@@ -206,12 +187,12 @@ export class EllipseTool implements Tool {
         overmind.state
       );
     }
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 }

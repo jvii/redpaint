@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
 import { overmind } from '../index';
 
@@ -15,7 +15,7 @@ export class RectangleTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas, undoPoint } = params;
+    const { event, canvas, onPaint, undoPoint } = params;
 
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {
@@ -42,15 +42,13 @@ export class RectangleTool implements Tool {
       );
     }
     undoPoint();
-    onDrawToCanvas();
-    //toolStateDispatch({ type: 'rectangleToolStart', point: null });
+    onPaint();
     overmind.actions.tool.rectangleToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas } = params;
     const position = getMousePos(canvas, event);
-    //toolStateDispatch({ type: 'rectangleToolStart', point: position });
     overmind.actions.tool.rectangleToolStart(position);
   }
 
@@ -60,8 +58,8 @@ export class RectangleTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event, canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
 
     const position = getMousePos(canvas, event);
@@ -78,7 +76,7 @@ export class RectangleTool implements Tool {
         );
       }
       edgeToEdgeCrosshair(canvas, position);
-      onDrawToCanvas();
+      onPaint();
       return;
     }
 
@@ -99,18 +97,18 @@ export class RectangleTool implements Tool {
         overmind.state
       );
     }
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseUpOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 }

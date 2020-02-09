@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
 import { overmind } from '../index';
 
@@ -9,7 +9,7 @@ export class CurveTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, undoPoint, onDrawToCanvas } = params;
+    const { event, canvas, undoPoint, onPaint } = params;
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
@@ -29,12 +29,9 @@ export class CurveTool implements Tool {
         overmind.state
       );
       undoPoint();
-      onDrawToCanvas();
+      onPaint();
       overmind.actions.tool.curveToolReset();
-      //toolStateDispatch({ type: 'curveToolStart', point: null });
-      //toolStateDispatch({ type: 'curveToolEnd', point: null });
     } else {
-      //toolStateDispatch({ type: 'curveToolEnd', point: mousePos });
       overmind.actions.tool.curveToolEnd(mousePos);
     }
   }
@@ -44,16 +41,16 @@ export class CurveTool implements Tool {
 
     if (!overmind.state.tool.curveTool.end) {
       const mousePos = getMousePos(canvas, event);
-      //toolStateDispatch({ type: 'curveToolStart', point: mousePos });
       overmind.actions.tool.curveToolStart(mousePos);
     }
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event, canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
+
     const mousePos = getMousePos(canvas, event);
 
     const startPoint = overmind.state.tool.curveTool.start;
@@ -64,7 +61,7 @@ export class CurveTool implements Tool {
         isRightMouseButton(event),
         overmind.state
       );
-      onDrawToCanvas();
+      onPaint();
       return;
     }
 
@@ -87,12 +84,12 @@ export class CurveTool implements Tool {
         overmind.state
       );
     }
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 }

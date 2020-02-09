@@ -19,6 +19,9 @@ export const setZoomFocusPoint: Action<Point | null> = ({ state }, point): void 
 };
 
 export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {
+  if (state.toolbar.zoomModeState !== 'on') {
+    return;
+  }
   if (isZoomCanvas) {
     state.canvas.zoomCanvas.lastModified = Date.now();
   } else {
@@ -27,6 +30,9 @@ export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): voi
 };
 
 export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {
+  if (state.toolbar.zoomModeState !== 'on') {
+    return;
+  }
   if (isZoomCanvas) {
     state.canvas.zoomCanvas.lastModifiedOverlay = Date.now();
   } else {

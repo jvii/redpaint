@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
 import { useInitTool, useUndo } from './hooks';
 import { useOvermind } from '../../overmind';
-import { getEventHandler } from '../../tools/util';
-import { EventHandlerParams } from '../../tools/Tool';
+import { getEventHandler, getEventHandlerOverlay } from '../../tools/util';
+import { EventHandlerParams, OverlayEventHandlerParams } from '../../tools/Tool';
 import './Canvas.css';
 
 interface Props {
@@ -38,7 +38,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
 
   const eventHandlerParams: EventHandlerParams = {
     canvas: canvasRef.current,
-    onDrawToCanvas: (): void => {
+    onPaint: (): void => {
       actions.canvas.setCanvasModified(isZoomCanvas);
     },
     undoPoint: (): void => {
@@ -46,13 +46,10 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     },
   };
 
-  const eventHandlerParamsOverlay: EventHandlerParams = {
+  const eventHandlerParamsOverlay: OverlayEventHandlerParams = {
     canvas: overlayCanvasRef.current,
-    onDrawToCanvas: (): void => {
+    onPaint: (): void => {
       actions.canvas.setOverlayCanvasModified(isZoomCanvas);
-    },
-    undoPoint: (): void => {
-      actions.undo.setUndoPoint(canvasRef.current);
     },
   };
 
@@ -66,27 +63,27 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
         style={CSSZoom}
         onClick={(event): void => {
           getEventHandler(tool, 'onClick', eventHandlerParams)(event);
-          getEventHandler(tool, 'onClickOverlay', eventHandlerParamsOverlay)(event);
+          getEventHandlerOverlay(tool, 'onClickOverlay', eventHandlerParamsOverlay)(event);
         }}
         onMouseDown={(event): void => {
           getEventHandler(tool, 'onMouseDown', eventHandlerParams)(event);
-          getEventHandler(tool, 'onMouseDownOverlay', eventHandlerParamsOverlay)(event);
+          getEventHandlerOverlay(tool, 'onMouseDownOverlay', eventHandlerParamsOverlay)(event);
         }}
         onMouseUp={(event): void => {
           getEventHandler(tool, 'onMouseUp', eventHandlerParams)(event);
-          getEventHandler(tool, 'onMouseUpOverlay', eventHandlerParamsOverlay)(event);
+          getEventHandlerOverlay(tool, 'onMouseUpOverlay', eventHandlerParamsOverlay)(event);
         }}
         onMouseEnter={(event): void => {
           getEventHandler(tool, 'onMouseEnter', eventHandlerParams)(event);
-          getEventHandler(tool, 'onMouseEnterOverlay', eventHandlerParamsOverlay)(event);
+          getEventHandlerOverlay(tool, 'onMouseEnterOverlay', eventHandlerParamsOverlay)(event);
         }}
         onMouseLeave={(event): void => {
           getEventHandler(tool, 'onMouseLeave', eventHandlerParams)(event);
-          getEventHandler(tool, 'onMouseLeaveOverlay', eventHandlerParamsOverlay)(event);
+          getEventHandlerOverlay(tool, 'onMouseLeaveOverlay', eventHandlerParamsOverlay)(event);
         }}
         onMouseMove={(event): void => {
           getEventHandler(tool, 'onMouseMove', eventHandlerParams)(event);
-          getEventHandler(tool, 'onMouseMoveOverlay', eventHandlerParamsOverlay)(event);
+          getEventHandlerOverlay(tool, 'onMouseMoveOverlay', eventHandlerParamsOverlay)(event);
         }}
         onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
       />

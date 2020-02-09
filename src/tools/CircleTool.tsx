@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
 import { distance } from '../algorithm/draw';
 import { overmind } from '../index';
@@ -16,9 +16,8 @@ export class CircleTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas, undoPoint } = params;
+    const { event, canvas, onPaint, undoPoint } = params;
 
-    //if (!toolState.circleToolState.startingPosition) {
     const origin = overmind.state.tool.circleTool.origin;
     if (!origin) {
       return;
@@ -45,16 +44,14 @@ export class CircleTool implements Tool {
       );
     }
     undoPoint();
-    onDrawToCanvas();
-    //toolStateDispatch({ type: 'circleToolStart', point: null });
+    onPaint();
     overmind.actions.tool.circleToolOrigin(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, canvas } = params;
-    const position = getMousePos(canvas, event);
-    //toolStateDispatch({ type: 'circleToolStart', point: position });
-    overmind.actions.tool.circleToolOrigin(position);
+    const mousePos = getMousePos(canvas, event);
+    overmind.actions.tool.circleToolOrigin(mousePos);
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
@@ -64,7 +61,7 @@ export class CircleTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onDrawToCanvas } = params;
+    const { event, canvas, onPaint } = params;
     const position = getMousePos(canvas, event);
     clearOverlayCanvas(canvas);
 
@@ -80,7 +77,7 @@ export class CircleTool implements Tool {
         );
       }
       edgeToEdgeCrosshair(canvas, position);
-      onDrawToCanvas();
+      onPaint();
       return;
     }
 
@@ -102,18 +99,18 @@ export class CircleTool implements Tool {
         overmind.state
       );
     }
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseLeaveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 
-  public onMouseUpOverlay(params: EventHandlerParamsWithEvent): void {
-    const { canvas, onDrawToCanvas } = params;
+  public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { canvas, onPaint } = params;
     clearOverlayCanvas(canvas);
-    onDrawToCanvas();
+    onPaint();
   }
 }
