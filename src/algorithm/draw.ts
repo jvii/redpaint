@@ -1,22 +1,16 @@
 import { Point } from '../types';
 import { Brush } from '../brush/Brush';
-import { OvermindState } from '../overmind';
+import { overmind } from '../index';
 
 export function distance(start: Point, end: Point): number {
   return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
 }
 
-export function line(
-  ctx: CanvasRenderingContext2D,
-  brush: Brush,
-  start: Point,
-  end: Point,
-  state: OvermindState
-): void {
+export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, end: Point): void {
   let dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
-    brush.draw(start, ctx, state);
+    brush.draw(start, ctx);
     return;
   }
 
@@ -29,8 +23,7 @@ export function line(
         x: start.x + cx * i,
         y: start.y + cy * i,
       },
-      ctx,
-      state
+      ctx
     );
   }
 }
@@ -42,8 +35,7 @@ export function curve(
   brush: Brush,
   start: Point,
   end: Point,
-  middlePoint: Point,
-  state: OvermindState
+  middlePoint: Point
 ): void {
   // calculate control point for the bezier curve when middlepoint given
   let controlPoint: Point = {
@@ -56,10 +48,10 @@ export function curve(
   // TODO: get rid of the magic number
   for (i = 0; i <= 1; i = i + 0.02) {
     let current = getQuadraticXY(i, start, controlPoint, end);
-    line(ctx, brush, previous, current, state);
+    line(ctx, brush, previous, current);
     previous = current;
   }
-  line(ctx, brush, previous, end, state);
+  line(ctx, brush, previous, end);
 }
 
 function getQuadraticXY(t: number, start: Point, controlPoint: Point, end: Point): Point {
@@ -73,12 +65,11 @@ export function unfilledRect(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   start: Point,
-  end: Point,
-  state: OvermindState
+  end: Point
 ): void {
   if (start === end) {
     // just draw a dot
-    brush.draw(start, ctx, state);
+    brush.draw(start, ctx);
     return;
   }
 
@@ -91,42 +82,40 @@ export function unfilledRect(
 
   // draw lines
 
-  brush.drawLineHorizontal(x1, x2, y1, ctx, state);
-  brush.drawLineHorizontal(x1, x2, y2, ctx, state);
-  brush.drawLineVertical(y1, y2, x1, ctx, state);
-  brush.drawLineVertical(y1, y2, x2, ctx, state);
+  brush.drawLineHorizontal(x1, x2, y1, ctx);
+  brush.drawLineHorizontal(x1, x2, y2, ctx);
+  brush.drawLineVertical(y1, y2, x1, ctx);
+  brush.drawLineVertical(y1, y2, x2, ctx);
 }
 
 export function filledRect(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   start: Point,
-  end: Point,
-  state: OvermindState
+  end: Point
 ): void {
   if (start == end) {
     // just draw a dot
-    fillRectWithSymmetry(start.x, start.y, 1, 1, ctx, state);
+    fillRectWithSymmetry(start.x, start.y, 1, 1, ctx);
     return;
   }
 
   const width = end.x - start.x;
   const height = end.y - start.y;
-  fillRectWithSymmetry(start.x, start.y, width, height, ctx, state);
+  fillRectWithSymmetry(start.x, start.y, width, height, ctx);
 }
 
 export function filledCircle(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   center: Point,
-  r: number,
-  state: OvermindState
+  r: number
 ): void {
   // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 
   if (r === 0) {
     // just draw a dot
-    fillRectWithSymmetry(center.x, center.y, 1, 1, ctx, state);
+    fillRectWithSymmetry(center.x, center.y, 1, 1, ctx);
     return;
   }
 
@@ -135,15 +124,15 @@ export function filledCircle(
   let cd = 0;
 
   // middle line
-  fillRectWithSymmetry(center.x - x, center.y, r << 1, 1, ctx, state);
+  fillRectWithSymmetry(center.x - x, center.y, r << 1, 1, ctx);
 
   while (x > y) {
     cd -= --x - ++y;
     if (cd < 0) cd += x++;
-    fillRectWithSymmetry(center.x - y, center.y - x, y << 1, 1, ctx, state); // upper 1/4
-    fillRectWithSymmetry(center.x - x, center.y - y, x << 1, 1, ctx, state); // upper 2/4
-    fillRectWithSymmetry(center.x - x, center.y + y, x << 1, 1, ctx, state); // lower 3/4
-    fillRectWithSymmetry(center.x - y, center.y + x, y << 1, 1, ctx, state); // lower 4/4
+    fillRectWithSymmetry(center.x - y, center.y - x, y << 1, 1, ctx); // upper 1/4
+    fillRectWithSymmetry(center.x - x, center.y - y, x << 1, 1, ctx); // upper 2/4
+    fillRectWithSymmetry(center.x - x, center.y + y, x << 1, 1, ctx); // lower 3/4
+    fillRectWithSymmetry(center.x - y, center.y + x, y << 1, 1, ctx); // lower 4/4
   }
 }
 
@@ -151,14 +140,13 @@ export function unfilledCircle(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   center: Point,
-  r: number,
-  state: OvermindState
+  r: number
 ): void {
   // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 
   if (r === 0) {
     // just draw a dot
-    brush.draw(center, ctx, state);
+    brush.draw(center, ctx);
     return;
   }
 
@@ -167,24 +155,24 @@ export function unfilledCircle(
     cd = 0;
 
   // middle points
-  brush.draw({ x: center.x - x, y: center.y }, ctx, state);
-  brush.draw({ x: center.x + x, y: center.y }, ctx, state);
-  brush.draw({ x: center.x, y: center.y - r }, ctx, state);
-  brush.draw({ x: center.x, y: center.y + r }, ctx, state);
+  brush.draw({ x: center.x - x, y: center.y }, ctx);
+  brush.draw({ x: center.x + x, y: center.y }, ctx);
+  brush.draw({ x: center.x, y: center.y - r }, ctx);
+  brush.draw({ x: center.x, y: center.y + r }, ctx);
 
   // octants
   while (x > y) {
     cd -= --x - ++y;
     if (cd < 0) cd += x++;
-    brush.draw({ x: center.x - y, y: center.y - x }, ctx, state);
-    brush.draw({ x: center.x - x, y: center.y - y }, ctx, state);
-    brush.draw({ x: center.x - x, y: center.y + y }, ctx, state);
-    brush.draw({ x: center.x - y, y: center.y + x }, ctx, state);
+    brush.draw({ x: center.x - y, y: center.y - x }, ctx);
+    brush.draw({ x: center.x - x, y: center.y - y }, ctx);
+    brush.draw({ x: center.x - x, y: center.y + y }, ctx);
+    brush.draw({ x: center.x - y, y: center.y + x }, ctx);
 
-    brush.draw({ x: center.x + y, y: center.y + x }, ctx, state);
-    brush.draw({ x: center.x + x, y: center.y + y }, ctx, state);
-    brush.draw({ x: center.x + x, y: center.y - y }, ctx, state);
-    brush.draw({ x: center.x + y, y: center.y - x }, ctx, state);
+    brush.draw({ x: center.x + y, y: center.y + x }, ctx);
+    brush.draw({ x: center.x + x, y: center.y + y }, ctx);
+    brush.draw({ x: center.x + x, y: center.y - y }, ctx);
+    brush.draw({ x: center.x + y, y: center.y - x }, ctx);
   }
 }
 
@@ -194,8 +182,7 @@ export function unfilledEllipse(
   center: Point,
   radiusX: number,
   radiusY: number,
-  rotationAngle: number,
-  state: OvermindState
+  rotationAngle: number
 ): void {
   // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
   const a = radiusX;
@@ -242,11 +229,11 @@ export function unfilledEllipse(
     const previousPoint = ellipsePointsLowerHalf[i - 1];
     const nextPoint = ellipsePointsLowerHalf[i + 1];
     if (point.y > previousPoint.y + 1) {
-      brush.drawLineVertical(previousPoint.y + 1, point.y, point.x, ctx, state);
+      brush.drawLineVertical(previousPoint.y + 1, point.y, point.x, ctx);
     } else if (point.y > nextPoint.y + 1) {
-      brush.drawLineVertical(nextPoint.y + 1, point.y, point.x, ctx, state);
+      brush.drawLineVertical(nextPoint.y + 1, point.y, point.x, ctx);
     } else {
-      brush.draw(point, ctx, state);
+      brush.draw(point, ctx);
     }
   }
 
@@ -257,11 +244,11 @@ export function unfilledEllipse(
     const previousPoint = ellipsePointsUpperHalf[i - 1];
     const nextPoint = ellipsePointsUpperHalf[i + 1];
     if (point.y < previousPoint.y - 1) {
-      brush.drawLineVertical(point.y, previousPoint.y - 1, point.x, ctx, state);
+      brush.drawLineVertical(point.y, previousPoint.y - 1, point.x, ctx);
     } else if (point.y < nextPoint.y - 1) {
-      brush.drawLineVertical(point.y, nextPoint.y - 1, point.x, ctx, state);
+      brush.drawLineVertical(point.y, nextPoint.y - 1, point.x, ctx);
     } else {
-      brush.draw(point, ctx, state);
+      brush.draw(point, ctx);
     }
   }
 
@@ -270,14 +257,14 @@ export function unfilledEllipse(
   const startYLower = ellipsePointsLowerHalf[0].y;
   const startYUpper = ellipsePointsUpperHalf[0].y;
   const startX = ellipsePointsUpperHalf[0].x;
-  brush.drawLineVertical(startYLower, startYUpper - 1, startX, ctx, state);
-  brush.draw(ellipsePointsLowerHalf[0], ctx, state);
+  brush.drawLineVertical(startYLower, startYUpper - 1, startX, ctx);
+  brush.draw(ellipsePointsLowerHalf[0], ctx);
 
   const endYLower = ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1].y;
   const endYUpper = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].y;
   const endX = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].x;
-  brush.drawLineVertical(endYLower, endYUpper - 1, endX, ctx, state);
-  brush.draw(ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1], ctx, state);
+  brush.drawLineVertical(endYLower, endYUpper - 1, endX, ctx);
+  brush.draw(ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1], ctx);
 }
 
 export function filledEllipse(
@@ -286,8 +273,7 @@ export function filledEllipse(
   center: Point,
   radiusX: number,
   radiusY: number,
-  rotationAngle: number,
-  state: OvermindState
+  rotationAngle: number
 ): void {
   // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
   const a = radiusX;
@@ -316,7 +302,7 @@ export function filledEllipse(
     y2 = Math.round(y2 / k);
     let h = Math.abs(y1 - y2);
 
-    fillRectWithSymmetry(x + center.x, y1 + center.y, 1, -h, ctx, state);
+    fillRectWithSymmetry(x + center.x, y1 + center.y, 1, -h, ctx);
   }
 }
 
@@ -325,12 +311,11 @@ export function fillRectWithSymmetry(
   y: number,
   w: number,
   h: number,
-  ctx: CanvasRenderingContext2D,
-  state: OvermindState
+  ctx: CanvasRenderingContext2D
 ): void {
   ctx.fillRect(x, y, w, h);
 
-  if (!state.toolbar.symmetryModeOn) {
+  if (!overmind.state.toolbar.symmetryModeOn) {
     return;
   }
 

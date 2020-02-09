@@ -1,55 +1,38 @@
 import { Point } from '../types';
-import { OvermindState } from '../overmind';
 
 export interface Brush {
-  drawLine(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
-  ): void;
+  drawLine(canvas: HTMLCanvasElement, start: Point, end: Point, withBackgroundColor: boolean): void;
   drawCurve(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
     middlePoint: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
-  drawDot(
-    canvas: HTMLCanvasElement,
-    point: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
-  ): void;
+  drawDot(canvas: HTMLCanvasElement, point: Point, withBackgroundColor: boolean): void;
   drawUnfilledRect(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
   drawFilledRect(
     canvas: HTMLCanvasElement,
     start: Point,
     end: Point,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
   drawUnfilledCircle(
     canvas: HTMLCanvasElement,
     center: Point,
     radius: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
   drawFilledCircle(
     canvas: HTMLCanvasElement,
     center: Point,
     radius: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
   drawUnfilledEllipse(
     canvas: HTMLCanvasElement,
@@ -57,8 +40,7 @@ export interface Brush {
     radiusX: number,
     radiusY: number,
     rotationAngle: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
   drawFilledEllipse(
     canvas: HTMLCanvasElement,
@@ -66,25 +48,12 @@ export interface Brush {
     radiusX: number,
     radiusY: number,
     rotationAngle: number,
-    withBackgroundColor: boolean,
-    state: OvermindState
+    withBackgroundColor: boolean
   ): void;
 
   // Used with context
 
-  draw(point: Point, ctx: CanvasRenderingContext2D, state: OvermindState): void;
-  drawLineVertical(
-    y1: number,
-    y2: number,
-    x: number,
-    ctx: CanvasRenderingContext2D,
-    state: OvermindState
-  ): void;
-  drawLineHorizontal(
-    x1: number,
-    x2: number,
-    y: number,
-    ctx: CanvasRenderingContext2D,
-    state: OvermindState
-  ): void;
+  draw(point: Point, ctx: CanvasRenderingContext2D): void;
+  drawLineVertical(y1: number, y2: number, x: number, ctx: CanvasRenderingContext2D): void;
+  drawLineHorizontal(x1: number, x2: number, y: number, ctx: CanvasRenderingContext2D): void;
 }

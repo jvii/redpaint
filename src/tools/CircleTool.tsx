@@ -31,16 +31,14 @@ export class CircleTool implements Tool {
         canvas,
         origin,
         radius,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else {
       overmind.state.brush.brush.drawUnfilledCircle(
         canvas,
         origin,
         radius,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     }
     undoPoint();
@@ -69,12 +67,7 @@ export class CircleTool implements Tool {
     if (!origin) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(
-          canvas,
-          position,
-          isRightMouseButton(event),
-          overmind.state
-        );
+        overmind.state.brush.brush.drawDot(canvas, position, isRightMouseButton(event));
       }
       edgeToEdgeCrosshair(canvas, position);
       onPaint();
@@ -87,16 +80,14 @@ export class CircleTool implements Tool {
         canvas,
         origin,
         radius,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else {
       overmind.state.brush.brush.drawUnfilledCircle(
         canvas,
         origin,
         radius,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     }
     onPaint();

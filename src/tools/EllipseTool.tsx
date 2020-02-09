@@ -104,8 +104,7 @@ export class EllipseTool implements Tool {
         radiusX,
         radiusY,
         angle,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else {
       overmind.state.brush.brush.drawUnfilledEllipse(
@@ -114,8 +113,7 @@ export class EllipseTool implements Tool {
         radiusX,
         radiusY,
         angle,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     }
     undoPoint();
@@ -148,12 +146,7 @@ export class EllipseTool implements Tool {
     if (!origin) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(
-          canvas,
-          mousePos,
-          isRightMouseButton(event),
-          overmind.state
-        );
+        overmind.state.brush.brush.drawDot(canvas, mousePos, isRightMouseButton(event));
       }
       edgeToEdgeCrosshair(canvas, mousePos);
       onPaint();
@@ -173,8 +166,7 @@ export class EllipseTool implements Tool {
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,
         angle,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     } else {
       overmind.state.brush.brush.drawUnfilledEllipse(
@@ -183,8 +175,7 @@ export class EllipseTool implements Tool {
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,
         angle,
-        isRightMouseButton(event),
-        overmind.state
+        isRightMouseButton(event)
       );
     }
     onPaint();
