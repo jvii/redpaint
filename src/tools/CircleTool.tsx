@@ -1,6 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
 import { distance } from '../algorithm/draw';
+import { overmind } from '../index';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -15,89 +16,90 @@ export class CircleTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      canvas,
-      state,
-      onDrawToCanvas,
-      toolState,
-      toolStateDispatch,
-      undoPoint,
-    } = params;
+    const { event, canvas, onDrawToCanvas, undoPoint } = params;
 
-    if (!toolState.circleToolState.startingPosition) {
+    //if (!toolState.circleToolState.startingPosition) {
+    const origin = overmind.state.tool.circleTool.origin;
+    if (!origin) {
       return;
     }
 
     const position = getMousePos(canvas, event);
-    let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
+    const radius = Math.round(distance(origin, position));
 
     if (this.filled) {
-      state.brush.brush.drawFilledCircle(
+      overmind.state.brush.brush.drawFilledCircle(
         canvas,
-        toolState.circleToolState.startingPosition,
+        origin,
         radius,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else {
-      state.brush.brush.drawUnfilledCircle(
+      overmind.state.brush.brush.drawUnfilledCircle(
         canvas,
-        toolState.circleToolState.startingPosition,
+        origin,
         radius,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     undoPoint();
     onDrawToCanvas();
-    toolStateDispatch({ type: 'circleToolStart', point: null });
+    //toolStateDispatch({ type: 'circleToolStart', point: null });
+    overmind.actions.tool.circleToolOrigin(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolStateDispatch } = params;
+    const { event, canvas } = params;
     const position = getMousePos(canvas, event);
-    toolStateDispatch({ type: 'circleToolStart', point: position });
+    //toolStateDispatch({ type: 'circleToolStart', point: position });
+    overmind.actions.tool.circleToolOrigin(position);
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'circleToolStart', point: null });
+    overmind.actions.tool.circleToolOrigin(null);
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, state, toolState, onDrawToCanvas } = params;
+    const { event, canvas, onDrawToCanvas } = params;
     const position = getMousePos(canvas, event);
     clearOverlayCanvas(canvas);
 
-    if (!toolState.circleToolState.startingPosition) {
+    const origin = overmind.state.tool.circleTool.origin;
+    if (!origin) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
+        overmind.state.brush.brush.drawDot(
+          canvas,
+          position,
+          isRightMouseButton(event),
+          overmind.state
+        );
       }
-      edgeToEdgeCrosshair(canvas, position, toolState);
+      edgeToEdgeCrosshair(canvas, position);
       onDrawToCanvas();
       return;
     }
 
-    let radius = Math.round(distance(toolState.circleToolState.startingPosition, position));
+    let radius = Math.round(distance(origin, position));
     if (this.filled) {
-      state.brush.brush.drawFilledCircle(
+      overmind.state.brush.brush.drawFilledCircle(
         canvas,
-        toolState.circleToolState.startingPosition,
+        origin,
         radius,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     } else {
-      state.brush.brush.drawUnfilledCircle(
+      overmind.state.brush.brush.drawUnfilledCircle(
         canvas,
-        toolState.circleToolState.startingPosition,
+        origin,
         radius,
         isRightMouseButton(event),
-        state
+        overmind.state
       );
     }
     onDrawToCanvas();

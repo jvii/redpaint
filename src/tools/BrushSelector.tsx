@@ -1,5 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
+import { CustomBrush } from '../brush/CustomBrush';
+import { overmind } from '../index';
 
 export class BrushSelector implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -8,15 +10,16 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, toolStateDispatch, state } = params;
+    const { event, canvas } = params;
 
-    if (!toolState.brushSelectorState.startingPosition) {
+    const start = overmind.state.tool.brushSelectorTool.start;
+    if (!start) {
       return;
     }
 
     const position = getMousePos(canvas, event);
-    const width = position.x - toolState.brushSelectorState.startingPosition.x;
-    const height = position.y - toolState.brushSelectorState.startingPosition.y;
+    const width = position.x - start.x;
+    const height = position.y - start.y;
 
     let bufferCanvas = document.createElement('canvas');
     bufferCanvas.width = Math.abs(width);
@@ -28,8 +31,8 @@ export class BrushSelector implements Tool {
     }
     bufferCanvasCtx.drawImage(
       canvas,
-      toolState.brushSelectorState.startingPosition.x,
-      toolState.brushSelectorState.startingPosition.y,
+      start.x,
+      start.y,
       width,
       height,
       0,
@@ -39,9 +42,9 @@ export class BrushSelector implements Tool {
     );
 
     const transCode =
-      state.palette.backgroundColor.r * 0x00000001 +
-      state.palette.backgroundColor.g * 0x00000100 +
-      state.palette.backgroundColor.b * 0x00010000 +
+      overmind.state.palette.backgroundColor.r * 0x00000001 +
+      overmind.state.palette.backgroundColor.g * 0x00000100 +
+      overmind.state.palette.backgroundColor.b * 0x00010000 +
       255 * 0x01000000;
 
     // from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja
@@ -58,29 +61,36 @@ export class BrushSelector implements Tool {
     }
     theImageData.data.set(theImageDataClamped8TMP);
     bufferCanvasCtx.putImageData(theImageData, 0, 0);
-    toolStateDispatch({ type: 'brushSelectionComplete', dataURL: bufferCanvas.toDataURL() });
+    //toolStateDispatch({ type: 'brushSelectionComplete', dataURL: bufferCanvas.toDataURL() });
+
+    const brush = new CustomBrush(bufferCanvas.toDataURL());
+    overmind.actions.brush.setBrush(brush);
+    overmind.actions.toolbar.toggleBrushSelectionMode();
+    // switch to Freehand tool after selection for simplicity (what does DPaint do?)
+    overmind.actions.toolbar.setSelectedDrawingTool('freeHand');
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolStateDispatch } = params;
-    const position = getMousePos(canvas, event);
-    toolStateDispatch({ type: 'brushSelectionStart', point: position });
+    const { event, canvas } = params;
+    const mousePos = getMousePos(canvas, event);
+    //toolStateDispatch({ type: 'brushSelectionStart', point: position });
+    overmind.actions.tool.brushSelectionStart(mousePos);
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { toolStateDispatch } = params;
-    toolStateDispatch({ type: 'brushSelectionStart', point: null });
+    overmind.actions.tool.brushSelectionStart(null);
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, onDrawToCanvas } = params;
+    const { event, canvas, onDrawToCanvas } = params;
     clearOverlayCanvas(canvas);
-    const position = getMousePos(canvas, event);
 
-    if (!toolState.brushSelectorState.startingPosition) {
-      edgeToEdgeCrosshair(canvas, position, toolState);
+    const start = overmind.state.tool.brushSelectorTool.start;
+    const mousePos = getMousePos(canvas, event);
+    if (!start) {
+      edgeToEdgeCrosshair(canvas, mousePos);
       onDrawToCanvas();
       return;
     }
@@ -89,14 +99,9 @@ export class BrushSelector implements Tool {
     if (!ctx) {
       return;
     }
-    const width = position.x - toolState.brushSelectorState.startingPosition.x;
-    const height = position.y - toolState.brushSelectorState.startingPosition.y;
-    ctx.strokeRect(
-      toolState.brushSelectorState.startingPosition.x,
-      toolState.brushSelectorState.startingPosition.y,
-      width,
-      height
-    );
+    const width = mousePos.x - start.x;
+    const height = mousePos.y - start.y;
+    ctx.strokeRect(start.x, start.y, width, height);
     onDrawToCanvas();
   }
 

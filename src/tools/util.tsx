@@ -1,6 +1,6 @@
 import { Point, Color } from '../types';
 import { Tool, EventHandlerParams } from './Tool';
-import ToolState from './ToolState';
+import { overmind } from '../index';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -90,17 +90,13 @@ export function isLeftMouseButton(event: React.MouseEvent<HTMLCanvasElement, Mou
   return event.button === 1 || event.buttons === 1;
 }
 
-export function edgeToEdgeCrosshair(
-  canvas: HTMLCanvasElement,
-  position: Point,
-  toolState: ToolState
-): void {
+export function edgeToEdgeCrosshair(canvas: HTMLCanvasElement, position: Point): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) {
     return;
   }
-  if (toolState.invertedCanvasPattern) {
-    ctx.fillStyle = toolState.invertedCanvasPattern;
+  if (overmind.state.canvas.invertedCanvas) {
+    ctx.fillStyle = overmind.state.canvas.invertedCanvas;
   }
 
   ctx.fillRect(position.x, 0, 1, canvas.height);

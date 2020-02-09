@@ -33,3 +33,7 @@ export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanva
     state.canvas.mainCanvas.lastModifiedOverlay = Date.now();
   }
 };
+
+export const storeInvertedCanvas: Action<CanvasPattern> = ({ state }, pattern): void => {
+  state.canvas.invertedCanvas = pattern;
+};

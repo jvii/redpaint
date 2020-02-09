@@ -1,10 +1,8 @@
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
-import { ToolState, toolStateReducer } from '../../tools/ToolState';
-import { useZoomFocusPointSelection, useBrushSelection, useInitTool } from './hooks';
+import { useInitTool, useUndo } from './hooks';
 import { useOvermind } from '../../overmind';
 import { getEventHandler } from '../../tools/util';
-import { blobToCanvas } from './util';
 import { EventHandlerParams } from '../../tools/Tool';
 import './Canvas.css';
 
@@ -26,19 +24,12 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     });
   }, []);
 
-  const [toolState, toolStateDispatch] = useReducer(toolStateReducer, new ToolState());
-
   const { state, actions } = useOvermind();
 
-  // TODO: extract to hook useUndo()
-  useEffect((): void => {
-    blobToCanvas(state.undo.currentBufferItem, canvasRef.current);
-  }, [state.undo.lastUndoRedoTime]);
+  useUndo(canvasRef.current);
+  useInitTool(canvasRef.current, isZoomCanvas);
 
-  // TODO: yhteinen useSelectionHooks tai useBridgeToolStateToGlobalState(toolState)
-  // tai näiden toolStaten siirto overmindiin
-  useZoomFocusPointSelection(toolState);
-  useBrushSelection(toolState);
+  const tool = state.toolbar.activeTool;
 
   const CSSZoom = {
     width: state.canvas.resolution.width * zoomFactor,
@@ -53,9 +44,6 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    toolState: toolState,
-    toolStateDispatch: toolStateDispatch,
-    state: state,
   };
 
   const eventHandlerParamsOverlay: EventHandlerParams = {
@@ -66,13 +54,7 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
     },
-    toolState: toolState,
-    toolStateDispatch: toolStateDispatch,
-    state: state,
   };
-
-  const tool = state.toolbar.activeTool;
-  useInitTool(canvasRef.current, toolState, toolStateDispatch, isZoomCanvas);
 
   return (
     <div className="CanvasContainer">

@@ -1,5 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
+import { overmind } from '../index';
 
 export class LineTool implements Tool {
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -8,48 +9,63 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      canvas,
-      state,
-      onDrawToCanvas,
-      toolState,
-      toolStateDispatch,
-      undoPoint,
-    } = params;
+    const { event, canvas, onDrawToCanvas, undoPoint } = params;
 
-    if (!toolState.lineToolState.startingPosition) {
+    /*     if (!toolState.lineToolState.startingPosition) {
+      return;
+    } */
+
+    if (!overmind.state.tool.lineTool.start) {
       return;
     }
 
     const position = getMousePos(canvas, event);
-    const start = toolState.lineToolState.startingPosition;
+    const start = overmind.state.tool.lineTool.start;
     const end = position;
-    state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
+    overmind.state.brush.brush.drawLine(
+      canvas,
+      start,
+      end,
+      isRightMouseButton(event),
+      overmind.state
+    );
     undoPoint();
     onDrawToCanvas();
-    toolStateDispatch({ type: 'lineToolStart', point: null });
+    //toolStateDispatch({ type: 'lineToolStart', point: null });
+    overmind.actions.tool.lineToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolStateDispatch } = params;
+    const { event, canvas } = params;
     const position = getMousePos(canvas, event);
-    toolStateDispatch({ type: 'lineToolStart', point: position });
+    //toolStateDispatch({ type: 'lineToolStart', point: position });
+    overmind.actions.tool.lineToolStart(position);
   }
 
   // Overlay
 
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, toolState, state, onDrawToCanvas } = params;
+    const { event, canvas, onDrawToCanvas } = params;
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
-    if (toolState.lineToolState.startingPosition && isLeftMouseButton(event)) {
-      const start = toolState.lineToolState.startingPosition;
+    if (overmind.state.tool.lineTool.start && isLeftMouseButton(event)) {
+      const start = overmind.state.tool.lineTool.start;
       const end = position;
-      state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event), state);
+      overmind.state.brush.brush.drawLine(
+        canvas,
+        start,
+        end,
+        isRightMouseButton(event),
+        overmind.state
+      );
     } else {
-      state.brush.brush.drawDot(canvas, position, isRightMouseButton(event), state);
+      overmind.state.brush.brush.drawDot(
+        canvas,
+        position,
+        isRightMouseButton(event),
+        overmind.state
+      );
     }
     onDrawToCanvas();
   }
