@@ -1,59 +1,27 @@
 import { Point } from '../types';
 
 export interface Brush {
-  drawLine(canvas: HTMLCanvasElement, start: Point, end: Point, withBackgroundColor: boolean): void;
-  drawCurve(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    middlePoint: Point,
-    withBackgroundColor: boolean
-  ): void;
-  drawDot(canvas: HTMLCanvasElement, point: Point, withBackgroundColor: boolean): void;
-  drawUnfilledRect(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean
-  ): void;
-  drawFilledRect(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean
-  ): void;
-  drawUnfilledCircle(
-    canvas: HTMLCanvasElement,
-    center: Point,
-    radius: number,
-    withBackgroundColor: boolean
-  ): void;
-  drawFilledCircle(
-    canvas: HTMLCanvasElement,
-    center: Point,
-    radius: number,
-    withBackgroundColor: boolean
-  ): void;
+  drawDot(ctx: CanvasRenderingContext2D, point: Point): void;
+  drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void;
+  drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void;
+  drawLineHorizontal(ctx: CanvasRenderingContext2D, x1: number, x2: number, y: number): void;
+  drawCurve(ctx: CanvasRenderingContext2D, start: Point, end: Point, middlePoint: Point): void;
+  drawUnfilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void;
+  drawFilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void;
+  drawUnfilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void;
+  drawFilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void;
   drawUnfilledEllipse(
-    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
     center: Point,
     radiusX: number,
     radiusY: number,
-    rotationAngle: number,
-    withBackgroundColor: boolean
+    rotationAngle: number
   ): void;
   drawFilledEllipse(
-    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
     center: Point,
     radiusX: number,
     radiusY: number,
-    rotationAngle: number,
-    withBackgroundColor: boolean
+    rotationAngle: number
   ): void;
-
-  // Used with context
-
-  draw(point: Point, ctx: CanvasRenderingContext2D): void;
-  drawLineVertical(y1: number, y2: number, x: number, ctx: CanvasRenderingContext2D): void;
-  drawLineHorizontal(x1: number, x2: number, y: number, ctx: CanvasRenderingContext2D): void;
 }

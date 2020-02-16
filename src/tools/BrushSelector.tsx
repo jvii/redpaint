@@ -10,7 +10,10 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
 
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
@@ -70,8 +73,8 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
-    const mousePos = getMousePos(canvas, event);
+    const { event, ctx } = params;
+    const mousePos = getMousePos(ctx.canvas, event);
     overmind.actions.tool.brushSelectionStart(mousePos);
   }
 
@@ -82,7 +85,12 @@ export class BrushSelector implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
 
     const start = overmind.state.tool.brushSelectorTool.start;
@@ -93,10 +101,6 @@ export class BrushSelector implements Tool {
       return;
     }
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
     const width = mousePos.x - start.x;
     const height = mousePos.y - start.y;
     ctx.strokeRect(start.x, start.y, width, height);
@@ -104,13 +108,19 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }

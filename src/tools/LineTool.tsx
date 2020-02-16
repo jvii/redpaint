@@ -9,7 +9,13 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint, undoPoint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+      undoPoint,
+    } = params;
 
     if (!overmind.state.tool.lineTool.start) {
       return;
@@ -18,14 +24,17 @@ export class LineTool implements Tool {
     const position = getMousePos(canvas, event);
     const start = overmind.state.tool.lineTool.start;
     const end = position;
-    overmind.state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event));
+    overmind.state.brush.brush.drawLine(ctx, start, end);
     undoPoint();
     onPaint();
     overmind.actions.tool.lineToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
     const position = getMousePos(canvas, event);
     overmind.actions.tool.lineToolStart(position);
   }
@@ -33,22 +42,33 @@ export class LineTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+    } = params;
     const position = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
-    if (overmind.state.tool.lineTool.start && isLeftMouseButton(event)) {
+    if (
+      overmind.state.tool.lineTool.start &&
+      (isLeftMouseButton(event) || isRightMouseButton(event))
+    ) {
       const start = overmind.state.tool.lineTool.start;
       const end = position;
-      overmind.state.brush.brush.drawLine(canvas, start, end, isRightMouseButton(event));
+      overmind.state.brush.brush.drawLine(ctx, start, end);
     } else {
-      overmind.state.brush.brush.drawDot(canvas, position, isRightMouseButton(event));
+      overmind.state.brush.brush.drawDot(ctx, position);
     }
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }

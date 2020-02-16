@@ -10,7 +10,7 @@ export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, 
   let dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
-    brush.draw(start, ctx);
+    brush.drawDot(ctx, start);
     return;
   }
 
@@ -18,13 +18,10 @@ export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, 
   const cy = (end.y - start.y) / dist;
 
   for (let i = 0; i <= dist; i++) {
-    brush.draw(
-      {
-        x: start.x + cx * i,
-        y: start.y + cy * i,
-      },
-      ctx
-    );
+    brush.drawDot(ctx, {
+      x: start.x + cx * i,
+      y: start.y + cy * i,
+    });
   }
 }
 
@@ -69,7 +66,7 @@ export function unfilledRect(
 ): void {
   if (start === end) {
     // just draw a dot
-    brush.draw(start, ctx);
+    brush.drawDot(ctx, start);
     return;
   }
 
@@ -82,10 +79,10 @@ export function unfilledRect(
 
   // draw lines
 
-  brush.drawLineHorizontal(x1, x2, y1, ctx);
-  brush.drawLineHorizontal(x1, x2, y2, ctx);
-  brush.drawLineVertical(y1, y2, x1, ctx);
-  brush.drawLineVertical(y1, y2, x2, ctx);
+  brush.drawLineHorizontal(ctx, x1, x2, y1);
+  brush.drawLineHorizontal(ctx, x1, x2, y2);
+  brush.drawLineVertical(ctx, y1, y2, x1);
+  brush.drawLineVertical(ctx, y1, y2, x2);
 }
 
 export function filledRect(
@@ -146,7 +143,7 @@ export function unfilledCircle(
 
   if (r === 0) {
     // just draw a dot
-    brush.draw(center, ctx);
+    brush.drawDot(ctx, center);
     return;
   }
 
@@ -155,24 +152,24 @@ export function unfilledCircle(
     cd = 0;
 
   // middle points
-  brush.draw({ x: center.x - x, y: center.y }, ctx);
-  brush.draw({ x: center.x + x, y: center.y }, ctx);
-  brush.draw({ x: center.x, y: center.y - r }, ctx);
-  brush.draw({ x: center.x, y: center.y + r }, ctx);
+  brush.drawDot(ctx, { x: center.x - x, y: center.y });
+  brush.drawDot(ctx, { x: center.x + x, y: center.y });
+  brush.drawDot(ctx, { x: center.x, y: center.y - r });
+  brush.drawDot(ctx, { x: center.x, y: center.y + r });
 
   // octants
   while (x > y) {
     cd -= --x - ++y;
     if (cd < 0) cd += x++;
-    brush.draw({ x: center.x - y, y: center.y - x }, ctx);
-    brush.draw({ x: center.x - x, y: center.y - y }, ctx);
-    brush.draw({ x: center.x - x, y: center.y + y }, ctx);
-    brush.draw({ x: center.x - y, y: center.y + x }, ctx);
+    brush.drawDot(ctx, { x: center.x - y, y: center.y - x });
+    brush.drawDot(ctx, { x: center.x - x, y: center.y - y });
+    brush.drawDot(ctx, { x: center.x - x, y: center.y + y });
+    brush.drawDot(ctx, { x: center.x - y, y: center.y + x });
 
-    brush.draw({ x: center.x + y, y: center.y + x }, ctx);
-    brush.draw({ x: center.x + x, y: center.y + y }, ctx);
-    brush.draw({ x: center.x + x, y: center.y - y }, ctx);
-    brush.draw({ x: center.x + y, y: center.y - x }, ctx);
+    brush.drawDot(ctx, { x: center.x + y, y: center.y + x });
+    brush.drawDot(ctx, { x: center.x + x, y: center.y + y });
+    brush.drawDot(ctx, { x: center.x + x, y: center.y - y });
+    brush.drawDot(ctx, { x: center.x + y, y: center.y - x });
   }
 }
 
@@ -229,11 +226,11 @@ export function unfilledEllipse(
     const previousPoint = ellipsePointsLowerHalf[i - 1];
     const nextPoint = ellipsePointsLowerHalf[i + 1];
     if (point.y > previousPoint.y + 1) {
-      brush.drawLineVertical(previousPoint.y + 1, point.y, point.x, ctx);
+      brush.drawLineVertical(ctx, previousPoint.y + 1, point.y, point.x);
     } else if (point.y > nextPoint.y + 1) {
-      brush.drawLineVertical(nextPoint.y + 1, point.y, point.x, ctx);
+      brush.drawLineVertical(ctx, nextPoint.y + 1, point.y, point.x);
     } else {
-      brush.draw(point, ctx);
+      brush.drawDot(ctx, point);
     }
   }
 
@@ -244,11 +241,11 @@ export function unfilledEllipse(
     const previousPoint = ellipsePointsUpperHalf[i - 1];
     const nextPoint = ellipsePointsUpperHalf[i + 1];
     if (point.y < previousPoint.y - 1) {
-      brush.drawLineVertical(point.y, previousPoint.y - 1, point.x, ctx);
+      brush.drawLineVertical(ctx, point.y, previousPoint.y - 1, point.x);
     } else if (point.y < nextPoint.y - 1) {
-      brush.drawLineVertical(point.y, nextPoint.y - 1, point.x, ctx);
+      brush.drawLineVertical(ctx, point.y, nextPoint.y - 1, point.x);
     } else {
-      brush.draw(point, ctx);
+      brush.drawDot(ctx, point);
     }
   }
 
@@ -257,14 +254,14 @@ export function unfilledEllipse(
   const startYLower = ellipsePointsLowerHalf[0].y;
   const startYUpper = ellipsePointsUpperHalf[0].y;
   const startX = ellipsePointsUpperHalf[0].x;
-  brush.drawLineVertical(startYLower, startYUpper - 1, startX, ctx);
-  brush.draw(ellipsePointsLowerHalf[0], ctx);
+  brush.drawLineVertical(ctx, startYLower, startYUpper - 1, startX);
+  brush.drawDot(ctx, ellipsePointsLowerHalf[0]);
 
   const endYLower = ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1].y;
   const endYUpper = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].y;
   const endX = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].x;
-  brush.drawLineVertical(endYLower, endYUpper - 1, endX, ctx);
-  brush.draw(ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1], ctx);
+  brush.drawLineVertical(ctx, endYLower, endYUpper - 1, endX);
+  brush.drawDot(ctx, ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1]);
 }
 
 export function filledEllipse(

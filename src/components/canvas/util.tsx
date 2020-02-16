@@ -1,4 +1,5 @@
-import { clearCanvas } from '../../tools/util';
+import { clearCanvas, colorToRGBString } from '../../tools/util';
+import { overmind } from '../../index';
 
 export function cloneCanvas(
   sourceCanvas: HTMLCanvasElement,
@@ -25,4 +26,23 @@ export function blobToCanvas(blob: Blob | null, canvas: HTMLCanvasElement): void
     context.drawImage(image, 0, 0);
   };
   image.src = URL.createObjectURL(blob);
+}
+
+export function setFillStyleOnMouseDown(
+  event: React.MouseEvent,
+  ctx: CanvasRenderingContext2D
+): void {
+  if (event.button === 0) {
+    ctx.fillStyle = colorToRGBString(overmind.state.palette.foregroundColor);
+  }
+  if (event.button === 2) {
+    ctx.fillStyle = colorToRGBString(overmind.state.palette.backgroundColor);
+  }
+}
+
+export function setFillStyleOnMouseUp(
+  event: React.MouseEvent,
+  ctx: CanvasRenderingContext2D
+): void {
+  ctx.fillStyle = colorToRGBString(overmind.state.palette.foregroundColor);
 }

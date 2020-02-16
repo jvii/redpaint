@@ -1,6 +1,5 @@
 import { Brush } from './Brush';
 import { Point } from '../types';
-import { colorToRGBString } from '../tools/util';
 import {
   line,
   unfilledRect,
@@ -25,176 +24,7 @@ export class CustomBrush implements Brush {
     };
   }
 
-  public drawLine(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    line(ctx, this, start, end);
-  }
-
-  public drawCurve(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    middlePoint: Point,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    curve(ctx, this, start, end, middlePoint);
-  }
-
-  public drawDot(canvas: HTMLCanvasElement, point: Point, withBackgroundColor: boolean): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-    this.draw(point, ctx);
-  }
-
-  public drawUnfilledRect(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    unfilledRect(ctx, this, start, end);
-  }
-
-  public drawFilledRect(
-    canvas: HTMLCanvasElement,
-    start: Point,
-    end: Point,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    // DPaint just draws the filled shape as if using a pixel brush
-
-    filledRect(ctx, this, start, end);
-  }
-
-  public drawUnfilledCircle(
-    canvas: HTMLCanvasElement,
-    center: Point,
-    radius: number,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    unfilledCircle(ctx, this, center, radius);
-  }
-
-  public drawFilledCircle(
-    canvas: HTMLCanvasElement,
-    center: Point,
-    radius: number,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    filledCircle(ctx, this, center, radius);
-  }
-
-  public drawUnfilledEllipse(
-    canvas: HTMLCanvasElement,
-    center: Point,
-    radiusX: number,
-    radiusY: number,
-    rotationAngle: number,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    unfilledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
-  }
-
-  public drawFilledEllipse(
-    canvas: HTMLCanvasElement,
-    center: Point,
-    radiusX: number,
-    radiusY: number,
-    rotationAngle: number,
-    withBackgroundColor: boolean
-  ): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(
-      withBackgroundColor
-        ? overmind.state.palette.backgroundColor
-        : overmind.state.palette.foregroundColor
-    );
-
-    filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
-  }
-
-  public draw(point: Point, ctx: CanvasRenderingContext2D): void {
+  public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
     const pointAdj = this.adjustHandle(point);
     ctx.drawImage(this.brushImage, Math.floor(pointAdj.x), Math.floor(pointAdj.y));
 
@@ -230,7 +60,20 @@ export class CustomBrush implements Brush {
     ctx.drawImage(this.brushImage, Math.floor(sym3.x), Math.floor(sym3.y));
   }
 
-  public drawLineVertical(y1: number, y2: number, x: number, ctx: CanvasRenderingContext2D): void {
+  public drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
+    line(ctx, this, start, end);
+  }
+
+  public drawCurve(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    middlePoint: Point
+  ): void {
+    curve(ctx, this, start, end, middlePoint);
+  }
+
+  public drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void {
     let startY = y1;
     let endY = y2;
 
@@ -240,15 +83,15 @@ export class CustomBrush implements Brush {
     }
 
     for (let y = startY; y <= endY; y++) {
-      this.draw({ x: x, y: y }, ctx);
+      this.drawDot(ctx, { x: x, y: y });
     }
   }
 
   public drawLineHorizontal(
+    ctx: CanvasRenderingContext2D,
     x1: number,
     x2: number,
-    y: number,
-    ctx: CanvasRenderingContext2D
+    y: number
   ): void {
     let startX = x1;
     let endX = x2;
@@ -259,8 +102,45 @@ export class CustomBrush implements Brush {
     }
 
     for (let x = startX; x <= endX; x++) {
-      this.draw({ x: x, y: y }, ctx);
+      this.drawDot(ctx, { x: x, y: y });
     }
+  }
+
+  public drawUnfilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
+    unfilledRect(ctx, this, start, end);
+  }
+
+  public drawFilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
+    // DPaint just draws the filled shape as if using a pixel brush
+    filledRect(ctx, this, start, end);
+  }
+
+  public drawUnfilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void {
+    unfilledCircle(ctx, this, center, radius);
+  }
+
+  public drawFilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void {
+    filledCircle(ctx, this, center, radius);
+  }
+
+  public drawUnfilledEllipse(
+    ctx: CanvasRenderingContext2D,
+    center: Point,
+    radiusX: number,
+    radiusY: number,
+    rotationAngle: number
+  ): void {
+    unfilledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
+  }
+
+  public drawFilledEllipse(
+    ctx: CanvasRenderingContext2D,
+    center: Point,
+    radiusX: number,
+    radiusY: number,
+    rotationAngle: number
+  ): void {
+    filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
   }
 
   private adjustHandle(point: Point): Point {
