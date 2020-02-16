@@ -21,38 +21,38 @@ export function CanvasSyncHandler({ canvasState }: Props): null {
   // sync drawing canvas with zoom canvas
 
   useEffect((): void => {
-    if (state.toolbar.zoomModeState === 'on') {
+    if (state.toolbox.zoomModeState === 'on') {
       cloneCanvas(mainCanvas, zoomCanvas);
     }
-  }, [mainCanvas, zoomCanvas, state.toolbar.zoomModeState, state.canvas.mainCanvas.lastModified]);
+  }, [mainCanvas, zoomCanvas, state.toolbox.zoomModeState, state.canvas.mainCanvas.lastModified]);
 
   useEffect((): void => {
-    if (state.toolbar.zoomModeState === 'on') {
+    if (state.toolbox.zoomModeState === 'on') {
       cloneCanvas(zoomCanvas, mainCanvas);
     }
-  }, [mainCanvas, zoomCanvas, state.toolbar.zoomModeState, state.canvas.zoomCanvas.lastModified]);
+  }, [mainCanvas, zoomCanvas, state.toolbox.zoomModeState, state.canvas.zoomCanvas.lastModified]);
 
   // sync overlay canvas with zoom overlay canvas
 
   useEffect((): void => {
-    if (state.toolbar.zoomModeState === 'on') {
+    if (state.toolbox.zoomModeState === 'on') {
       cloneCanvas(mainOverlayCanvas, zoomOverlayCanvas);
     }
   }, [
     mainOverlayCanvas,
     zoomOverlayCanvas,
-    state.toolbar.zoomModeState,
+    state.toolbox.zoomModeState,
     state.canvas.mainCanvas.lastModifiedOverlay,
   ]);
 
   useEffect((): void => {
-    if (state.toolbar.zoomModeState === 'on') {
+    if (state.toolbox.zoomModeState === 'on') {
       cloneCanvas(zoomOverlayCanvas, mainOverlayCanvas);
     }
   }, [
     mainOverlayCanvas,
     zoomOverlayCanvas,
-    state.toolbar.zoomModeState,
+    state.toolbox.zoomModeState,
     state.canvas.zoomCanvas.lastModifiedOverlay,
   ]);
 

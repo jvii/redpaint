@@ -1,19 +1,13 @@
 import React from 'react';
-import './toolbarButtons.css';
+import './toolboxButtons.css';
 
 interface Props {
   buttonClass: string;
-  isSelected: boolean;
   onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
-export function ToolbarToggleButton({
-  buttonClass,
-  isSelected,
-  onClick,
-  onRightClick,
-}: Props): JSX.Element {
+export function ToolboxActionButton({ buttonClass, onClick, onRightClick }: Props): JSX.Element {
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     if (onRightClick) {
       onRightClick(event);
@@ -22,7 +16,7 @@ export function ToolbarToggleButton({
   };
   return (
     <button
-      className={'ToolbarButton ' + (isSelected ? buttonClass + 'Selected' : buttonClass)}
+      className={'ToolboxButton ' + buttonClass}
       onClick={onClick}
       onContextMenu={handleRightClick}
     ></button>

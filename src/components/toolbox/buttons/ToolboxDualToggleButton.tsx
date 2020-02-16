@@ -1,5 +1,5 @@
 import React from 'react';
-import './toolbarButtons.css';
+import './toolboxButtons.css';
 
 interface Props {
   buttonClass: string;
@@ -9,7 +9,7 @@ interface Props {
   onLowerHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
-export function ToolbarDualToggleButton({
+export function ToolboxDualToggleButton({
   buttonClass,
   isLowerHalfSelected,
   isUpperHalfSelected,
@@ -30,7 +30,7 @@ export function ToolbarDualToggleButton({
   if (isUpperHalfSelected) {
     className = buttonClass + 'UpperHalfSelected';
   }
-  return <button className={'ToolbarButton ' + className} onClick={handleClick}></button>;
+  return <button className={'ToolboxButton ' + className} onClick={handleClick}></button>;
 }
 
 function isLowerHalfClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): boolean {

@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react';
 import MainCanvas from './canvas/MainCanvas';
 import ZoomCanvas from './canvas/ZoomCanvas';
-import Toolbar from './toolbar/Toolbar';
+import { Toolbox } from './toolbox/Toolbox';
 import Palette from './palette/Palette';
 import ColorIndicator from './palette/ColorIndicator';
 import { CanvasState, canvasStateReducer } from './canvas/CanvasState';
@@ -21,7 +21,7 @@ function App(): JSX.Element {
         <ZoomCanvas canvasDispatch={canvasDispatch} />
         <CanvasSyncHandler canvasState={canvasState} />
       </div>
-      <Toolbar canvasState={canvasState} />
+      <Toolbox canvasState={canvasState} />
       <ColorIndicator />
       <Palette />
     </div>

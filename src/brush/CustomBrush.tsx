@@ -28,7 +28,7 @@ export class CustomBrush implements Brush {
     const pointAdj = this.adjustHandle(point);
     ctx.drawImage(this.brushImage, Math.floor(pointAdj.x), Math.floor(pointAdj.y));
 
-    if (!overmind.state.toolbar.symmetryModeOn) {
+    if (!overmind.state.toolbox.symmetryModeOn) {
       return;
     }
 

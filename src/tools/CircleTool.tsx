@@ -34,8 +34,8 @@ export class CircleTool implements Tool {
       return;
     }
 
-    const position = getMousePos(canvas, event);
-    const radius = Math.round(distance(origin, position));
+    const mousePos = getMousePos(canvas, event);
+    const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
       overmind.state.brush.brush.drawFilledCircle(ctx, origin, radius);

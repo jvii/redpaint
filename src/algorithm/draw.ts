@@ -312,7 +312,7 @@ export function fillRectWithSymmetry(
 ): void {
   ctx.fillRect(x, y, w, h);
 
-  if (!overmind.state.toolbar.symmetryModeOn) {
+  if (!overmind.state.toolbox.symmetryModeOn) {
     return;
   }
 
