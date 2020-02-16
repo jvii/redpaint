@@ -12,12 +12,13 @@ interface ColorRGBA {
 
 export class FloodFillTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint, undoPoint } = params;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+      undoPoint,
+    } = params;
 
     const position = getMousePos(canvas, event);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -28,13 +29,14 @@ export class FloodFillTool implements Tool {
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint, undoPoint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+      undoPoint,
+    } = params;
     event.preventDefault();
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
 
     const position = getMousePos(canvas, event);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);

@@ -6,6 +6,14 @@ export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
 }
 
+export function setFillStyle(ctx: CanvasRenderingContext2D, withBackgroundColor: boolean): void {
+  ctx.fillStyle = colorToRGBString(
+    withBackgroundColor
+      ? overmind.state.palette.backgroundColor
+      : overmind.state.palette.foregroundColor
+  );
+}
+
 export function getMousePos(
   canvas: HTMLCanvasElement,
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>

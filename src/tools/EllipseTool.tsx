@@ -1,11 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isLeftMouseButton,
-  isRightMouseButton,
-  edgeToEdgeCrosshair,
-} from './util';
+import { getMousePos, clearOverlayCanvas, isLeftMouseButton, edgeToEdgeCrosshair } from './util';
 import { overmind } from '../index';
 
 export class EllipseTool implements Tool {
@@ -16,29 +10,7 @@ export class EllipseTool implements Tool {
   private filled: boolean;
 
   public onInit(canvas: HTMLCanvasElement): void {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    let bufferCanvas = document.createElement('canvas');
-    bufferCanvas.width = canvas.width;
-    bufferCanvas.height = canvas.height;
-    const bufferCanvasCtx = bufferCanvas.getContext('2d');
-    if (!bufferCanvasCtx) {
-      return;
-    }
-    bufferCanvasCtx.filter = 'invert(1)';
-    bufferCanvasCtx.drawImage(canvas, 0, 0);
-    bufferCanvasCtx.globalCompositeOperation = 'difference';
-    bufferCanvasCtx.fillStyle = 'white';
-    bufferCanvasCtx.globalAlpha = 1; // alpha 0 = no effect 1 = full effect
-    bufferCanvasCtx.fillRect(0, 0, bufferCanvas.width, bufferCanvas.height);
-
-    const pattern = bufferCanvasCtx.createPattern(bufferCanvas, 'no-repeat');
-    if (pattern) {
-      overmind.actions.canvas.storeInvertedCanvas(pattern);
-    }
+    overmind.actions.canvas.storeInvertedCanvas(canvas);
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -47,7 +19,10 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
 
     // Do nothing if center point not set, or radius not yet set
 
@@ -74,7 +49,13 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint, undoPoint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+      undoPoint,
+    } = params;
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
@@ -98,23 +79,9 @@ export class EllipseTool implements Tool {
 
     const angle = overmind.state.tool.ellipseTool.angle;
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledEllipse(
-        canvas,
-        origin,
-        radiusX,
-        radiusY,
-        angle,
-        isRightMouseButton(event)
-      );
+      overmind.state.brush.brush.drawFilledEllipse(ctx, origin, radiusX, radiusY, angle);
     } else {
-      overmind.state.brush.brush.drawUnfilledEllipse(
-        canvas,
-        origin,
-        radiusX,
-        radiusY,
-        angle,
-        isRightMouseButton(event)
-      );
+      overmind.state.brush.brush.drawUnfilledEllipse(ctx, origin, radiusX, radiusY, angle);
     }
     undoPoint();
     onPaint();
@@ -123,7 +90,10 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
     const mousePos = getMousePos(canvas, event);
     if (!overmind.state.tool.ellipseTool.origin) {
       overmind.actions.tool.ellipseToolOrigin(mousePos);
@@ -138,15 +108,21 @@ export class EllipseTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
+
     const mousePos = getMousePos(canvas, event);
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(canvas, mousePos, isRightMouseButton(event));
+        overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
       edgeToEdgeCrosshair(canvas, mousePos);
       onPaint();
@@ -161,28 +137,29 @@ export class EllipseTool implements Tool {
 
     if (this.filled) {
       overmind.state.brush.brush.drawFilledEllipse(
-        canvas,
+        ctx,
         origin,
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,
-        angle,
-        isRightMouseButton(event)
+        angle
       );
     } else {
       overmind.state.brush.brush.drawUnfilledEllipse(
-        canvas,
+        ctx,
         origin,
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,
-        angle,
-        isRightMouseButton(event)
+        angle
       );
     }
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }

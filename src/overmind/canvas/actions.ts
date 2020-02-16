@@ -40,6 +40,26 @@ export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanva
   }
 };
 
-export const storeInvertedCanvas: Action<CanvasPattern> = ({ state }, pattern): void => {
-  state.canvas.invertedCanvas = pattern;
+export const storeInvertedCanvas: Action<HTMLCanvasElement> = (
+  { state },
+  canvas: HTMLCanvasElement
+): void => {
+  let bufferCanvas = document.createElement('canvas');
+  bufferCanvas.width = canvas.width;
+  bufferCanvas.height = canvas.height;
+  const bufferCanvasCtx = bufferCanvas.getContext('2d');
+  if (!bufferCanvasCtx) {
+    return;
+  }
+  bufferCanvasCtx.filter = 'invert(1)';
+  bufferCanvasCtx.drawImage(canvas, 0, 0);
+  bufferCanvasCtx.globalCompositeOperation = 'difference';
+  bufferCanvasCtx.fillStyle = 'white';
+  bufferCanvasCtx.globalAlpha = 1; // alpha 0 = no effect 1 = full effect
+  bufferCanvasCtx.fillRect(0, 0, bufferCanvas.width, bufferCanvas.height);
+
+  const pattern = bufferCanvasCtx.createPattern(bufferCanvas, 'no-repeat');
+  if (pattern) {
+    state.canvas.invertedCanvas = pattern;
+  }
 };

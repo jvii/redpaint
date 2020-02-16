@@ -2,8 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
 import { useInitTool, useUndo } from './hooks';
 import { useOvermind } from '../../overmind';
-import { getEventHandler, getEventHandlerOverlay } from '../../tools/util';
+import { getEventHandler, getEventHandlerOverlay, colorToRGBString } from '../../tools/util';
 import { EventHandlerParams, OverlayEventHandlerParams } from '../../tools/Tool';
+import { setFillStyleOnMouseUp, setFillStyleOnMouseDown } from './util';
 import './Canvas.css';
 
 interface Props {
@@ -12,7 +13,11 @@ interface Props {
   zoomFactor?: number;
 }
 
-export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element {
+export function Canvas({
+  canvasDispatch,
+  isZoomCanvas,
+  zoomFactor = 1,
+}: Props): JSX.Element | null {
   console.log('render ' + (isZoomCanvas ? 'ZoomCanvas' : 'MainCanvas'));
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
@@ -29,15 +34,16 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
   useUndo(canvasRef.current);
   useInitTool(canvasRef.current, isZoomCanvas);
 
-  const tool = state.toolbar.activeTool;
-
-  const CSSZoom = {
-    width: state.canvas.resolution.width * zoomFactor,
-    height: state.canvas.resolution.height * zoomFactor,
-  };
+  const canvasCtx = canvasRef.current.getContext('2d');
+  const overlayCanvasCtx = overlayCanvasRef.current.getContext('2d');
+  if (!canvasCtx || !overlayCanvasCtx) {
+    return null; // no render
+  }
+  canvasCtx.fillStyle = colorToRGBString(state.palette.foregroundColor);
+  overlayCanvasCtx.fillStyle = colorToRGBString(state.palette.foregroundColor);
 
   const eventHandlerParams: EventHandlerParams = {
-    canvas: canvasRef.current,
+    ctx: canvasCtx,
     onPaint: (): void => {
       actions.canvas.setCanvasModified(isZoomCanvas);
     },
@@ -47,10 +53,17 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
   };
 
   const eventHandlerParamsOverlay: OverlayEventHandlerParams = {
-    canvas: overlayCanvasRef.current,
+    ctx: overlayCanvasCtx,
     onPaint: (): void => {
       actions.canvas.setOverlayCanvasModified(isZoomCanvas);
     },
+  };
+
+  const tool = state.toolbar.activeTool;
+
+  const CSSZoom = {
+    width: state.canvas.resolution.width * zoomFactor,
+    height: state.canvas.resolution.height * zoomFactor,
   };
 
   return (
@@ -68,10 +81,14 @@ export function Canvas({ canvasDispatch, isZoomCanvas, zoomFactor = 1 }: Props):
         onMouseDown={(event): void => {
           getEventHandler(tool, 'onMouseDown', eventHandlerParams)(event);
           getEventHandlerOverlay(tool, 'onMouseDownOverlay', eventHandlerParamsOverlay)(event);
+          setFillStyleOnMouseDown(event, canvasCtx);
+          setFillStyleOnMouseDown(event, overlayCanvasCtx);
         }}
         onMouseUp={(event): void => {
           getEventHandler(tool, 'onMouseUp', eventHandlerParams)(event);
           getEventHandlerOverlay(tool, 'onMouseUpOverlay', eventHandlerParamsOverlay)(event);
+          setFillStyleOnMouseUp(event, canvasCtx);
+          setFillStyleOnMouseUp(event, overlayCanvasCtx);
         }}
         onMouseEnter={(event): void => {
           getEventHandler(tool, 'onMouseEnter', eventHandlerParams)(event);

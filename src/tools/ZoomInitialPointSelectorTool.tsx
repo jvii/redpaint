@@ -4,7 +4,10 @@ import { overmind } from '../index';
 
 export class ZoomInitialPointSelectorTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
     const mousePos = getMousePos(canvas, event);
     overmind.actions.canvas.setZoomFocusPoint(mousePos);
   }
@@ -17,7 +20,11 @@ export class ZoomInitialPointSelectorTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint } = params;
+    const {
+      event,
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
 
     const ctx = canvas.getContext('2d');
@@ -31,13 +38,19 @@ export class ZoomInitialPointSelectorTool implements Tool {
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }
 
   public onClickOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }

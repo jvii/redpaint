@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, edgeToEdgeCrosshair } from './util';
+import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
 import { overmind } from '../index';
 
 export class RectangleTool implements Tool {
@@ -9,13 +9,23 @@ export class RectangleTool implements Tool {
 
   private filled: boolean;
 
+  public onInit(canvas: HTMLCanvasElement): void {
+    overmind.actions.canvas.storeInvertedCanvas(canvas);
+  }
+
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event } = params;
     event.preventDefault();
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint, undoPoint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+      undoPoint,
+    } = params;
 
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {
@@ -25,27 +35,21 @@ export class RectangleTool implements Tool {
     const endPoint = getMousePos(canvas, event);
 
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledRect(
-        canvas,
-        startPoint,
-        endPoint,
-        isRightMouseButton(event)
-      );
+      overmind.state.brush.brush.drawFilledRect(ctx, startPoint, endPoint);
     } else {
-      overmind.state.brush.brush.drawUnfilledRect(
-        canvas,
-        startPoint,
-        endPoint,
-        isRightMouseButton(event)
-      );
+      overmind.state.brush.brush.drawUnfilledRect(ctx, startPoint, endPoint);
     }
     undoPoint();
     onPaint();
+    this.onInit(canvas);
     overmind.actions.tool.rectangleToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, canvas } = params;
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
     const position = getMousePos(canvas, event);
     overmind.actions.tool.rectangleToolStart(position);
   }
@@ -57,7 +61,12 @@ export class RectangleTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { event, canvas, onPaint } = params;
+    const {
+      event,
+      ctx,
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
 
     const position = getMousePos(canvas, event);
@@ -66,7 +75,7 @@ export class RectangleTool implements Tool {
     if (!startPoint) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(canvas, position, isRightMouseButton(event));
+        overmind.state.brush.brush.drawDot(ctx, position);
       }
       edgeToEdgeCrosshair(canvas, position);
       onPaint();
@@ -74,31 +83,27 @@ export class RectangleTool implements Tool {
     }
 
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledRect(
-        canvas,
-        startPoint,
-        position,
-        isRightMouseButton(event)
-      );
+      overmind.state.brush.brush.drawFilledRect(ctx, startPoint, position);
     } else {
-      overmind.state.brush.brush.drawUnfilledRect(
-        canvas,
-        startPoint,
-        position,
-        isRightMouseButton(event)
-      );
+      overmind.state.brush.brush.drawUnfilledRect(ctx, startPoint, position);
     }
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { canvas, onPaint } = params;
+    const {
+      ctx: { canvas },
+      onPaint,
+    } = params;
     clearOverlayCanvas(canvas);
     onPaint();
   }
