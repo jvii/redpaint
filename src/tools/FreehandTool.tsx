@@ -34,9 +34,9 @@ export class FreehandTool implements Tool {
       onPaint,
     } = params;
 
-    const position = getMousePos(canvas, event);
-    overmind.state.brush.brush.drawDot(ctx, position);
-    overmind.actions.tool.freeHandToolPrevious(position);
+    const mousePos = getMousePos(canvas, event);
+    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
 
@@ -55,8 +55,8 @@ export class FreehandTool implements Tool {
       event,
       ctx: { canvas },
     } = params;
-    const position = getMousePos(canvas, event);
-    overmind.actions.tool.freeHandToolPrevious(position);
+    const mousePos = getMousePos(canvas, event);
+    overmind.actions.tool.freeHandToolPrevious(mousePos);
   }
 
   // Overlay
@@ -73,8 +73,8 @@ export class FreehandTool implements Tool {
     }
     clearOverlayCanvas(canvas);
 
-    const position = getMousePos(canvas, event);
-    overmind.state.brush.brush.drawDot(ctx, position);
+    const mousePos = getMousePos(canvas, event);
+    overmind.state.brush.brush.drawDot(ctx, mousePos);
     onPaint();
   }
 

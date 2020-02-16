@@ -4,6 +4,11 @@ import { CustomBrush } from '../brush/CustomBrush';
 import { overmind } from '../index';
 
 export class BrushSelector implements Tool {
+  public onInit(canvas: HTMLCanvasElement): void {
+    overmind.actions.tool.brushSelectionStart(null);
+    overmind.actions.canvas.storeInvertedCanvas(canvas);
+  }
+
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event } = params;
     event.preventDefault();
@@ -20,9 +25,9 @@ export class BrushSelector implements Tool {
       return;
     }
 
-    const position = getMousePos(canvas, event);
-    const width = position.x - start.x;
-    const height = position.y - start.y;
+    const mousePos = getMousePos(canvas, event);
+    const width = mousePos.x - start.x;
+    const height = mousePos.y - start.y;
 
     let bufferCanvas = document.createElement('canvas');
     bufferCanvas.width = Math.abs(width);
@@ -67,9 +72,11 @@ export class BrushSelector implements Tool {
 
     const brush = new CustomBrush(bufferCanvas.toDataURL());
     overmind.actions.brush.setBrush(brush);
-    overmind.actions.toolbar.toggleBrushSelectionMode();
+
+    // exit brush selection tool
+    overmind.actions.toolbox.toggleBrushSelectionMode();
     // switch to Freehand tool after selection for simplicity (what does DPaint do?)
-    overmind.actions.toolbar.setSelectedDrawingTool('freeHand');
+    overmind.actions.toolbox.setSelectedDrawingTool('freeHand');
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {

@@ -21,9 +21,9 @@ export class LineTool implements Tool {
       return;
     }
 
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
     const start = overmind.state.tool.lineTool.start;
-    const end = position;
+    const end = mousePos;
     overmind.state.brush.brush.drawLine(ctx, start, end);
     undoPoint();
     onPaint();
@@ -35,8 +35,8 @@ export class LineTool implements Tool {
       event,
       ctx: { canvas },
     } = params;
-    const position = getMousePos(canvas, event);
-    overmind.actions.tool.lineToolStart(position);
+    const mousePos = getMousePos(canvas, event);
+    overmind.actions.tool.lineToolStart(mousePos);
   }
 
   // Overlay
@@ -48,7 +48,7 @@ export class LineTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
 
     clearOverlayCanvas(canvas);
     if (
@@ -56,10 +56,10 @@ export class LineTool implements Tool {
       (isLeftMouseButton(event) || isRightMouseButton(event))
     ) {
       const start = overmind.state.tool.lineTool.start;
-      const end = position;
+      const end = mousePos;
       overmind.state.brush.brush.drawLine(ctx, start, end);
     } else {
-      overmind.state.brush.brush.drawDot(ctx, position);
+      overmind.state.brush.brush.drawDot(ctx, mousePos);
     }
     onPaint();
   }

@@ -4,7 +4,7 @@ import { createHook } from 'overmind-react';
 import * as canvas from './canvas';
 import * as palette from './palette';
 import * as undo from './undo';
-import * as toolbar from './toolbar';
+import * as toolbox from './toolbox';
 import * as brush from './brush';
 import * as tool from './tool';
 
@@ -12,7 +12,7 @@ export const config = namespaced({
   canvas,
   palette,
   undo,
-  toolbar,
+  toolbox,
   tool,
   brush,
 });

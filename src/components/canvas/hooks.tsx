@@ -6,10 +6,10 @@ import { blobToCanvas } from './util';
 export function useInitTool(canvas: HTMLCanvasElement, isZoomCanvas: boolean): void {
   const { state } = useOvermind();
   useEffect((): void => {
-    if (typeof state.toolbar.activeTool.onInit !== 'undefined' && !isZoomCanvas) {
-      state.toolbar.activeTool.onInit(canvas);
+    if (typeof state.toolbox.activeTool.onInit !== 'undefined' && !isZoomCanvas) {
+      state.toolbox.activeTool.onInit(canvas);
     }
-  }, [state.toolbar.activeTool]);
+  }, [state.toolbox.activeTool]);
 }
 
 export function useUndo(canvas: HTMLCanvasElement): void {

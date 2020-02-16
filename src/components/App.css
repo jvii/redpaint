@@ -3,7 +3,7 @@
   grid-template-columns: auto 70px;
   grid-template-rows: auto 35px auto;
   grid-template-areas:
-    'canvas toolbar'
+    'canvas toolbox'
     'canvas colorIndicator'
     'canvas palette';
   cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;

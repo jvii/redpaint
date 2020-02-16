@@ -59,7 +59,7 @@ export function Canvas({
     },
   };
 
-  const tool = state.toolbar.activeTool;
+  const tool = state.toolbox.activeTool;
 
   const CSSZoom = {
     width: state.canvas.resolution.width * zoomFactor,

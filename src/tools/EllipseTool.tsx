@@ -36,14 +36,14 @@ export class EllipseTool implements Tool {
 
     // Change rotation angle if left mouse button down, otherwise re-adjust radius
 
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
 
     if (isLeftMouseButton(event)) {
-      const rotationAngle = position.y - origin.y - overmind.state.tool.ellipseTool.radiusY;
+      const rotationAngle = mousePos.y - origin.y - overmind.state.tool.ellipseTool.radiusY;
       overmind.actions.tool.ellipseToolAngle(rotationAngle);
     } else {
-      const radiusX = Math.abs(position.x - origin.x);
-      const radiusY = Math.abs(position.y - origin.y);
+      const radiusX = Math.abs(mousePos.x - origin.x);
+      const radiusY = Math.abs(mousePos.y - origin.y);
       overmind.actions.tool.ellipseToolRadius({ x: radiusX, y: radiusY });
     }
   }

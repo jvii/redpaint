@@ -20,9 +20,9 @@ export class FloodFillTool implements Tool {
       undoPoint,
     } = params;
 
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    floodFill(imageData, overmind.state.palette.foregroundColor, position);
+    floodFill(imageData, overmind.state.palette.foregroundColor, mousePos);
     ctx.putImageData(imageData, 0, 0);
     undoPoint();
     onPaint();
@@ -38,9 +38,9 @@ export class FloodFillTool implements Tool {
     } = params;
     event.preventDefault();
 
-    const position = getMousePos(canvas, event);
+    const mousePos = getMousePos(canvas, event);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    floodFill(imageData, overmind.state.palette.backgroundColor, position);
+    floodFill(imageData, overmind.state.palette.backgroundColor, mousePos);
     ctx.putImageData(imageData, 0, 0);
     undoPoint();
     onPaint();
