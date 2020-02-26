@@ -67,9 +67,9 @@ export function Canvas({
   };
 
   return (
-    <div className="CanvasContainer">
+    <div className="canvas-container">
       <canvas
-        className="Canvas"
+        className="canvas"
         ref={canvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}
@@ -105,7 +105,7 @@ export function Canvas({
         onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
       />
       <canvas
-        className="Canvas OverlayCanvas"
+        className="canvas overlay-canvas"
         ref={overlayCanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}

@@ -23,14 +23,16 @@ export function ToolboxDualToggleButton({
       onUpperHalfClick(event);
     }
   };
-  let className = buttonClass;
+  let modifier = buttonClass;
   if (isLowerHalfSelected) {
-    className = buttonClass + 'LowerHalfSelected';
+    modifier = modifier + '-lower-half-selected';
   }
   if (isUpperHalfSelected) {
-    className = buttonClass + 'UpperHalfSelected';
+    modifier = modifier + '-upper-half-selected';
   }
-  return <button className={'ToolboxButton ' + className} onClick={handleClick}></button>;
+  return (
+    <button className={'toolboxbutton toolboxbutton--' + modifier} onClick={handleClick}></button>
+  );
 }
 
 function isLowerHalfClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): boolean {

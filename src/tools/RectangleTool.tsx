@@ -11,6 +11,7 @@ export class RectangleTool implements Tool {
 
   public onInit(canvas: HTMLCanvasElement): void {
     overmind.actions.canvas.storeInvertedCanvas(canvas);
+    overmind.actions.tool.rectangleToolStart(null);
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -42,7 +43,6 @@ export class RectangleTool implements Tool {
     undoPoint();
     onPaint();
     this.onInit(canvas);
-    overmind.actions.tool.rectangleToolStart(null);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -54,8 +54,14 @@ export class RectangleTool implements Tool {
     overmind.actions.tool.rectangleToolStart(mousePos);
   }
 
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    overmind.actions.tool.rectangleToolStart(null);
+  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
+    if (!event.buttons) {
+      this.onInit(canvas);
+    }
   }
 
   // Overlay

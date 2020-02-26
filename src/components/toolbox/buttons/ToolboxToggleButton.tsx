@@ -22,7 +22,12 @@ export function ToolboxToggleButton({
   };
   return (
     <button
-      className={'ToolboxButton ' + (isSelected ? buttonClass + 'Selected' : buttonClass)}
+      className={
+        'toolboxbutton ' +
+        (isSelected
+          ? 'toolboxbutton--' + buttonClass + '-selected'
+          : 'toolboxbutton--' + buttonClass)
+      }
       onClick={onClick}
       onContextMenu={handleRightClick}
     ></button>

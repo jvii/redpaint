@@ -5,7 +5,7 @@ import './BuiltInBrushes.css';
 
 export function BuiltInBrushes(): JSX.Element {
   return (
-    <div className="BuiltInBrushes">
+    <div className="built-in-brushes-area">
       <BrushButton brushId={1} />
       <BrushButton brushId={2} />
       <BrushButton brushId={3} />
@@ -26,7 +26,7 @@ function BrushButton({ brushId }: ButtonProps): JSX.Element {
   const isSelected = state.brush.selectedBuiltInBrushId === brushId;
   return (
     <button
-      className={'BuiltInBrush Brush' + (brushId.toString() + (isSelected ? 'Selected' : ''))}
+      className={'built-in-brush brush' + (brushId.toString() + (isSelected ? '--selected' : ''))}
       onClick={onClick}
     ></button>
   );

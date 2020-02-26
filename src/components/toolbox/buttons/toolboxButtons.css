@@ -1,4 +1,4 @@
-.ToolboxButton {
+.toolboxbutton {
   height: 35px;
   width: 35px;
   border-color: black;
@@ -10,110 +10,110 @@
   outline: none;
 }
 
-.Freehand {
+.toolboxbutton--freehand {
   background: url(../../../resources/FreehandButton.svg) no-repeat;
 }
 
-.FreehandSelected {
+.toolboxbutton--freehand-selected {
   background: url(../../../resources/FreehandButtonActive.svg) no-repeat;
 }
 
-.Line {
+.toolboxbutton--line {
   background: url(../../../resources/lineButton.svg) no-repeat;
 }
 
-.LineSelected {
+.toolboxbutton--line-selected {
   background: url(../../../resources/lineButtonActive.svg) no-repeat;
 }
 
-.Curve {
+.toolboxbutton--curve {
   background: url(../../../resources/curveButton.svg) no-repeat;
 }
 
-.CurveSelected {
+.toolboxbutton--curve-selected {
   background: url(../../../resources/curveButtonActive.svg) no-repeat;
 }
 
-.Rectangle {
-  background: url(../../../resources/rectangleButton.svg) no-repeat;
-}
-
-.RectangleLowerHalfSelected {
-  background: url(../../../resources/rectangleButtonFilledActive.svg) no-repeat;
-}
-
-.RectangleUpperHalfSelected {
-  background: url(../../../resources/rectangleButtonNoFillActive.svg) no-repeat;
-}
-
-.Circle {
-  background: url(../../../resources/circleButton.svg) no-repeat;
-}
-
-.CircleLowerHalfSelected {
-  background: url(../../../resources/circleButtonFilledActive.svg) no-repeat;
-}
-
-.CircleUpperHalfSelected {
-  background: url(../../../resources/circleButtonNoFillActive.svg) no-repeat;
-}
-
-.Ellipse {
-  background: url(../../../resources/ellipseButton.svg) no-repeat;
-}
-
-.EllipseLowerHalfSelected {
-  background: url(../../../resources/ellipseButtonFilledActive.svg) no-repeat;
-}
-
-.EllipseUpperHalfSelected {
-  background: url(../../../resources/ellipseButtonNoFillActive.svg) no-repeat;
-}
-
-.FloodFill {
+.toolboxbutton--floodfill {
   background: url(../../../resources/floodfillButton.svg) no-repeat;
 }
 
-.FloodFillSelected {
+.toolboxbutton--floodfill-selected {
   background: url(../../../resources/floodfillButtonActive.svg) no-repeat;
 }
 
-.Zoom {
+.toolboxbutton--rectangle {
+  background: url(../../../resources/rectangleButton.svg) no-repeat;
+}
+
+.toolboxbutton--rectangle-lower-half-selected {
+  background: url(../../../resources/rectangleButtonFilledActive.svg) no-repeat;
+}
+
+.toolboxbutton--rectangle-upper-half-selected {
+  background: url(../../../resources/rectangleButtonNoFillActive.svg) no-repeat;
+}
+
+.toolboxbutton--circle {
+  background: url(../../../resources/circleButton.svg) no-repeat;
+}
+
+.toolboxbutton--circle-lower-half-selected {
+  background: url(../../../resources/circleButtonFilledActive.svg) no-repeat;
+}
+
+.toolboxbutton--circle-upper-half-selected {
+  background: url(../../../resources/circleButtonNoFillActive.svg) no-repeat;
+}
+
+.toolboxbutton--ellipse {
+  background: url(../../../resources/ellipseButton.svg) no-repeat;
+}
+
+.toolboxbutton--ellipse-lower-half-selected {
+  background: url(../../../resources/ellipseButtonFilledActive.svg) no-repeat;
+}
+
+.toolboxbutton--ellipse-upper-half-selected {
+  background: url(../../../resources/ellipseButtonNoFillActive.svg) no-repeat;
+}
+
+.toolboxbutton--zoom {
   background: url(../../../resources/zoomButton.svg) no-repeat;
 }
 
-.ZoomSelected {
+.toolboxbutton--zoom-selected {
   background: url(../../../resources/zoomButtonActive.svg) no-repeat;
 }
 
-.Symmetry {
+.toolboxbutton--symmetry {
   background: url(../../../resources/symmetryButton.svg) no-repeat;
 }
 
-.SymmetrySelected {
+.toolboxbutton--symmetry-selected {
   background: url(../../../resources/symmetryButtonActive.svg) no-repeat;
 }
 
-.BrushSelect {
+.toolboxbutton--brushselect {
   background: url(../../../resources/captureBrush.svg) no-repeat;
 }
 
-.BrushSelectSelected {
+.toolboxbutton--brushselect-selected {
   background: url(../../../resources/captureBrushActive.svg) no-repeat;
 }
 
-.Undo {
+.toolboxbutton--undo {
   background: url(../../../resources/undoButton.png) no-repeat;
 }
 
-.Undo:active {
+.toolboxbutton--undo:active {
   background: url(../../../resources/undoButtonActive.png) no-repeat;
 }
 
-.CLR {
+.toolboxbutton--clr {
   background: url(../../../resources/clrButton.png) no-repeat;
 }
 
-.CLR:active {
+.toolboxbutton--clr:active {
   background: url(../../../resources/clrButtonActive.png) no-repeat;
 }

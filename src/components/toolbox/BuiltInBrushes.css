@@ -1,4 +1,10 @@
-.BuiltInBrush {
+.built-in-brushes-area {
+  grid-area: builtinbrushes;
+  align-self: start;
+  padding-top: 5px;
+}
+
+.built-in-brush {
   height: 12px;
   width: 12px;
   border-style: none;
@@ -8,34 +14,34 @@
   outline: none;
 }
 
-.Brush1 {
+.brush1 {
   background: url(../../resources/brushPixel.png) no-repeat;
 }
 
-.Brush1Selected {
+.brush1--selected {
   background: url(../../resources/brushPixelActive.png) no-repeat;
 }
 
-.Brush2 {
+.brush2 {
   background: url(../../resources/brushBuiltInCross.png) no-repeat;
 }
 
-.Brush2Selected {
+.brush2--selected {
   background: url(../../resources/brushBuiltInCrossActive.png) no-repeat;
 }
 
-.Brush3 {
+.brush3 {
   background: url(../../resources/brushBuiltInDot1.png) no-repeat;
 }
 
-.Brush3Selected {
+.brush3--selected {
   background: url(../../resources/brushBuiltInDot1Active.png) no-repeat;
 }
 
-.Brush4 {
+.brush4 {
   background: url(../../resources/brushBuiltInDot2.png) no-repeat;
 }
 
-.Brush4Selected {
+.brush4--selected {
   background: url(../../resources/brushBuiltInDot2Active.png) no-repeat;
 }

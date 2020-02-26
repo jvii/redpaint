@@ -11,6 +11,7 @@ export class EllipseTool implements Tool {
 
   public onInit(canvas: HTMLCanvasElement): void {
     overmind.actions.canvas.storeInvertedCanvas(canvas);
+    overmind.actions.tool.ellipseToolReset();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -86,7 +87,6 @@ export class EllipseTool implements Tool {
     undoPoint();
     onPaint();
     this.onInit(canvas);
-    overmind.actions.tool.ellipseToolReset();
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -100,9 +100,14 @@ export class EllipseTool implements Tool {
     }
   }
 
-  // TODO: check how DPaint handles this
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    overmind.actions.tool.ellipseToolReset();
+  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
+    if (!event.buttons) {
+      this.onInit(canvas);
+    }
   }
 
   // Overlay
