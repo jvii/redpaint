@@ -20,7 +20,7 @@ function Palette(): JSX.Element {
   };
 
   return (
-    <div className="PaletteArea">
+    <div className="palette-area">
       {state.palette.paletteArray.map(
         (color, index): JSX.Element => createColorButton(color, index)
       )}

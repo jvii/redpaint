@@ -1,16 +1,18 @@
-.App {
+.app {
+  height: 100%;
   display: grid;
-  grid-template-columns: auto 70px;
-  grid-template-rows: auto 35px auto;
   grid-template-areas:
+    'menubar menubar'
+    'canvas builtinbrushes'
     'canvas toolbox'
-    'canvas colorIndicator'
-    'canvas palette';
-  cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;
+    'canvas colorindicator'
+    'canvas palette'
+    'canvas .';
 }
 
-.CanvasArea {
+.canvas-area {
   grid-area: canvas;
   overflow: hidden;
   display: flex;
+  cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;
 }

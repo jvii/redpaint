@@ -56,12 +56,14 @@ export class CircleTool implements Tool {
     overmind.actions.tool.circleToolOrigin(mousePos);
   }
 
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
+  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
     const {
+      event,
       ctx: { canvas },
     } = params;
-    overmind.actions.tool.circleToolOrigin(null);
-    this.onInit(canvas);
+    if (!event.buttons) {
+      this.onInit(canvas);
+    }
   }
 
   // Overlay

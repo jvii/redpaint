@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOvermind } from '../../overmind';
 import { colorToRGBString } from '../../tools/util';
+import './ColorIndicator.css';
 
 export function ColorIndicator(): JSX.Element {
   const { state } = useOvermind();
@@ -11,7 +12,7 @@ export function ColorIndicator(): JSX.Element {
     alignItems: 'center',
     justifyContent: 'center',
     gridArea: 'colorIndicator',
-    width: '50px',
+    width: '70px',
     height: '25px',
     borderWidth: '0px',
     padding: 0,
@@ -25,8 +26,10 @@ export function ColorIndicator(): JSX.Element {
   };
 
   return (
-    <div style={background}>
-      <div style={foreground}></div>
+    <div className="color-indicator-area">
+      <div style={background}>
+        <div style={foreground}></div>
+      </div>
     </div>
   );
 }

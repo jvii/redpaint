@@ -16,7 +16,7 @@ export function ToolboxActionButton({ buttonClass, onClick, onRightClick }: Prop
   };
   return (
     <button
-      className={'ToolboxButton ' + buttonClass}
+      className={'toolboxbutton toolboxbutton--' + buttonClass}
       onClick={onClick}
       onContextMenu={handleRightClick}
     ></button>

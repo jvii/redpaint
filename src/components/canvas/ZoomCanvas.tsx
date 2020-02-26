@@ -45,16 +45,16 @@ export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
 
   return (
     <>
-      <div className="ZoomCanvasSideBar" style={{ display: visible ? 'initial' : 'none' }}>
-        <button className="ButtonPlus" onClick={zoomIn}>
+      <div className="zoom-canvas-separator" style={{ display: visible ? 'initial' : 'none' }}>
+        <button className="zoom-canvas-separator__button-plus" onClick={zoomIn}>
           +
         </button>
-        <button className="ButtonMinus" onClick={zoomOut}>
+        <button className="zoom-canvas-separator__button-minus" onClick={zoomOut}>
           -
         </button>
       </div>
       <div
-        className="ZoomCanvasDiv"
+        className="zoom-canvas-div"
         ref={canvasDivRef}
         onScroll={updateScrollFocusPoint}
         style={{ display: visible ? 'initial' : 'none' }}

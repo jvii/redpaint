@@ -1,15 +1,15 @@
-.CanvasContainer {
+.canvas-container {
   position: relative;
 }
 
-.Canvas {
+.canvas {
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-crisp-edges;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
 
-.OverlayCanvas {
+.overlay-canvas {
   position: absolute;
   left: 0;
   top: 0;
@@ -17,20 +17,20 @@
   pointer-events: none;
 }
 
-.MainCanvasDiv {
+.main-canvas-div {
   overflow: auto;
   min-width: 50%;
   height: 100vh;
 }
 
-.ZoomCanvasDiv {
+.zoom-canvas-div {
   overflow: auto;
   min-width: 45%;
   height: 100vh;
 }
 
 /* checkered pattern from https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
-.ZoomCanvasSideBar {
+.zoom-canvas-separator {
   display: inline-block;
   height: 100vh;
   background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
@@ -41,10 +41,10 @@
   background-position: 0 0, 5px 0, 5px -5px, 0px 5px; /* Must be half of one side of the square */
 }
 
-.ButtonPlus {
+.zoom-canvas-separator__button-plus {
   display: block;
 }
 
-.ButtonMinus {
+.zoom-canvas-separator__button-minus {
   display: block;
 }

@@ -1,0 +1,6 @@
+.color-indicator-area {
+  grid-area: colorindicator;
+  display: grid;
+  justify-content: flex-end;
+  background-color: black;
+}
