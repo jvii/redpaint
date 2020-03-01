@@ -14,7 +14,7 @@ export interface Props {
 export function Toolbox({ canvasState }: Props): JSX.Element {
   const { state, actions } = useOvermind();
   return (
-    <div className="toolbox-area">
+    <div className="toolbox">
       <ToolboxToggleButton
         buttonClass="line"
         isSelected={state.toolbox.selectedDrawingToolId === 'line'}

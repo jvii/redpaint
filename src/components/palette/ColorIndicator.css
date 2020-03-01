@@ -1,4 +1,4 @@
-.color-indicator-area {
+.color-indicator {
   grid-area: colorindicator;
   display: grid;
   justify-content: flex-end;

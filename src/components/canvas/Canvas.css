@@ -9,7 +9,7 @@
   image-rendering: crisp-edges;
 }
 
-.overlay-canvas {
+.canvas--overlay {
   position: absolute;
   left: 0;
   top: 0;

@@ -26,7 +26,7 @@ export function ColorIndicator(): JSX.Element {
   };
 
   return (
-    <div className="color-indicator-area">
+    <div className="color-indicator">
       <div style={background}>
         <div style={foreground}></div>
       </div>
