@@ -1,5 +1,4 @@
 import React from 'react';
-import './toolboxButtons.css';
 
 interface Props {
   buttonClass: string;
@@ -23,10 +22,10 @@ export function ToolboxToggleButton({
   return (
     <button
       className={
-        'toolboxbutton ' +
+        'toolbox__button ' +
         (isSelected
-          ? 'toolboxbutton--' + buttonClass + '-selected'
-          : 'toolboxbutton--' + buttonClass)
+          ? 'toolbox__button--' + buttonClass + '-selected'
+          : 'toolbox__button--' + buttonClass)
       }
       onClick={onClick}
       onContextMenu={handleRightClick}

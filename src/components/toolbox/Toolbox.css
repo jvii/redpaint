@@ -1,8 +1,128 @@
-.toolbox-area {
+.toolbox {
   grid-area: toolbox;
   display: grid;
   grid-template-columns: 35px 35px;
   grid-auto-rows: 35px;
   justify-content: flex-end;
   background-color: black;
+}
+
+.toolbox__button {
+  height: 35px;
+  width: 35px;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+  padding: 0;
+  margin: 0;
+  vertical-align: top;
+  outline: none;
+}
+
+.toolbox__button--freehand {
+  background: url(../../resources/FreehandButton.svg) no-repeat;
+}
+
+.toolbox__button--freehand-selected {
+  background: url(../../resources/FreehandButtonActive.svg) no-repeat;
+}
+
+.toolbox__button--line {
+  background: url(../../resources/lineButton.svg) no-repeat;
+}
+
+.toolbox__button--line-selected {
+  background: url(../../resources/lineButtonActive.svg) no-repeat;
+}
+
+.toolbox__button--curve {
+  background: url(../../resources/curveButton.svg) no-repeat;
+}
+
+.toolbox__button--curve-selected {
+  background: url(../../resources/curveButtonActive.svg) no-repeat;
+}
+
+.toolbox__button--floodfill {
+  background: url(../../resources/floodfillButton.svg) no-repeat;
+}
+
+.toolbox__button--floodfill-selected {
+  background: url(../../resources/floodfillButtonActive.svg) no-repeat;
+}
+
+.toolbox__button--rectangle {
+  background: url(../../resources/rectangleButton.svg) no-repeat;
+}
+
+.toolbox__button--rectangle-lower-half-selected {
+  background: url(../../resources/rectangleButtonFilledActive.svg) no-repeat;
+}
+
+.toolbox__button--rectangle-upper-half-selected {
+  background: url(../../resources/rectangleButtonNoFillActive.svg) no-repeat;
+}
+
+.toolbox__button--circle {
+  background: url(../../resources/circleButton.svg) no-repeat;
+}
+
+.toolbox__button--circle-lower-half-selected {
+  background: url(../../resources/circleButtonFilledActive.svg) no-repeat;
+}
+
+.toolbox__button--circle-upper-half-selected {
+  background: url(../../resources/circleButtonNoFillActive.svg) no-repeat;
+}
+
+.toolbox__button--ellipse {
+  background: url(../../resources/ellipseButton.svg) no-repeat;
+}
+
+.toolbox__button--ellipse-lower-half-selected {
+  background: url(../../resources/ellipseButtonFilledActive.svg) no-repeat;
+}
+
+.toolbox__button--ellipse-upper-half-selected {
+  background: url(../../resources/ellipseButtonNoFillActive.svg) no-repeat;
+}
+
+.toolbox__button--zoom {
+  background: url(../../resources/zoomButton.svg) no-repeat;
+}
+
+.toolbox__button--zoom-selected {
+  background: url(../../resources/zoomButtonActive.svg) no-repeat;
+}
+
+.toolbox__button--symmetry {
+  background: url(../../resources/symmetryButton.svg) no-repeat;
+}
+
+.toolbox__button--symmetry-selected {
+  background: url(../../resources/symmetryButtonActive.svg) no-repeat;
+}
+
+.toolbox__button--brushselect {
+  background: url(../../resources/captureBrush.svg) no-repeat;
+}
+
+.toolbox__button--brushselect-selected {
+  background: url(../../resources/captureBrushActive.svg) no-repeat;
+}
+
+.toolbox__button--undo {
+  background: url(../../resources/undoButton.png) no-repeat;
+}
+
+.toolbox__button--undo:active {
+  background: url(../../resources/undoButtonActive.png) no-repeat;
+}
+
+.toolbox__button--clr {
+  background: url(../../resources/clrButton.svg) no-repeat;
+}
+
+.toolbox__button--clr:active {
+  background: url(../../resources/clrButtonActive.png) no-repeat;
 }

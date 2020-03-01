@@ -1,4 +1,4 @@
-.palette-area {
+.palette {
   grid-area: palette;
   display: grid;
   grid-template-columns: 10px 10px 10px 10px 10px 10px 10px;

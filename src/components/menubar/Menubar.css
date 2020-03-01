@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
 
-.menubar-area {
+.menubar {
   grid-area: menubar;
   border-bottom: 1px solid black;
   margin-bottom: 3px;
@@ -22,60 +22,91 @@
   margin: 10px;
 }
 
-/* The Overlay (background) */
-.overlay {
-  /* Height & width depends on how you want to reveal the overlay (see JS below) */
+.menu {
   height: 0%;
   width: 100%;
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
   left: 0;
   top: 36px;
-  background-color: rgb(201, 201, 201); /* Black fallback color */
-  background-color: rgba(17, 51, 202, 0.9); /* Black w/opacity */
+  font-family: 'Press Start 2P';
+  background-color: rgb(201, 201, 201); /* fallback color */
+  background-color: rgba(17, 51, 202, 0.9);
   overflow-y: hidden; /* Disable vertical scroll */
-  transition: 0.3s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+  transition: 0.3s;
+  display: flex;
+  margin: 0 auto;
 }
 
 /* Position the content inside the overlay */
-.overlay-content {
-  position: relative;
-  top: 25%; /* 25% from the top */
-  width: 100%; /* 100% width */
-  font-family: 'Press Start 2P';
-  text-align: center; /* Centered text/links */
-  margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+.menu__content {
+  display: grid;
+  grid-template-areas: 'image-header brush-header mode-header';
+  margin-left: 20px;
+  width: 100%;
+  margin-top: 20px;
 }
 
-/* The navigation links inside the overlay */
-.overlay a {
-  padding: 8px;
-  text-decoration: none;
+.menu__header {
+  border-bottom: white ;
+  padding-bottom: 5px;
   font-size: 32px;
   color: #ffffff;
-  display: block; /* Display block instead of inline */
-  transition: 0.3s; /* Transition effects on hover (color) */
+  margin-left: 30px;
+  margin-right: 20px;
+  margin-bottom: 15px;
 }
 
-/* When you mouse over the navigation links, change their color */
-.overlay a:hover, .overlay a:focus {
+.menu__item {
+  display: flex;
+}
+
+.menu__item-is-selected {
+  font-size: 24px;
+  width: 30px;
+  color: #ffffff;
+}
+
+.menu__item-label {
+  text-decoration: none;
+  font-size: 24px;
+  color: #ffffff;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  transition: 0.1s; /* Transition effects on hover (color) */
+}
+
+.menu__item-label:hover {
   color: #ff9900;
 }
 
-/* Position the close button (top right corner) */
-.overlay .closebtn {
-  position: absolute;
-  top: 20px;
-  right: 45px;
-  font-size: 60px;
+.menu__image {
+  grid-area: 'image-header';
 }
 
-/* When the height of the screen is less than 450 pixels, change the font-size of the links and position the close button again, so they don't overlap */
-@media screen and (max-height: 450px) {
-  .overlay a {font-size: 20px}
-  .overlay .closebtn {
-    font-size: 40px;
-    top: 15px;
-    right: 35px;
-  }
+.menu__brush {
+  grid-area: 'brush-header';
+}
+
+.menu__mode {
+  grid-area: 'mode-header';
+}
+
+.closeButtonDiv {
+  width: auto;
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+.menu__closebtn {
+  text-decoration: none;
+  color: #ffffff;
+  grid-area: close;
+  font-size: 60px;
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
+.menu__closebtn:hover {
+  color: #ff9900;
 }

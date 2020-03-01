@@ -5,7 +5,7 @@ import './BuiltInBrushes.css';
 
 export function BuiltInBrushes(): JSX.Element {
   return (
-    <div className="built-in-brushes-area">
+    <div className="built-in-brushes">
       <BrushButton brushId={1} />
       <BrushButton brushId={2} />
       <BrushButton brushId={3} />

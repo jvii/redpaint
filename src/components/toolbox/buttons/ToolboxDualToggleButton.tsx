@@ -1,5 +1,4 @@
 import React from 'react';
-import './toolboxButtons.css';
 
 interface Props {
   buttonClass: string;
@@ -31,7 +30,10 @@ export function ToolboxDualToggleButton({
     modifier = modifier + '-upper-half-selected';
   }
   return (
-    <button className={'toolboxbutton toolboxbutton--' + modifier} onClick={handleClick}></button>
+    <button
+      className={'toolbox__button toolbox__button--' + modifier}
+      onClick={handleClick}
+    ></button>
   );
 }
 
