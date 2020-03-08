@@ -1,10 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
-import { useInitTool, useUndo } from './hooks';
+import { useInitTool, useUndo, useFillStyle } from './hooks';
 import { useOvermind } from '../../overmind';
-import { getEventHandler, getEventHandlerOverlay, colorToRGBString } from '../../tools/util';
+import { getEventHandler, getEventHandlerOverlay } from '../../tools/util';
 import { EventHandlerParams, OverlayEventHandlerParams } from '../../tools/Tool';
-import { setFillStyleOnMouseUp, setFillStyleOnMouseDown } from './util';
 import './Canvas.css';
 
 interface Props {
@@ -34,13 +33,20 @@ export function Canvas({
   useUndo(canvasRef.current);
   useInitTool(canvasRef.current, isZoomCanvas);
 
-  const canvasCtx = canvasRef.current.getContext('2d');
-  const overlayCanvasCtx = overlayCanvasRef.current.getContext('2d');
+  const canvasCtx = canvasRef.current.getContext('2d', {
+    alpha: false,
+    desynchronized: true,
+  }) as CanvasRenderingContext2D | null;
+  const overlayCanvasCtx = overlayCanvasRef.current.getContext('2d', {
+    alpha: true,
+    desynchronized: true,
+  }) as CanvasRenderingContext2D | null;
+
+  useFillStyle(canvasCtx);
+  useFillStyle(overlayCanvasCtx);
   if (!canvasCtx || !overlayCanvasCtx) {
     return null; // no render
   }
-  canvasCtx.fillStyle = colorToRGBString(state.palette.foregroundColor);
-  overlayCanvasCtx.fillStyle = colorToRGBString(state.palette.foregroundColor);
 
   const eventHandlerParams: EventHandlerParams = {
     ctx: canvasCtx,
@@ -81,14 +87,10 @@ export function Canvas({
         onMouseDown={(event): void => {
           getEventHandler(tool, 'onMouseDown', eventHandlerParams)(event);
           getEventHandlerOverlay(tool, 'onMouseDownOverlay', eventHandlerParamsOverlay)(event);
-          setFillStyleOnMouseDown(event, canvasCtx);
-          setFillStyleOnMouseDown(event, overlayCanvasCtx);
         }}
         onMouseUp={(event): void => {
           getEventHandler(tool, 'onMouseUp', eventHandlerParams)(event);
           getEventHandlerOverlay(tool, 'onMouseUpOverlay', eventHandlerParamsOverlay)(event);
-          setFillStyleOnMouseUp(event, canvasCtx);
-          setFillStyleOnMouseUp(event, overlayCanvasCtx);
         }}
         onMouseEnter={(event): void => {
           getEventHandler(tool, 'onMouseEnter', eventHandlerParams)(event);

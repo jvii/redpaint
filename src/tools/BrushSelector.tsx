@@ -4,7 +4,7 @@ import { CustomBrush } from '../brush/CustomBrush';
 import { overmind } from '../index';
 
 export class BrushSelector implements Tool {
-  public onInit(canvas: HTMLCanvasElement): void {
+  public reset(canvas: HTMLCanvasElement): void {
     overmind.actions.tool.brushSelectionStart(null);
     overmind.actions.canvas.storeInvertedCanvas(canvas);
   }
@@ -72,6 +72,7 @@ export class BrushSelector implements Tool {
 
     const brush = new CustomBrush(bufferCanvas.toDataURL());
     overmind.actions.brush.setBrush(brush);
+    overmind.actions.brush.setMode('Matte');
 
     // exit brush selection tool
     overmind.actions.toolbox.toggleBrushSelectionMode();
@@ -103,7 +104,7 @@ export class BrushSelector implements Tool {
     const start = overmind.state.tool.brushSelectorTool.start;
     const mousePos = getMousePos(canvas, event);
     if (!start) {
-      edgeToEdgeCrosshair(canvas, mousePos);
+      edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }

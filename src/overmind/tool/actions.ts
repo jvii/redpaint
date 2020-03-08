@@ -1,5 +1,23 @@
 import { Action } from 'overmind';
 import { Point } from '../../types';
+import { colorToRGBString } from '../../tools/util';
+
+export const activeToolToFGFillStyle: Action = ({ state }): void => {
+  const fillStyle = state.tool.activeToolFillStyle;
+  if (!fillStyle) {
+    return;
+  }
+  fillStyle.effective = colorToRGBString(state.palette.foregroundColor);
+};
+
+export const activeToolToBGFillStyle: Action = ({ state }): void => {
+  const fillStyle = state.tool.activeToolFillStyle;
+  if (!fillStyle) {
+    return;
+  }
+  console.log('setting effective fillStyle');
+  fillStyle.effective = colorToRGBString(state.palette.backgroundColor);
+};
 
 // freehand
 
@@ -33,6 +51,8 @@ export const curveToolReset: Action = ({ state }): void => {
 export const rectangleToolStart: Action<Point | null> = ({ state }, point): void => {
   state.tool.rectangleTool.start = point;
 };
+
+// circle
 
 export const circleToolOrigin: Action<Point | null> = ({ state }, point): void => {
   state.tool.circleTool.origin = point;

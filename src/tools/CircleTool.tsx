@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
+import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair, isRightMouseButton } from './util';
 import { distance } from '../algorithm/draw';
 import { overmind } from '../index';
 
@@ -10,9 +10,18 @@ export class CircleTool implements Tool {
 
   private filled: boolean;
 
-  public onInit(canvas: HTMLCanvasElement): void {
-    overmind.actions.tool.circleToolOrigin(null);
+  public reset(canvas: HTMLCanvasElement): void {
     overmind.actions.canvas.storeInvertedCanvas(canvas);
+    overmind.actions.tool.circleToolOrigin(null);
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
+  }
+
+  public prepare(withBGColor: boolean): void {
+    if (withBGColor) {
+      overmind.actions.tool.activeToolToBGFillStyle();
+      overmind.actions.brush.toBGBrush();
+    }
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -44,7 +53,7 @@ export class CircleTool implements Tool {
     }
     undoPoint();
     onPaint();
-    this.onInit(canvas);
+    this.reset(canvas);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -52,6 +61,7 @@ export class CircleTool implements Tool {
       event,
       ctx: { canvas },
     } = params;
+    this.prepare(isRightMouseButton(event));
     const mousePos = getMousePos(canvas, event);
     overmind.actions.tool.circleToolOrigin(mousePos);
   }
@@ -62,7 +72,7 @@ export class CircleTool implements Tool {
       ctx: { canvas },
     } = params;
     if (!event.buttons) {
-      this.onInit(canvas);
+      this.reset(canvas);
     }
   }
 
@@ -85,7 +95,7 @@ export class CircleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
-      edgeToEdgeCrosshair(canvas, mousePos);
+      edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }

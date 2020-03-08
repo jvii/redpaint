@@ -1,6 +1,7 @@
 import { Point, Color } from '../types';
 import { Tool, EventHandlerParams, OverlayEventHandlerParams } from './Tool';
 import { overmind } from '../index';
+import { CustomBrush } from '../brush/CustomBrush';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -47,8 +48,10 @@ export function clearCanvas(canvas: HTMLCanvasElement, color: Color): void {
     return;
   }
   ctx.rect(0, 0, canvas.width, canvas.height);
+  const oldFillStyle = ctx.fillStyle;
   ctx.fillStyle = colorToRGBString(color);
   ctx.fill();
+  ctx.fillStyle = oldFillStyle;
 }
 
 export function clearOverlayCanvas(canvas: HTMLCanvasElement): void {
@@ -110,15 +113,51 @@ export function isLeftMouseButton(event: React.MouseEvent<HTMLCanvasElement, Mou
   return event.button === 1 || event.buttons === 1;
 }
 
-export function edgeToEdgeCrosshair(canvas: HTMLCanvasElement, position: Point): void {
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    return;
-  }
+export function isLeftOrRightMouseButton(
+  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
+): boolean {
+  return isLeftMouseButton(event) || isRightMouseButton(event);
+}
+
+export function edgeToEdgeCrosshair(ctx: CanvasRenderingContext2D, position: Point): void {
   if (overmind.state.canvas.invertedCanvas) {
     ctx.fillStyle = overmind.state.canvas.invertedCanvas;
   }
 
-  ctx.fillRect(position.x, 0, 1, canvas.height);
-  ctx.fillRect(0, position.y, canvas.width, 1);
+  ctx.fillRect(position.x, 0, 1, ctx.canvas.height);
+  ctx.fillRect(0, position.y, ctx.canvas.width, 1);
+  ctx.fillStyle = overmind.state.canvas.fillStyle;
+}
+
+export function setFillStyleOnMouseDown(
+  event: React.MouseEvent,
+  ctx: CanvasRenderingContext2D
+): void {
+  if (event.button === 0) {
+    ctx.fillStyle = colorToRGBString(overmind.state.palette.foregroundColor);
+    if (
+      overmind.state.brush.mode === 'Color' &&
+      overmind.state.brush.brush instanceof CustomBrush
+    ) {
+      overmind.state.brush.brush.toFGColor();
+    }
+  }
+  if (event.button === 2) {
+    ctx.fillStyle = colorToRGBString(overmind.state.palette.backgroundColor);
+    console.log('button 2');
+    if (
+      overmind.state.brush.mode === 'Color' &&
+      overmind.state.brush.brush instanceof CustomBrush
+    ) {
+      console.log('toBg');
+      overmind.state.brush.brush.toBGColor();
+    }
+  }
+}
+
+export function setFillStyleOnMouseUp(ctx: CanvasRenderingContext2D): void {
+  ctx.fillStyle = colorToRGBString(overmind.state.palette.foregroundColor);
+  if (overmind.state.brush.mode === 'Color' && overmind.state.brush.brush instanceof CustomBrush) {
+    overmind.state.brush.brush.toFGColor();
+  }
 }
