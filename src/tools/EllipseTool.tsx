@@ -1,5 +1,11 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isLeftMouseButton, edgeToEdgeCrosshair } from './util';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  isLeftMouseButton,
+  edgeToEdgeCrosshair,
+  isRightMouseButton,
+} from './util';
 import { overmind } from '../index';
 
 export class EllipseTool implements Tool {
@@ -9,9 +15,18 @@ export class EllipseTool implements Tool {
 
   private filled: boolean;
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public reset(canvas: HTMLCanvasElement): void {
     overmind.actions.canvas.storeInvertedCanvas(canvas);
     overmind.actions.tool.ellipseToolReset();
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
+  }
+
+  public prepare(withBGColor: boolean): void {
+    if (withBGColor) {
+      overmind.actions.tool.activeToolToBGFillStyle();
+      overmind.actions.brush.toBGBrush();
+    }
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -86,7 +101,7 @@ export class EllipseTool implements Tool {
     }
     undoPoint();
     onPaint();
-    this.onInit(canvas);
+    this.reset(canvas);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -97,6 +112,7 @@ export class EllipseTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     if (!overmind.state.tool.ellipseTool.origin) {
       overmind.actions.tool.ellipseToolOrigin(mousePos);
+      this.prepare(isRightMouseButton(event));
     }
   }
 
@@ -106,7 +122,7 @@ export class EllipseTool implements Tool {
       ctx: { canvas },
     } = params;
     if (!event.buttons) {
-      this.onInit(canvas);
+      this.reset(canvas);
     }
   }
 
@@ -129,7 +145,7 @@ export class EllipseTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
-      edgeToEdgeCrosshair(canvas, mousePos);
+      edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }

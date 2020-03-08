@@ -1,5 +1,5 @@
 import { Brush } from './Brush';
-import { Point } from '../types';
+import { Point, Color } from '../types';
 import {
   line,
   unfilledRect,
@@ -11,9 +11,21 @@ import {
   filledEllipse,
 } from '../algorithm/draw';
 import { overmind } from '../index';
+import { colorToRGBString } from '../tools/util';
 
-export class CustomBrush implements Brush {
+interface Colorizable {
+  setFGColor(color: Color): void;
+  setBGColor(color: Color): void;
+  toFGColor(): void;
+  toBGColor(): void;
+  toMatte(): void;
+}
+
+export class CustomBrush implements Brush, Colorizable {
   private brushImage = new Image();
+  private brushImageMatte = new Image();
+  private brushImageColorFG = new Image();
+  private brushImageColorBG = new Image();
   private width = 0;
   private heigth = 0;
   public constructor(dataURL: string) {
@@ -21,7 +33,56 @@ export class CustomBrush implements Brush {
     this.brushImage.onload = (): void => {
       this.width = this.brushImage.width;
       this.heigth = this.brushImage.height;
+      this.setFGColor(overmind.state.palette.foregroundColor);
+      this.setBGColor(overmind.state.palette.backgroundColor);
     };
+    this.brushImageMatte = this.brushImage;
+  }
+
+  public setFGColor(color: Color): void {
+    const bufferCanvas = document.createElement('canvas');
+    bufferCanvas.width = Math.abs(this.width);
+    bufferCanvas.height = Math.abs(this.heigth);
+
+    const ctx = bufferCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(color);
+    ctx.fillRect(0, 0, this.width, this.heigth);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(this.brushImage, 0, 0);
+    this.brushImageColorFG.src = bufferCanvas.toDataURL();
+  }
+
+  public setBGColor(color: Color): void {
+    const bufferCanvas = document.createElement('canvas');
+    bufferCanvas.width = Math.abs(this.width);
+    bufferCanvas.height = Math.abs(this.heigth);
+
+    const ctx = bufferCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(color);
+    ctx.fillRect(0, 0, this.width, this.heigth);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(this.brushImage, 0, 0);
+    this.brushImageColorBG.src = bufferCanvas.toDataURL();
+  }
+
+  public toFGColor(): void {
+    this.brushImage = this.brushImageColorFG;
+  }
+
+  public toBGColor(): void {
+    this.brushImage = this.brushImageColorBG;
+  }
+
+  public toMatte(): void {
+    this.brushImage = this.brushImageMatte;
   }
 
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {

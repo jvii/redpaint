@@ -6,10 +6,19 @@ import { blobToCanvas } from './util';
 export function useInitTool(canvas: HTMLCanvasElement, isZoomCanvas: boolean): void {
   const { state } = useOvermind();
   useEffect((): void => {
-    if (typeof state.toolbox.activeTool.onInit !== 'undefined' && !isZoomCanvas) {
-      state.toolbox.activeTool.onInit(canvas);
+    if (typeof state.toolbox.activeTool.reset !== 'undefined' && !isZoomCanvas) {
+      state.toolbox.activeTool.reset(canvas);
     }
   }, [state.toolbox.activeTool]);
+}
+
+export function useFillStyle(ctx: CanvasRenderingContext2D | null): void {
+  const { state } = useOvermind();
+  useEffect((): void => {
+    if (ctx) {
+      ctx.fillStyle = state.canvas.fillStyle;
+    }
+  }, [state.canvas.fillStyle]);
 }
 
 export function useUndo(canvas: HTMLCanvasElement): void {

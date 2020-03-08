@@ -1,4 +1,6 @@
 import { Point } from '../../types';
+import { Derive } from 'overmind';
+import { colorToRGBString } from '../../tools/util';
 
 export type State = {
   resolution: { width: number; height: number };
@@ -13,6 +15,7 @@ export type State = {
     lastModifiedOverlay: number;
   };
   invertedCanvas: CanvasPattern | null;
+  fillStyle: Derive<State, string>;
 };
 
 export const state: State = {
@@ -22,4 +25,10 @@ export const state: State = {
   mainCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
   zoomCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
   invertedCanvas: null,
+  fillStyle: (state, rootState): string => {
+    if (rootState.tool.activeToolFillStyle) {
+      return rootState.tool.activeToolFillStyle.effective;
+    }
+    return colorToRGBString(rootState.palette.foregroundColor);
+  },
 };

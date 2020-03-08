@@ -1,8 +1,26 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  isRightMouseButton,
+  isLeftOrRightMouseButton,
+} from './util';
 import { overmind } from '../index';
 
 export class CurveTool implements Tool {
+  public reset(canvas: HTMLCanvasElement): void {
+    overmind.actions.tool.curveToolReset();
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
+  }
+
+  public prepare(withBGColor: boolean): void {
+    if (withBGColor) {
+      overmind.actions.tool.activeToolToBGFillStyle();
+      overmind.actions.brush.toBGBrush();
+    }
+  }
+
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
     const { event } = params;
     event.preventDefault();
@@ -29,7 +47,7 @@ export class CurveTool implements Tool {
       overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
       undoPoint();
       onPaint();
-      overmind.actions.tool.curveToolReset();
+      this.reset(canvas);
     } else {
       overmind.actions.tool.curveToolEnd(mousePos);
     }
@@ -42,6 +60,7 @@ export class CurveTool implements Tool {
     } = params;
 
     if (!overmind.state.tool.curveTool.end) {
+      this.prepare(isRightMouseButton(event));
       const mousePos = getMousePos(canvas, event);
       overmind.actions.tool.curveToolStart(mousePos);
     }
@@ -70,7 +89,7 @@ export class CurveTool implements Tool {
     const endPoint = overmind.state.tool.curveTool.end;
     if (endPoint) {
       overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
-    } else if (isLeftMouseButton(event)) {
+    } else if (isLeftOrRightMouseButton(event)) {
       overmind.state.brush.brush.drawLine(ctx, startPoint, mousePos);
     }
     onPaint();

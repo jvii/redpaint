@@ -27,7 +27,7 @@ export function Menubar(): JSX.Element {
         <p className="menubar__title">ReDPaint</p>
         <p className="menubar__mode-indicator">{mode}</p>
       </div>
-      <div className="menu" ref={overlayRef}>
+      <div className="menu" ref={overlayRef} onMouseLeave={close} onContextMenu={close}>
         <div className="menu__content">
           <div className="menu__image">
             <div className="menu__header">Image</div>

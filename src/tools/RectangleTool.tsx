@@ -1,5 +1,5 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
+import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair, isRightMouseButton } from './util';
 import { overmind } from '../index';
 
 export class RectangleTool implements Tool {
@@ -9,9 +9,18 @@ export class RectangleTool implements Tool {
 
   private filled: boolean;
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public reset(canvas: HTMLCanvasElement): void {
     overmind.actions.canvas.storeInvertedCanvas(canvas);
     overmind.actions.tool.rectangleToolStart(null);
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
+  }
+
+  public prepare(withBGColor: boolean): void {
+    if (withBGColor) {
+      overmind.actions.tool.activeToolToBGFillStyle();
+      overmind.actions.brush.toBGBrush();
+    }
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -42,7 +51,7 @@ export class RectangleTool implements Tool {
     }
     undoPoint();
     onPaint();
-    this.onInit(canvas);
+    this.reset(canvas);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -50,6 +59,7 @@ export class RectangleTool implements Tool {
       event,
       ctx: { canvas },
     } = params;
+    this.prepare(isRightMouseButton(event));
     const mousePos = getMousePos(canvas, event);
     overmind.actions.tool.rectangleToolStart(mousePos);
   }
@@ -60,7 +70,7 @@ export class RectangleTool implements Tool {
       ctx: { canvas },
     } = params;
     if (!event.buttons) {
-      this.onInit(canvas);
+      this.reset(canvas);
     }
   }
 
@@ -83,7 +93,7 @@ export class RectangleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
-      edgeToEdgeCrosshair(canvas, mousePos);
+      edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }
