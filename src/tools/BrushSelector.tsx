@@ -4,7 +4,7 @@ import { CustomBrush } from '../brush/CustomBrush';
 import { overmind } from '../index';
 
 export class BrushSelector implements Tool {
-  public reset(canvas: HTMLCanvasElement): void {
+  public onInit(canvas: HTMLCanvasElement): void {
     overmind.actions.tool.brushSelectionStart(null);
     overmind.actions.canvas.storeInvertedCanvas(canvas);
   }
