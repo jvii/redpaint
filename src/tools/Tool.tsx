@@ -18,9 +18,7 @@ export interface OverlayEventHandlerParamsWithEvent extends OverlayEventHandlerP
 }
 
 export interface Tool {
-  reset?(canvas: HTMLCanvasElement): void;
-  prepare?(withBGColor: boolean): void;
-  // event handlers
+  onInit?(canvas: HTMLCanvasElement): void;
   onClick?(params: EventHandlerParamsWithEvent): void;
   onContextMenu?(params: EventHandlerParamsWithEvent): void;
   onMouseMove?(params: EventHandlerParamsWithEvent): void;

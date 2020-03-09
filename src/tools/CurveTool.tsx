@@ -11,13 +11,13 @@ import { overmind } from '../index';
 export class CurveTool implements Tool {
   private throttle = new Throttle(50);
 
-  public reset(canvas: HTMLCanvasElement): void {
+  public onInit(canvas: HTMLCanvasElement): void {
     overmind.actions.tool.curveToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public prepare(withBGColor: boolean): void {
+  public prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
       overmind.actions.brush.toBGBrush();
@@ -50,7 +50,7 @@ export class CurveTool implements Tool {
       overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
       undoPoint();
       onPaint();
-      this.reset(canvas);
+      this.onInit(canvas);
     } else {
       overmind.actions.tool.curveToolEnd(mousePos);
     }
@@ -63,7 +63,7 @@ export class CurveTool implements Tool {
     } = params;
 
     if (!overmind.state.tool.curveTool.end) {
-      this.prepare(isRightMouseButton(event));
+      this.prepareToPaint(isRightMouseButton(event));
       const mousePos = getMousePos(canvas, event);
       overmind.actions.tool.curveToolStart(mousePos);
     }

@@ -3,16 +3,16 @@ import { getMousePos, clearOverlayCanvas, colorToRGBString, isRightMouseButton }
 import { overmind } from '../index';
 
 export class FreehandTool implements Tool {
-  public reset(canvas: HTMLCanvasElement): void {
-    overmind.actions.tool.activeToolToFGFillStyle();
-    overmind.actions.brush.toFGBrush();
-  }
-
-  public prepare(withBGColor: boolean): void {
+  private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
       overmind.actions.brush.toBGBrush();
     }
+  }
+
+  public onInit(canvas: HTMLCanvasElement): void {
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -47,7 +47,7 @@ export class FreehandTool implements Tool {
     } = params;
 
     const mousePos = getMousePos(canvas, event);
-    this.prepare(isRightMouseButton(event));
+    this.prepareToPaint(isRightMouseButton(event));
     overmind.state.brush.brush.drawDot(ctx, mousePos);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
@@ -55,7 +55,7 @@ export class FreehandTool implements Tool {
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const { ctx, undoPoint } = params;
-    this.reset(ctx.canvas);
+    this.onInit(ctx.canvas);
     overmind.actions.tool.freeHandToolPrevious(null);
     undoPoint();
   }

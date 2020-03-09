@@ -5,26 +5,24 @@ import { Throttle } from './Throttle';
 import { overmind } from '../index';
 
 export class CircleTool implements Tool {
-  private throttle = new Throttle(50);
-
   public constructor(filled: boolean) {
     this.filled = filled;
   }
-
   private filled: boolean;
+  private throttle = new Throttle(50);
 
-  public reset(canvas: HTMLCanvasElement): void {
-    overmind.actions.canvas.storeInvertedCanvas(canvas);
-    overmind.actions.tool.circleToolOrigin(null);
-    overmind.actions.tool.activeToolToFGFillStyle();
-    overmind.actions.brush.toFGBrush();
-  }
-
-  public prepare(withBGColor: boolean): void {
+  private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
       overmind.actions.brush.toBGBrush();
     }
+  }
+
+  public onInit(canvas: HTMLCanvasElement): void {
+    overmind.actions.canvas.storeInvertedCanvas(canvas);
+    overmind.actions.tool.circleToolOrigin(null);
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -56,7 +54,7 @@ export class CircleTool implements Tool {
     }
     undoPoint();
     onPaint();
-    this.reset(canvas);
+    this.onInit(canvas);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -64,7 +62,7 @@ export class CircleTool implements Tool {
       event,
       ctx: { canvas },
     } = params;
-    this.prepare(isRightMouseButton(event));
+    this.prepareToPaint(isRightMouseButton(event));
     const mousePos = getMousePos(canvas, event);
     overmind.actions.tool.circleToolOrigin(mousePos);
   }
@@ -75,7 +73,7 @@ export class CircleTool implements Tool {
       ctx: { canvas },
     } = params;
     if (!event.buttons) {
-      this.reset(canvas);
+      this.onInit(canvas);
     }
   }
 
