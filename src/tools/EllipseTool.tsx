@@ -6,9 +6,12 @@ import {
   edgeToEdgeCrosshair,
   isRightMouseButton,
 } from './util';
+import { Throttle } from './Throttle';
 import { overmind } from '../index';
 
 export class EllipseTool implements Tool {
+  private throttle = new Throttle(50);
+
   public constructor(filled: boolean) {
     this.filled = filled;
   }
@@ -135,12 +138,12 @@ export class EllipseTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
+      clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
@@ -157,21 +160,27 @@ export class EllipseTool implements Tool {
     const angle = overmind.state.tool.ellipseTool.angle;
 
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledEllipse(
-        ctx,
-        origin,
-        radiusX ? radiusX : newRadiusX,
-        radiusY ? radiusY : newRadiusY,
-        angle
-      );
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawFilledEllipse(
+          ctx,
+          origin,
+          radiusX ? radiusX : newRadiusX,
+          radiusY ? radiusY : newRadiusY,
+          angle
+        );
+      });
     } else {
-      overmind.state.brush.brush.drawUnfilledEllipse(
-        ctx,
-        origin,
-        radiusX ? radiusX : newRadiusX,
-        radiusY ? radiusY : newRadiusY,
-        angle
-      );
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawUnfilledEllipse(
+          ctx,
+          origin,
+          radiusX ? radiusX : newRadiusX,
+          radiusY ? radiusY : newRadiusY,
+          angle
+        );
+      });
     }
     onPaint();
   }
