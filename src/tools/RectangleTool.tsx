@@ -1,8 +1,11 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
 import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair, isRightMouseButton } from './util';
+import { Throttle } from './Throttle';
 import { overmind } from '../index';
 
 export class RectangleTool implements Tool {
+  private throttle = new Throttle(50);
+
   public constructor(filled: boolean) {
     this.filled = filled;
   }
@@ -83,12 +86,12 @@ export class RectangleTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
 
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {
+      clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
@@ -99,9 +102,15 @@ export class RectangleTool implements Tool {
     }
 
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledRect(ctx, startPoint, mousePos);
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawFilledRect(ctx, startPoint, mousePos);
+      });
     } else {
-      overmind.state.brush.brush.drawUnfilledRect(ctx, startPoint, mousePos);
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawUnfilledRect(ctx, startPoint, mousePos);
+      });
     }
     onPaint();
   }

@@ -5,9 +5,12 @@ import {
   isRightMouseButton,
   isLeftOrRightMouseButton,
 } from './util';
+import { Throttle } from './Throttle';
 import { overmind } from '../index';
 
 export class CurveTool implements Tool {
+  private throttle = new Throttle(50);
+
   public reset(canvas: HTMLCanvasElement): void {
     overmind.actions.tool.curveToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
@@ -75,12 +78,11 @@ export class CurveTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    clearOverlayCanvas(canvas);
-
     const mousePos = getMousePos(canvas, event);
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
+      clearOverlayCanvas(canvas);
       overmind.state.brush.brush.drawDot(ctx, mousePos);
       onPaint();
       return;
@@ -88,9 +90,15 @@ export class CurveTool implements Tool {
 
     const endPoint = overmind.state.tool.curveTool.end;
     if (endPoint) {
-      overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
+      });
     } else if (isLeftOrRightMouseButton(event)) {
-      overmind.state.brush.brush.drawLine(ctx, startPoint, mousePos);
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawLine(ctx, startPoint, mousePos);
+      });
     }
     onPaint();
   }
