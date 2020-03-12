@@ -7,6 +7,9 @@ type ToolFillStyle = {
 };
 
 export type State = {
+  dottedFreehandTool: {
+    fillStyle: ToolFillStyle;
+  };
   freehandTool: {
     previous: Point | null;
     fillStyle: ToolFillStyle;
@@ -40,6 +43,7 @@ export type State = {
 };
 
 export const state: State = {
+  dottedFreehandTool: { fillStyle: { effective: '', stored: '' } },
   freehandTool: { previous: null, fillStyle: { effective: '', stored: '' } },
   lineTool: { start: null, fillStyle: { effective: '', stored: '' } },
   curveTool: { start: null, end: null, fillStyle: { effective: '', stored: '' } },
@@ -54,6 +58,9 @@ export const state: State = {
   },
   brushSelectorTool: { start: null },
   activeToolFillStyle: (state, rootState): ToolFillStyle | null => {
+    if (rootState.toolbox.selectedDrawingToolId === 'dottedFreehand') {
+      return rootState.tool.freehandTool.fillStyle;
+    }
     if (rootState.toolbox.selectedDrawingToolId === 'freeHand') {
       return rootState.tool.freehandTool.fillStyle;
     }

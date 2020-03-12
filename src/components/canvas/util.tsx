@@ -1,6 +1,4 @@
-import { clearCanvas, colorToRGBString } from '../../tools/util';
-import { overmind } from '../../index';
-import { CustomBrush } from '../../brush/CustomBrush';
+import { clearCanvas } from '../../tools/util';
 
 export function cloneCanvas(
   sourceCanvas: HTMLCanvasElement,

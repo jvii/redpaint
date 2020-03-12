@@ -12,6 +12,7 @@ export const toggleZoomMode: Action = ({ state, actions }): void => {
     case 'off':
       state.toolbox.zoomModeState = 'selectingInitialPoint';
       state.toolbox.brushSelectionModeOn = false; // can't be selecting brush while selecting zoom point
+      state.toolbox.symmetryModeOn = false;
       break;
     case 'selectingInitialPoint':
       state.toolbox.zoomModeState = 'off';
@@ -31,9 +32,12 @@ export const toggleBrushSelectionMode: Action = ({ state }): void => {
   if (state.toolbox.zoomModeState === 'selectingInitialPoint') {
     state.toolbox.zoomModeState = 'off'; // can't be selecting zoom point while selecting brush
   }
+
+  state.toolbox.symmetryModeOn = false;
 };
 
 export const toggleSymmetryMode: Action = ({ state }): void => {
   const oldState = state.toolbox.symmetryModeOn;
   state.toolbox.symmetryModeOn = oldState ? false : true;
+  state.toolbox.brushSelectionModeOn = false;
 };

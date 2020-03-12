@@ -19,6 +19,14 @@
   outline: none;
 }
 
+.toolbox__button--dottedfreehand {
+  background: url(../../resources/dottedFreehandButton.svg) no-repeat;
+}
+
+.toolbox__button--dottedfreehand-selected {
+  background: url(../../resources/dottedFreehandButtonActive.svg) no-repeat;
+}
+
 .toolbox__button--freehand {
   background: url(../../resources/FreehandButton.svg) no-repeat;
 }

@@ -1,8 +1,12 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util';
+import { getMousePos, clearOverlayCanvas, selectionBox } from './util';
 import { overmind } from '../index';
 
 export class ZoomInitialPointSelectorTool implements Tool {
+  public onInit(canvas: HTMLCanvasElement): void {
+    overmind.actions.canvas.storeInvertedCanvas(canvas);
+  }
+
   public onClick(params: EventHandlerParamsWithEvent): void {
     const {
       event,
@@ -22,18 +26,16 @@ export class ZoomInitialPointSelectorTool implements Tool {
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       event,
+      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
     clearOverlayCanvas(canvas);
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
     const mousePos = getMousePos(canvas, event);
-    ctx.strokeRect(mousePos.x - 30, mousePos.y - 30, 60, 60);
+    const start = { x: mousePos.x - 30, y: mousePos.y - 30 };
+    const end = { x: mousePos.x + 30, y: mousePos.y + 30 };
+    selectionBox(ctx, start, end);
     onPaint();
   }
 

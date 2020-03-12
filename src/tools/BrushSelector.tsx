@@ -1,6 +1,11 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, edgeToEdgeCrosshair } from './util';
-import { CustomBrush } from '../brush/CustomBrush';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  edgeToEdgeCrosshair,
+  extractBrush,
+  selectionBox,
+} from './util';
 import { overmind } from '../index';
 
 export class BrushSelector implements Tool {
@@ -29,48 +34,7 @@ export class BrushSelector implements Tool {
     const width = mousePos.x - start.x;
     const height = mousePos.y - start.y;
 
-    let bufferCanvas = document.createElement('canvas');
-    bufferCanvas.width = Math.abs(width);
-    bufferCanvas.height = Math.abs(height);
-
-    const bufferCanvasCtx = bufferCanvas.getContext('2d');
-    if (!bufferCanvasCtx) {
-      return;
-    }
-    bufferCanvasCtx.drawImage(
-      canvas,
-      start.x,
-      start.y,
-      width,
-      height,
-      0,
-      0,
-      bufferCanvas.width,
-      bufferCanvas.height
-    );
-
-    const transCode =
-      overmind.state.palette.backgroundColor.r * 0x00000001 +
-      overmind.state.palette.backgroundColor.g * 0x00000100 +
-      overmind.state.palette.backgroundColor.b * 0x00010000 +
-      255 * 0x01000000;
-
-    // from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja
-    let theImageData = bufferCanvasCtx.getImageData(0, 0, bufferCanvas.width, bufferCanvas.height),
-      theImageDataBufferTMP = new ArrayBuffer(theImageData.data.length),
-      theImageDataClamped8TMP = new Uint8ClampedArray(theImageDataBufferTMP),
-      theImageDataUint32TMP = new Uint32Array(theImageDataBufferTMP),
-      n = theImageDataUint32TMP.length;
-    theImageDataClamped8TMP.set(theImageData.data);
-
-    imgDataLoop: while (n--) {
-      if (theImageDataUint32TMP[n] !== transCode) continue imgDataLoop;
-      theImageDataUint32TMP[n] = 0x00000000; // make it transparent
-    }
-    theImageData.data.set(theImageDataClamped8TMP);
-    bufferCanvasCtx.putImageData(theImageData, 0, 0);
-
-    const brush = new CustomBrush(bufferCanvas.toDataURL());
+    const brush = extractBrush(canvas, start, width, height);
     overmind.actions.brush.setBrush(brush);
     overmind.actions.brush.setMode('Matte');
 
@@ -101,17 +65,16 @@ export class BrushSelector implements Tool {
     } = params;
     clearOverlayCanvas(canvas);
 
-    const start = overmind.state.tool.brushSelectorTool.start;
     const mousePos = getMousePos(canvas, event);
+
+    const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
       edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }
 
-    const width = mousePos.x - start.x;
-    const height = mousePos.y - start.y;
-    ctx.strokeRect(start.x, start.y, width, height);
+    selectionBox(ctx, start, mousePos);
     onPaint();
   }
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOvermind } from '../../overmind';
-import { BuiltInBrushId } from '../../brush/BuiltInBrushes';
+import { BuiltInBrushId } from '../../overmind/brush/state';
 import './BuiltInBrushes.css';
 
 export function BuiltInBrushes(): JSX.Element {

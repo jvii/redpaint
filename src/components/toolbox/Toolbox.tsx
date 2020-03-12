@@ -16,14 +16,19 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
   return (
     <div className="toolbox">
       <ToolboxToggleButton
-        buttonClass="line"
-        isSelected={state.toolbox.selectedDrawingToolId === 'line'}
-        onClick={(): void => actions.toolbox.setSelectedDrawingTool('line')}
+        buttonClass="dottedfreehand"
+        isSelected={state.toolbox.selectedDrawingToolId === 'dottedFreehand'}
+        onClick={(): void => actions.toolbox.setSelectedDrawingTool('dottedFreehand')}
       />
       <ToolboxToggleButton
         buttonClass="freehand"
         isSelected={state.toolbox.selectedDrawingToolId === 'freeHand'}
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('freeHand')}
+      />
+      <ToolboxToggleButton
+        buttonClass="line"
+        isSelected={state.toolbox.selectedDrawingToolId === 'line'}
+        onClick={(): void => actions.toolbox.setSelectedDrawingTool('line')}
       />
       <ToolboxToggleButton
         buttonClass="curve"
