@@ -8,11 +8,13 @@ import { BrushSelector } from '../../tools/BrushSelector';
 import { CircleTool } from '../../tools/CircleTool';
 import { CurveTool } from '../../tools/CurveTool';
 import { EllipseTool } from '../../tools/EllipseTool';
+import { DottedFreehandTool } from '../../tools/DottedFreehand';
 
 const filled = true;
 const noFill = false;
 
 const drawingTools = {
+  dottedFreehand: new DottedFreehandTool(),
   freeHand: new FreehandTool(),
   line: new LineTool(),
   curve: new CurveTool(),

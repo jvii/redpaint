@@ -1,13 +1,8 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isRightMouseButton,
-  isLeftOrRightMouseButton,
-} from './util';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
 import { overmind } from '../index';
 
-export class FreehandTool implements Tool {
+export class DottedFreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
@@ -16,7 +11,6 @@ export class FreehandTool implements Tool {
   }
 
   public onInit(canvas: HTMLCanvasElement): void {
-    overmind.actions.tool.freeHandToolPrevious(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
@@ -34,12 +28,9 @@ export class FreehandTool implements Tool {
       onPaint,
     } = params;
 
-    if (event.buttons && overmind.state.tool.freehandTool.previous) {
+    if (event.buttons) {
       const mousePos = getMousePos(canvas, event);
-      const start = overmind.state.tool.freehandTool.previous;
-      const end = mousePos;
-      overmind.state.brush.brush.drawLine(ctx, start, end);
-      overmind.actions.tool.freeHandToolPrevious(mousePos);
+      overmind.state.brush.brush.drawDot(ctx, mousePos);
       onPaint();
     }
   }
@@ -55,7 +46,6 @@ export class FreehandTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
     overmind.state.brush.brush.drawDot(ctx, mousePos);
-    overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
 
@@ -70,18 +60,6 @@ export class FreehandTool implements Tool {
       ctx: { canvas },
     } = params;
     this.onInit(canvas);
-  }
-
-  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
-    if (isLeftOrRightMouseButton(event)) {
-      this.prepareToPaint(isRightMouseButton(event));
-      const mousePos = getMousePos(canvas, event);
-      overmind.actions.tool.freeHandToolPrevious(mousePos);
-    }
   }
 
   // Overlay

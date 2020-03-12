@@ -15,7 +15,6 @@ export const activeToolToBGFillStyle: Action = ({ state }): void => {
   if (!fillStyle) {
     return;
   }
-  console.log('setting effective fillStyle');
   fillStyle.effective = colorToRGBString(state.palette.backgroundColor);
 };
 

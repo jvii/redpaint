@@ -2,17 +2,11 @@ import { Point, Color } from '../types';
 import { Tool, EventHandlerParams, OverlayEventHandlerParams } from './Tool';
 import { overmind } from '../index';
 import { CustomBrush } from '../brush/CustomBrush';
+import { unfilledRect } from '../algorithm/draw';
+import { PixelBrush } from '../brush/PixelBrush';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
-}
-
-export function setFillStyle(ctx: CanvasRenderingContext2D, withBackgroundColor: boolean): void {
-  ctx.fillStyle = colorToRGBString(
-    withBackgroundColor
-      ? overmind.state.palette.backgroundColor
-      : overmind.state.palette.foregroundColor
-  );
 }
 
 export function getMousePos(
@@ -27,19 +21,6 @@ export function getMousePos(
     x: Math.floor((event.clientX - rect.left) * scaleX), // scale mouse coordinates after they have
     y: Math.floor((event.clientY - rect.top) * scaleY), // been adjusted to be relative to element
   };
-}
-
-export function chooseColor(
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
-  paletteState: { foregroundColor: Color; backgroundColor: Color }
-): Color {
-  if (event.buttons === 1) {
-    return paletteState.foregroundColor;
-  }
-  if (event.buttons === 2) {
-    return paletteState.backgroundColor;
-  }
-  return paletteState.foregroundColor;
 }
 
 export function clearCanvas(canvas: HTMLCanvasElement, color: Color): void {
@@ -129,35 +110,65 @@ export function edgeToEdgeCrosshair(ctx: CanvasRenderingContext2D, position: Poi
   ctx.fillStyle = overmind.state.canvas.fillStyle;
 }
 
-export function setFillStyleOnMouseDown(
-  event: React.MouseEvent,
-  ctx: CanvasRenderingContext2D
-): void {
-  if (event.button === 0) {
-    ctx.fillStyle = colorToRGBString(overmind.state.palette.foregroundColor);
-    if (
-      overmind.state.brush.mode === 'Color' &&
-      overmind.state.brush.brush instanceof CustomBrush
-    ) {
-      overmind.state.brush.brush.toFGColor();
-    }
+export function selectionBox(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
+  if (overmind.state.canvas.invertedCanvas) {
+    ctx.fillStyle = overmind.state.canvas.invertedCanvas;
   }
-  if (event.button === 2) {
-    ctx.fillStyle = colorToRGBString(overmind.state.palette.backgroundColor);
-    console.log('button 2');
-    if (
-      overmind.state.brush.mode === 'Color' &&
-      overmind.state.brush.brush instanceof CustomBrush
-    ) {
-      console.log('toBg');
-      overmind.state.brush.brush.toBGColor();
-    }
-  }
+  unfilledRect(ctx, new PixelBrush(), start, end);
+  ctx.fillStyle = overmind.state.canvas.fillStyle;
 }
 
-export function setFillStyleOnMouseUp(ctx: CanvasRenderingContext2D): void {
-  ctx.fillStyle = colorToRGBString(overmind.state.palette.foregroundColor);
-  if (overmind.state.brush.mode === 'Color' && overmind.state.brush.brush instanceof CustomBrush) {
-    overmind.state.brush.brush.toFGColor();
+// adapted from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja
+export function extractBrush(
+  sourceCanvas: HTMLCanvasElement,
+  start: Point,
+  width: number,
+  height: number
+): CustomBrush {
+  let bufferCanvas = document.createElement('canvas');
+
+  bufferCanvas.width = Math.abs(width);
+  bufferCanvas.height = Math.abs(height);
+
+  const bufferCanvasCtx = bufferCanvas.getContext('2d');
+  if (!bufferCanvasCtx) {
+    throw 'Error retrieving Context for buffer Canvas while extracting brush';
   }
+
+  bufferCanvasCtx.drawImage(
+    sourceCanvas,
+    start.x,
+    start.y,
+    width,
+    height,
+    0,
+    0,
+    bufferCanvas.width,
+    bufferCanvas.height
+  );
+
+  const backgroundColor =
+    overmind.state.palette.backgroundColor.r * 0x00000001 +
+    overmind.state.palette.backgroundColor.g * 0x00000100 +
+    overmind.state.palette.backgroundColor.b * 0x00010000 +
+    255 * 0x01000000;
+
+  const imageData = bufferCanvasCtx.getImageData(0, 0, bufferCanvas.width, bufferCanvas.height);
+  const imageDataBufferTMP = new ArrayBuffer(imageData.data.length);
+  const imageDataClamped8TMP = new Uint8ClampedArray(imageDataBufferTMP);
+  const imageDataUint32TMP = new Uint32Array(imageDataBufferTMP);
+
+  imageDataClamped8TMP.set(imageData.data);
+
+  let n = imageDataUint32TMP.length;
+  while (n--) {
+    if (imageDataUint32TMP[n] === backgroundColor) {
+      imageDataUint32TMP[n] = 0x00000000; // make it transparent
+    }
+  }
+
+  imageData.data.set(imageDataClamped8TMP);
+  bufferCanvasCtx.putImageData(imageData, 0, 0);
+
+  return new CustomBrush(bufferCanvas.toDataURL());
 }

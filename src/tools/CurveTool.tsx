@@ -11,17 +11,17 @@ import { overmind } from '../index';
 export class CurveTool implements Tool {
   private throttle = new Throttle(50);
 
-  public onInit(canvas: HTMLCanvasElement): void {
-    overmind.actions.tool.curveToolReset();
-    overmind.actions.tool.activeToolToFGFillStyle();
-    overmind.actions.brush.toFGBrush();
-  }
-
-  public prepareToPaint(withBGColor: boolean): void {
+  private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
       overmind.actions.brush.toBGBrush();
     }
+  }
+
+  public onInit(canvas: HTMLCanvasElement): void {
+    overmind.actions.tool.curveToolReset();
+    overmind.actions.tool.activeToolToFGFillStyle();
+    overmind.actions.brush.toFGBrush();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
