@@ -6,9 +6,10 @@ import {
   isLeftOrRightMouseButton,
 } from './util';
 import { overmind } from '../index';
-import { filledPolygon } from '../algorithm/draw';
 
-export class FreehandTool implements Tool {
+export class AirbrushTool implements Tool {
+  private timeout: number = 0;
+
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
@@ -17,7 +18,6 @@ export class FreehandTool implements Tool {
   }
 
   public onInit(canvas: HTMLCanvasElement): void {
-    overmind.actions.tool.freeHandToolPrevious(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
@@ -30,58 +30,52 @@ export class FreehandTool implements Tool {
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
-      onPaint,
-    } = params;
-
-    if (event.buttons && overmind.state.tool.freehandTool.previous) {
-      const mousePos = getMousePos(canvas, event);
-      const start = overmind.state.tool.freehandTool.previous;
-      const end = mousePos;
-      overmind.state.brush.brush.drawLine(ctx, start, end);
-      overmind.actions.tool.freeHandToolPrevious(mousePos);
-      onPaint();
-    }
-  }
-
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-      onPaint,
     } = params;
 
     const mousePos = getMousePos(canvas, event);
+    overmind.actions.tool.airbrushToolPosition(mousePos);
+  }
+
+  public onMouseDown(params: EventHandlerParamsWithEvent): void {
+    const { event, ctx, onPaint } = params;
+
+    const draw = (ctx: CanvasRenderingContext2D, onPaint: Function): void => {
+      for (let i = 50; i--; ) {
+        var angle = getRandomFloat(0, Math.PI * 2);
+        var radius = getRandomFloat(0, 20);
+        if (overmind.state.tool.airbrushTool.position) {
+          overmind.state.brush.brush.drawDot(ctx, {
+            x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
+            y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
+          });
+        }
+      }
+      onPaint();
+      this.timeout = setTimeout(draw, 20, ctx, onPaint);
+    };
+
     this.prepareToPaint(isRightMouseButton(event));
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
-    overmind.actions.tool.freeHandToolPrevious(mousePos);
-    onPaint();
+    this.timeout = setTimeout(draw, 20, ctx, onPaint);
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const { ctx, undoPoint } = params;
+    clearTimeout(this.timeout);
     this.onInit(ctx.canvas);
     undoPoint();
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
     const {
-      ctx: { canvas },
-    } = params;
-    this.onInit(canvas);
-  }
-
-  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const {
       event,
       ctx: { canvas },
+      undoPoint,
     } = params;
+    clearTimeout(this.timeout);
+    this.onInit(canvas);
     if (isLeftOrRightMouseButton(event)) {
-      this.prepareToPaint(isRightMouseButton(event));
-      const mousePos = getMousePos(canvas, event);
-      overmind.actions.tool.freeHandToolPrevious(mousePos);
+      undoPoint();
     }
   }
 
@@ -121,4 +115,8 @@ export class FreehandTool implements Tool {
     clearOverlayCanvas(canvas);
     onPaint();
   }
+}
+
+function getRandomFloat(min: number, max: number): number {
+  return Math.random() * (max - min) + min;
 }

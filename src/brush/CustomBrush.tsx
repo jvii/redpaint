@@ -9,6 +9,8 @@ import {
   curve,
   unfilledEllipse,
   filledEllipse,
+  filledPolygon,
+  unfilledPolygon,
 } from '../algorithm/draw';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util';
@@ -202,6 +204,18 @@ export class CustomBrush implements Brush, Colorizable {
     rotationAngle: number
   ): void {
     filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
+  }
+
+  public drawUnfilledPolygon(
+    ctx: CanvasRenderingContext2D,
+    vertices: Point[],
+    complete?: boolean
+  ): void {
+    unfilledPolygon(ctx, this, vertices, complete);
+  }
+
+  public drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void {
+    filledPolygon(ctx, this, vertices);
   }
 
   private adjustHandle(point: Point): Point {

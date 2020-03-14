@@ -40,8 +40,8 @@ export class BrushSelector implements Tool {
 
     // exit brush selection tool
     overmind.actions.toolbox.toggleBrushSelectionMode();
-    // switch to Freehand tool after selection for simplicity (what does DPaint do?)
-    overmind.actions.toolbox.setSelectedDrawingTool('freeHand');
+    // switch to Dotted Freehand tool after selection
+    overmind.actions.toolbox.setSelectedDrawingTool('dottedFreehand');
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {

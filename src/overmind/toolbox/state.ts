@@ -8,7 +8,9 @@ import { BrushSelector } from '../../tools/BrushSelector';
 import { CircleTool } from '../../tools/CircleTool';
 import { CurveTool } from '../../tools/CurveTool';
 import { EllipseTool } from '../../tools/EllipseTool';
-import { DottedFreehandTool } from '../../tools/DottedFreehand';
+import { DottedFreehandTool } from '../../tools/DottedFreehandTool';
+import { AirbrushTool } from '../../tools/AirbrushTool';
+import { PolygonTool } from '../../tools/PolygonTool';
 
 const filled = true;
 const noFill = false;
@@ -18,12 +20,15 @@ const drawingTools = {
   freeHand: new FreehandTool(),
   line: new LineTool(),
   curve: new CurveTool(),
+  airbrush: new AirbrushTool(),
   rectangleFilled: new RectangleTool(filled),
   rectangleNoFill: new RectangleTool(noFill),
-  ellipseFilled: new EllipseTool(filled),
-  ellipseNoFill: new EllipseTool(noFill),
   circleFilled: new CircleTool(filled),
   circleNoFill: new CircleTool(noFill),
+  ellipseFilled: new EllipseTool(filled),
+  ellipseNoFill: new EllipseTool(noFill),
+  polygonFilled: new PolygonTool(filled),
+  polygonNoFill: new PolygonTool(noFill),
   floodFill: new FloodFillTool(),
 };
 
