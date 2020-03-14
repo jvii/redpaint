@@ -47,6 +47,14 @@
   background: url(../../resources/curveButton.svg) no-repeat;
 }
 
+.toolbox__button--airbrush {
+  background: url(../../resources/airbrushButton.svg) no-repeat;
+}
+
+.toolbox__button--airbrush-selected {
+  background: url(../../resources/airbrushButtonActive.svg) no-repeat;
+}
+
 .toolbox__button--curve-selected {
   background: url(../../resources/curveButtonActive.svg) no-repeat;
 }

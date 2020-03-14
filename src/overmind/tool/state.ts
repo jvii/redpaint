@@ -23,6 +23,10 @@ export type State = {
     end: Point | null;
     fillStyle: ToolFillStyle;
   };
+  airbrushTool: {
+    position: Point | null;
+    fillStyle: ToolFillStyle;
+  };
   rectangleTool: {
     start: Point | null;
     fillStyle: ToolFillStyle;
@@ -38,6 +42,10 @@ export type State = {
     angle: number;
     fillStyle: ToolFillStyle;
   };
+  polygonTool: {
+    vertices: Point[];
+    fillStyle: ToolFillStyle;
+  };
   brushSelectorTool: { start: Point | null };
   activeToolFillStyle: Derive<State, ToolFillStyle | null>;
 };
@@ -47,6 +55,7 @@ export const state: State = {
   freehandTool: { previous: null, fillStyle: { effective: '', stored: '' } },
   lineTool: { start: null, fillStyle: { effective: '', stored: '' } },
   curveTool: { start: null, end: null, fillStyle: { effective: '', stored: '' } },
+  airbrushTool: { position: null, fillStyle: { effective: '', stored: '' } },
   rectangleTool: { start: null, fillStyle: { effective: '', stored: '' } },
   circleTool: { origin: null, fillStyle: { effective: '', stored: '' } },
   ellipseTool: {
@@ -56,6 +65,7 @@ export const state: State = {
     angle: 0,
     fillStyle: { effective: '', stored: '' },
   },
+  polygonTool: { vertices: [], fillStyle: { effective: '', stored: '' } },
   brushSelectorTool: { start: null },
   activeToolFillStyle: (state, rootState): ToolFillStyle | null => {
     if (rootState.toolbox.selectedDrawingToolId === 'dottedFreehand') {
@@ -69,6 +79,9 @@ export const state: State = {
     }
     if (rootState.toolbox.selectedDrawingToolId === 'curve') {
       return rootState.tool.curveTool.fillStyle;
+    }
+    if (rootState.toolbox.selectedDrawingToolId === 'airbrush') {
+      return rootState.tool.airbrushTool.fillStyle;
     }
     if (rootState.toolbox.selectedDrawingToolId === 'rectangleNoFill') {
       return rootState.tool.rectangleTool.fillStyle;
@@ -87,6 +100,12 @@ export const state: State = {
     }
     if (rootState.toolbox.selectedDrawingToolId === 'ellipseFilled') {
       return rootState.tool.ellipseTool.fillStyle;
+    }
+    if (rootState.toolbox.selectedDrawingToolId === 'polygonNoFill') {
+      return rootState.tool.polygonTool.fillStyle;
+    }
+    if (rootState.toolbox.selectedDrawingToolId === 'polygonFilled') {
+      return rootState.tool.polygonTool.fillStyle;
     }
     return null;
   },

@@ -1,6 +1,7 @@
 import { Point } from '../types';
 import { Brush } from '../brush/Brush';
 import { overmind } from '../index';
+import { PixelBrush } from '../brush/PixelBrush';
 
 export function distance(start: Point, end: Point): number {
   return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
@@ -102,14 +103,13 @@ export function filledRect(
   fillRectWithSymmetry(start.x, start.y, width, height, ctx);
 }
 
+// adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function filledCircle(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   center: Point,
   r: number
 ): void {
-  // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
-
   if (r === 0) {
     // just draw a dot
     fillRectWithSymmetry(center.x, center.y, 1, 1, ctx);
@@ -133,14 +133,13 @@ export function filledCircle(
   }
 }
 
+// adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function unfilledCircle(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   center: Point,
   r: number
 ): void {
-  // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
-
   if (r === 0) {
     // just draw a dot
     brush.drawDot(ctx, center);
@@ -300,6 +299,84 @@ export function filledEllipse(
     let h = Math.abs(y1 - y2);
 
     fillRectWithSymmetry(x + center.x, y1 + center.y, 1, -h, ctx);
+  }
+}
+
+export function unfilledPolygon(
+  ctx: CanvasRenderingContext2D,
+  brush: Brush,
+  vertices: Point[],
+  complete: boolean = true
+): void {
+  for (let i = 1; i < vertices.length; i++) {
+    brush.drawLine(ctx, vertices[i - 1], vertices[i]);
+  }
+  if (complete) {
+    brush.drawLine(ctx, vertices[vertices.length - 1], vertices[0]);
+  }
+}
+
+// adapted from https://alienryderflex.com/polygon_fill/
+// TODO: must also draw the outline of the polygon
+export function filledPolygon(
+  ctx: CanvasRenderingContext2D,
+  brush: Brush,
+  vertices: Point[]
+): void {
+  // first draw the outline
+  //unfilledPolygon(ctx, new PixelBrush(), vertices);
+
+  const imageTop = Math.min(...vertices.map((point): number => point.y));
+  const imageBottom = Math.max(...vertices.map((point): number => point.y));
+  const imageLeft = Math.min(...vertices.map((point): number => point.x));
+  const imageRight = Math.max(...vertices.map((point): number => point.x));
+
+  let nodeX: number[] = [];
+
+  //  Loop through the rows of the image.
+  for (let pixelY = imageTop; pixelY < imageBottom; pixelY++) {
+    //  Build a list of nodes.
+    let nodes = 0;
+    const polyCorners = vertices.length;
+    let j = polyCorners - 1;
+    for (let i = 0; i < polyCorners; i++) {
+      if (
+        (vertices[i].y < pixelY && vertices[j].y >= pixelY) ||
+        (vertices[j].y < pixelY && vertices[i].y >= pixelY)
+      ) {
+        nodeX[nodes++] = Math.round(
+          vertices[i].x +
+            ((pixelY - vertices[i].y) / (vertices[j].y - vertices[i].y)) *
+              (vertices[j].x - vertices[i].x)
+        );
+      }
+      j = i;
+    }
+
+    //  Sort the nodes, via a simple Bubble sort.
+    let i = 0;
+    while (i < nodes - 1) {
+      if (nodeX[i] > nodeX[i + 1]) {
+        let swap = nodeX[i];
+        nodeX[i] = nodeX[i + 1];
+        nodeX[i + 1] = swap;
+        if (i) i--;
+      } else {
+        i++;
+      }
+    }
+
+    //  Fill the pixels between node pairs.
+    for (i = 0; i < nodes; i += 2) {
+      if (nodeX[i] >= imageRight) break;
+      if (nodeX[i + 1] > imageLeft) {
+        if (nodeX[i] < imageLeft) nodeX[i] = imageLeft;
+        if (nodeX[i + 1] > imageRight) nodeX[i + 1] = imageRight;
+        fillRectWithSymmetry(nodeX[i], pixelY, nodeX[i + 1] - nodeX[i], 1, ctx);
+        /* for (let pixelX = nodeX[i]; pixelX < nodeX[i + 1]; pixelX++)
+          fillRectWithSymmetry(pixelX, pixelY, 1, 1, ctx); */
+      }
+    }
   }
 }
 

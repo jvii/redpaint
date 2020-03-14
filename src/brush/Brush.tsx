@@ -24,4 +24,6 @@ export interface Brush {
     radiusY: number,
     rotationAngle: number
   ): void;
+  drawUnfilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[], complete?: boolean): void;
+  drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void;
 }

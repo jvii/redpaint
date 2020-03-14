@@ -10,6 +10,8 @@ import {
   curve,
   unfilledEllipse,
   filledEllipse,
+  filledPolygon,
+  unfilledPolygon,
 } from '../algorithm/draw';
 
 export class PixelBrush implements Brush {
@@ -77,5 +79,17 @@ export class PixelBrush implements Brush {
     rotationAngle: number
   ): void {
     filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
+  }
+
+  public drawUnfilledPolygon(
+    ctx: CanvasRenderingContext2D,
+    vertices: Point[],
+    complete?: boolean
+  ): void {
+    unfilledPolygon(ctx, this, vertices, complete);
+  }
+
+  public drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void {
+    filledPolygon(ctx, this, vertices);
   }
 }

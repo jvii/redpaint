@@ -45,6 +45,12 @@ export const curveToolReset: Action = ({ state }): void => {
   state.tool.curveTool.end = null;
 };
 
+// airbrush
+
+export const airbrushToolPosition: Action<Point | null> = ({ state }, point): void => {
+  state.tool.airbrushTool.position = point;
+};
+
 // rectangle
 
 export const rectangleToolStart: Action<Point | null> = ({ state }, point): void => {
@@ -80,6 +86,16 @@ export const ellipseToolReset: Action = ({ state }): void => {
   state.tool.ellipseTool.radiusX = null;
   state.tool.ellipseTool.radiusY = null;
   state.tool.ellipseTool.angle = 0;
+};
+
+// polygon
+
+export const polygonToolAddVertice: Action<Point> = ({ state }, point): void => {
+  state.tool.polygonTool.vertices.push(point);
+};
+
+export const polygonToolReset: Action = ({ state }): void => {
+  state.tool.polygonTool.vertices = [];
 };
 
 // brush selection

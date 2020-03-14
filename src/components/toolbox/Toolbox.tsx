@@ -40,6 +40,11 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         isSelected={state.toolbox.selectedDrawingToolId === 'floodFill'}
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('floodFill')}
       />
+      <ToolboxToggleButton
+        buttonClass="airbrush"
+        isSelected={state.toolbox.selectedDrawingToolId === 'airbrush'}
+        onClick={(): void => actions.toolbox.setSelectedDrawingTool('airbrush')}
+      />
       <ToolboxDualToggleButton
         buttonClass="rectangle"
         isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'rectangleNoFill'}
@@ -60,6 +65,13 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         isLowerHalfSelected={state.toolbox.selectedDrawingToolId === 'ellipseFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseFilled')}
+      />
+      <ToolboxDualToggleButton
+        buttonClass="ellipse"
+        isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'polygonNoFill'}
+        isLowerHalfSelected={state.toolbox.selectedDrawingToolId === 'polygonFilled'}
+        onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('polygonNoFill')}
+        onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('polygonFilled')}
       />
       <ToolboxToggleButton
         buttonClass="symmetry"
