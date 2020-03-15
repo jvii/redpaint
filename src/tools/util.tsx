@@ -129,7 +129,7 @@ export function extractBrush(
   width: number,
   height: number
 ): CustomBrush {
-  let bufferCanvas = document.createElement('canvas');
+  const bufferCanvas = document.createElement('canvas');
 
   bufferCanvas.width = Math.abs(width);
   bufferCanvas.height = Math.abs(height);

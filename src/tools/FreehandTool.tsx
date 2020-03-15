@@ -6,7 +6,6 @@ import {
   isLeftOrRightMouseButton,
 } from './util';
 import { overmind } from '../index';
-import { filledPolygon } from '../algorithm/draw';
 
 export class FreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {

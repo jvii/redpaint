@@ -67,7 +67,7 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseFilled')}
       />
       <ToolboxDualToggleButton
-        buttonClass="ellipse"
+        buttonClass="polygon"
         isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'polygonNoFill'}
         isLowerHalfSelected={state.toolbox.selectedDrawingToolId === 'polygonFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('polygonNoFill')}

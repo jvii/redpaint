@@ -8,7 +8,7 @@ import {
 import { overmind } from '../index';
 
 export class AirbrushTool implements Tool {
-  private timeout: number = 0;
+  private timeout = 0;
 
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
@@ -42,8 +42,8 @@ export class AirbrushTool implements Tool {
 
     const draw = (ctx: CanvasRenderingContext2D, onPaint: Function): void => {
       for (let i = 50; i--; ) {
-        var angle = getRandomFloat(0, Math.PI * 2);
-        var radius = getRandomFloat(0, 20);
+        const angle = getRandomFloat(0, Math.PI * 2);
+        const radius = getRandomFloat(0, 20);
         if (overmind.state.tool.airbrushTool.position) {
           overmind.state.brush.brush.drawDot(ctx, {
             x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),

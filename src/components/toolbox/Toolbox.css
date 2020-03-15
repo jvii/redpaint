@@ -103,6 +103,18 @@
   background: url(../../resources/ellipseButtonNoFillActive.svg) no-repeat;
 }
 
+.toolbox__button--polygon {
+  background: url(../../resources/polygonButton.svg) no-repeat;
+}
+
+.toolbox__button--polygon-lower-half-selected {
+  background: url(../../resources/polygonButtonFilledActive.svg) no-repeat;
+}
+
+.toolbox__button--polygon-upper-half-selected {
+  background: url(../../resources/polygonButtonNoFillActive.svg) no-repeat;
+}
+
 .toolbox__button--zoom {
   background: url(../../resources/zoomButton.svg) no-repeat;
 }

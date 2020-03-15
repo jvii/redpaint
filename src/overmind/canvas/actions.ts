@@ -44,7 +44,7 @@ export const storeInvertedCanvas: Action<HTMLCanvasElement> = (
   { state },
   canvas: HTMLCanvasElement
 ): void => {
-  let bufferCanvas = document.createElement('canvas');
+  const bufferCanvas = document.createElement('canvas');
   bufferCanvas.width = canvas.width;
   bufferCanvas.height = canvas.height;
   const bufferCanvasCtx = bufferCanvas.getContext('2d');

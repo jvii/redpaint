@@ -103,29 +103,35 @@ export class PolygonTool implements Tool {
     } = params;
 
     const mousePos = getMousePos(canvas, event);
-    if (overmind.state.tool.polygonTool.vertices.length > 0) {
-      if (this.filled) {
-        this.throttle.call((): void => {
-          clearOverlayCanvas(canvas);
-          unfilledPolygon(
-            ctx,
-            new PixelBrush(),
-            overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
-            false
-          );
-        });
-      } else {
-        this.throttle.call((): void => {
-          clearOverlayCanvas(canvas);
-          overmind.state.brush.brush.drawUnfilledPolygon(
-            ctx,
-            overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
-            false
-          );
-        });
-      }
+
+    if (!overmind.state.tool.polygonTool.vertices.length) {
+      clearOverlayCanvas(canvas);
+      overmind.state.brush.brush.drawDot(ctx, mousePos);
       onPaint();
+      return;
     }
+
+    if (this.filled) {
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        unfilledPolygon(
+          ctx,
+          new PixelBrush(),
+          overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
+          false
+        );
+      });
+    } else {
+      this.throttle.call((): void => {
+        clearOverlayCanvas(canvas);
+        overmind.state.brush.brush.drawUnfilledPolygon(
+          ctx,
+          overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
+          false
+        );
+      });
+    }
+    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
@@ -135,8 +141,9 @@ export class PolygonTool implements Tool {
       onPaint,
     } = params;
 
+    clearOverlayCanvas(canvas);
+
     if (overmind.state.tool.polygonTool.vertices.length > 0) {
-      clearOverlayCanvas(canvas);
       if (this.filled) {
         unfilledPolygon(ctx, new PixelBrush(), overmind.state.tool.polygonTool.vertices, false);
       } else {

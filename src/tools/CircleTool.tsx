@@ -101,7 +101,7 @@ export class CircleTool implements Tool {
       return;
     }
 
-    let radius = Math.round(distance(origin, mousePos));
+    const radius = Math.round(distance(origin, mousePos));
     if (this.filled) {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
