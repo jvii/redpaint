@@ -41,52 +41,6 @@ export class CustomBrush implements Brush, Colorizable {
     this.brushImageMatte = this.brushImage;
   }
 
-  public setFGColor(color: Color): void {
-    const bufferCanvas = document.createElement('canvas');
-    bufferCanvas.width = Math.abs(this.width);
-    bufferCanvas.height = Math.abs(this.heigth);
-
-    const ctx = bufferCanvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(color);
-    ctx.fillRect(0, 0, this.width, this.heigth);
-    ctx.globalCompositeOperation = 'destination-in';
-    ctx.drawImage(this.brushImage, 0, 0);
-    this.brushImageColorFG.src = bufferCanvas.toDataURL();
-  }
-
-  public setBGColor(color: Color): void {
-    const bufferCanvas = document.createElement('canvas');
-    bufferCanvas.width = Math.abs(this.width);
-    bufferCanvas.height = Math.abs(this.heigth);
-
-    const ctx = bufferCanvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
-
-    ctx.fillStyle = colorToRGBString(color);
-    ctx.fillRect(0, 0, this.width, this.heigth);
-    ctx.globalCompositeOperation = 'destination-in';
-    ctx.drawImage(this.brushImage, 0, 0);
-    this.brushImageColorBG.src = bufferCanvas.toDataURL();
-  }
-
-  public toFGColor(): void {
-    this.brushImage = this.brushImageColorFG;
-  }
-
-  public toBGColor(): void {
-    this.brushImage = this.brushImageColorBG;
-  }
-
-  public toMatte(): void {
-    this.brushImage = this.brushImageMatte;
-  }
-
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
     const pointAdj = this.adjustHandle(point);
     ctx.drawImage(this.brushImage, Math.floor(pointAdj.x), Math.floor(pointAdj.y));
@@ -121,6 +75,10 @@ export class CustomBrush implements Brush, Colorizable {
     ctx.drawImage(this.brushImage, Math.floor(sym1.x), Math.floor(sym1.y));
     ctx.drawImage(this.brushImage, Math.floor(sym2.x), Math.floor(sym2.y));
     ctx.drawImage(this.brushImage, Math.floor(sym3.x), Math.floor(sym3.y));
+  }
+
+  private adjustHandle(point: Point): Point {
+    return { x: point.x - (this.width - 1) / 2, y: point.y - (this.heigth - 2) / 2 };
   }
 
   public drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
@@ -218,7 +176,51 @@ export class CustomBrush implements Brush, Colorizable {
     filledPolygon(ctx, this, vertices);
   }
 
-  private adjustHandle(point: Point): Point {
-    return { x: point.x - (this.width - 1) / 2, y: point.y - (this.heigth - 2) / 2 };
+  // Colorizable
+
+  public setFGColor(color: Color): void {
+    const bufferCanvas = document.createElement('canvas');
+    bufferCanvas.width = Math.abs(this.width);
+    bufferCanvas.height = Math.abs(this.heigth);
+
+    const ctx = bufferCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(color);
+    ctx.fillRect(0, 0, this.width, this.heigth);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(this.brushImage, 0, 0);
+    this.brushImageColorFG.src = bufferCanvas.toDataURL();
+  }
+
+  public setBGColor(color: Color): void {
+    const bufferCanvas = document.createElement('canvas');
+    bufferCanvas.width = Math.abs(this.width);
+    bufferCanvas.height = Math.abs(this.heigth);
+
+    const ctx = bufferCanvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+
+    ctx.fillStyle = colorToRGBString(color);
+    ctx.fillRect(0, 0, this.width, this.heigth);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(this.brushImage, 0, 0);
+    this.brushImageColorBG.src = bufferCanvas.toDataURL();
+  }
+
+  public toFGColor(): void {
+    this.brushImage = this.brushImageColorFG;
+  }
+
+  public toBGColor(): void {
+    this.brushImage = this.brushImageColorBG;
+  }
+
+  public toMatte(): void {
+    this.brushImage = this.brushImageMatte;
   }
 }

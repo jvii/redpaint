@@ -1,14 +1,13 @@
 import { Point } from '../types';
 import { Brush } from '../brush/Brush';
 import { overmind } from '../index';
-import { PixelBrush } from '../brush/PixelBrush';
 
 export function distance(start: Point, end: Point): number {
   return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
 }
 
 export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, end: Point): void {
-  let dist = Math.round(distance(start, end));
+  const dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
     brush.drawDot(ctx, start);
@@ -36,7 +35,7 @@ export function curve(
   middlePoint: Point
 ): void {
   // calculate control point for the bezier curve when middlepoint given
-  let controlPoint: Point = {
+  const controlPoint: Point = {
     x: 2 * middlePoint.x - 0.5 * start.x - 0.5 * end.x,
     y: 2 * middlePoint.y - 0.5 * start.y - 0.5 * end.y,
   };
@@ -45,7 +44,7 @@ export function curve(
   let previous: Point = start;
   // TODO: get rid of the magic number
   for (i = 0; i <= 1; i = i + 0.02) {
-    let current = getQuadraticXY(i, start, controlPoint, end);
+    const current = getQuadraticXY(i, start, controlPoint, end);
     line(ctx, brush, previous, current);
     previous = current;
   }
@@ -92,7 +91,7 @@ export function filledRect(
   start: Point,
   end: Point
 ): void {
-  if (start == end) {
+  if (start === end) {
     // just draw a dot
     fillRectWithSymmetry(start.x, start.y, 1, 1, ctx);
     return;
@@ -204,10 +203,10 @@ export function unfilledEllipse(
 
   // Calculate y points of ellipse given x points
 
-  let ellipsePointsLowerHalf: Point[] = [];
-  let ellipsePointsUpperHalf: Point[] = [];
+  const ellipsePointsLowerHalf: Point[] = [];
+  const ellipsePointsUpperHalf: Point[] = [];
   for (let x = xStart; x <= xEnd; x++) {
-    let nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
+    const nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
     let y1 = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
     y1 = Math.round(y1 / k);
     let y2 = -nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
@@ -291,12 +290,12 @@ export function filledEllipse(
   const sqrt2 = Math.sqrt(2);
 
   for (let x = xStart; x <= xEnd; x++) {
-    let nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
+    const nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
     let y1 = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
     y1 = Math.round(y1 / k);
     let y2 = -nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
     y2 = Math.round(y2 / k);
-    let h = Math.abs(y1 - y2);
+    const h = Math.abs(y1 - y2);
 
     fillRectWithSymmetry(x + center.x, y1 + center.y, 1, -h, ctx);
   }
@@ -306,7 +305,7 @@ export function unfilledPolygon(
   ctx: CanvasRenderingContext2D,
   brush: Brush,
   vertices: Point[],
-  complete: boolean = true
+  complete = true
 ): void {
   for (let i = 1; i < vertices.length; i++) {
     brush.drawLine(ctx, vertices[i - 1], vertices[i]);
@@ -331,7 +330,7 @@ export function filledPolygon(
   const imageLeft = Math.min(...vertices.map((point): number => point.x));
   const imageRight = Math.max(...vertices.map((point): number => point.x));
 
-  let nodeX: number[] = [];
+  const nodeX: number[] = [];
 
   //  Loop through the rows of the image.
   for (let pixelY = imageTop; pixelY < imageBottom; pixelY++) {
@@ -357,7 +356,7 @@ export function filledPolygon(
     let i = 0;
     while (i < nodes - 1) {
       if (nodeX[i] > nodeX[i + 1]) {
-        let swap = nodeX[i];
+        const swap = nodeX[i];
         nodeX[i] = nodeX[i + 1];
         nodeX[i + 1] = swap;
         if (i) i--;
@@ -373,8 +372,6 @@ export function filledPolygon(
         if (nodeX[i] < imageLeft) nodeX[i] = imageLeft;
         if (nodeX[i + 1] > imageRight) nodeX[i + 1] = imageRight;
         fillRectWithSymmetry(nodeX[i], pixelY, nodeX[i + 1] - nodeX[i], 1, ctx);
-        /* for (let pixelX = nodeX[i]; pixelX < nodeX[i + 1]; pixelX++)
-          fillRectWithSymmetry(pixelX, pixelY, 1, 1, ctx); */
       }
     }
   }

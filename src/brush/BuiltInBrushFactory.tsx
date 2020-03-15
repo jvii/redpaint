@@ -17,7 +17,7 @@ export const createBuiltInBrush = (shape: BuiltInBrushShape): CustomBrush => {
 
 function createImageDataFor(shape: BuiltInBrushShape): ImageData {
   if (shape === 'cross') {
-    let imageData = new ImageData(3, 3);
+    const imageData = new ImageData(3, 3);
     setPixel(imageData, 1, 0, 0, 0, 0, 255);
     setPixel(imageData, 0, 1, 0, 0, 0, 255);
     setPixel(imageData, 1, 1, 0, 0, 0, 255);
@@ -26,7 +26,7 @@ function createImageDataFor(shape: BuiltInBrushShape): ImageData {
     return imageData;
   }
   if (shape === 'dot1') {
-    let imageData = new ImageData(4, 4);
+    const imageData = new ImageData(4, 4);
     setPixel(imageData, 1, 0, 0, 0, 0, 255);
     setPixel(imageData, 2, 0, 0, 0, 0, 255);
     setPixel(imageData, 0, 1, 0, 0, 0, 255);
@@ -42,7 +42,7 @@ function createImageDataFor(shape: BuiltInBrushShape): ImageData {
     return imageData;
   }
   if (shape === 'dot2') {
-    let imageData = new ImageData(5, 5);
+    const imageData = new ImageData(5, 5);
     setPixel(imageData, 1, 0, 0, 0, 0, 255);
     setPixel(imageData, 2, 0, 0, 0, 0, 255);
     setPixel(imageData, 3, 0, 0, 0, 0, 255);

@@ -31,7 +31,7 @@ export function useUndo(canvas: HTMLCanvasElement): void {
 export function useScrollToFocusPoint(
   canvasDiv: HTMLDivElement,
   focusPoint: Point | null,
-  zoomFactor: number = 1
+  zoomFactor = 1
 ): void {
   useEffect((): void => {
     if (focusPoint === null) {
