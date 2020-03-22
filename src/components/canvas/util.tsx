@@ -21,8 +21,9 @@ export function blobToCanvas(blob: Blob | null, canvas: HTMLCanvasElement): void
   }
   clearCanvas(canvas, { r: 255, g: 255, b: 255 });
   const image = new Image();
+  const objectURL = URL.createObjectURL(blob);
   image.onload = function(): void {
     context.drawImage(image, 0, 0);
   };
-  image.src = URL.createObjectURL(blob);
+  image.src = objectURL;
 }

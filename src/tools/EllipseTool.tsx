@@ -1,13 +1,8 @@
 import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isLeftMouseButton,
-  edgeToEdgeCrosshair,
-  isRightMouseButton,
-} from './util';
+import { getMousePos, clearOverlayCanvas, isLeftMouseButton, isRightMouseButton } from './util';
 import { Throttle } from './Throttle';
 import { overmind } from '../index';
+import { selector } from './SelectorUtil';
 
 export class EllipseTool implements Tool {
   public constructor(filled: boolean) {
@@ -24,7 +19,7 @@ export class EllipseTool implements Tool {
   }
 
   public onInit(canvas: HTMLCanvasElement): void {
-    overmind.actions.canvas.storeInvertedCanvas(canvas);
+    selector.prepare(canvas);
     overmind.actions.tool.ellipseToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -146,7 +141,7 @@ export class EllipseTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
-      edgeToEdgeCrosshair(ctx, mousePos);
+      selector.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }
