@@ -1,6 +1,6 @@
+import { Point } from '../../types';
 import { useEffect } from 'react';
 import { useOvermind } from '../../overmind';
-import { Point } from '../../types';
 import { blobToCanvas } from './util';
 
 export function useInitTool(canvas: HTMLCanvasElement, isZoomCanvas: boolean): void {

@@ -1,9 +1,7 @@
 import { Point, Color } from '../types';
 import { Tool, EventHandlerParams, OverlayEventHandlerParams } from './Tool';
-import { overmind } from '../index';
 import { CustomBrush } from '../brush/CustomBrush';
-import { unfilledRect } from '../algorithm/draw';
-import { PixelBrush } from '../brush/PixelBrush';
+import { overmind } from '../index';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -102,24 +100,6 @@ export function isLeftOrRightMouseButton(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
 ): boolean {
   return isLeftMouseButton(event) || isRightMouseButton(event);
-}
-
-export function edgeToEdgeCrosshair(ctx: CanvasRenderingContext2D, position: Point): void {
-  if (overmind.state.canvas.invertedCanvas) {
-    ctx.fillStyle = overmind.state.canvas.invertedCanvas;
-  }
-
-  ctx.fillRect(position.x, 0, 1, ctx.canvas.height);
-  ctx.fillRect(0, position.y, ctx.canvas.width, 1);
-  ctx.fillStyle = overmind.state.canvas.fillStyle;
-}
-
-export function selectionBox(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
-  if (overmind.state.canvas.invertedCanvas) {
-    ctx.fillStyle = overmind.state.canvas.invertedCanvas;
-  }
-  unfilledRect(ctx, new PixelBrush(), start, end);
-  ctx.fillStyle = overmind.state.canvas.fillStyle;
 }
 
 // adapted from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja

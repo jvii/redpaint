@@ -5,6 +5,22 @@ import { createBuiltInBrush } from '../../brush/BuiltInBrushFactory';
 export type Mode = 'Matte' | 'Color';
 export type BuiltInBrushId = keyof typeof builtInBrushes;
 
+class BrushHistory {
+  constructor() {
+    this.history = [];
+    this.current = new PixelBrush();
+  }
+  history: Brush[];
+  current: Brush;
+
+  set(newBrush: Brush): void {
+    this.history.push(this.current);
+    this.current = newBrush;
+  }
+}
+
+export const brushHistory = new BrushHistory();
+
 export const builtInBrushes = {
   1: new PixelBrush(),
   2: createBuiltInBrush('cross'),
@@ -13,17 +29,15 @@ export const builtInBrushes = {
 };
 
 export type State = {
-  brush: Brush;
+  readonly brush: Brush;
   selectedBuiltInBrushId: BuiltInBrushId;
-  readonly selectedBuiltInBrush: Brush;
   mode: Mode;
 };
 
 export const state: State = {
-  brush: new PixelBrush(),
-  selectedBuiltInBrushId: 1,
-  get selectedBuiltInBrush(): Brush {
-    return builtInBrushes[this.selectedBuiltInBrushId];
+  get brush(this: State): Brush {
+    return brushHistory.current;
   },
+  selectedBuiltInBrushId: 1,
   mode: 'Color',
 };

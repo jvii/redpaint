@@ -1,10 +1,11 @@
 import { Action } from 'overmind';
 import { Brush } from '../../brush/Brush';
-import { Mode, BuiltInBrushId } from './state';
+import { Mode, BuiltInBrushId, builtInBrushes } from './state';
 import { CustomBrush } from '../../brush/CustomBrush';
+import { brushHistory } from './state';
 
 export const setBrush: Action<Brush> = ({ state }, brush): void => {
-  state.brush.brush = brush;
+  brushHistory.set(brush);
 };
 
 export const selectBuiltInBrush: Action<BuiltInBrushId> = (
@@ -12,35 +13,38 @@ export const selectBuiltInBrush: Action<BuiltInBrushId> = (
   brushNumber
 ): void => {
   state.brush.selectedBuiltInBrushId = brushNumber;
-  actions.brush.setBrush(state.brush.selectedBuiltInBrush);
+  actions.brush.setBrush(builtInBrushes[brushNumber]);
   actions.brush.setMode('Color');
 };
 
 export const setMode: Action<Mode> = ({ state }, mode): void => {
   state.brush.mode = mode;
-  if (state.brush.brush instanceof CustomBrush) {
+  const brush = state.brush.brush;
+  if (brush instanceof CustomBrush) {
     if (mode === 'Color') {
-      state.brush.brush.setFGColor(state.palette.foregroundColor);
-      state.brush.brush.setBGColor(state.palette.backgroundColor);
-      state.brush.brush.toFGColor();
+      brush.setFGColor(state.palette.foregroundColor);
+      brush.setBGColor(state.palette.backgroundColor);
+      brush.toFGColor();
     } else if (mode === 'Matte') {
-      state.brush.brush.setBGColor(state.palette.backgroundColor);
-      state.brush.brush.toMatte();
+      brush.setBGColor(state.palette.backgroundColor);
+      brush.toMatte();
     }
   }
 };
 
 export const toFGBrush: Action = ({ state }): void => {
-  if (state.brush.mode === 'Color' && state.brush.brush instanceof CustomBrush) {
-    state.brush.brush.toFGColor();
+  const brush = state.brush.brush;
+  if (state.brush.mode === 'Color' && brush instanceof CustomBrush) {
+    brush.toFGColor();
   }
-  if (state.brush.mode === 'Matte' && state.brush.brush instanceof CustomBrush) {
-    state.brush.brush.toMatte();
+  if (state.brush.mode === 'Matte' && brush instanceof CustomBrush) {
+    brush.toMatte();
   }
 };
 
 export const toBGBrush: Action = ({ state }): void => {
-  if (state.brush.brush instanceof CustomBrush) {
-    state.brush.brush.toBGColor();
+  const brush = state.brush.brush;
+  if (brush instanceof CustomBrush) {
+    brush.toBGColor();
   }
 };

@@ -6,6 +6,7 @@ import {
   isLeftOrRightMouseButton,
 } from './util';
 import { overmind } from '../index';
+//import { brushHistory } from '../brush/BrushHistory';
 
 export class FreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
@@ -39,6 +40,7 @@ export class FreehandTool implements Tool {
       const start = overmind.state.tool.freehandTool.previous;
       const end = mousePos;
       overmind.state.brush.brush.drawLine(ctx, start, end);
+      //brushHistory.current.drawLine(ctx, start, end);
       overmind.actions.tool.freeHandToolPrevious(mousePos);
       onPaint();
     }
@@ -55,6 +57,7 @@ export class FreehandTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
     overmind.state.brush.brush.drawDot(ctx, mousePos);
+    //brushHistory.current.drawDot(ctx, mousePos);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
@@ -100,6 +103,7 @@ export class FreehandTool implements Tool {
 
     const mousePos = getMousePos(canvas, event);
     overmind.state.brush.brush.drawDot(ctx, mousePos);
+    //brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 
