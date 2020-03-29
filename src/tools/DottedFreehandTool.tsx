@@ -1,7 +1,11 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
 import { overmind } from '../index';
-//import { brushHistory } from '../brush/BrushHistory';
 
 export class DottedFreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
@@ -11,7 +15,7 @@ export class DottedFreehandTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
@@ -32,7 +36,6 @@ export class DottedFreehandTool implements Tool {
     if (event.buttons) {
       const mousePos = getMousePos(canvas, event);
       overmind.state.brush.brush.drawDot(ctx, mousePos);
-      //brushHistory.current.drawDot(ctx, mousePos);
       onPaint();
     }
   }
@@ -48,21 +51,17 @@ export class DottedFreehandTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
     overmind.state.brush.brush.drawDot(ctx, mousePos);
-    //brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { ctx, undoPoint } = params;
-    this.onInit(ctx.canvas);
+    const { undoPoint } = params;
+    this.onInit(omit(params, 'event'));
     undoPoint();
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    this.onInit(canvas);
+    this.onInit(omit(params, 'event'));
   }
 
   // Overlay
@@ -81,7 +80,6 @@ export class DottedFreehandTool implements Tool {
 
     const mousePos = getMousePos(canvas, event);
     overmind.state.brush.brush.drawDot(ctx, mousePos);
-    //brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 

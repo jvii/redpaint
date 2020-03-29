@@ -1,4 +1,4 @@
-import { clearCanvas } from '../../tools/util';
+import { clearCanvas } from '../../tools/util/util';
 
 export function cloneCanvas(
   sourceCanvas: HTMLCanvasElement,

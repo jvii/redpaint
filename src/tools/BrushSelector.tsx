@@ -1,12 +1,20 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, extractBrush } from './util';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
+import { getMousePos, clearOverlayCanvas, extractBrush } from './util/util';
 import { overmind } from '../index';
-import { selector } from './SelectorUtil';
+import { selection } from './util/SelectionIndicator';
 
 export class BrushSelector implements Tool {
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
+    const {
+      ctx: { canvas },
+    } = params;
     overmind.actions.tool.brushSelectionStart(null);
-    selector.prepare(canvas);
+    selection.prepare(canvas);
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -64,12 +72,12 @@ export class BrushSelector implements Tool {
 
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
-      selector.edgeToEdgeCrosshair(ctx, mousePos);
+      selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }
 
-    selector.box(ctx, start, mousePos);
+    selection.box(ctx, start, mousePos);
     onPaint();
   }
 

@@ -1,6 +1,17 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, isLeftMouseButton } from './util';
-import { Throttle } from './Throttle';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  isRightMouseButton,
+  isLeftMouseButton,
+  omit,
+} from './util/util';
+import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 
 export class LineTool implements Tool {
@@ -13,7 +24,7 @@ export class LineTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
     overmind.actions.tool.lineToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -43,7 +54,7 @@ export class LineTool implements Tool {
     overmind.state.brush.brush.drawLine(ctx, start, end);
     undoPoint();
     onPaint();
-    this.onInit(canvas);
+    this.onInit(omit(params, 'event'));
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {

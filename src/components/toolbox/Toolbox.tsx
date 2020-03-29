@@ -3,7 +3,7 @@ import { ToolboxToggleButton } from './buttons/ToolboxToggleButton';
 import { ToolboxDualToggleButton } from './buttons/ToolboxDualToggleButton';
 import { ToolboxActionButton } from './buttons/ToolboxActionButton';
 import { CanvasState } from '../canvas/CanvasState';
-import { clearCanvas } from '../../tools/util';
+import { clearCanvas } from '../../tools/util/util';
 import { useOvermind } from '../../overmind';
 import './Toolbox.css';
 
@@ -74,9 +74,16 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('polygonFilled')}
       />
       <ToolboxToggleButton
-        buttonClass="symmetry"
-        isSelected={state.toolbox.symmetryModeOn}
-        onClick={(): void => actions.toolbox.toggleSymmetryMode()}
+        buttonClass="brushselect"
+        isSelected={state.toolbox.brushSelectionModeOn}
+        onClick={(): void => actions.toolbox.toggleBrushSelectionMode()}
+      />
+      <ToolboxDualToggleButton
+        buttonClass="text"
+        isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'textNoFill'}
+        isLowerHalfSelected={state.toolbox.selectedDrawingToolId === 'textFilled'}
+        onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textNoFill')}
+        onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textFilled')}
       />
       <ToolboxToggleButton
         buttonClass="zoom"
@@ -84,9 +91,9 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         onClick={(): void => actions.toolbox.toggleZoomMode()}
       />
       <ToolboxToggleButton
-        buttonClass="brushselect"
-        isSelected={state.toolbox.brushSelectionModeOn}
-        onClick={(): void => actions.toolbox.toggleBrushSelectionMode()}
+        buttonClass="symmetry"
+        isSelected={state.toolbox.symmetryModeOn}
+        onClick={(): void => actions.toolbox.toggleSymmetryMode()}
       />
       <ToolboxActionButton
         buttonClass="undo"

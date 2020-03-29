@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:vectornator="http://vectornator.io"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0beta1 (32d4812, 2019-09-19)"
+   sodipodi:docname="textbuttonFilledActive.svg"
+   id="svg899"
+   viewBox="0 0 26.4583 26.4583"
+   version="1.1"
+   xml:space="preserve"
+   style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;"><sodipodi:namedview
+   inkscape:current-layer="layer1"
+   inkscape:window-maximized="0"
+   inkscape:window-y="23"
+   inkscape:window-x="0"
+   inkscape:cy="12.995425"
+   inkscape:cx="13.22916"
+   inkscape:zoom="29.94847"
+   showgrid="false"
+   id="namedview901"
+   inkscape:window-height="952"
+   inkscape:window-width="1635"
+   inkscape:pageshadow="2"
+   inkscape:pageopacity="0"
+   guidetolerance="10"
+   gridtolerance="10"
+   objecttolerance="10"
+   borderopacity="1"
+   inkscape:document-rotation="0"
+   bordercolor="#666666"
+   pagecolor="#ffffff" />
+
+<metadata
+   id="metadata888">
+<vectornator:setting
+   value="1"
+   key="DynamicGuides" />
+
+<vectornator:setting
+   value="Points"
+   key="Units" />
+
+<vectornator:setting
+   value="1"
+   key="RulersVisible" />
+
+<vectornator:setting
+   value="1"
+   key="SnapToGuides" />
+
+<vectornator:setting
+   value="36"
+   key="GridSpacing" />
+
+<rdf:RDF>
+  <cc:Work
+     rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type
+       rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+    <dc:title></dc:title>
+  </cc:Work>
+</rdf:RDF>
+</metadata>
+
+<defs
+   id="defs890" />
+
+<g
+   inkscape:label="layer1"
+   transform="matrix(0.9735312,0,0,0.9735312,0.46746962,0.56764168)"
+   vectornator:layerName="layer1"
+   id="layer1">
+<path
+   style="stroke:#000000;stroke-opacity:1;fill:#000000;fill-opacity:1"
+   inkscape:connector-curvature="0"
+   id="path892"
+   stroke-linejoin="bevel"
+   opacity="1"
+   stroke-linecap="round"
+   fill="#ffffff"
+   d="M -0.06487264,0.10662 H 26.180207 v 0 26.24508 0 H -0.06487264 v 0 z"
+   stroke-width="0.21324"
+   stroke="#ffffff" />
+
+
+<path
+   style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:1.50425;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+   inkscape:connector-curvature="0"
+   id="path896"
+   stroke-linejoin="miter"
+   opacity="1"
+   stroke-linecap="butt"
+   fill="none"
+   d="M 4.2666815,23.291175 V 8.2255005 H 6.7379059 V 5.2123739 h 2.471234 V 2.1992578 h 7.4136541 v 3.0131161 h 2.471266 v 3.0131266 h 2.471265 V 23.291175 H 16.622794 V 17.264921 H 9.2091399 v 6.026254 z M 9.2091399,14.251744 H 16.622794 V 8.2255005 H 14.151631 V 5.2123739 H 11.680367 V 8.2255005 H 9.2091399 Z"
+   stroke-width="0.623622"
+   stroke="#000000" />
+
+</g>
+
+</svg>

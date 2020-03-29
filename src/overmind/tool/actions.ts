@@ -1,6 +1,6 @@
 import { Action } from 'overmind';
 import { Point } from '../../types';
-import { colorToRGBString } from '../../tools/util';
+import { colorToRGBString } from '../../tools/util/util';
 
 export const activeToolToFGFillStyle: Action = ({ state }): void => {
   const fillStyle = state.tool.activeToolFillStyle;
@@ -96,6 +96,25 @@ export const polygonToolAddVertice: Action<Point> = ({ state }, point): void => 
 
 export const polygonToolReset: Action = ({ state }): void => {
   state.tool.polygonTool.vertices = [];
+};
+
+// text
+
+export const textToolStart: Action<Point> = ({ state }, point): void => {
+  state.tool.textTool.start = point;
+};
+
+export const textToolKey: Action<string> = ({ state }, key): void => {
+  if (key.length === 1) {
+    state.tool.textTool.text = state.tool.textTool.text + key;
+  } else if (key === 'Backspace') {
+    state.tool.textTool.text = state.tool.textTool.text.slice(0, -1);
+  }
+};
+
+export const textToolReset: Action = ({ state }): void => {
+  state.tool.textTool.start = null;
+  state.tool.textTool.text = '';
 };
 
 // brush selection

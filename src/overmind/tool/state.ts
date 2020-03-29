@@ -46,6 +46,11 @@ export type State = {
     vertices: Point[];
     fillStyle: ToolFillStyle;
   };
+  textTool: {
+    text: string;
+    start: Point | null;
+    fillStyle: ToolFillStyle;
+  };
   brushSelectorTool: { start: Point | null };
   activeToolFillStyle: Derive<State, ToolFillStyle | null>;
 };
@@ -66,6 +71,7 @@ export const state: State = {
     fillStyle: { effective: '', stored: '' },
   },
   polygonTool: { vertices: [], fillStyle: { effective: '', stored: '' } },
+  textTool: { text: '', start: null, fillStyle: { effective: '', stored: '' } },
   brushSelectorTool: { start: null },
   activeToolFillStyle: (state, rootState): ToolFillStyle | null => {
     if (rootState.toolbox.selectedDrawingToolId === 'dottedFreehand') {
@@ -106,6 +112,9 @@ export const state: State = {
     }
     if (rootState.toolbox.selectedDrawingToolId === 'polygonFilled') {
       return rootState.tool.polygonTool.fillStyle;
+    }
+    if (rootState.toolbox.selectedDrawingToolId === 'textFilled') {
+      return rootState.tool.textTool.fillStyle;
     }
     return null;
   },

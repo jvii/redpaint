@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { CanvasStateAction } from './CanvasState';
 import { useInitTool, useUndo, useFillStyle } from './hooks';
 import { useOvermind } from '../../overmind';
-import { getEventHandler, getEventHandlerOverlay } from '../../tools/util';
-import { EventHandlerParams, OverlayEventHandlerParams } from '../../tools/Tool';
+import { getEventHandler, getEventHandlerOverlay } from '../../tools/util/util';
+import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
 import './Canvas.css';
 
 interface Props {
@@ -30,9 +30,6 @@ export function Canvas({
 
   const { state, actions } = useOvermind();
 
-  useUndo(canvasRef.current);
-  useInitTool(canvasRef.current, isZoomCanvas);
-
   const canvasCtx = canvasRef.current.getContext('2d', {
     alpha: false,
     desynchronized: true,
@@ -42,14 +39,8 @@ export function Canvas({
     desynchronized: true,
   }) as CanvasRenderingContext2D | null;
 
-  useFillStyle(canvasCtx);
-  useFillStyle(overlayCanvasCtx);
-  if (!canvasCtx || !overlayCanvasCtx) {
-    return null; // no render
-  }
-
   const eventHandlerParams: EventHandlerParams = {
-    ctx: canvasCtx,
+    ctx: canvasCtx!,
     onPaint: (): void => {
       actions.canvas.setCanvasModified(isZoomCanvas);
     },
@@ -57,13 +48,21 @@ export function Canvas({
       actions.undo.setUndoPoint(canvasRef.current);
     },
   };
-
-  const eventHandlerParamsOverlay: OverlayEventHandlerParams = {
-    ctx: overlayCanvasCtx,
+  const eventHandlerParamsOverlay: EventHandlerParamsOverlay = {
+    ctx: overlayCanvasCtx!,
     onPaint: (): void => {
       actions.canvas.setOverlayCanvasModified(isZoomCanvas);
     },
   };
+
+  useUndo(canvasRef.current);
+  useInitTool(eventHandlerParams, eventHandlerParamsOverlay, isZoomCanvas);
+
+  useFillStyle(canvasCtx);
+  useFillStyle(overlayCanvasCtx);
+  if (!canvasCtx || !overlayCanvasCtx) {
+    return null; // no render
+  }
 
   const tool = state.toolbox.activeTool;
 
