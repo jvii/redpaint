@@ -1,11 +1,17 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
 import {
   getMousePos,
   clearOverlayCanvas,
   isRightMouseButton,
   isLeftOrRightMouseButton,
-} from './util';
-import { Throttle } from './Throttle';
+  omit,
+} from './util/util';
+import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 
 export class CurveTool implements Tool {
@@ -18,7 +24,7 @@ export class CurveTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
     overmind.actions.tool.curveToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -50,7 +56,7 @@ export class CurveTool implements Tool {
       overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
       undoPoint();
       onPaint();
-      this.onInit(canvas);
+      this.onInit(omit(params, 'event'));
     } else {
       overmind.actions.tool.curveToolEnd(mousePos);
     }

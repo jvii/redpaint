@@ -4,7 +4,7 @@ export interface EventHandlerParams {
   undoPoint: () => void;
 }
 
-export interface OverlayEventHandlerParams {
+export interface EventHandlerParamsOverlay {
   ctx: CanvasRenderingContext2D;
   onPaint: () => void;
 }
@@ -13,12 +13,13 @@ export interface EventHandlerParamsWithEvent extends EventHandlerParams {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
 }
 
-export interface OverlayEventHandlerParamsWithEvent extends OverlayEventHandlerParams {
+export interface OverlayEventHandlerParamsWithEvent extends EventHandlerParamsOverlay {
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
 }
 
 export interface Tool {
-  onInit?(canvas: HTMLCanvasElement): void;
+  onInit?(params: EventHandlerParams): void;
+  onExit?(params: EventHandlerParams): void;
   onClick?(params: EventHandlerParamsWithEvent): void;
   onContextMenu?(params: EventHandlerParamsWithEvent): void;
   onMouseMove?(params: EventHandlerParamsWithEvent): void;
@@ -26,6 +27,8 @@ export interface Tool {
   onMouseDown?(params: EventHandlerParamsWithEvent): void;
   onMouseLeave?(params: EventHandlerParamsWithEvent): void;
   onMouseEnter?(params: EventHandlerParamsWithEvent): void;
+  onInitOverlay?(params: EventHandlerParamsOverlay): void;
+  onExitOverlay?(params: EventHandlerParamsOverlay): void;
   onClickOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
   onMouseMoveOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
   onMouseUpOverlay?(params: OverlayEventHandlerParamsWithEvent): void;

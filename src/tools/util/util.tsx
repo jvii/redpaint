@@ -1,7 +1,7 @@
-import { Point, Color } from '../types';
-import { Tool, EventHandlerParams, OverlayEventHandlerParams } from './Tool';
-import { CustomBrush } from '../brush/CustomBrush';
-import { overmind } from '../index';
+import { Point, Color } from '../../types';
+import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
+import { CustomBrush } from '../../brush/CustomBrush';
+import { overmind } from '../../index';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -73,7 +73,7 @@ export function getEventHandlerOverlay(
     | 'onMouseUpOverlay'
     | 'onMouseDownOverlay'
     | 'onClickOverlay',
-  eventHandlerParams: OverlayEventHandlerParams
+  eventHandlerParams: EventHandlerParamsOverlay
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
   if (hasKey(tool, eventHandlerName)) {
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
@@ -156,3 +156,22 @@ export function extractBrush(
 
   return new CustomBrush(bufferCanvas.toDataURL());
 }
+
+interface Omit {
+  <T extends object, K extends [...(keyof T)[]]>(obj: T, ...keys: K): {
+    [K2 in Exclude<keyof T, K[number]>]: T[K2];
+  };
+}
+
+export const omit: Omit = (obj, ...keys) => {
+  const ret = {} as {
+    [K in keyof typeof obj]: typeof obj[K];
+  };
+  let key: keyof typeof obj;
+  for (key in obj) {
+    if (!keys.includes(key)) {
+      ret[key] = obj[key];
+    }
+  }
+  return ret;
+};

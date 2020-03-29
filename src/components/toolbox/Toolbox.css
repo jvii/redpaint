@@ -115,6 +115,18 @@
   background: url(../../resources/polygonButtonNoFillActive.svg) no-repeat;
 }
 
+.toolbox__button--text {
+  background: url(../../resources/textButton.svg) no-repeat;
+}
+
+.toolbox__button--text-lower-half-selected {
+  background: url(../../resources/textbuttonFilledActive.svg) no-repeat;
+}
+
+.toolbox__button--text-upper-half-selected {
+  background: url(../../resources/textbuttonNoFillActive.svg) no-repeat;
+}
+
 .toolbox__button--zoom {
   background: url(../../resources/zoomButton.svg) no-repeat;
 }
@@ -140,11 +152,11 @@
 }
 
 .toolbox__button--undo {
-  background: url(../../resources/undoButton.png) no-repeat;
+  background: url(../../resources/undoButton.svg) no-repeat;
 }
 
 .toolbox__button--undo:active {
-  background: url(../../resources/undoButtonActive.png) no-repeat;
+  background: url(../../resources/undoButtonActive.svg) no-repeat;
 }
 
 .toolbox__button--clr {

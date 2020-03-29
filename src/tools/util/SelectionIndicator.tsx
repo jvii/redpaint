@@ -1,11 +1,11 @@
-import { Point } from '../types';
-import { PixelBrush } from '../brush/PixelBrush';
-import { unfilledRect } from '../algorithm/draw';
-import { overmind } from '../index';
+import { Point } from '../../types';
+import { PixelBrush } from '../../brush/PixelBrush';
+import { unfilledRect } from '../../algorithm/draw';
+import { overmind } from '../../index';
 
 let invertedCanvas: CanvasPattern | null = null;
 
-export const selector = {
+export const selection = {
   prepare(canvas: HTMLCanvasElement): void {
     const bufferCanvas = document.createElement('canvas');
     bufferCanvas.width = canvas.width;
@@ -39,6 +39,22 @@ export const selector = {
       ctx.fillStyle = invertedCanvas;
     }
     unfilledRect(ctx, new PixelBrush(), start, end);
+    ctx.fillStyle = overmind.state.canvas.fillStyle;
+  },
+  textCursor(ctx: CanvasRenderingContext2D, height: number): void {
+    if (invertedCanvas) {
+      ctx.fillStyle = invertedCanvas;
+    }
+    const start = overmind.state.tool.textTool.start;
+    if (!start) {
+      return;
+    }
+    const point = {
+      x: start.x + Math.round(ctx.measureText(overmind.state.tool.textTool.text).width),
+      y: start.y,
+    };
+    console.log(point);
+    unfilledRect(ctx, new PixelBrush(), point, { x: point.x, y: point.y - height });
     ctx.fillStyle = overmind.state.canvas.fillStyle;
   },
 };

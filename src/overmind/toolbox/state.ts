@@ -11,6 +11,7 @@ import { EllipseTool } from '../../tools/EllipseTool';
 import { DottedFreehandTool } from '../../tools/DottedFreehandTool';
 import { AirbrushTool } from '../../tools/AirbrushTool';
 import { PolygonTool } from '../../tools/PolygonTool';
+import { TextTool } from '../../tools/TextTool';
 
 const filled = true;
 const noFill = false;
@@ -30,6 +31,8 @@ const drawingTools = {
   polygonFilled: new PolygonTool(filled),
   polygonNoFill: new PolygonTool(noFill),
   floodFill: new FloodFillTool(),
+  textFilled: new TextTool(filled),
+  textNoFill: new TextTool(noFill),
 };
 
 const selectorTools = {
@@ -38,9 +41,12 @@ const selectorTools = {
 };
 
 export type DrawingToolId = keyof typeof drawingTools;
+export type SelectorToolId = keyof typeof selectorTools;
 
 export type State = {
   readonly activeTool: Tool;
+  readonly previousTool: Tool | null;
+  previousToolId: DrawingToolId | SelectorToolId | null;
   selectedDrawingToolId: DrawingToolId;
   zoomModeState: 'off' | 'on' | 'selectingInitialPoint';
   brushSelectionModeOn: boolean;
@@ -57,6 +63,19 @@ export const state: State = {
     }
     return drawingTools[this.selectedDrawingToolId];
   },
+  get previousTool(this: State): Tool | null {
+    if (!this.previousToolId) {
+      return null;
+    }
+    if (
+      this.previousToolId === 'zoomInitialPointSelectorTool' ||
+      this.previousToolId === 'brushSelectorTool'
+    ) {
+      return selectorTools[this.previousToolId];
+    }
+    return drawingTools[this.previousToolId];
+  },
+  previousToolId: null,
   selectedDrawingToolId: 'freeHand',
   zoomModeState: 'off',
   brushSelectionModeOn: false,

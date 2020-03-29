@@ -1,10 +1,16 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
 import {
   getMousePos,
   clearOverlayCanvas,
   isRightMouseButton,
   isLeftOrRightMouseButton,
-} from './util';
+  omit,
+} from './util/util';
 import { overmind } from '../index';
 
 export class AirbrushTool implements Tool {
@@ -17,7 +23,7 @@ export class AirbrushTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
@@ -60,20 +66,16 @@ export class AirbrushTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { ctx, undoPoint } = params;
+    const { undoPoint } = params;
     clearTimeout(this.timeout);
-    this.onInit(ctx.canvas);
+    this.onInit(omit(params, 'event'));
     undoPoint();
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
     clearTimeout(this.timeout);
-    this.onInit(canvas);
+    this.onInit(omit(params, 'event'));
     if (isLeftOrRightMouseButton(event)) {
       undoPoint();
     }

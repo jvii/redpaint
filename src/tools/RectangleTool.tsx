@@ -1,7 +1,12 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
-import { Throttle } from './Throttle';
-import { selector } from './SelectorUtil';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
+import { Throttle } from './util/Throttle';
+import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 
 export class RectangleTool implements Tool {
@@ -19,8 +24,11 @@ export class RectangleTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
-    selector.prepare(canvas);
+  public onInit(params: EventHandlerParams): void {
+    const {
+      ctx: { canvas },
+    } = params;
+    selection.prepare(canvas);
     overmind.actions.tool.rectangleToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -54,7 +62,7 @@ export class RectangleTool implements Tool {
     }
     undoPoint();
     onPaint();
-    this.onInit(canvas);
+    this.onInit(omit(params, 'event'));
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -68,12 +76,9 @@ export class RectangleTool implements Tool {
   }
 
   public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
     if (!event.buttons) {
-      this.onInit(canvas);
+      this.onInit(omit(params, 'event'));
     }
   }
 
@@ -96,7 +101,7 @@ export class RectangleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
-      selector.edgeToEdgeCrosshair(ctx, mousePos);
+      selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }

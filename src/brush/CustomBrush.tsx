@@ -13,7 +13,7 @@ import {
   unfilledPolygon,
 } from '../algorithm/draw';
 import { overmind } from '../index';
-import { colorToRGBString } from '../tools/util';
+import { colorToRGBString } from '../tools/util/util';
 
 interface Colorizable {
   setFGColor(color: Color): void;

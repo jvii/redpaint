@@ -1,7 +1,18 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, pointEquals } from './util';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  isRightMouseButton,
+  pointEquals,
+  omit,
+} from './util/util';
 import { overmind } from '../index';
-import { Throttle } from './Throttle';
+import { Throttle } from './util/Throttle';
 import { unfilledPolygon } from '../algorithm/draw';
 import { PixelBrush } from '../brush/PixelBrush';
 
@@ -19,7 +30,7 @@ export class PolygonTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
     overmind.actions.tool.polygonToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -62,7 +73,7 @@ export class PolygonTool implements Tool {
       }
       undoPoint();
       onPaint();
-      this.onInit(canvas);
+      this.onInit(omit(params, 'event'));
       return;
     }
 

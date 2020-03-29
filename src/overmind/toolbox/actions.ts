@@ -1,12 +1,16 @@
 import { Action } from 'overmind';
 import { DrawingToolId } from './state';
+import { BrushSelector } from '../../tools/BrushSelector';
+import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 
-export const setSelectedDrawingTool: Action<DrawingToolId> = ({ state }, toolId): void => {
+export const setSelectedDrawingTool: Action<DrawingToolId> = ({ state, actions }, toolId): void => {
+  actions.toolbox.setActiveToPreviousTool();
   state.toolbox.selectedDrawingToolId = toolId;
   state.toolbox.brushSelectionModeOn = false;
 };
 
 export const toggleZoomMode: Action = ({ state, actions }): void => {
+  actions.toolbox.setActiveToPreviousTool();
   const oldState = state.toolbox.zoomModeState;
   switch (oldState) {
     case 'off':
@@ -25,7 +29,8 @@ export const toggleZoomMode: Action = ({ state, actions }): void => {
   actions.canvas.setZoomFocusPoint(null);
 };
 
-export const toggleBrushSelectionMode: Action = ({ state }): void => {
+export const toggleBrushSelectionMode: Action = ({ state, actions }): void => {
+  actions.toolbox.setActiveToPreviousTool();
   const oldState = state.toolbox.brushSelectionModeOn;
   state.toolbox.brushSelectionModeOn = oldState ? false : true;
 
@@ -40,4 +45,14 @@ export const toggleSymmetryMode: Action = ({ state }): void => {
   const oldState = state.toolbox.symmetryModeOn;
   state.toolbox.symmetryModeOn = oldState ? false : true;
   state.toolbox.brushSelectionModeOn = false;
+};
+
+export const setActiveToPreviousTool: Action = ({ state }): void => {
+  if (state.toolbox.activeTool instanceof BrushSelector) {
+    state.toolbox.previousToolId = 'brushSelectorTool';
+  } else if (state.toolbox.activeTool instanceof ZoomInitialPointSelectorTool) {
+    state.toolbox.previousToolId = 'zoomInitialPointSelectorTool';
+  } else {
+    state.toolbox.previousToolId = state.toolbox.selectedDrawingToolId;
+  }
 };

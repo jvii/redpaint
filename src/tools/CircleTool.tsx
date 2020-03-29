@@ -1,9 +1,14 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton } from './util';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
+import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
 import { distance } from '../algorithm/draw';
-import { Throttle } from './Throttle';
+import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
-import { selector } from './SelectorUtil';
+import { selection } from './util/SelectionIndicator';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -19,8 +24,11 @@ export class CircleTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
-    selector.prepare(canvas);
+  public onInit(params: EventHandlerParams): void {
+    const {
+      ctx: { canvas },
+    } = params;
+    selection.prepare(canvas);
     overmind.actions.tool.circleToolOrigin(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -55,7 +63,7 @@ export class CircleTool implements Tool {
     }
     undoPoint();
     onPaint();
-    this.onInit(canvas);
+    this.onInit(omit(params, 'event'));
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
@@ -69,12 +77,9 @@ export class CircleTool implements Tool {
   }
 
   public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
     if (!event.buttons) {
-      this.onInit(canvas);
+      this.onInit(omit(params, 'event'));
     }
   }
 
@@ -97,7 +102,7 @@ export class CircleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         overmind.state.brush.brush.drawDot(ctx, mousePos);
       }
-      selector.edgeToEdgeCrosshair(ctx, mousePos);
+      selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
       return;
     }

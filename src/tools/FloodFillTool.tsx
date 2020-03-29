@@ -1,6 +1,6 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { Point, Color } from '../types';
-import { getMousePos } from './util';
+import { getMousePos } from './util/util';
 import { overmind } from '../index';
 
 interface ColorRGBA {

@@ -1,6 +1,6 @@
 import { Point } from '../../types';
 import { Derive } from 'overmind';
-import { colorToRGBString } from '../../tools/util';
+import { colorToRGBString } from '../../tools/util/util';
 
 export type State = {
   resolution: { width: number; height: number };

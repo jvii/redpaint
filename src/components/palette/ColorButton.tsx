@@ -1,6 +1,6 @@
 import React from 'react';
 import { Color } from '../../types';
-import { colorToRGBString } from '../../tools/util';
+import { colorToRGBString } from '../../tools/util/util';
 
 interface Props {
   color: Color;

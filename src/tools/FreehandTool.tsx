@@ -1,12 +1,17 @@
-import { Tool, EventHandlerParamsWithEvent, OverlayEventHandlerParamsWithEvent } from './Tool';
+import {
+  Tool,
+  EventHandlerParamsWithEvent,
+  OverlayEventHandlerParamsWithEvent,
+  EventHandlerParams,
+} from './Tool';
 import {
   getMousePos,
   clearOverlayCanvas,
   isRightMouseButton,
   isLeftOrRightMouseButton,
-} from './util';
+  omit,
+} from './util/util';
 import { overmind } from '../index';
-//import { brushHistory } from '../brush/BrushHistory';
 
 export class FreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
@@ -16,7 +21,7 @@ export class FreehandTool implements Tool {
     }
   }
 
-  public onInit(canvas: HTMLCanvasElement): void {
+  public onInit(params: EventHandlerParams): void {
     overmind.actions.tool.freeHandToolPrevious(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -40,7 +45,6 @@ export class FreehandTool implements Tool {
       const start = overmind.state.tool.freehandTool.previous;
       const end = mousePos;
       overmind.state.brush.brush.drawLine(ctx, start, end);
-      //brushHistory.current.drawLine(ctx, start, end);
       overmind.actions.tool.freeHandToolPrevious(mousePos);
       onPaint();
     }
@@ -57,22 +61,18 @@ export class FreehandTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
     overmind.state.brush.brush.drawDot(ctx, mousePos);
-    //brushHistory.current.drawDot(ctx, mousePos);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { ctx, undoPoint } = params;
-    this.onInit(ctx.canvas);
+    const { undoPoint } = params;
+    this.onInit(omit(params, 'event'));
     undoPoint();
   }
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    this.onInit(canvas);
+    this.onInit(omit(params, 'event'));
   }
 
   public onMouseEnter(params: EventHandlerParamsWithEvent): void {
@@ -103,7 +103,6 @@ export class FreehandTool implements Tool {
 
     const mousePos = getMousePos(canvas, event);
     overmind.state.brush.brush.drawDot(ctx, mousePos);
-    //brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 

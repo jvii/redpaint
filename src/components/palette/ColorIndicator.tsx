@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOvermind } from '../../overmind';
-import { colorToRGBString } from '../../tools/util';
+import { colorToRGBString } from '../../tools/util/util';
 import './ColorIndicator.css';
 
 export function ColorIndicator(): JSX.Element {
