@@ -28,8 +28,6 @@ export function Canvas({
     });
   }, []);
 
-  const { state, actions } = useOvermind();
-
   const canvasCtx = canvasRef.current.getContext('2d', {
     alpha: false,
     desynchronized: true,
@@ -38,6 +36,8 @@ export function Canvas({
     alpha: true,
     desynchronized: true,
   }) as CanvasRenderingContext2D | null;
+
+  const { state, actions } = useOvermind();
 
   const eventHandlerParams: EventHandlerParams = {
     ctx: canvasCtx!,
@@ -60,6 +60,7 @@ export function Canvas({
 
   useFillStyle(canvasCtx);
   useFillStyle(overlayCanvasCtx);
+
   if (!canvasCtx || !overlayCanvasCtx) {
     return null; // no render
   }

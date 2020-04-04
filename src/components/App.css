@@ -1,18 +1,22 @@
 .app {
-  height: 100%;
+  height: 100vh;
   display: grid;
+  overflow: hidden;
+  align-items: flex-start;
+  grid-template-rows: auto auto auto auto 1fr;
+  grid-template-columns: auto 70px;
   grid-template-areas:
     'menubar menubar'
     'canvas builtinbrushes'
     'canvas toolbox'
     'canvas colorindicator'
-    'canvas palette'
-    'canvas .';
+    'canvas palette';
 }
 
 .canvas-area {
   grid-area: canvas;
-  overflow: hidden;
+  overflow: auto;
+  height: 100%;
   display: flex;
   cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;
 }

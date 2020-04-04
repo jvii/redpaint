@@ -13,8 +13,8 @@ export function ColorButton({ color, isSelected, onClick, onRightClick }: Props)
   const buttonStyle = {
     backgroundColor: colorToRGBString(color),
     border: isSelected ? '2px solid white' : 'none',
-    width: '10px',
-    height: '10px',
+    width: '100%',
+    heigth: '100%',
     padding: 0,
     margin: 0,
     outline: 'none',
