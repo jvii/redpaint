@@ -20,7 +20,7 @@ export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element 
   useEffect((): void => {
     actions.canvas.setResolution({
       width: window.innerWidth - 72,
-      height: window.innerHeight - 30,
+      height: window.innerHeight - 46,
     });
   }, [canvasDispatch]);
 

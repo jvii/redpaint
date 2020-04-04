@@ -124,6 +124,18 @@ export class TextTool implements Tool {
     onPaint();
   }
 
+  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const {
+      ctx,
+      ctx: { canvas },
+      onPaint,
+    } = params;
+    clearOverlayCanvas(canvas);
+    this.renderText(ctx);
+    selection.textCursor(ctx, 50);
+    onPaint();
+  }
+
   private renderText(ctx: CanvasRenderingContext2D): void {
     ctx.font = '50px Georgia';
     const start = overmind.state.tool.textTool.start;

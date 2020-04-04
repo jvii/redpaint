@@ -1,5 +1,6 @@
 .canvas-container {
   position: relative;
+  height: auto;
 }
 
 .canvas {
@@ -20,19 +21,19 @@
 .main-canvas-div {
   overflow: auto;
   min-width: 50%;
-  height: 100vh;
+  height: 100%;
 }
 
 .zoom-canvas-div {
   overflow: auto;
   min-width: 45%;
-  height: 100vh;
+  height: 100%;
 }
 
 /* checkered pattern from https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
 .zoom-canvas-separator {
   display: inline-block;
-  height: 100vh;
+  height: 100%;
   background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
     linear-gradient(135deg, #ccc 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #ccc 75%),

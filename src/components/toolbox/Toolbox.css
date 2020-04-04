@@ -4,6 +4,7 @@
   grid-template-columns: 35px 35px;
   grid-auto-rows: 35px;
   justify-content: flex-end;
+  align-self: start;
   background-color: black;
 }
 
