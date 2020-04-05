@@ -17,8 +17,8 @@ export const state: State = {
   get paletteArray(this: State): Color[] {
     return Object.values(this.palette);
   },
-  foregroundColorId: '0',
-  backgroundColorId: '20',
+  foregroundColorId: '20',
+  backgroundColorId: '0',
   get foregroundColor(this: State): Color {
     return this.palette[this.foregroundColorId];
   },
