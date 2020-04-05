@@ -4,6 +4,7 @@ import { CanvasState, CanvasStateAction } from './CanvasState';
 import { useScrollToFocusPoint } from './hooks';
 import { useOvermind } from '../../overmind';
 import './Canvas.css';
+import { clearCanvas } from '../../tools/util/util';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
@@ -17,6 +18,7 @@ export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element 
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint);
 
+  // set initial canvas size (to window size)
   useEffect((): void => {
     actions.canvas.setResolution({
       width: window.innerWidth - 72,
@@ -26,6 +28,7 @@ export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element 
 
   // set initial undo point
   useEffect((): void => {
+    clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
     actions.undo.setUndoPoint(canvasState.mainCanvas);
   }, [canvasState.mainCanvas]);
 

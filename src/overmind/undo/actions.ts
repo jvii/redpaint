@@ -9,6 +9,7 @@ export const setUndoPoint: AsyncAction<HTMLCanvasElement> = async (
     canvas.toBlob(resolve);
   });
   if (!blob) {
+    console.log('no blob');
     return;
   }
   if (state.undo.currentIndex === null) {

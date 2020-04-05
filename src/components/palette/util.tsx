@@ -8,18 +8,30 @@ export function createPalette(
   const palette: {
     [id: string]: Color;
   } = {};
-  for (let i = 0; i < colors; i++) {
-    const color = createColor(colors, i);
+
+  for (let i = 0; i < 14; i++) {
+    const color = createGrayscaleColor(11, i);
     palette[i] = color;
   }
+
+  for (let i = 14; i < colors; i++) {
+    const color = createHSLColor(colors, i);
+    palette[i] = color;
+  }
+
   return palette;
 }
 
-export function createColor(range: number, value: number): Color {
+function createGrayscaleColor(range: number, value: number): Color {
+  const percent = value / range;
+  return { r: percent * 255, g: percent * 255, b: percent * 255 };
+}
+
+function createHSLColor(range: number, value: number): Color {
   const minHue = 0;
   const maxHue = 360;
-  const currentPercent = value / range;
-  const hue = currentPercent * (maxHue - minHue) + minHue;
+  const percent = value / range;
+  const hue = percent * (maxHue - minHue) + minHue;
   return hslToColor(hue, 1, 0.5);
 }
 
