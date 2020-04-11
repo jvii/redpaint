@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Canvas } from './Canvas';
 import { CanvasState, CanvasStateAction } from './CanvasState';
-import { useScrollToFocusPoint } from './hooks';
+import { useScrollToFocusPoint, useLoadedImage } from './hooks';
 import { useOvermind } from '../../overmind';
 import './Canvas.css';
 import { clearCanvas } from '../../tools/util/util';
@@ -31,6 +31,9 @@ export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element 
     clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
     actions.undo.setUndoPoint(canvasState.mainCanvas);
   }, [canvasState.mainCanvas]);
+
+  // handle drawing newly loaded image to canvas
+  useLoadedImage(canvasState.mainCanvas);
 
   return (
     <div className="main-canvas-div" ref={canvasDivRef}>
