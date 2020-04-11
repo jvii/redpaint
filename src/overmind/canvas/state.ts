@@ -14,6 +14,7 @@ export type State = {
     lastModified: number;
     lastModifiedOverlay: number;
   };
+  loadedImageURL: string;
   fillStyle: Derive<State, string>;
 };
 
@@ -23,6 +24,7 @@ export const state: State = {
   zoomFocusPoint: null,
   mainCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
   zoomCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
+  loadedImageURL: '',
   fillStyle: (state, rootState): string => {
     if (rootState.tool.activeToolFillStyle) {
       return rootState.tool.activeToolFillStyle.effective;

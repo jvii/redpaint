@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useOvermind } from '../../overmind';
 import { blobToCanvas } from './util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
+import { clearCanvas } from '../../tools/util/util';
 
 export function useInitTool(
   eventHandlerParams: EventHandlerParams,
@@ -39,6 +40,25 @@ export function useUndo(canvas: HTMLCanvasElement): void {
   useEffect((): void => {
     blobToCanvas(state.undo.currentBufferItem, canvas);
   }, [state.undo.lastUndoRedoTime]);
+}
+
+export function useLoadedImage(canvas: HTMLCanvasElement): void {
+  // load image to canvas when loadedImageURL changes
+  const { state, actions } = useOvermind();
+  useEffect((): void => {
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+    const img = new Image();
+    img.onload = function(): void {
+      clearCanvas(canvas, state.palette.backgroundColor);
+      ctx.drawImage(img, 0, 0);
+      actions.undo.setUndoPoint(canvas);
+      actions.canvas.setCanvasModified(false);
+    };
+    img.src = state.canvas.loadedImageURL;
+  }, [state.canvas.loadedImageURL]);
 }
 
 export function useScrollToFocusPoint(

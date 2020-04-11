@@ -39,3 +39,7 @@ export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanva
     state.canvas.mainCanvas.lastModifiedOverlay = Date.now();
   }
 };
+
+export const setLoadedImage: Action<string> = ({ state }, loadedImageURL): void => {
+  state.canvas.loadedImageURL = loadedImageURL;
+};

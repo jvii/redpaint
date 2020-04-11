@@ -2,6 +2,8 @@ import React, { useRef } from 'react';
 import { useOvermind } from '../../overmind';
 import { MenuItem } from './MenuItem';
 import './Menubar.css';
+import { MenuItemSave } from './MenuItemSave';
+import { MenuItemOpen } from './MenuItemOpen';
 
 export function Menubar(): JSX.Element {
   const { state, actions } = useOvermind();
@@ -31,14 +33,13 @@ export function Menubar(): JSX.Element {
         <div className="menu__content">
           <div className="menu__image">
             <div className="menu__header">Image</div>
-            <MenuItem label="Open..."></MenuItem>
-            <MenuItem label="Save"></MenuItem>
-            <MenuItem label="Save As..."></MenuItem>
+            <MenuItemOpen label="Open..."></MenuItemOpen>
+            <MenuItemSave label="Save..."></MenuItemSave>
           </div>
           <div className="menu__brush">
             <div className="menu__header">Brush</div>
             <MenuItem label="Open..."></MenuItem>
-            <MenuItem label="Save As..."></MenuItem>
+            <MenuItem label="Save..."></MenuItem>
           </div>
           <div className="menu__mode">
             <div className="menu__header">Mode</div>
@@ -63,3 +64,4 @@ export function Menubar(): JSX.Element {
     </>
   );
 }
+
