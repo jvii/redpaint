@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
 import { useOvermind } from '../../overmind';
 import { MenuItem } from './MenuItem';
-import './Menubar.css';
 import { MenuItemSave } from './MenuItemSave';
 import { MenuItemOpen } from './MenuItemOpen';
+import { CustomBrush } from '../../brush/CustomBrush';
+import './Menubar.css';
 
 export function Menubar(): JSX.Element {
   const { state, actions } = useOvermind();
@@ -21,6 +22,29 @@ export function Menubar(): JSX.Element {
     overlayRef.current.style.height = '0%';
   };
 
+  const handleImageFileOpen = (input: HTMLInputElement): void => {
+    if (input.files?.[0]) {
+      actions.canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
+    }
+  };
+
+  const handleBrushFileOpen = (input: HTMLInputElement): void => {
+    if (input.files?.[0]) {
+      actions.brush.setBrush(new CustomBrush(URL.createObjectURL(input.files[0])));
+      actions.brush.setMode('Matte');
+    } else {
+      alert('Failed to open file!');
+    }
+  };
+
+  const getImageObjectURLToSave = (): string => {
+    return state.undo.currentBufferItem ? URL.createObjectURL(state.undo.currentBufferItem) : '#';
+  };
+
+  const getBrushObjectURLToSave = (): string => {
+    return state.brush.brush instanceof CustomBrush ? state.brush.brush.getObjectURL() : '#';
+  };
+
   const mode = state.brush.mode;
 
   return (
@@ -33,13 +57,19 @@ export function Menubar(): JSX.Element {
         <div className="menu__content">
           <div className="menu__image">
             <div className="menu__header">Image</div>
-            <MenuItemOpen label="Open..."></MenuItemOpen>
-            <MenuItemSave label="Save..."></MenuItemSave>
+            <MenuItemOpen label="Open..." handleFile={handleImageFileOpen}></MenuItemOpen>
+            <MenuItemSave
+              label="Save..."
+              objectURLToSave={getImageObjectURLToSave()}
+            ></MenuItemSave>
           </div>
           <div className="menu__brush">
             <div className="menu__header">Brush</div>
-            <MenuItem label="Open..."></MenuItem>
-            <MenuItem label="Save..."></MenuItem>
+            <MenuItemOpen label="Open..." handleFile={handleBrushFileOpen}></MenuItemOpen>
+            <MenuItemSave
+              label="Save..."
+              objectURLToSave={getBrushObjectURLToSave()}
+            ></MenuItemSave>
           </div>
           <div className="menu__mode">
             <div className="menu__header">Mode</div>
@@ -64,4 +94,3 @@ export function Menubar(): JSX.Element {
     </>
   );
 }
-
