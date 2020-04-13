@@ -23,7 +23,11 @@ interface Colorizable {
   toMatte(): void;
 }
 
-export class CustomBrush implements Brush, Colorizable {
+interface Saveable {
+  getObjectURL(): string;
+}
+
+export class CustomBrush implements Brush, Colorizable, Saveable {
   private brushImage = new Image();
   private brushImageMatte = new Image();
   private brushImageColorFG = new Image();
@@ -222,5 +226,11 @@ export class CustomBrush implements Brush, Colorizable {
 
   public toMatte(): void {
     this.brushImage = this.brushImageMatte;
+  }
+
+  // Saveable
+
+  public getObjectURL(): string {
+    return this.brushImage.src;
   }
 }

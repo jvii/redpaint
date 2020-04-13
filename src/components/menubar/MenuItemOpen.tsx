@@ -1,27 +1,23 @@
 import React from 'react';
 import './Menubar.css';
-import { useOvermind } from '../../overmind';
 
 interface Props {
   label: string;
+  handleFile: (input: HTMLInputElement) => void;
 }
 
-export function MenuItemOpen({ label }: Props): JSX.Element {
-  const { actions } = useOvermind();
-
-  function handleFiles(input: HTMLInputElement): void {
-    if (input.files?.[0]) {
-      actions.canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
-    }
-  }
-
+export function MenuItemOpen({ label, handleFile }: Props): JSX.Element {
   return (
     <div className="menu__item">
       <div className="menu__item-is-selected"></div>
       <label className="menu__item-label">
         <input
           type="file"
-          onChange={(event): void => handleFiles(event.target)}
+          onChange={(event): void => {
+            handleFile(event.target);
+            // must reset or onChange won't fire if user opens the same file again
+            event.target.value = '';
+          }}
           style={{ display: 'none' }}
         ></input>
         <a>{label}</a>
