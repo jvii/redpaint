@@ -6,8 +6,3 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
-/* seems to be necessary to fit root div to window vertically */
-#root {
-  height: 100vh;
-}

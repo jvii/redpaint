@@ -1,22 +1,26 @@
 .app {
   height: 100vh;
-  display: grid;
+  display: flex;
+  flex-flow: column;
   overflow: hidden;
-  align-items: flex-start;
-  grid-template-rows: auto auto auto auto 1fr;
-  grid-template-columns: auto 70px;
-  grid-template-areas:
-    'menubar menubar'
-    'canvas builtinbrushes'
-    'canvas toolbox'
-    'canvas colorindicator'
-    'canvas palette';
 }
 
-.canvas-area {
-  grid-area: canvas;
-  overflow: auto;
-  height: 100%;
+.canvas-toolbox-container {
   display: flex;
+  flex-grow: 1;
+  justify-content: space-between;
   cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;
+  overflow: hidden;
+  background-color: black;
+}
+
+.canvas-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.toolbox-container {
+  height: 100%;
+  width: min-content;
 }

@@ -73,7 +73,7 @@ export function Canvas({
   };
 
   return (
-    <div className="canvas-container">
+    <>
       <canvas
         className="canvas"
         ref={canvasRef}
@@ -113,6 +113,6 @@ export function Canvas({
         height={state.canvas.resolution.height}
         style={CSSZoom}
       />
-    </div>
+    </>
   );
 }
