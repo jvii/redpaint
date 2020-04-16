@@ -1,13 +1,10 @@
-.canvas-container {
-  position: relative;
-  height: auto;
-}
-
 .canvas {
   image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-crisp-edges;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  border: 1px white;
+  border-style: dotted;
 }
 
 .canvas--overlay {
@@ -19,15 +16,18 @@
 }
 
 .main-canvas-div {
+  position: relative;
   overflow: auto;
   min-width: 50%;
-  height: 100%;
+  flex-grow: 1;
+
 }
 
 .zoom-canvas-div {
+  position: relative;
   overflow: auto;
   min-width: 45%;
-  height: 100%;
+  flex-grow: 1;
 }
 
 /* checkered pattern from https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */

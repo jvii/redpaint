@@ -19,15 +19,19 @@ function App(): JSX.Element {
   return (
     <div className="app">
       <Menubar />
-      <div className="canvas-area">
-        <MainCanvas canvasDispatch={canvasDispatch} canvasState={canvasState} />
-        <ZoomCanvas canvasDispatch={canvasDispatch} />
-        <CanvasSyncHandler canvasState={canvasState} />
+      <div className="canvas-toolbox-container">
+        <div className="canvas-container">
+          <MainCanvas canvasDispatch={canvasDispatch} canvasState={canvasState} />
+          <ZoomCanvas canvasDispatch={canvasDispatch} />
+          <CanvasSyncHandler canvasState={canvasState} />
+        </div>
+        <div className="toolbox-container">
+          <BuiltInBrushes />
+          <Toolbox canvasState={canvasState} />
+          <ColorIndicator />
+          <Palette />
+        </div>
       </div>
-      <BuiltInBrushes />
-      <Toolbox canvasState={canvasState} />
-      <ColorIndicator />
-      <Palette />
     </div>
   );
 }
