@@ -1,7 +1,5 @@
 .color-indicator {
-  grid-area: colorindicator;
   display: grid;
   justify-content: flex-end;
   background-color: black;
-  align-self: start;
 }

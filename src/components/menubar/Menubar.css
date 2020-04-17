@@ -1,9 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
 
 .menubar {
-  height: 35px;
   border-bottom: 1px solid black;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   font-family: 'Press Start 2P';
   display: grid;
   grid-template-areas: 'title modeIndicator .';
