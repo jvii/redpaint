@@ -18,13 +18,13 @@ export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element 
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint);
 
-  // set initial canvas size (to window size)
+  // set initial canvas size (to initial window size)
   useEffect((): void => {
     actions.canvas.setResolution({
-      width: window.innerWidth - 72,
-      height: window.innerHeight - 44,
+      width: canvasDivRef.current.offsetWidth - 2,
+      height: canvasDivRef.current.offsetHeight - 5,
     });
-  }, [canvasDispatch]);
+  }, [canvasDivRef]);
 
   // set initial undo point
   useEffect((): void => {

@@ -3,12 +3,12 @@
   image-rendering: -webkit-crisp-edges;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  border: 1px white;
-  border-style: dotted;
+  border: 1px white dotted;
+  cursor: url(../../resources/cursorCrossHair2.png) 14 14, auto;
 }
 
 .canvas--overlay {
-  position: absolute;
+  position: absolute; /* absolutely positioned to perfectly overlap drawing canvas  */
   left: 0;
   top: 0;
   background-color: transparent;
@@ -16,30 +16,29 @@
 }
 
 .main-canvas-div {
-  position: relative;
-  overflow: auto;
+  position: relative; /* relative to enable overlaying canvas element */
+  overflow: auto; /* show scrollbar when required */
   min-width: 50%;
-  flex-grow: 1;
-
+  flex-grow: 1;   /* fill remaining horizontal space */
 }
 
 .zoom-canvas-div {
-  position: relative;
-  overflow: auto;
+  position: relative; /* relative to enable overlaying canvas element */
+  overflow: auto; /* show scrollbar when required */
   min-width: 45%;
-  flex-grow: 1;
 }
 
 /* checkered pattern from https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
 .zoom-canvas-separator {
   display: inline-block;
-  height: 100%;
+  width: 30px;
   background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
     linear-gradient(135deg, #ccc 25%, transparent 25%),
     linear-gradient(45deg, transparent 75%, #ccc 75%),
     linear-gradient(135deg, transparent 75%, #ccc 75%);
   background-size: 10px 10px; /* Must be a square */
   background-position: 0 0, 5px 0, 5px -5px, 0px 5px; /* Must be half of one side of the square */
+  background-color: white;
 }
 
 .zoom-canvas-separator__button-plus {

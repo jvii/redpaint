@@ -2,25 +2,24 @@
   height: 100vh;
   display: flex;
   flex-flow: column;
-  overflow: hidden;
+  overflow: hidden; /* never show a scrollbar here */
 }
 
 .canvas-toolbox-container {
   display: flex;
-  flex-grow: 1;
-  justify-content: space-between;
-  cursor: url(../resources/cursorCrossHair2.png) 14 14, auto;
-  overflow: hidden;
+  flex-grow: 1; /* take up all remaining vertical space */
+  justify-content: space-between; /* keeps canvas attached to the left and toolbox to the right side of window */
+  overflow: hidden; /* never show a scrollbar here */
   background-color: black;
 }
 
 .canvas-container {
   display: flex;
-  height: 100%;
-  overflow: hidden;
+  overflow: hidden; /* never show a scrollbar here */
+  flex-grow: 1;     /* take up all remaining horizontal space */
 }
 
 .toolbox-container {
-  height: 100%;
-  width: min-content;
+  width: min-content; /* always same width as the content (toolbox) */
+  overflow: hidden; /* never show a scrollbar here */
 }
