@@ -20,6 +20,7 @@
 }
 
 .toolbox-container {
-  width: min-content; /* always same width as the content (toolbox) */
+  flex-shrink: 0;   /* never shrink width smaller than content (toolbar) */
   overflow: hidden; /* never show a scrollbar here */
+  border-left: 1px solid black;
 }
