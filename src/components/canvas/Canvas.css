@@ -3,8 +3,9 @@
   image-rendering: -webkit-crisp-edges;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  border: 1px white dotted;
+  outline: 1px white dotted;
   cursor: url(../../resources/cursorCrossHair2.png) 14 14, auto;
+  display: block; /* explicitly set to prevent a vertical scroll bar caused by element being inline */
 }
 
 .canvas--overlay {
@@ -17,15 +18,16 @@
 
 .main-canvas-div {
   position: relative; /* relative to enable overlaying canvas element */
-  overflow: auto; /* show scrollbar when required */
+  overflow: auto;     /* show scrollbar when required */
   min-width: 50%;
-  flex-grow: 1;   /* fill remaining horizontal space */
+  flex-grow: 1;       /* fill remaining horizontal space */
 }
 
 .zoom-canvas-div {
   position: relative; /* relative to enable overlaying canvas element */
-  overflow: auto; /* show scrollbar when required */
+  overflow: auto;     /* show scrollbar when required */
   min-width: 45%;
+  flex-grow: 1;       /* fill remaining horizontal space */
 }
 
 /* checkered pattern from https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */

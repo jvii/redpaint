@@ -2,13 +2,12 @@
 
 .menubar {
   border-bottom: 1px solid black;
-  margin-bottom: 2px;
+  margin-bottom: 1px solid;
   font-family: 'Press Start 2P';
   display: grid;
   grid-template-areas: 'title modeIndicator .';
   font-size: 16px;
   user-select: none;
-  box-shadow: 0px 1px gray;
 }
 
 .menubar__title {
@@ -47,7 +46,7 @@
 }
 
 .menu__header {
-  border-bottom: white ;
+  border-bottom: white;
   padding-bottom: 5px;
   font-size: 32px;
   color: #ffffff;
