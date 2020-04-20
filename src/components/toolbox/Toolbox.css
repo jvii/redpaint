@@ -160,5 +160,5 @@
 }
 
 .toolbox__button--clr:active {
-  background: url(../../resources/clrButtonActive.png) no-repeat;
+  background: url(../../resources/clrButton.svg) no-repeat;
 }
