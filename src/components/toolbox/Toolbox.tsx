@@ -75,7 +75,7 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
       />
       <ToolboxToggleButton
         buttonClass="brushselect"
-        isSelected={state.toolbox.brushSelectionModeOn}
+        isSelected={state.toolbox.activeToolId === 'brushSelectorTool'}
         onClick={(): void => actions.toolbox.toggleBrushSelectionMode()}
       />
       <ToolboxDualToggleButton
@@ -87,7 +87,9 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
       />
       <ToolboxToggleButton
         buttonClass="zoom"
-        isSelected={state.toolbox.zoomModeState !== 'off'}
+        isSelected={
+          state.toolbox.zoomModeOn || state.toolbox.activeToolId === 'zoomInitialPointSelectorTool'
+        }
         onClick={(): void => actions.toolbox.toggleZoomMode()}
       />
       <ToolboxToggleButton

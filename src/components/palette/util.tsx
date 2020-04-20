@@ -83,3 +83,7 @@ export function hslToColor(hue: number, saturation: number, lightness: number): 
 
   return { r: Math.round(red * 255), g: Math.round(green * 255), b: Math.round(blue * 255) };
 }
+
+export function colorEquals(color1: Color, color2: Color): boolean {
+  return color1.r === color2.r && color1.g === color2.g && color1.b === color2.b;
+}

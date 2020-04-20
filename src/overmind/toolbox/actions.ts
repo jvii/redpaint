@@ -1,58 +1,47 @@
 import { Action } from 'overmind';
 import { DrawingToolId } from './state';
-import { BrushSelector } from '../../tools/BrushSelector';
-import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 
 export const setSelectedDrawingTool: Action<DrawingToolId> = ({ state, actions }, toolId): void => {
   actions.toolbox.setActiveToPreviousTool();
   state.toolbox.selectedDrawingToolId = toolId;
-  state.toolbox.brushSelectionModeOn = false;
+  state.toolbox.selectedSelectorToolId = null;
 };
 
 export const toggleZoomMode: Action = ({ state, actions }): void => {
   actions.toolbox.setActiveToPreviousTool();
-  const oldState = state.toolbox.zoomModeState;
-  switch (oldState) {
-    case 'off':
-      state.toolbox.zoomModeState = 'selectingInitialPoint';
-      state.toolbox.brushSelectionModeOn = false; // can't be selecting brush while selecting zoom point
-      state.toolbox.symmetryModeOn = false;
-      break;
-    case 'selectingInitialPoint':
-      state.toolbox.zoomModeState = 'off';
-      break;
-    case 'on':
-      state.toolbox.zoomModeState = 'off';
-      break;
+  const isSelected = state.toolbox.zoomModeOn;
+  if (isSelected) {
+    state.toolbox.zoomModeOn = false;
+  } else {
+    state.toolbox.selectedSelectorToolId = 'zoomInitialPointSelectorTool';
   }
-
   actions.canvas.setZoomFocusPoint(null);
 };
 
 export const toggleBrushSelectionMode: Action = ({ state, actions }): void => {
   actions.toolbox.setActiveToPreviousTool();
-  const oldState = state.toolbox.brushSelectionModeOn;
-  state.toolbox.brushSelectionModeOn = oldState ? false : true;
+  const isSelected = state.toolbox.selectedSelectorToolId === 'brushSelectorTool';
+  state.toolbox.selectedSelectorToolId = isSelected ? null : 'brushSelectorTool';
+};
 
-  if (state.toolbox.zoomModeState === 'selectingInitialPoint') {
-    state.toolbox.zoomModeState = 'off'; // can't be selecting zoom point while selecting brush
-  }
+export const toggleForegroundColorSelectionMode: Action = ({ state, actions }): void => {
+  actions.toolbox.setActiveToPreviousTool();
+  const isSelected = state.toolbox.selectedSelectorToolId === 'foregroundColorSelectorTool';
+  state.toolbox.selectedSelectorToolId = isSelected ? null : 'foregroundColorSelectorTool';
+};
 
-  state.toolbox.symmetryModeOn = false;
+export const toggleBackgroundColorSelectionMode: Action = ({ state, actions }): void => {
+  actions.toolbox.setActiveToPreviousTool();
+  const isSelected = state.toolbox.selectedSelectorToolId === 'backgroundColorSelectorTool';
+  state.toolbox.selectedSelectorToolId = isSelected ? null : 'backgroundColorSelectorTool';
 };
 
 export const toggleSymmetryMode: Action = ({ state }): void => {
-  const oldState = state.toolbox.symmetryModeOn;
-  state.toolbox.symmetryModeOn = oldState ? false : true;
-  state.toolbox.brushSelectionModeOn = false;
+  const isSelected = state.toolbox.symmetryModeOn;
+  state.toolbox.symmetryModeOn = isSelected ? false : true;
+  state.toolbox.selectedSelectorToolId = null;
 };
 
 export const setActiveToPreviousTool: Action = ({ state }): void => {
-  if (state.toolbox.activeTool instanceof BrushSelector) {
-    state.toolbox.previousToolId = 'brushSelectorTool';
-  } else if (state.toolbox.activeTool instanceof ZoomInitialPointSelectorTool) {
-    state.toolbox.previousToolId = 'zoomInitialPointSelectorTool';
-  } else {
-    state.toolbox.previousToolId = state.toolbox.selectedDrawingToolId;
-  }
+  state.toolbox.previousToolId = state.toolbox.activeToolId;
 };
