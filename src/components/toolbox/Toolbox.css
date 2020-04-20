@@ -24,11 +24,11 @@
 }
 
 .toolbox__button--freehand {
-  background: url(../../resources/FreehandButton.svg) no-repeat;
+  background: url(../../resources/freehandButton.svg) no-repeat;
 }
 
 .toolbox__button--freehand-selected {
-  background: url(../../resources/FreehandButtonActive.svg) no-repeat;
+  background: url(../../resources/freehandButtonActive.svg) no-repeat;
 }
 
 .toolbox__button--line {
