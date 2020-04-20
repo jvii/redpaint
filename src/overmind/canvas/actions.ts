@@ -14,12 +14,13 @@ export const setScrollFocusPoint: Action<Point> = ({ state }, point): void => {
 export const setZoomFocusPoint: Action<Point | null> = ({ state }, point): void => {
   state.canvas.zoomFocusPoint = point;
   if (point != null) {
-    state.toolbox.zoomModeState = 'on';
+    state.toolbox.zoomModeOn = true;
+    state.toolbox.selectedSelectorToolId = null;
   }
 };
 
 export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {
-  if (state.toolbox.zoomModeState !== 'on') {
+  if (!state.toolbox.zoomModeOn) {
     return;
   }
   if (isZoomCanvas) {
@@ -30,7 +31,7 @@ export const setCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): voi
 };
 
 export const setOverlayCanvasModified: Action<boolean> = ({ state }, isZoomCanvas): void => {
-  if (state.toolbox.zoomModeState !== 'on') {
+  if (!state.toolbox.zoomModeOn) {
     return;
   }
   if (isZoomCanvas) {

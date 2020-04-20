@@ -4,7 +4,7 @@ import { colorToRGBString } from '../../tools/util/util';
 import './ColorIndicator.css';
 
 export function ColorIndicator(): JSX.Element {
-  const { state } = useOvermind();
+  const { state, actions } = useOvermind();
 
   const background = {
     backgroundColor: colorToRGBString(state.palette.backgroundColor),
@@ -27,8 +27,20 @@ export function ColorIndicator(): JSX.Element {
 
   return (
     <div className="color-indicator">
-      <div style={background}>
-        <div style={foreground}></div>
+      <div
+        style={background}
+        onClick={(event): void => {
+          actions.toolbox.toggleBackgroundColorSelectionMode();
+          event.stopPropagation();
+        }}
+      >
+        <div
+          style={foreground}
+          onClick={(event): void => {
+            actions.toolbox.toggleForegroundColorSelectionMode();
+            event.stopPropagation();
+          }}
+        ></div>
       </div>
     </div>
   );

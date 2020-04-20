@@ -12,6 +12,7 @@ import { DottedFreehandTool } from '../../tools/DottedFreehandTool';
 import { AirbrushTool } from '../../tools/AirbrushTool';
 import { PolygonTool } from '../../tools/PolygonTool';
 import { TextTool } from '../../tools/TextTool';
+import { ColorSelectorTool } from '../../tools/ColorSelectorTool';
 
 const filled = true;
 const noFill = false;
@@ -35,49 +36,57 @@ const drawingTools = {
   textNoFill: new TextTool(noFill),
 };
 
+const foregroundColor = true;
+const backgroundColor = false;
+
 const selectorTools = {
   zoomInitialPointSelectorTool: new ZoomInitialPointSelectorTool(),
   brushSelectorTool: new BrushSelector(),
+  foregroundColorSelectorTool: new ColorSelectorTool(foregroundColor),
+  backgroundColorSelectorTool: new ColorSelectorTool(backgroundColor),
 };
 
 export type DrawingToolId = keyof typeof drawingTools;
 export type SelectorToolId = keyof typeof selectorTools;
 
 export type State = {
-  readonly activeTool: Tool;
-  readonly previousTool: Tool | null;
-  previousToolId: DrawingToolId | SelectorToolId | null;
   selectedDrawingToolId: DrawingToolId;
-  zoomModeState: 'off' | 'on' | 'selectingInitialPoint';
-  brushSelectionModeOn: boolean;
+  selectedSelectorToolId: SelectorToolId | null;
+  readonly activeToolId: DrawingToolId | SelectorToolId;
+  readonly activeTool: Tool;
+  previousToolId: DrawingToolId | SelectorToolId | null;
+  readonly previousTool: Tool | null;
+  zoomModeOn: boolean;
   symmetryModeOn: boolean;
 };
 
 export const state: State = {
-  get activeTool(this: State): Tool {
-    if (this.zoomModeState === 'selectingInitialPoint') {
-      return selectorTools['zoomInitialPointSelectorTool'];
-    }
-    if (this.brushSelectionModeOn) {
-      return selectorTools['brushSelectorTool'];
-    }
-    return drawingTools[this.selectedDrawingToolId];
+  selectedDrawingToolId: 'freeHand', // one DrawingTool MUST be selected
+  selectedSelectorToolId: null, // one SelectorTool CAN be selected
+  // current activeTool: primarily the selected SelectorTool, secondarily the selected DrawingTool
+  get activeToolId(this: State): DrawingToolId | SelectorToolId {
+    return this.selectedSelectorToolId ? this.selectedSelectorToolId : this.selectedDrawingToolId;
   },
+  get activeTool(this: State): Tool {
+    return this.selectedSelectorToolId
+      ? selectorTools[this.selectedSelectorToolId]
+      : drawingTools[this.selectedDrawingToolId];
+  },
+  previousToolId: null,
   get previousTool(this: State): Tool | null {
     if (!this.previousToolId) {
       return null;
     }
     if (
       this.previousToolId === 'zoomInitialPointSelectorTool' ||
-      this.previousToolId === 'brushSelectorTool'
+      this.previousToolId === 'brushSelectorTool' ||
+      this.previousToolId === 'foregroundColorSelectorTool' ||
+      this.previousToolId === 'backgroundColorSelectorTool'
     ) {
       return selectorTools[this.previousToolId];
     }
     return drawingTools[this.previousToolId];
   },
-  previousToolId: null,
-  selectedDrawingToolId: 'freeHand',
-  zoomModeState: 'off',
-  brushSelectionModeOn: false,
+  zoomModeOn: false,
   symmetryModeOn: false,
 };
