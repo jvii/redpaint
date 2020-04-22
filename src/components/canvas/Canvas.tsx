@@ -30,11 +30,11 @@ export function Canvas({
 
   const canvasCtx = canvasRef.current.getContext('2d', {
     alpha: false,
-    desynchronized: true,
+    desynchronized: false, // desynchronized caused various problems with Windows version of Chrome
   }) as CanvasRenderingContext2D | null;
   const overlayCanvasCtx = overlayCanvasRef.current.getContext('2d', {
     alpha: true,
-    desynchronized: true,
+    desynchronized: false, // desynchronized caused various problems with Windows version of Chrome
   }) as CanvasRenderingContext2D | null;
 
   const { state, actions } = useOvermind();

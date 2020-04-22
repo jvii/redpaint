@@ -1,5 +1,3 @@
-import { clearCanvas } from '../../tools/util/util';
-
 export function cloneCanvas(
   sourceCanvas: HTMLCanvasElement,
   targetCanvas: HTMLCanvasElement
@@ -19,10 +17,10 @@ export function blobToCanvas(blob: Blob | null, canvas: HTMLCanvasElement): void
   if (blob === null) {
     return;
   }
-  clearCanvas(canvas, { r: 255, g: 255, b: 255 });
   const image = new Image();
   const objectURL = URL.createObjectURL(blob);
-  image.onload = function(): void {
+  image.onload = (): void => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0);
   };
   image.src = objectURL;
