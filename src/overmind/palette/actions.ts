@@ -24,6 +24,7 @@ export const findAndSetForegroundColor: Action<Color> = ({ state, actions }, col
   for (let i = 0; i < state.palette.paletteArray.length; i++) {
     if (colorEquals(state.palette.paletteArray[i], color)) {
       actions.palette.setForegroundColor(i.toString());
+      return;
     }
   }
 };
@@ -32,6 +33,7 @@ export const findAndSetBackgroundColor: Action<Color> = ({ state, actions }, col
   for (let i = 0; i < state.palette.paletteArray.length; i++) {
     if (colorEquals(state.palette.paletteArray[i], color)) {
       actions.palette.setBackgroundColor(i.toString());
+      return;
     }
   }
 };

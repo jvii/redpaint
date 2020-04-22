@@ -89,7 +89,7 @@ export class FreehandTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       event,
       ctx,
