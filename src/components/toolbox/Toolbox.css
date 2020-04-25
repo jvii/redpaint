@@ -44,11 +44,11 @@
 }
 
 .toolbox__button--airbrush {
-  background: url(../../resources/airbrushButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#airbrush-view) no-repeat;
 }
 
 .toolbox__button--airbrush-selected {
-  background: url(../../resources/airbrushButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#airbrush-active-view) no-repeat;
 }
 
 .toolbox__button--curve-selected {

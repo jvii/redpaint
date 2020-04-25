@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <symbol id="airbrush" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill-rule="evenodd">
+        <g stroke-width=".93573">
+          <rect x="22.647" y="7.0713" width="2.6457" height="2.6457" />
+          <rect x="12.064" y="12.363" width="2.6457" height="2.6457" />
+          <rect x="14.71" y="9.717" width="2.6457" height="2.6457" />
+          <rect x="17.356" y="7.0713" width="2.6457" height="2.6457" />
+          <rect x="14.71" y="15.008" width="2.6457" height="2.6457" />
+          <rect x="12.064" y="17.654" width="2.6457" height="2.6457" />
+          <rect x="20.002" y="12.363" width="2.6457" height="2.6457" />
+          <rect x="14.71" y="20.3" width="2.6457" height="2.6457" />
+          <rect x="17.356" y="22.945" width="2.6457" height="2.6457" />
+          <rect x="20.002" y="17.654" width="2.6457" height="2.6457" />
+          <rect x="22.647" y="22.945" width="2.6457" height="2.6457" />
+          <rect x="25.294" y="12.363" width="2.6457" height="2.6457" />
+          <rect x="25.294" y="17.654" width="2.6457" height="2.6457" />
+        </g>
+        <rect x="4.6527" y="15.008" width="7.4115" height="2.6457" stroke-width="1.5662" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="airbrush-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill="#fff" fill-rule="evenodd">
+        <g stroke-width=".93573">
+          <rect x="22.647" y="7.0713" width="2.6457" height="2.6457" />
+          <rect x="12.064" y="12.363" width="2.6457" height="2.6457" />
+          <rect x="14.71" y="9.717" width="2.6457" height="2.6457" />
+          <rect x="17.356" y="7.0713" width="2.6457" height="2.6457" />
+          <rect x="14.71" y="15.008" width="2.6457" height="2.6457" />
+          <rect x="12.064" y="17.654" width="2.6457" height="2.6457" />
+          <rect x="20.002" y="12.363" width="2.6457" height="2.6457" />
+          <rect x="14.71" y="20.3" width="2.6457" height="2.6457" />
+          <rect x="17.356" y="22.945" width="2.6457" height="2.6457" />
+          <rect x="20.002" y="17.654" width="2.6457" height="2.6457" />
+          <rect x="22.647" y="22.945" width="2.6457" height="2.6457" />
+          <rect x="25.294" y="12.363" width="2.6457" height="2.6457" />
+          <rect x="25.294" y="17.654" width="2.6457" height="2.6457" />
+        </g>
+        <rect x="4.6527" y="15.008" width="7.4115" height="2.6457" stroke-width="1.5662" />
+      </g>
+    </g>
+  </symbol>
+
+  <!-- define view locations for each icon -->
+  <view id="airbrush-view" viewBox="0 0 26.458 26.458" />
+  <view id="airbrush-active-view" viewBox="0 30 26.458 26.458" />
+
+  <!-- copy shape to location defined above -->
+  <use href="#airbrush" id="airbrush" width="26.458" height="26.458" x="0" y="0" />
+  <use href="#airbrush-active" id="airbrush-active" width="26.458" height="26.458" x="0" y="30" />
+</svg>

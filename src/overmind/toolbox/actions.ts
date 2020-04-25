@@ -9,13 +9,19 @@ export const setSelectedDrawingTool: Action<DrawingToolId> = ({ state, actions }
 
 export const toggleZoomMode: Action = ({ state, actions }): void => {
   actions.toolbox.setActiveToPreviousTool();
-  const isSelected = state.toolbox.zoomModeOn;
-  if (isSelected) {
-    state.toolbox.zoomModeOn = false;
-  } else {
-    state.toolbox.selectedSelectorToolId = 'zoomInitialPointSelectorTool';
-  }
   actions.canvas.setZoomFocusPoint(null);
+  // ZoomMode on => ZoomMode off
+  if (state.toolbox.zoomModeOn) {
+    state.toolbox.zoomModeOn = false;
+    return;
+  }
+  // ZoomMode not yet on and selecting zoom initial point => exit initial point selection
+  if (state.toolbox.selectedSelectorToolId === 'zoomInitialPointSelectorTool') {
+    state.toolbox.selectedSelectorToolId = null;
+    return;
+  }
+  // ZoomMode not on and not selecting zoom initial point => start initial point selection
+  state.toolbox.selectedSelectorToolId = 'zoomInitialPointSelectorTool';
 };
 
 export const toggleBrushSelectionMode: Action = ({ state, actions }): void => {
