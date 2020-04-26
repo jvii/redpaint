@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <!-- SVG sprite for Toolbox. See end of file for view definition of each icon -->
+
   <symbol id="airbrush" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)">
       <rect
@@ -66,11 +68,1346 @@
     </g>
   </symbol>
 
+  <symbol id="brush-selector" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)" fill="#fff">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill-rule="evenodd">
+        <rect
+          x="7.5099"
+          y="7.6933"
+          width="18.335"
+          height="18.326"
+          stroke="#000"
+          stroke-width="1.82"
+        />
+        <rect x="11.125" y="3.4522" width="11.031" height="26.474" stroke-width="1.0729" />
+        <rect x="3.6746" y="11.389" width="26.419" height="10.771" stroke-width="1.065" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="brush-selector-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <rect
+        x="7.5099"
+        y="7.6933"
+        width="18.335"
+        height="18.326"
+        fill="none"
+        stroke="#fff"
+        stroke-width="1.82"
+      />
+      <rect
+        x="11.125"
+        y="3.4522"
+        width="11.031"
+        height="26.474"
+        fill-rule="evenodd"
+        stroke-width="1.0729"
+      />
+      <rect
+        x="3.6746"
+        y="11.389"
+        width="26.419"
+        height="10.771"
+        fill="#030000"
+        fill-rule="evenodd"
+        stroke-width="1.065"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="circle" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g stroke="#000">
+        <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
+        <circle
+          transform="rotate(-2.1486)"
+          cx="16.248"
+          cy="16.939"
+          r="9.8182"
+          fill="none"
+          stroke-linecap="round"
+          stroke-width="1.4797"
+        />
+        <path
+          d="m16.059 26.136c-1.2608-0.06139-2.4956-0.38395-3.6852-0.9627-0.54279-0.26406-1.5538-0.90424-1.8876-1.1952l-0.16352-0.14254 5.4381-5.5171c2.9909-3.0344 6.0643-6.1485 6.8296-6.9202l1.3915-1.4031 0.2789 0.3471c1.9123 2.3799 2.5829 5.5797 1.7933 8.5581-0.43697 1.6484-1.3136 3.1716-2.5176 4.3745-0.82376 0.82301-1.5635 1.3512-2.6284 1.8769-1.5495 0.7649-3.0593 1.0713-4.849 0.9842z"
+          stroke-linecap="round"
+          stroke-width=".060927"
+        />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="circle-filled-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000004"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <circle
+        transform="rotate(-2.1486)"
+        cx="16.248"
+        cy="16.939"
+        r="9.8182"
+        fill="#fff"
+        stroke="#000"
+        stroke-width="1.4797"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="circle-nofill-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <circle
+        transform="rotate(-2.1486)"
+        cx="16.248"
+        cy="16.939"
+        r="9.8182"
+        stroke="#fff"
+        stroke-width="1.4797"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="curve" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21165"
+      />
+      <path
+        d="m6.032 7.0839c22.289-0.026568 20.424 19.23 20.465 20.47"
+        fill="none"
+        stroke="#000"
+        stroke-width="2.0032"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="curve-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#00000e"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21165"
+      />
+      <path
+        d="m6.032 7.0839c22.289-0.026568 20.424 19.23 20.465 20.47"
+        fill="none"
+        stroke="#fff"
+        stroke-width="2.0032"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="clr" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21165"
+      />
+      <g fill="none" stroke="#000">
+        <g stroke-width="1.5874">
+          <path d="m6.9232 6.9808v18.379" />
+          <path d="m6.1295 7.4184h5.1061" />
+          <path d="m6.1295 24.964h5.1061" />
+        </g>
+        <path d="m14.455 6.6027v19.162" stroke-width="1.591" />
+        <path d="m13.889 24.964h5.1061" stroke-width="1.5874" />
+        <path d="m20.777 6.4061v19.427" stroke-width="1.5808" />
+        <g stroke-width="1.5874">
+          <path d="m20.311 7.1998h5.1061" />
+          <path d="m26.208 7.9179v6.9921" />
+          <path d="m20.682 15.628h4.7359" />
+        </g>
+        <path d="m26.212 17.732v8.0882" stroke-width="1.5833" />
+        <path d="m24.608 15.877v1.9264" stroke-width="1.5874" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="clr-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        stroke="#000005"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21165"
+      />
+      <g fill="none" stroke="#fffffb">
+        <g stroke-width="1.5874">
+          <path d="m6.9232 6.9808v18.379" />
+          <path d="m6.1295 7.4184h5.1061" />
+          <path d="m6.1295 24.964h5.1061" />
+        </g>
+        <path d="m14.455 6.6027v19.162" stroke-width="1.591" />
+        <path d="m13.889 24.964h5.1061" stroke-width="1.5874" />
+        <path d="m20.777 6.4061v19.427" stroke-width="1.5808" />
+        <g stroke-width="1.5874">
+          <path d="m20.311 7.1998h5.1061" />
+          <path d="m26.208 7.9179v6.9921" />
+          <path d="m20.682 15.628h4.7359" />
+        </g>
+        <path d="m26.212 17.732v8.0882" stroke-width="1.5833" />
+        <path d="m24.608 15.877v1.9264" stroke-width="1.5874" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="dotted-freehand" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill-rule="evenodd" stroke-width=".93573">
+        <rect x="9.8288" y="7.6877" width="2.6457" height="2.6457" />
+        <rect x="15.306" y="10.741" width="2.6457" height="2.6457" />
+        <rect x="18.941" y="16.463" width="2.6457" height="2.6457" />
+        <rect x="19.076" y="21.883" width="2.6457" height="2.6457" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="dotted-freehand-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#00001c"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill="#fffffc" fill-rule="evenodd" stroke-width=".93573">
+        <rect x="9.8288" y="7.6877" width="2.6457" height="2.6457" />
+        <rect x="15.306" y="10.741" width="2.6457" height="2.6457" />
+        <rect x="18.941" y="16.463" width="2.6457" height="2.6457" />
+        <rect x="19.076" y="21.883" width="2.6457" height="2.6457" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="ellipse" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g stroke="#000">
+        <ellipse
+          transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
+          cx="15.581"
+          cy="17.498"
+          rx="10.53"
+          ry="5.171"
+          fill="#fff"
+          stroke-linecap="round"
+          stroke-width="1.1121"
+        />
+        <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
+        <path
+          transform="translate(3.635 3.4126)"
+          d="m11.781 18.254c-1.0127-0.097045-2.0151-0.23442-2.1152-0.28989-0.078828-0.043653 1.1851-1.379 3.9543-4.1775l4.0701-4.1134 0.57759 0.14947c2.1278 0.55061 4.0251 1.7312 4.6615 2.9005 1.3081 2.4034-2.3355 4.9564-7.8477 5.4986-0.85601 0.0842-2.5826 0.10109-3.3006 0.03227z"
+          stroke-width=".84661"
+        />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="ellipse-filled-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <ellipse
+        transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
+        cx="15.581"
+        cy="17.498"
+        rx="10.53"
+        ry="5.171"
+        fill="#fff"
+        stroke="#fff"
+        stroke-width="1.1121"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="ellipse-nofill-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <ellipse
+        transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
+        cx="15.581"
+        cy="17.498"
+        rx="10.53"
+        ry="5.171"
+        stroke="#fff"
+        stroke-width="1.4904"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="floodfill" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill="none" stroke="#000">
+        <rect
+          transform="rotate(45)"
+          x="16.248"
+          y="-7.1208"
+          width="11.319"
+          height="11.319"
+          stroke-width="1.6139"
+        />
+        <path d="m15.555 21.495v6.3424" stroke-width="1.3833" />
+        <path d="m11.217 27.49h8.6364" stroke-width="1.3795" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="floodfill-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)" stroke="#fff">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g fill="none">
+        <rect
+          transform="rotate(45)"
+          x="16.248"
+          y="-7.1208"
+          width="11.319"
+          height="11.319"
+          stroke-width="1.6139"
+        />
+        <path d="m15.555 21.495v6.3424" stroke-width="1.3833" />
+        <path d="m11.217 27.49h8.6364" stroke-width="1.3795" />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="freehand" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)" stroke-linecap="round">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <path
+        transform="matrix(.97643 0 0 1.0266 .72127 -.24277)"
+        d="m6.6807 9.4413c1.0992-0.89481 2.177-1.7722 3.4245-2.1054s2.5693-0.099241 3.3156 0.43941c0.74626 0.53865 0.8798 1.3714 1.0289 2.2338 0.14906 0.86238 0.31491 1.7619 0.52125 2.8075 0.20634 1.0456 0.45371 2.2396 0.67465 3.3808 0.22094 1.1412 0.42789 2.2942 0.62413 3.1456 0.19624 0.85144 0.3821 1.4077 0.59957 2.0433s0.46243 1.3384 0.76589 1.9417c0.30345 0.60331 0.661 1.0971 0.9851 1.4545 0.32411 0.35748 0.61355 0.57882 0.92858 0.72272 0.31503 0.1439 0.65555 0.212 1.0638 0.22009 0.40826 0.0081 0.88499-0.043 1.4378-0.19638 0.55285-0.15338 1.1828-0.40877 1.9059-0.86832 0.72308-0.45955 1.5403-1.1236 2.3573-1.7873"
+        fill="none"
+        stroke="#000"
+        stroke-width="2.0158"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="freehand-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)" stroke-linecap="round">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#030000"
+        stroke="#000"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <path
+        transform="matrix(.97643 0 0 1.0266 .72127 -.24277)"
+        d="m6.6807 9.4413c1.0992-0.89481 2.177-1.7722 3.4245-2.1054s2.5693-0.099241 3.3156 0.43941c0.74626 0.53865 0.8798 1.3714 1.0289 2.2338 0.14906 0.86238 0.31491 1.7619 0.52125 2.8075 0.20634 1.0456 0.45371 2.2396 0.67465 3.3808 0.22094 1.1412 0.42789 2.2942 0.62413 3.1456 0.19624 0.85144 0.3821 1.4077 0.59957 2.0433s0.46243 1.3384 0.76589 1.9417c0.30345 0.60331 0.661 1.0971 0.9851 1.4545 0.32411 0.35748 0.61355 0.57882 0.92858 0.72272 0.31503 0.1439 0.65555 0.212 1.0638 0.22009 0.40826 0.0081 0.88499-0.043 1.4378-0.19638 0.55285-0.15338 1.1828-0.40877 1.9059-0.86832 0.72308-0.45955 1.5403-1.1236 2.3573-1.7873"
+        fill="none"
+        stroke="#fff"
+        stroke-width="2.0158"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="line" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <path
+        d="m6.9901 25.75c19.187-19.356 19.187-19.356 19.187-19.356"
+        fill="none"
+        stroke="#000"
+        stroke-width="1.7575"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="line-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#000001"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <path
+        d="m6.9901 25.75c19.187-19.356 19.187-19.356 19.187-19.356"
+        fill="none"
+        stroke="#fff"
+        stroke-width="1.7575"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="polygon" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g stroke="#000">
+        <rect
+          transform="rotate(45)"
+          x="16.405"
+          y="-7.5099"
+          width="15.149"
+          height="15.149"
+          fill="none"
+          stroke-width="1.4978"
+        />
+        <path d="m6.3057 27.676 20.678-20.972" fill="none" stroke-width="1.3366" />
+        <path
+          d="m14.512 24.698-2.2336-2.2336 9.9618-10.137 4.5547 4.5547-10.049 10.049z"
+          fill-rule="evenodd"
+          stroke-linecap="round"
+          stroke-width=".023136"
+        />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="polygon-filled-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <rect
+        transform="rotate(45)"
+        x="16.405"
+        y="-7.5099"
+        width="15.149"
+        height="15.149"
+        fill="#feffff"
+        fill-rule="evenodd"
+        stroke="#fff"
+        stroke-width="1.4978"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="polygon-nofill-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <rect
+        transform="rotate(45)"
+        x="16.405"
+        y="-7.5099"
+        width="15.149"
+        height="15.149"
+        fill="none"
+        stroke="#fff"
+        stroke-width="1.4978"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="rectangle" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g stroke="#000">
+        <rect
+          x="7.7936"
+          y="7.9751"
+          width="17.582"
+          height="17.582"
+          fill="none"
+          stroke-width="1.3152"
+        />
+        <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
+        <path
+          transform="translate(3.635 3.4126)"
+          d="m8.2832 19.135c1.2759-1.2914 4.4988-4.5595 7.1619-7.2626 2.6631-2.7031 5.0142-5.0888 5.2246-5.3016l0.38252-0.38693v15.299h-15.089z"
+          stroke-linecap="round"
+          stroke-width=".42331"
+        />
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="rectangle-filled-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <rect
+        x="8.1704"
+        y="7.9751"
+        width="17.582"
+        height="17.582"
+        fill="#fff"
+        fill-rule="evenodd"
+        stroke="#fff"
+        stroke-width="1.3152"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="rectangle-nofill-active" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <rect
+        x="8.1704"
+        y="7.9751"
+        width="17.582"
+        height="17.582"
+        fill="none"
+        stroke="#fff"
+        stroke-width="1.3152"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="symmetry" viewBox="0 0 26.458 26.458">
+    <defs>
+      <marker id="marker7653" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker7523" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker7375" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker7147" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker7029" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker6929" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="TriangleInS" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="TriangleOutS" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#000"
+          fill-rule="evenodd"
+          stroke="#000"
+          stroke-width="1pt"
+        />
+      </marker>
+    </defs>
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#fff"
+        fill="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21431"
+      />
+      <g fill="#000" stroke="#000">
+        <path
+          d="m16.87 6.7079v19.719"
+          marker-end="url(#TriangleOutS)"
+          marker-start="url(#TriangleInS)"
+          stroke-width="1.7008"
+        />
+        <g stroke-width="1.7">
+          <path
+            d="m26.925 16.379h-20.299"
+            marker-end="url(#marker7147)"
+            marker-start="url(#marker7375)"
+          />
+          <path
+            d="m23.99 9.4173-14.354 14.354"
+            marker-end="url(#marker7029)"
+            marker-start="url(#marker6929)"
+          />
+          <path
+            d="m9.67 9.4173 14.354 14.354"
+            marker-end="url(#marker7523)"
+            marker-start="url(#marker7653)"
+          />
+        </g>
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="symmetry-active" viewBox="0 0 26.458 26.458">
+    <defs>
+      <marker id="marker1" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker2" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker3" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker4" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker5" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="marker6" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="TriangleInS1" overflow="visible" orient="auto">
+        <path
+          transform="scale(-.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+      <marker id="TriangleOutS1" overflow="visible" orient="auto">
+        <path
+          transform="scale(.2)"
+          d="m5.77 0-8.65 5v-10l8.65 5z"
+          fill="#fff"
+          fill-rule="evenodd"
+          stroke="#fff"
+          stroke-width="1pt"
+        />
+      </marker>
+    </defs>
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21431"
+      />
+      <g fill="#fff" stroke="#fff">
+        <path
+          d="m16.87 6.7079v19.719"
+          marker-end="url(#TriangleOutS1)"
+          marker-start="url(#TriangleInS1)"
+          stroke-width="1.7008"
+        />
+        <g stroke-width="1.7">
+          <path
+            d="m26.925 16.379h-20.299"
+            marker-end="url(#marker4)"
+            marker-start="url(#marker3)"
+          />
+          <path
+            d="m23.99 9.4173-14.354 14.354"
+            marker-end="url(#marker5)"
+            marker-start="url(#marker6)"
+          />
+          <path
+            d="m9.67 9.4173 14.354 14.354"
+            marker-end="url(#marker2)"
+            marker-start="url(#marker1)"
+          />
+        </g>
+      </g>
+    </g>
+  </symbol>
+
+  <symbol
+    id="text"
+    clip-rule="evenodd"
+    fill-rule="evenodd"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    version="1.1"
+    viewBox="0 0 26.458 26.458"
+    xml:space="preserve"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:vectornator="http://vectornator.io"
+  >
+    <g transform="matrix(.97353 0 0 .97353 .46747 .56764)" vectornator:layerName="layer1">
+      <path
+        d="m-0.45091-0.57075h27.21v27.357h-27.21v0z"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <g stroke="#000" stroke-linecap="butt" stroke-linejoin="miter">
+        <path
+          d="m4.7807 23.291v-15.066h2.4712v-3.0131h2.4712v-3.0131h7.4137v3.0131h2.4713v3.0131h2.4713v15.066h-4.9425v-6.0263h-7.4137v6.0263zm4.9425-9.0394h7.4137v-6.0262h-2.4712v-3.0131h-2.4713v3.0131h-2.4712z"
+          fill="none"
+          stroke-width="1.5042"
+        />
+        <path d="m0.98996 21.604 8.5316-7.4045" stroke-width="1.4426" />
+        <path
+          d="m16.624 8.5874 7.4591-6.4737"
+          clip-rule="evenodd"
+          fill="none"
+          stroke-width="1.2612"
+        />
+      </g>
+      <path
+        transform="matrix(1.0272 0 0 1.0272 -.48018 -.58307)"
+        d="m5.8703 20.587v-1.8981l4.0141-3.483h8.0066v-6.5095l0.88485-0.77097 0.018 1.4037h2.4362v13.156h-3.339v-5.8434h-8.715v5.8434h-3.3057z"
+        fill-rule="evenodd"
+        stroke="#00001f"
+        stroke-linecap="round"
+        stroke-width=".143"
+      />
+    </g>
+  </symbol>
+
+  <symbol
+    id="text-filled-active"
+    clip-rule="evenodd"
+    fill-rule="evenodd"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    version="1.1"
+    viewBox="0 0 26.458 26.458"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:vectornator="http://vectornator.io"
+  >
+    <g transform="matrix(.97353 0 0 .97353 .46747 .56764)" vectornator:layerName="layer1">
+      <path
+        d="m-0.064873 0.10662h26.245v26.245h-26.245v0z"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <path
+        d="m4.2667 23.291v-15.066h2.4712v-3.0131h2.4712v-3.0131h7.4137v3.0131h2.4713v3.0131h2.4713v15.066h-4.9425v-6.0263h-7.4137v6.0263zm4.9425-9.0394h7.4137v-6.0262h-2.4712v-3.0131h-2.4713v3.0131h-2.4712z"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="butt"
+        stroke-linejoin="miter"
+        stroke-width="1.5042"
+      />
+    </g>
+  </symbol>
+
+  <symbol
+    id="text-nofill-active"
+    clip-rule="evenodd"
+    fill-rule="evenodd"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    version="1.1"
+    viewBox="0 0 26.458 26.458"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:vectornator="http://vectornator.io"
+  >
+    <g transform="matrix(.97353 0 0 .97353 .46747 .56764)" vectornator:layerName="layer1">
+      <path
+        d="m-0.064873 0.10662h26.245v26.245h-26.245v0z"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <path
+        d="m4.2667 23.291v-15.066h2.4712v-3.0131h2.4712v-3.0131h7.4137v3.0131h2.4713v3.0131h2.4713v15.066h-4.9425v-6.0263h-7.4137v6.0263zm4.9425-9.0394h7.4137v-6.0262h-2.4712v-3.0131h-2.4713v3.0131h-2.4712z"
+        fill="none"
+        stroke="#fff"
+        stroke-linecap="butt"
+        stroke-linejoin="miter"
+        stroke-width="1.5042"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="undo" version="1.1" viewBox="0 0 26.458 26.458" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21165"
+      />
+      <g fill="none" stroke="#000">
+        <path d="m7.2349 4.9802v8.1445" stroke-width="1.8898" />
+        <path d="m8.1753 14.052h5.2485" stroke-width="1.8898" />
+        <g stroke-width="1.8898">
+          <path d="m18.806 5.0338v9.7194" />
+          <path d="m14.318 4.9931v8.2102" />
+          <path d="m19.091 5.6645 6.9132 8.5948" />
+          <path d="m25.998 5.1548v9.7194" />
+        </g>
+        <path d="m7.3218 17.029v10.704" stroke-width="1.8898" />
+        <g stroke-width="1.8898">
+          <path d="m6.5793 17.971h6.8572" />
+          <path d="m6.6473 26.781h6.8245" />
+          <path d="m14.419 18.928v6.9813" />
+          <path d="m18.774 18.961v6.8483" />
+          <path d="m26.019 18.957v6.8852" />
+          <path d="m19.741 17.971h5.3509" />
+          <path d="m19.665 26.71h5.4573" />
+        </g>
+      </g>
+    </g>
+  </symbol>
+
+  <symbol
+    id="undo-active"
+    version="1.1"
+    viewBox="0 0 26.458 26.458"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21165"
+      />
+      <g fill="none" stroke="#fff">
+        <path d="m7.2349 4.9802v8.1445" stroke-width="1.8898" />
+        <path d="m8.1753 14.052h5.2485" stroke-width="1.8898" />
+        <g stroke-width="1.8898">
+          <path d="m18.806 5.0338v9.7194" />
+          <path d="m14.318 4.9931v8.2102" />
+          <path d="m19.091 5.6645 6.9132 8.5948" />
+          <path d="m25.998 5.1548v9.7194" />
+        </g>
+        <path d="m7.3218 17.029v10.704" stroke-width="1.8898" />
+        <g stroke-width="1.8898">
+          <path d="m6.5793 17.971h6.8572" />
+          <path d="m6.6473 26.781h6.8245" />
+          <path d="m14.419 18.928v6.9813" />
+          <path d="m18.774 18.961v6.8483" />
+          <path d="m26.019 18.957v6.8852" />
+          <path d="m19.741 17.971h5.3509" />
+          <path d="m19.665 26.71h5.4573" />
+        </g>
+      </g>
+    </g>
+  </symbol>
+
+  <symbol id="zoom" version="1.1" viewBox="0 0 26.458 26.458" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#fff"
+        stroke="#fff"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <ellipse
+        cx="19.254"
+        cy="13.561"
+        rx="6.6005"
+        ry="6.4993"
+        fill="none"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-width="1.597"
+      />
+      <path d="m7.8899 25.005 7.372-7.1027" fill="none" stroke="#000" stroke-width="4.097" />
+    </g>
+  </symbol>
+
+  <symbol
+    id="zoom-active"
+    version="1.1"
+    viewBox="0 0 26.458 26.458"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="#000"
+        stroke-linecap="round"
+        stroke-linejoin="bevel"
+        stroke-width=".21324"
+      />
+      <ellipse
+        cx="19.254"
+        cy="13.561"
+        rx="6.6005"
+        ry="6.4993"
+        fill="none"
+        stroke="#fdffff"
+        stroke-linecap="round"
+        stroke-width="1.597"
+      />
+      <path d="m7.8899 25.005 7.372-7.1027" fill="none" stroke="#fff" stroke-width="3.265" />
+    </g>
+  </symbol>
+
   <!-- define view locations for each icon -->
   <view id="airbrush-view" viewBox="0 0 26.458 26.458" />
   <view id="airbrush-active-view" viewBox="0 30 26.458 26.458" />
+  <view id="brush-selector-view" viewBox="0 60 26.458 26.458" />
+  <view id="brush-selector-active-view" viewBox="0 90 26.458 26.458" />
+  <view id="circle-view" viewBox="0 120 26.458 26.458" />
+  <view id="circle-filled-active-view" viewBox="0 150 26.458 26.458" />
+  <view id="circle-nofill-active-view" viewBox="0 180 26.458 26.458" />
+  <view id="curve-view" viewBox="0 210 26.458 26.458" />
+  <view id="curve-active-view" viewBox="0 240 26.458 26.458" />
+  <view id="clr-view" viewBox="0 270 26.458 26.458" />
+  <view id="clr-active-view" viewBox="0 300 26.458 26.458" />
+  <view id="dotted-freehand-view" viewBox="0 330 26.458 26.458" />
+  <view id="dotted-freehand-active-view" viewBox="0 360 26.458 26.458" />
+  <view id="ellipse-view" viewBox="0 390 26.458 26.458" />
+  <view id="ellipse-filled-active-view" viewBox="0 420 26.458 26.458" />
+  <view id="ellipse-nofill-active-view" viewBox="0 450 26.458 26.458" />
+  <view id="floodfill-view" viewBox="0 480 26.458 26.458" />
+  <view id="floodfill-active-view" viewBox="0 510 26.458 26.458" />
+  <view id="freehand-view" viewBox="0 540 26.458 26.458" />
+  <view id="freehand-active-view" viewBox="0 570 26.458 26.458" />
+  <view id="line-view" viewBox="0 600 26.458 26.458" />
+  <view id="line-active-view" viewBox="0 630 26.458 26.458" />
+  <view id="polygon-view" viewBox="0 660 26.458 26.458" />
+  <view id="polygon-filled-active-view" viewBox="0 690 26.458 26.458" />
+  <view id="polygon-nofill-active-view" viewBox="0 720 26.458 26.458" />
+  <view id="rectangle-view" viewBox="0 750 26.458 26.458" />
+  <view id="rectangle-filled-active-view" viewBox="0 780 26.458 26.458" />
+  <view id="rectangle-nofill-active-view" viewBox="0 810 26.458 26.458" />
+  <view id="symmetry-view" viewBox="0 840 26.458 26.458" />
+  <view id="symmetry-active-view" viewBox="0 870 26.458 26.458" />
+  <view id="text-view" viewBox="0 900 26.458 26.458" />
+  <view id="text-filled-active-view" viewBox="0 930 26.458 26.458" />
+  <view id="text-nofill-active-view" viewBox="0 960 26.458 26.458" />
+  <view id="undo-view" viewBox="0 990 26.458 26.458" />
+  <view id="undo-active-view" viewBox="0 1020 26.458 26.458" />
+  <view id="zoom-view" viewBox="0 1050 26.458 26.458" />
+  <view id="zoom-active-view" viewBox="0 1080 26.458 26.458" />
 
   <!-- copy shape to location defined above -->
   <use href="#airbrush" id="airbrush" width="26.458" height="26.458" x="0" y="0" />
   <use href="#airbrush-active" id="airbrush-active" width="26.458" height="26.458" x="0" y="30" />
+  <use href="#brush-selector" id="brush-selector" width="26.458" height="26.458" x="0" y="60" />
+  <use
+    href="#brush-selector-active"
+    id="brush-selector-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="90"
+  />
+  <use href="#circle" id="circle" width="26.458" height="26.458" x="0" y="120" />
+  <use
+    href="#circle-filled-active"
+    id="circle-filled-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="150"
+  />
+  <use
+    href="#circle-nofill-active"
+    id="circle-nofill-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="180"
+  />
+  <use href="#curve" id="curve" width="26.458" height="26.458" x="0" y="210" />
+  <use href="#curve-active" id="curve-active" width="26.458" height="26.458" x="0" y="240" />
+  <use href="#clr" id="clr" width="26.458" height="26.458" x="0" y="270" />
+  <use href="#clr-active" id="clr-active" width="26.458" height="26.458" x="0" y="300" />
+  <use href="#dotted-freehand" id="dotted-freehand" width="26.458" height="26.458" x="0" y="330" />
+  <use
+    href="#dotted-freehand-active"
+    id="dotted-freehand-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="360"
+  />
+  <use href="#ellipse" id="ellipse" width="26.458" height="26.458" x="0" y="390" />
+  <use
+    href="#ellipse-filled-active"
+    id="ellipse-filled-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="420"
+  />
+  <use
+    href="#ellipse-nofill-active"
+    id="ellipse-nofill-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="450"
+  />
+  <use href="#floodfill" id="floodfill" width="26.458" height="26.458" x="0" y="480" />
+  <use
+    href="#floodfill-active"
+    id="floodfill-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="510"
+  />
+  <use href="#freehand" id="freehand" width="26.458" height="26.458" x="0" y="540" />
+  <use href="#freehand-active" id="freehand-active" width="26.458" height="26.458" x="0" y="570" />
+  <use href="#line" id="line" width="26.458" height="26.458" x="0" y="600" />
+  <use href="#line-active" id="line-active" width="26.458" height="26.458" x="0" y="630" />
+  <use href="#polygon" id="polygon" width="26.458" height="26.458" x="0" y="660" />
+  <use
+    href="#polygon-filled-active"
+    id="polygon-filled-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="690"
+  />
+  <use
+    href="#polygon-nofill-active"
+    id="polygon-nofill-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="720"
+  />
+  <use href="#rectangle" id="polygon" width="26.458" height="26.458" x="0" y="750" />
+  <use
+    href="#rectangle-filled-active"
+    id="rectangle-filled-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="780"
+  />
+  <use
+    href="#rectangle-nofill-active"
+    id="rectangle-nofill-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="810"
+  />
+  <use href="#symmetry" id="symmetry" width="26.458" height="26.458" x="0" y="840" />
+  <use href="#symmetry-active" id="symmetry-active" width="26.458" height="26.458" x="0" y="870" />
+  <use href="#text" id="text" width="26.458" height="26.458" x="0" y="900" />
+  <use
+    href="#text-filled-active"
+    id="text-filled-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="930"
+  />
+  <use
+    href="#text-nofill-active"
+    id="text-nofill-active"
+    width="26.458"
+    height="26.458"
+    x="0"
+    y="960"
+  />
+  <use href="#undo" id="undo" width="26.458" height="26.458" x="0" y="990" />
+  <use href="#undo-active" id="undo-active" width="26.458" height="26.458" x="0" y="1020" />
+  <use href="#zoom" id="zoom" width="26.458" height="26.458" x="0" y="1050" />
+  <use href="#zoom-active" id="zoom-active" width="26.458" height="26.458" x="0" y="1080" />
 </svg>
