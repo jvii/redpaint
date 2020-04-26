@@ -16,149 +16,149 @@
 }
 
 .toolbox__button--dottedfreehand {
-  background: url(../../resources/dottedFreehandButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#dotted-freehand-view) white no-repeat;
 }
 
 .toolbox__button--dottedfreehand-selected {
-  background: url(../../resources/dottedFreehandButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#dotted-freehand-active-view) black no-repeat;
 }
 
 .toolbox__button--freehand {
-  background: url(../../resources/FreehandButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#freehand-view) black no-repeat;
 }
 
 .toolbox__button--freehand-selected {
-  background: url(../../resources/FreehandButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#freehand-active-view) white no-repeat;
 }
 
 .toolbox__button--line {
-  background: url(../../resources/lineButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#line-view) black no-repeat;
 }
 
 .toolbox__button--line-selected {
-  background: url(../../resources/lineButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#line-active-view) white no-repeat;
 }
 
 .toolbox__button--curve {
-  background: url(../../resources/curveButton.svg) no-repeat;
-}
-
-.toolbox__button--airbrush {
-  background: url(../../resources/toolbar.svg#airbrush-view) no-repeat;
-}
-
-.toolbox__button--airbrush-selected {
-  background: url(../../resources/toolbar.svg#airbrush-active-view) no-repeat;
+  background: url(../../resources/toolbar.svg#curve-view) black no-repeat;
 }
 
 .toolbox__button--curve-selected {
-  background: url(../../resources/curveButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#curve-active-view) white no-repeat;
+}
+
+.toolbox__button--airbrush {
+  background: url(../../resources/toolbar.svg#airbrush-view) black no-repeat;
+}
+
+.toolbox__button--airbrush-selected {
+  background: url(../../resources/toolbar.svg#airbrush-active-view) white no-repeat;
 }
 
 .toolbox__button--floodfill {
-  background: url(../../resources/floodfillButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#floodfill-view) black no-repeat;
 }
 
 .toolbox__button--floodfill-selected {
-  background: url(../../resources/floodfillButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#floodfill-active-view) white no-repeat;
 }
 
 .toolbox__button--rectangle {
-  background: url(../../resources/rectangleButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#rectangle-view) black no-repeat;
 }
 
 .toolbox__button--rectangle-lower-half-selected {
-  background: url(../../resources/rectangleButtonFilledActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#rectangle-filled-active-view) white no-repeat;
 }
 
 .toolbox__button--rectangle-upper-half-selected {
-  background: url(../../resources/rectangleButtonNoFillActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#rectangle-nofill-active-view) gray no-repeat;
 }
 
 .toolbox__button--circle {
-  background: url(../../resources/circleButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#circle-view) black no-repeat;
 }
 
 .toolbox__button--circle-lower-half-selected {
-  background: url(../../resources/circleButtonFilledActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#circle-filled-active-view) white no-repeat;
 }
 
 .toolbox__button--circle-upper-half-selected {
-  background: url(../../resources/circleButtonNoFillActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#circle-nofill-active-view) gray no-repeat;
 }
 
 .toolbox__button--ellipse {
-  background: url(../../resources/ellipseButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#ellipse-view) black no-repeat;
 }
 
 .toolbox__button--ellipse-lower-half-selected {
-  background: url(../../resources/ellipseButtonFilledActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#ellipse-filled-active-view) white no-repeat;
 }
 
 .toolbox__button--ellipse-upper-half-selected {
-  background: url(../../resources/ellipseButtonNoFillActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#ellipse-nofill-active-view) gray no-repeat;
 }
 
 .toolbox__button--polygon {
-  background: url(../../resources/polygonButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#polygon-view) black no-repeat;
 }
 
 .toolbox__button--polygon-lower-half-selected {
-  background: url(../../resources/polygonButtonFilledActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#polygon-filled-active-view) white no-repeat;
 }
 
 .toolbox__button--polygon-upper-half-selected {
-  background: url(../../resources/polygonButtonNoFillActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#polygon-nofill-active-view) gray no-repeat;
 }
 
 .toolbox__button--text {
-  background: url(../../resources/textButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#text-view) white no-repeat;
 }
 
 .toolbox__button--text-lower-half-selected {
-  background: url(../../resources/textbuttonFilledActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#text-filled-active-view) black no-repeat;
 }
 
 .toolbox__button--text-upper-half-selected {
-  background: url(../../resources/textbuttonNoFillActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#text-nofill-active-view) gray no-repeat;
 }
 
 .toolbox__button--zoom {
-  background: url(../../resources/zoomButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#zoom-view) black no-repeat;
 }
 
 .toolbox__button--zoom-selected {
-  background: url(../../resources/zoomButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#zoom-active-view) white no-repeat;
 }
 
 .toolbox__button--symmetry {
-  background: url(../../resources/symmetryButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#symmetry-view) black no-repeat;
 }
 
 .toolbox__button--symmetry-selected {
-  background: url(../../resources/symmetryButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#symmetry-active-view) white no-repeat;
 }
 
 .toolbox__button--brushselect {
-  background: url(../../resources/captureBrush.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#brush-selector-view) black no-repeat;
 }
 
 .toolbox__button--brushselect-selected {
-  background: url(../../resources/captureBrushActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#brush-selector-active-view) white no-repeat;
 }
 
 .toolbox__button--undo {
-  background: url(../../resources/undoButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#undo-view) black no-repeat;
 }
 
 .toolbox__button--undo:active {
-  background: url(../../resources/undoButtonActive.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#undo-active-view) white no-repeat;
 }
 
 .toolbox__button--clr {
-  background: url(../../resources/clrButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#clr-view) black no-repeat;
 }
 
 .toolbox__button--clr:active {
-  background: url(../../resources/clrButton.svg) no-repeat;
+  background: url(../../resources/toolbar.svg#clr-active-view) white no-repeat;
 }
