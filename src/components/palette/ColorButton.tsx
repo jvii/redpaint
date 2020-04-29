@@ -5,16 +5,25 @@ import { colorToRGBString } from '../../tools/util/util';
 interface Props {
   color: Color;
   isSelected: boolean;
+  size: number;
   onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onRightClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
-export function ColorButton({ color, isSelected, onClick, onRightClick }: Props): JSX.Element {
+export function ColorButton({
+  color,
+  isSelected,
+  size,
+  onClick,
+  onRightClick,
+}: Props): JSX.Element {
   const buttonStyle = {
     backgroundColor: colorToRGBString(color),
-    border: isSelected ? '2px solid white' : 'none',
-    width: '100%',
-    heigth: '100%',
+    // use inset box shadow instead of border to maintain size
+    boxShadow: isSelected ? 'inset 0 0 0 2px white' : 'none',
+    border: 'none',
+    width: size + 'px',
+    heigth: size + 'px',
     padding: 0,
     margin: 0,
     outline: 'none',

@@ -7,20 +7,22 @@
 
 .canvas-toolbox-container {
   display: flex;
-  flex-grow: 1;                   /* take up all remaining vertical space */
+  flex-grow: 1; /* take up all remaining vertical space */
   justify-content: space-between; /* keeps canvas attached to the left and toolbox to the right side of window */
-  overflow: hidden;               /* never show a scrollbar here */
+  overflow: hidden; /* never show a scrollbar here */
   background-color: black;
 }
 
 .canvas-container {
   display: flex;
   overflow: hidden; /* never show a scrollbar here */
-  flex-grow: 1;     /* take up all remaining horizontal space */
+  flex-grow: 1; /* take up all remaining horizontal space */
 }
 
 .toolbox-container {
-  flex-shrink: 0;   /* never shrink width smaller than content (toolbar) */
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* never shrink width smaller than content (toolbar) */
   overflow: hidden; /* never show a scrollbar here */
   border-left: 1px solid black;
 }
