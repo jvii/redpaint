@@ -13,7 +13,7 @@ export type State = {
 };
 
 export const state: State = {
-  palette: createPalette(256),
+  palette: createPalette(64),
   get paletteArray(this: State): Color[] {
     return Object.values(this.palette);
   },

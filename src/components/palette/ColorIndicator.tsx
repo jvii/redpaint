@@ -1,7 +1,6 @@
 import React from 'react';
 import { useOvermind } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
-import './ColorIndicator.css';
 
 export function ColorIndicator(): JSX.Element {
   const { state, actions } = useOvermind();
@@ -11,11 +10,11 @@ export function ColorIndicator(): JSX.Element {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gridArea: 'colorIndicator',
     width: '70px',
     height: '25px',
-    borderWidth: '0px',
-    padding: 0,
+    borderTop: '1px solid black',
+    borderBottom: '1px solid black',
+    paddingBottom: '1px',
     margin: 0,
   };
   const foreground = {
