@@ -9,13 +9,15 @@ export function createPalette(
     [id: string]: Color;
   } = {};
 
-  for (let i = 0; i < 14; i++) {
-    const color = createGrayscaleColor(11, i);
+  const grayscales = 10;
+
+  for (let i = 0; i < grayscales; i++) {
+    const color = createGrayscaleColor(grayscales, i);
     palette[i] = color;
   }
 
-  for (let i = 14; i < colors; i++) {
-    const color = createHSLColor(colors, i);
+  for (let i = grayscales; i < colors; i++) {
+    const color = createHSLColor(colors - grayscales, i - grayscales);
     palette[i] = color;
   }
 
@@ -24,7 +26,11 @@ export function createPalette(
 
 function createGrayscaleColor(range: number, value: number): Color {
   const percent = value / range;
-  return { r: percent * 255, g: percent * 255, b: percent * 255 };
+  return {
+    r: Math.round(percent * 255),
+    g: Math.round(percent * 255),
+    b: Math.round(percent * 255),
+  };
 }
 
 function createHSLColor(range: number, value: number): Color {

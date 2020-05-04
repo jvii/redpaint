@@ -10,7 +10,6 @@ export function ColorIndicator(): JSX.Element {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '70px',
     height: '25px',
     borderTop: '1px solid black',
     borderBottom: '1px solid black',

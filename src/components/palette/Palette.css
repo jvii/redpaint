@@ -3,6 +3,5 @@
   flex-flow: row wrap;
   background-color: black;
   flex-grow: 1;
-  width: 70px;
   overflow: hidden;
 }

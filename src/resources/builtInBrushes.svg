@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <!-- SVG sprite for built in brushes. See end of file for view definition of each icon -->
+
+  <symbol id="dot1x1" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="14.058"
+        y="13.136"
+        width="5.2913"
+        height="5.2913"
+        fill-rule="evenodd"
+        stroke-width="1.8715"
+      />
+    </g>
+  </symbol>
+
+  <symbol id="dot3x3" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)" fill-rule="evenodd" stroke-width="1.8715">
+      <rect x="14.346" y="12.989" width="5.2913" height="5.2913" />
+      <rect x="14.346" y="7.6977" width="5.2913" height="5.2913" />
+      <rect x="19.637" y="12.989" width="5.2913" height="5.2913" />
+      <rect x="14.346" y="18.28" width="5.2913" height="5.2913" />
+      <rect x="9.0547" y="12.989" width="5.2913" height="5.2913" />
+    </g>
+  </symbol>
+
+  <symbol id="dot5x5" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)" fill-rule="evenodd">
+      <rect x="10.556" y="7.34" width="12.395" height="18.499" stroke-width=".93782" />
+      <rect x="6.8739" y="10.89" width="19.807" height="11.647" stroke-width=".97565" />
+    </g>
+  </symbol>
+
+  <symbol id="dot7x7" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)" fill-rule="evenodd">
+      <rect x="9.2663" y="8.212" width="15.109" height="16.506" stroke-width=".97805" />
+      <rect x="6.4379" y="11.131" width="20.866" height="10.392" stroke-width=".94591" />
+      <rect x="12.168" y="5.16" width="9.4674" height="22.423" fill="#002" stroke-width="1.0476" />
+    </g>
+  </symbol>
+
+  <symbol id="square" viewBox="0 0 26.458 26.458">
+    <g transform="translate(-3.635 -3.0423)">
+      <rect
+        x="3.587"
+        y="3.0548"
+        width="26.561"
+        height="26.467"
+        fill-rule="evenodd"
+        stroke-width="1.6421"
+      />
+    </g>
+  </symbol>
+
+  <!-- define view locations for each icon -->
+  <view id="dot1x1-view" viewBox="0 0 26.458 26.458" />
+  <view id="dot3x3-view" viewBox="0 30 26.458 26.458" />
+  <view id="dot5x5-view" viewBox="0 60 26.458 26.458" />
+  <view id="dot7x7-view" viewBox="0 90 26.458 26.458" />
+  <view id="square-view" viewBox="0 120 26.458 26.458" />
+
+  <!-- copy shape to location defined above -->
+  <use href="#dot1x1" id="dot1x1" width="26.458" height="26.458" x="0" y="0" />
+  <use href="#dot3x3" id="dot3x3" width="26.458" height="26.458" x="0" y="30" />
+  <use href="#dot5x5" id="dot5x5" width="26.458" height="26.458" x="0" y="60" />
+  <use href="#dot7x7" id="dot7x7" width="26.458" height="26.458" x="0" y="90" />
+  <use href="#square" id="square" width="26.458" height="26.458" x="0" y="120" />
+</svg>
