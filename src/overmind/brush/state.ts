@@ -23,9 +23,13 @@ export const brushHistory = new BrushHistory();
 
 export const builtInBrushes = {
   1: new PixelBrush(),
-  2: createBuiltInBrush('cross'),
-  3: createBuiltInBrush('dot1'),
-  4: createBuiltInBrush('dot2'),
+  2: createBuiltInBrush('dot3x3'),
+  3: createBuiltInBrush('dot5x5'),
+  4: createBuiltInBrush('dot7x7'),
+  5: createBuiltInBrush('square2x2'),
+  6: createBuiltInBrush('square4x4'),
+  7: createBuiltInBrush('square6x6'),
+  8: createBuiltInBrush('square8x8'),
 };
 
 export type State = {
