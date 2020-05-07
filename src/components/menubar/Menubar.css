@@ -8,6 +8,8 @@
   grid-template-areas: 'title modeIndicator .';
   font-size: 16px;
   user-select: none;
+  height: 40px; /* helps with Firefox pointer hotspot issues */
+  flex-shrink: 0; /* helps with Firefox pointer hotspot issues */
 }
 
 .menubar__title {
