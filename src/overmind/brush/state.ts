@@ -30,6 +30,8 @@ export const builtInBrushes = {
   6: createBuiltInBrush('square4x4'),
   7: createBuiltInBrush('square6x6'),
   8: createBuiltInBrush('square8x8'),
+  9: createBuiltInBrush('dither3x3'),
+  10: createBuiltInBrush('dither7x6'),
 };
 
 export type State = {

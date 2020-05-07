@@ -7,7 +7,9 @@ type BuiltInBrushShape =
   | 'square2x2'
   | 'square4x4'
   | 'square6x6'
-  | 'square8x8';
+  | 'square8x8'
+  | 'dither3x3'
+  | 'dither7x6';
 
 export const createBuiltInBrush = (shape: BuiltInBrushShape): CustomBrush => {
   const imageData = createImageDataFor(shape);
@@ -84,6 +86,23 @@ function createImageDataFor(shape: BuiltInBrushShape): ImageData {
                    '@@@@@@@@' +
                    '@@@@@@@@' +
                    '@@@@@@@@';
+    return stringBitmapToImageData(bitmap, 8, 8);
+  }
+  if (shape === 'dither3x3') {
+    // prettier-ignore
+    const bitmap = '..@' +
+                   '@..' +
+                   '..@';
+    return stringBitmapToImageData(bitmap, 3, 3);
+  }
+  if (shape === 'dither7x6') {
+    // prettier-ignore
+    const bitmap = '...@...' +
+                   '.......' +
+                   '@......' +
+                   '...@..@' +
+                   '.......' +
+                   '...@...';
     return stringBitmapToImageData(bitmap, 8, 8);
   }
   throw new Error('Unknown shape <' + shape + '> while creating built-in brush');

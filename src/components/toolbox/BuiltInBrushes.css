@@ -1,3 +1,7 @@
+.built-in-brushes-container {
+  border: 1px solid white;
+}
+
 .built-in-brushes {
   background: white;
   display: grid;
@@ -12,135 +16,32 @@
   grid-template-columns: 30% 30% 20% 20%;
 }
 
+.built-in-brushes-dithers {
+  grid-template-columns: 40% 60%;
+}
+
 .built-in-brush-div {
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .built-in-brush-bg {
   background: white;
+  fill: black;
 }
 
 .built-in-brush-bg--selected {
   background: black;
+  fill: white;
 }
 
 .built-in-brush-svg {
-  display: block;
   padding: 0px;
   border: 0px;
-}
-
-.brush1 {
-  mask: url(../../resources/builtInBrushes.svg#dot1x1-view) no-repeat;
-  background: black;
-  width: 60%;
-  height: 60%;
-}
-
-.brush1--selected {
-  mask: url(../../resources/builtInBrushes.svg#dot1x1-view) no-repeat;
-  background: white;
-  width: 60%;
-  height: 60%;
-}
-
-.brush2 {
-  mask: url(../../resources/builtInBrushes.svg#dot3x3-view) no-repeat;
-  background: black;
-  width: 50%;
-  height: 50%;
-}
-
-.brush2--selected {
-  mask: url(../../resources/builtInBrushes.svg#dot3x3-view) no-repeat;
-  background: white;
-  width: 50%;
-  height: 50%;
-}
-
-.brush3 {
-  mask: url(../../resources/builtInBrushes.svg#dot5x5-view) no-repeat;
-  background: black;
-  width: 90%;
-  height: 90%;
-}
-
-.brush3--selected {
-  mask: url(../../resources/builtInBrushes.svg#dot5x5-view) no-repeat;
-  background: white;
-  width: 90%;
-  height: 90%;
-}
-
-.brush4 {
-  mask: url(../../resources/builtInBrushes.svg#dot7x7-view) no-repeat;
-  background: black;
   width: 100%;
   height: 100%;
-}
-
-.brush4--selected {
-  mask: url(../../resources/builtInBrushes.svg#dot7x7-view) no-repeat;
-  background: white;
-  width: 100%;
-  height: 100%;
-}
-
-.brush5 {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: black;
-  width: 40%;
-  height: 30%;
-}
-
-.brush5--selected {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: white;
-  width: 40%;
-  height: 30%;
-}
-
-.brush6 {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: black;
-  width: 50%;
-  height: 40%;
-}
-
-.brush6--selected {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: white;
-  width: 50%;
-  height: 40%;
-}
-
-.brush7 {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: black;
-  width: 60%;
-  height: 60%;
-}
-
-.brush7--selected {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: white;
-  width: 60%;
-  height: 60%;
-}
-
-.brush8 {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: black;
-  width: 70%;
-  height: 70%;
-}
-
-.brush8--selected {
-  mask: url(../../resources/builtInBrushes.svg#square-view) no-repeat;
-  background: white;
-  width: 70%;
-  height: 70%;
+  fill: inherit;
 }

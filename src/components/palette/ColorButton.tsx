@@ -19,9 +19,7 @@ export function ColorButton({
 }: Props): JSX.Element {
   const buttonStyle = {
     backgroundColor: colorToRGBString(color),
-    // use inset box shadow instead of border to maintain size
-    boxShadow: isSelected ? 'inset 0 0 0 2px white' : 'none',
-    border: 'none',
+    border: isSelected ? '2px solid white' : '2px solid transparent',
     width: size + 'px',
     heigth: size + 'px',
     padding: 0,
