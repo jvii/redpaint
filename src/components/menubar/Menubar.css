@@ -10,6 +10,7 @@
   user-select: none;
   height: 40px; /* helps with Firefox pointer hotspot issues */
   flex-shrink: 0; /* helps with Firefox pointer hotspot issues */
+  align-items: center;
 }
 
 .menubar__title {
