@@ -8,6 +8,8 @@ import ColorIndicator from './palette/ColorIndicator';
 import { CanvasState, canvasStateReducer } from './canvas/CanvasState';
 import { CanvasSyncHandler } from './canvas/CanvasSyncHandler';
 import { BuiltInBrushes } from './toolbox/BuiltInBrushes';
+import { GlobalHotKeyManager } from './GlobalHotkeyManager';
+import { DialogManager } from './dialog/DialogManager';
 import './App.css';
 
 const initialCanvasState = new CanvasState();
@@ -32,6 +34,8 @@ function App(): JSX.Element {
           <Palette />
         </div>
       </div>
+      <DialogManager></DialogManager>
+      <GlobalHotKeyManager />
     </div>
   );
 }
