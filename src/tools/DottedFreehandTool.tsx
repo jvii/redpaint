@@ -4,7 +4,13 @@ import {
   OverlayEventHandlerParamsWithEvent,
   EventHandlerParams,
 } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
+import {
+  getMousePos,
+  clearOverlayCanvas,
+  isRightMouseButton,
+  omit,
+  isLeftOrRightMouseButton,
+} from './util/util';
 import { overmind } from '../index';
 
 export class DottedFreehandTool implements Tool {
@@ -62,6 +68,18 @@ export class DottedFreehandTool implements Tool {
 
   public onMouseLeave(params: EventHandlerParamsWithEvent): void {
     this.onInit(omit(params, 'event'));
+  }
+
+  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
+    const {
+      event,
+      ctx: { canvas },
+    } = params;
+    if (isLeftOrRightMouseButton(event)) {
+      this.prepareToPaint(isRightMouseButton(event));
+      const mousePos = getMousePos(canvas, event);
+      overmind.actions.tool.freeHandToolPrevious(mousePos);
+    }
   }
 
   // Overlay
