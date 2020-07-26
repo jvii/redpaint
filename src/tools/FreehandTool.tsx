@@ -10,6 +10,8 @@ import {
   isRightMouseButton,
   isLeftOrRightMouseButton,
   omit,
+  pointEquals,
+  points8Connected,
 } from './util/util';
 import { overmind } from '../index';
 
@@ -44,8 +46,15 @@ export class FreehandTool implements Tool {
       const mousePos = getMousePos(canvas, event);
       const start = overmind.state.tool.freehandTool.previous;
       const end = mousePos;
-      overmind.state.brush.brush.drawLine(ctx, start, end);
-      overmind.actions.tool.freeHandToolPrevious(mousePos);
+      if (pointEquals(start, end)) {
+        return; // this point has already been drawn to canvas
+      }
+      if (points8Connected(start, end)) {
+        overmind.state.brush.brush.drawDot(ctx, end);
+      } else {
+        overmind.state.brush.brush.drawLine(ctx, start, end);
+      }
+      overmind.actions.tool.freeHandToolPrevious(end);
       onPaint();
     }
   }

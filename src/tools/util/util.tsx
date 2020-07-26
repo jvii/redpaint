@@ -25,6 +25,10 @@ export function pointEquals(point1: Point, point2: Point): boolean {
   return point1.x === point2.x && point1.y === point2.y;
 }
 
+export function points8Connected(point1: Point, point2: Point): boolean {
+  return Math.abs(point1.x - point2.x) <= 1 && Math.abs(point1.y - point2.y) <= 1;
+}
+
 export function clearCanvas(canvas: HTMLCanvasElement, color: Color): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) {
