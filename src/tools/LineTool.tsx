@@ -13,6 +13,7 @@ import {
 } from './util/util';
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
+import { getIndex } from '../colorIndex/ColorIndexer';
 
 export class LineTool implements Tool {
   private throttle = new Throttle(50);
@@ -28,6 +29,7 @@ export class LineTool implements Tool {
     overmind.actions.tool.lineToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
+    getIndex();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {

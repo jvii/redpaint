@@ -5,7 +5,7 @@ import {
   EventHandlerParams,
 } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
-import { distance } from '../algorithm/draw';
+import { distance } from '../algorithm/shape';
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';

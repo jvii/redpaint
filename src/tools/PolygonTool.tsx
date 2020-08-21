@@ -13,7 +13,7 @@ import {
 } from './util/util';
 import { overmind } from '../index';
 import { Throttle } from './util/Throttle';
-import { unfilledPolygon } from '../algorithm/draw';
+import { unfilledPolygon } from '../algorithm/shape';
 import { PixelBrush } from '../brush/PixelBrush';
 
 export class PolygonTool implements Tool {

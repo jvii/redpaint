@@ -6,17 +6,20 @@ import {
   unfilledCircle,
   filledCircle,
   filledRect,
-  fillRectWithSymmetry,
   curve,
   unfilledEllipse,
   filledEllipse,
   filledPolygon,
   unfilledPolygon,
-} from '../algorithm/draw';
+} from '../algorithm/shape';
+import { fillRect } from '../algorithm/primitive';
+//import { dot, brush } from '../colorIndex/ColorIndexer';
 
 export class PixelBrush implements Brush {
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
-    fillRectWithSymmetry(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx);
+    fillRect(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx);
+    //dot(Math.floor(point.x), Math.floor(point.y), 1);
+    //brush(Math.floor(point.x), Math.floor(point.y));
   }
 
   public drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
@@ -24,7 +27,7 @@ export class PixelBrush implements Brush {
   }
 
   public drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void {
-    fillRectWithSymmetry(x, y1, 1, y2 - y1 + 1, ctx);
+    fillRect(x, y1, 1, y2 - y1 + 1, ctx);
   }
 
   public drawLineHorizontal(
@@ -33,7 +36,7 @@ export class PixelBrush implements Brush {
     x2: number,
     y: number
   ): void {
-    fillRectWithSymmetry(x1, y, x2 - x1 + 1, 1, ctx);
+    fillRect(x1, y, x2 - x1 + 1, 1, ctx);
   }
 
   public drawCurve(

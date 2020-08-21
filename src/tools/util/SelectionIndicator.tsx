@@ -1,6 +1,6 @@
 import { Point } from '../../types';
 import { PixelBrush } from '../../brush/PixelBrush';
-import { unfilledRect } from '../../algorithm/draw';
+import { unfilledRect } from '../../algorithm/shape';
 import { overmind } from '../../index';
 
 let invertedCanvas: CanvasPattern | null = null;
