@@ -1,5 +1,6 @@
 import { Brush } from './Brush';
 import { Point, Color } from '../types';
+import { drawImage } from '../algorithm/primitive';
 import {
   line,
   unfilledRect,
@@ -11,7 +12,7 @@ import {
   filledEllipse,
   filledPolygon,
   unfilledPolygon,
-} from '../algorithm/draw';
+} from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
 
@@ -28,7 +29,7 @@ interface Saveable {
 }
 
 export class CustomBrush implements Brush, Colorizable, Saveable {
-  private brushImage = new Image();
+  public brushImage = new Image();
   private brushImageMatte = new Image();
   private brushImageColorFG = new Image();
   private brushImageColorBG = new Image();
@@ -47,38 +48,7 @@ export class CustomBrush implements Brush, Colorizable, Saveable {
 
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
     const pointAdj = this.adjustHandle(point);
-    ctx.drawImage(this.brushImage, Math.floor(pointAdj.x), Math.floor(pointAdj.y));
-
-    if (!overmind.state.toolbox.symmetryModeOn) {
-      return;
-    }
-
-    const originOfSymmetry: Point = {
-      x: Math.round(ctx.canvas.width / 2),
-      y: Math.round(ctx.canvas.height / 2),
-    };
-
-    // mirror x and y
-    const sym1 = {
-      x: originOfSymmetry.x + originOfSymmetry.x - pointAdj.x,
-      y: originOfSymmetry.y + originOfSymmetry.y - pointAdj.y,
-    };
-
-    // mirror x
-    const sym2 = {
-      x: originOfSymmetry.x + originOfSymmetry.x - pointAdj.x,
-      y: pointAdj.y,
-    };
-
-    // mirror y
-    const sym3 = {
-      x: pointAdj.x,
-      y: originOfSymmetry.y + originOfSymmetry.y - pointAdj.y,
-    };
-
-    ctx.drawImage(this.brushImage, Math.floor(sym1.x), Math.floor(sym1.y));
-    ctx.drawImage(this.brushImage, Math.floor(sym2.x), Math.floor(sym2.y));
-    ctx.drawImage(this.brushImage, Math.floor(sym3.x), Math.floor(sym3.y));
+    drawImage(pointAdj, this, ctx);
   }
 
   private adjustHandle(point: Point): Point {

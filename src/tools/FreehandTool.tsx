@@ -66,7 +66,7 @@ export class FreehandTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-
+    console.log('onMouseDown isOverlay:' + canvas.className);
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
     overmind.state.brush.brush.drawDot(ctx, mousePos);
@@ -111,15 +111,17 @@ export class FreehandTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    //overmind.state.brush.brush.drawDot(ctx, mousePos);
     onPaint();
   }
 
   public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
+      ctx,
       onPaint,
     } = params;
+    console.log('onMouseDownOverlay isOverlay:' + canvas.className);
     clearOverlayCanvas(canvas);
     onPaint();
   }

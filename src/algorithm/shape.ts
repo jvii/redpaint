@@ -1,10 +1,8 @@
+// Algorithms for composing shapes using primitives
+
 import { Point } from '../types';
 import { Brush } from '../brush/Brush';
-import { overmind } from '../index';
-
-export function distance(start: Point, end: Point): number {
-  return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
-}
+import { fillRect } from './primitive';
 
 export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, end: Point): void {
   const dist = Math.round(distance(start, end));
@@ -23,6 +21,10 @@ export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, 
       y: start.y + cy * i,
     });
   }
+}
+
+export function distance(start: Point, end: Point): number {
+  return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
 }
 
 // Quadratic bezier curve with one control point.
@@ -93,13 +95,13 @@ export function filledRect(
 ): void {
   if (start === end) {
     // just draw a dot
-    fillRectWithSymmetry(start.x, start.y, 1, 1, ctx);
+    fillRect(start.x, start.y, 1, 1, ctx);
     return;
   }
 
   const width = end.x - start.x;
   const height = end.y - start.y;
-  fillRectWithSymmetry(start.x, start.y, width, height, ctx);
+  fillRect(start.x, start.y, width, height, ctx);
 }
 
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
@@ -111,7 +113,7 @@ export function filledCircle(
 ): void {
   if (r === 0) {
     // just draw a dot
-    fillRectWithSymmetry(center.x, center.y, 1, 1, ctx);
+    fillRect(center.x, center.y, 1, 1, ctx);
     return;
   }
 
@@ -120,15 +122,15 @@ export function filledCircle(
   let cd = 0;
 
   // middle line
-  fillRectWithSymmetry(center.x - x, center.y, r << 1, 1, ctx);
+  fillRect(center.x - x, center.y, r << 1, 1, ctx);
 
   while (x > y) {
     cd -= --x - ++y;
     if (cd < 0) cd += x++;
-    fillRectWithSymmetry(center.x - y, center.y - x, y << 1, 1, ctx); // upper 1/4
-    fillRectWithSymmetry(center.x - x, center.y - y, x << 1, 1, ctx); // upper 2/4
-    fillRectWithSymmetry(center.x - x, center.y + y, x << 1, 1, ctx); // lower 3/4
-    fillRectWithSymmetry(center.x - y, center.y + x, y << 1, 1, ctx); // lower 4/4
+    fillRect(center.x - y, center.y - x, y << 1, 1, ctx); // upper 1/4
+    fillRect(center.x - x, center.y - y, x << 1, 1, ctx); // upper 2/4
+    fillRect(center.x - x, center.y + y, x << 1, 1, ctx); // lower 3/4
+    fillRect(center.x - y, center.y + x, y << 1, 1, ctx); // lower 4/4
   }
 }
 
@@ -297,7 +299,7 @@ export function filledEllipse(
     y2 = Math.round(y2 / k);
     const h = Math.abs(y1 - y2);
 
-    fillRectWithSymmetry(x + center.x, y1 + center.y, 1, -h, ctx);
+    fillRect(x + center.x, y1 + center.y, 1, -h, ctx);
   }
 }
 
@@ -371,49 +373,8 @@ export function filledPolygon(
       if (nodeX[i + 1] > imageLeft) {
         if (nodeX[i] < imageLeft) nodeX[i] = imageLeft;
         if (nodeX[i + 1] > imageRight) nodeX[i + 1] = imageRight;
-        fillRectWithSymmetry(nodeX[i], pixelY, nodeX[i + 1] - nodeX[i], 1, ctx);
+        fillRect(nodeX[i], pixelY, nodeX[i + 1] - nodeX[i], 1, ctx);
       }
     }
   }
-}
-
-export function fillRectWithSymmetry(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  ctx: CanvasRenderingContext2D
-): void {
-  ctx.fillRect(x, y, w, h);
-
-  if (!overmind.state.toolbox.symmetryModeOn) {
-    return;
-  }
-
-  const originOfSymmetry: Point = {
-    x: Math.round(ctx.canvas.width / 2),
-    y: Math.round(ctx.canvas.height / 2),
-  };
-
-  // mirror x and y
-  const sym1 = {
-    x: originOfSymmetry.x + originOfSymmetry.x - x,
-    y: originOfSymmetry.y + originOfSymmetry.y - y,
-  };
-
-  // mirror x
-  const sym2 = {
-    x: originOfSymmetry.x + originOfSymmetry.x - x,
-    y: y,
-  };
-
-  // mirror y
-  const sym3 = {
-    x: x,
-    y: originOfSymmetry.y + originOfSymmetry.y - y,
-  };
-
-  ctx.fillRect(Math.floor(sym1.x), Math.floor(sym1.y), -w, -h);
-  ctx.fillRect(Math.floor(sym2.x), Math.floor(sym2.y), -w, h);
-  ctx.fillRect(Math.floor(sym3.x), Math.floor(sym3.y), w, -h);
 }
