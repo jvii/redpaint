@@ -10,6 +10,7 @@ export const setForegroundColor: Action<string> = ({ state, actions }, key): voi
   if (brush instanceof CustomBrush) {
     brush.setFGColor(state.palette.foregroundColor);
   }
+  console.log(state.palette.palette)
 };
 
 export const setBackgroundColor: Action<string> = ({ state }, key): void => {

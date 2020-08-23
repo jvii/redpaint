@@ -13,12 +13,12 @@ export function createPalette(
 
   for (let i = 0; i < grayscales; i++) {
     const color = createGrayscaleColor(grayscales, i);
-    palette[i] = color;
+    palette[i + 1] = color;
   }
 
   for (let i = grayscales; i < colors; i++) {
     const color = createHSLColor(colors - grayscales, i - grayscales);
-    palette[i] = color;
+    palette[i + 1] = color;
   }
 
   return palette;
