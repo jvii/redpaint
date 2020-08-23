@@ -6,7 +6,7 @@
 import { Point } from '../types';
 import { overmind } from '../index';
 import { CustomBrush } from '../brush/CustomBrush';
-import { indexFillRect } from '../colorIndex/ColorIndexer';
+import { indexFillRect, indexDrawImage } from '../colorIndex/ColorIndexer';
 
 export function fillRect(
   x: number,
@@ -18,7 +18,7 @@ export function fillRect(
   ctx.fillRect(x, y, w, h);
 
   if (ctx.canvas.className === 'canvas') {
-    indexFillRect(x, y, w, h);
+    indexFillRect(x, y, w, h, overmind.state.tool.activeColorIndex);
   }
 
   if (!overmind.state.toolbox.symmetryModeOn) {
@@ -55,7 +55,10 @@ export function fillRect(
 
 export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRenderingContext2D): void {
   ctx.drawImage(brush.brushImage, Math.floor(point.x), Math.floor(point.y));
-  //brush(Math.floor(point.x), Math.floor(point.y));
+
+  if (ctx.canvas.className === 'canvas') {
+    indexDrawImage(Math.floor(point.x), Math.floor(point.y), brush);
+  }
 
   if (!overmind.state.toolbox.symmetryModeOn) {
     return;

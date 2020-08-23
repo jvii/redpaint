@@ -53,6 +53,7 @@ export type State = {
   };
   brushSelectorTool: { start: Point | null };
   activeToolFillStyle: Derive<State, ToolFillStyle | null>;
+  activeColorIndex: number;
 };
 
 export const state: State = {
@@ -118,4 +119,5 @@ export const state: State = {
     }
     return null;
   },
+  activeColorIndex: 0,
 };

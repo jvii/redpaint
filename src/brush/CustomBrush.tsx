@@ -16,26 +16,29 @@ import {
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
 
-interface Colorizable {
+interface CustomBrushFeatures {
   setFGColor(color: Color): void;
   setBGColor(color: Color): void;
   toFGColor(): void;
   toBGColor(): void;
   toMatte(): void;
-}
-
-interface Saveable {
+  hasChangedSince(timestamp: number): boolean;
   getObjectURL(): string;
 }
 
-export class CustomBrush implements Brush, Colorizable, Saveable {
+export class CustomBrush implements Brush, CustomBrushFeatures {
   public brushImage = new Image();
+  public brushColorIndex = [];
   private brushImageMatte = new Image();
   private brushImageColorFG = new Image();
   private brushImageColorBG = new Image();
+  private brushColorIndexMatte = [];
+  private brushColorIndexColorFG = [];
+  private brushColorIndexColorBG = [];
   private width = 0;
   private heigth = 0;
-  public constructor(dataURL: string) {
+  private lastChanged = 0;
+  public constructor(dataURL: string, colorIndex?: number[][]) {
     this.brushImage.src = dataURL;
     this.brushImage.onload = (): void => {
       this.width = this.brushImage.width;
@@ -44,6 +47,7 @@ export class CustomBrush implements Brush, Colorizable, Saveable {
       this.setBGColor(overmind.state.palette.backgroundColor);
     };
     this.brushImageMatte = this.brushImage;
+    this.lastChanged = Date.now();
   }
 
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
@@ -150,7 +154,7 @@ export class CustomBrush implements Brush, Colorizable, Saveable {
     filledPolygon(ctx, this, vertices);
   }
 
-  // Colorizable
+  // CustomBrushFeatures
 
   public setFGColor(color: Color): void {
     const bufferCanvas = document.createElement('canvas');
@@ -188,17 +192,22 @@ export class CustomBrush implements Brush, Colorizable, Saveable {
 
   public toFGColor(): void {
     this.brushImage = this.brushImageColorFG;
+    this.lastChanged = Date.now();
   }
 
   public toBGColor(): void {
     this.brushImage = this.brushImageColorBG;
+    this.lastChanged = Date.now();
   }
 
   public toMatte(): void {
     this.brushImage = this.brushImageMatte;
+    this.lastChanged = Date.now();
   }
 
-  // Saveable
+  public hasChangedSince(timestamp: number): boolean {
+    return true;
+  }
 
   public getObjectURL(): string {
     return this.brushImage.src;

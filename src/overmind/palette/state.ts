@@ -3,7 +3,7 @@ import { createPalette } from '../../components/palette/util';
 
 export type State = {
   palette: {
-    [id: string]: Color;
+    [id: string]: Color; // the color index (integer as string), starting from "1"
   };
   readonly paletteArray: Color[];
   foregroundColorId: string;
@@ -18,7 +18,7 @@ export const state: State = {
     return Object.values(this.palette);
   },
   foregroundColorId: '20',
-  backgroundColorId: '0',
+  backgroundColorId: '1',
   get foregroundColor(this: State): Color {
     return this.palette[this.foregroundColorId];
   },

@@ -28,7 +28,7 @@ function Palette(): JSX.Element {
   return (
     <div className="palette" ref={containerRef}>
       {state.palette.paletteArray.map(
-        (color, index): JSX.Element => createColorButton(color, index)
+        (color, index): JSX.Element => createColorButton(color, index + 1)
       )}
     </div>
   );
