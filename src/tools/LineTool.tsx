@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Tool,
   EventHandlerParamsWithEvent,
@@ -13,7 +14,8 @@ import {
 } from './util/util';
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
-import { getIndex } from '../colorIndex/ColorIndexer';
+import { visualiseIndex } from '../colorIndex/ColorIndexer';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class LineTool implements Tool {
   private throttle = new Throttle(50);
@@ -29,7 +31,7 @@ export class LineTool implements Tool {
     overmind.actions.tool.lineToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
-    getIndex();
+    visualiseIndex();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -53,7 +55,7 @@ export class LineTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     const start = overmind.state.tool.lineTool.start;
     const end = mousePos;
-    overmind.state.brush.brush.drawLine(ctx, start, end);
+    brushHistory.current.drawLine(ctx, start, end);
     undoPoint();
     onPaint();
     this.onInit(omit(params, 'event'));
@@ -88,11 +90,11 @@ export class LineTool implements Tool {
       const end = mousePos;
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawLine(ctx, start, end);
+        brushHistory.current.drawLine(ctx, start, end);
       });
     } else {
       clearOverlayCanvas(canvas);
-      overmind.state.brush.brush.drawDot(ctx, mousePos);
+      brushHistory.current.drawDot(ctx, mousePos);
     }
     onPaint();
   }

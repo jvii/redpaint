@@ -6,8 +6,6 @@ export class DrawImageIndexer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
   private currentBrushId = 0;
-  private currentBrushWidth = 0;
-  private currentBrushHeight = 0;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -31,10 +29,16 @@ export class DrawImageIndexer {
     console.log('width: ' + this.currentBrushWidth);
     console.log('heigth: ' + this.currentBrushHeight); */
 
+    if (this.currentBrushId !== brush.lastChanged) {
+      console.log('loading texture');
+      this.loadBrushAsTexture(brush);
+    }
+    this.currentBrushId = brush.lastChanged;
+
     const xLeft = canvasToWebGLCoordX(gl, x);
-    const xRight = canvasToWebGLCoordX(gl, x + this.currentBrushWidth);
+    const xRight = canvasToWebGLCoordX(gl, x + brush.width);
     const yTop = canvasToWebGLCoordY(gl, y);
-    const yBottom = canvasToWebGLCoordY(gl, y + this.currentBrushHeight);
+    const yBottom = canvasToWebGLCoordY(gl, y + brush.heigth);
 
     const vertices = new Float32Array(8);
     vertices[0] = xLeft;
@@ -75,7 +79,12 @@ export class DrawImageIndexer {
     varying vec2 v_TexCoord;
 
     void main () {
-      gl_FragColor = texture2D(u_Sampler, v_TexCoord);
+      vec4 color = texture2D(u_Sampler, v_TexCoord);
+      if (color.r == 0.0) {
+        discard; // zero means this pixel of the brush is transparent
+      }
+
+      gl_FragColor = color;
     }
     `;
 
@@ -161,11 +170,9 @@ export class DrawImageIndexer {
 
     // Enable the assignment to a_Position variable
     gl.enableVertexAttribArray(a_Position);
-
-    this.loadBrushAsTexture();
   }
 
-  private loadBrushAsTexture(): void {
+  private loadBrushAsTexture(brush: CustomBrush): void {
     const gl = this.gl;
 
     const texture = gl.createTexture();
@@ -173,12 +180,11 @@ export class DrawImageIndexer {
 
     const level = 0;
     const internalFormat = gl.RGBA;
-    const width = 2;
-    const height = 2;
+    const width = brush.width;
+    const height = brush.heigth;
     const border = 0;
     const srcFormat = gl.RGBA;
     const srcType = gl.UNSIGNED_BYTE;
-    const pixel = new Uint8Array([1, 0, 0, 255, 2, 0, 0, 255, 3, 0, 0, 255, 4, 0, 0, 255]); // 2x2 brush
     gl.texImage2D(
       gl.TEXTURE_2D,
       level,
@@ -188,7 +194,7 @@ export class DrawImageIndexer {
       border,
       srcFormat,
       srcType,
-      pixel
+      brush.brushColorIndex
     );
 
     // Set the parameters so we can render any size image.
@@ -203,8 +209,5 @@ export class DrawImageIndexer {
     gl.bindTexture(gl.TEXTURE_2D, texture);
     // Set the texture unit 0 to the sampler
     gl.uniform1i(u_Sampler, 0);
-
-    this.currentBrushHeight = 2;
-    this.currentBrushWidth = 2;
   }
 }

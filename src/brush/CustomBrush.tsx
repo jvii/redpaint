@@ -15,6 +15,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
+import { colorizeTexture } from '../colorIndex/ColorIndexer';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -22,25 +23,25 @@ interface CustomBrushFeatures {
   toFGColor(): void;
   toBGColor(): void;
   toMatte(): void;
-  hasChangedSince(timestamp: number): boolean;
   getObjectURL(): string;
 }
 
 export class CustomBrush implements Brush, CustomBrushFeatures {
-  public brushImage = new Image();
-  public brushColorIndex = [];
+  public brushImage = new Image(); // TODO: acts like getter, so maybe make it one
+  public brushColorIndex = new Uint8Array(); // TODO: acts like getter, so maybe make it one
+  public width = 0;
+  public heigth = 0;
+  public lastChanged = 0;
   private brushImageMatte = new Image();
   private brushImageColorFG = new Image();
   private brushImageColorBG = new Image();
-  private brushColorIndexMatte = [];
-  private brushColorIndexColorFG = [];
-  private brushColorIndexColorBG = [];
-  private width = 0;
-  private heigth = 0;
-  private lastChanged = 0;
-  public constructor(dataURL: string, colorIndex?: number[][]) {
+  private brushColorIndexMatte = new Uint8Array();
+  private brushColorIndexColorFG = new Uint8Array();
+  private brushColorIndexColorBG = new Uint8Array();
+  public constructor(dataURL: string, colorIndex?: Uint8Array) {
     this.brushImage.src = dataURL;
     this.brushImage.onload = (): void => {
+      // TODO: loading from dataURL is a bit slow for large brushes
       this.width = this.brushImage.width;
       this.heigth = this.brushImage.height;
       this.setFGColor(overmind.state.palette.foregroundColor);
@@ -48,6 +49,10 @@ export class CustomBrush implements Brush, CustomBrushFeatures {
     };
     this.brushImageMatte = this.brushImage;
     this.lastChanged = Date.now();
+    if (colorIndex) {
+      this.brushColorIndex = colorIndex;
+      this.brushColorIndexMatte = colorIndex;
+    }
   }
 
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
@@ -157,6 +162,8 @@ export class CustomBrush implements Brush, CustomBrushFeatures {
   // CustomBrushFeatures
 
   public setFGColor(color: Color): void {
+    // colorize brush image
+
     const bufferCanvas = document.createElement('canvas');
     bufferCanvas.width = Math.abs(this.width);
     bufferCanvas.height = Math.abs(this.heigth);
@@ -171,9 +178,21 @@ export class CustomBrush implements Brush, CustomBrushFeatures {
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(this.brushImage, 0, 0);
     this.brushImageColorFG.src = bufferCanvas.toDataURL();
+
+    // colorize color index
+
+    this.brushColorIndexColorFG = colorizeTexture(
+      this.brushColorIndex,
+      Number(overmind.state.palette.foregroundColorId)
+    );
+    if (overmind.state.brush.mode === 'Color') {
+      this.toFGColor(); // must be set here for fg color, not ideal:(
+    }
   }
 
   public setBGColor(color: Color): void {
+    // colorize brush image
+
     const bufferCanvas = document.createElement('canvas');
     bufferCanvas.width = Math.abs(this.width);
     bufferCanvas.height = Math.abs(this.heigth);
@@ -188,25 +207,31 @@ export class CustomBrush implements Brush, CustomBrushFeatures {
     ctx.globalCompositeOperation = 'destination-in';
     ctx.drawImage(this.brushImage, 0, 0);
     this.brushImageColorBG.src = bufferCanvas.toDataURL();
+
+    // colorize color index
+
+    this.brushColorIndexColorBG = colorizeTexture(
+      this.brushColorIndex,
+      Number(overmind.state.palette.backgroundColorId)
+    );
   }
 
   public toFGColor(): void {
     this.brushImage = this.brushImageColorFG;
+    this.brushColorIndex = this.brushColorIndexColorFG;
     this.lastChanged = Date.now();
   }
 
   public toBGColor(): void {
     this.brushImage = this.brushImageColorBG;
+    this.brushColorIndex = this.brushColorIndexColorBG;
     this.lastChanged = Date.now();
   }
 
   public toMatte(): void {
     this.brushImage = this.brushImageMatte;
+    this.brushColorIndex = this.brushColorIndexMatte;
     this.lastChanged = Date.now();
-  }
-
-  public hasChangedSince(timestamp: number): boolean {
-    return true;
   }
 
   public getObjectURL(): string {

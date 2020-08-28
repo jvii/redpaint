@@ -14,6 +14,7 @@ import {
   points8Connected,
 } from './util/util';
 import { overmind } from '../index';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class FreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
@@ -50,9 +51,9 @@ export class FreehandTool implements Tool {
         return; // this point has already been drawn to canvas
       }
       if (points8Connected(start, end)) {
-        overmind.state.brush.brush.drawDot(ctx, end);
+        brushHistory.current.drawDot(ctx, end);
       } else {
-        overmind.state.brush.brush.drawLine(ctx, start, end);
+        brushHistory.current.drawLine(ctx, start, end);
       }
       overmind.actions.tool.freeHandToolPrevious(end);
       onPaint();
@@ -68,7 +69,7 @@ export class FreehandTool implements Tool {
     } = params;
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    brushHistory.current.drawDot(ctx, mousePos);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
@@ -109,7 +110,7 @@ export class FreehandTool implements Tool {
     }
     clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 

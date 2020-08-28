@@ -12,6 +12,7 @@ import {
   isLeftOrRightMouseButton,
 } from './util/util';
 import { overmind } from '../index';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class DottedFreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
@@ -41,7 +42,7 @@ export class DottedFreehandTool implements Tool {
 
     if (event.buttons) {
       const mousePos = getMousePos(canvas, event);
-      overmind.state.brush.brush.drawDot(ctx, mousePos);
+      brushHistory.current.drawDot(ctx, mousePos);
       onPaint();
     }
   }
@@ -56,7 +57,7 @@ export class DottedFreehandTool implements Tool {
 
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 
@@ -97,7 +98,7 @@ export class DottedFreehandTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 

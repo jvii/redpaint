@@ -2,6 +2,7 @@ import { Point, Color } from '../../types';
 import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { overmind } from '../../index';
+import { getAreaFromIndex } from '../../colorIndex/ColorIndexer';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -158,7 +159,22 @@ export function extractBrush(
   imageData.data.set(imageDataClamped8TMP);
   bufferCanvasCtx.putImageData(imageData, 0, 0);
 
-  return new CustomBrush(bufferCanvas.toDataURL());
+  // Extract color index and add tansparency for background color
+
+  const colorIndex = getAreaFromIndex(start.x, start.y, width, height);
+  if (!colorIndex) {
+    throw 'Error retrieving color index for new brush';
+  }
+  const colorIndexWithTransparency = addTransparency(
+    colorIndex,
+    Number(overmind.state.palette.backgroundColorId)
+  );
+
+  return new CustomBrush(bufferCanvas.toDataURL(), colorIndexWithTransparency);
+}
+
+export function addTransparency(texture: Uint8Array, transparentColorIndex: number): Uint8Array {
+  return texture.map(item => (item === transparentColorIndex ? 0 : item));
 }
 
 interface Omit {

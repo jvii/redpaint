@@ -13,6 +13,7 @@ import {
 } from './util/util';
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class CurveTool implements Tool {
   private throttle = new Throttle(50);
@@ -53,7 +54,7 @@ export class CurveTool implements Tool {
     const endPoint = overmind.state.tool.curveTool.end;
 
     if (endPoint) {
-      overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
+      brushHistory.current.drawCurve(ctx, startPoint, endPoint, mousePos);
       undoPoint();
       onPaint();
       this.onInit(omit(params, 'event'));
@@ -89,7 +90,7 @@ export class CurveTool implements Tool {
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
       clearOverlayCanvas(canvas);
-      overmind.state.brush.brush.drawDot(ctx, mousePos);
+      brushHistory.current.drawDot(ctx, mousePos);
       onPaint();
       return;
     }
@@ -98,12 +99,12 @@ export class CurveTool implements Tool {
     if (endPoint) {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawCurve(ctx, startPoint, endPoint, mousePos);
+        brushHistory.current.drawCurve(ctx, startPoint, endPoint, mousePos);
       });
     } else if (isLeftOrRightMouseButton(event)) {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawLine(ctx, startPoint, mousePos);
+        brushHistory.current.drawLine(ctx, startPoint, mousePos);
       });
     }
     onPaint();
