@@ -59,7 +59,7 @@ const builtInBrushShapes = {
 
 type BuiltInBrushShape = keyof typeof builtInBrushShapes;
 
-export const createBuiltInBrush = (shape: BuiltInBrushShape): CustomBrush => {
+export function createBuiltInBrush(shape: BuiltInBrushShape): CustomBrush {
   const imageData = createImageDataFor(shape);
   const canvas = document.createElement('canvas');
   canvas.height = imageData.height;
@@ -69,14 +69,11 @@ export const createBuiltInBrush = (shape: BuiltInBrushShape): CustomBrush => {
     throw new Error('Error retreiving context while creating built-in brush');
   }
   ctx.putImageData(imageData, 0, 0);
-  return new CustomBrush(canvas.toDataURL());
-};
-
-function createImageDataFor(shape: BuiltInBrushShape): ImageData {
-  return stringBitmapToImageData(builtInBrushShapes[shape]);
+  return new CustomBrush(canvas.toDataURL(), createColorInderFor(shape));
 }
 
-function stringBitmapToImageData(stringBitmap: string[]): ImageData {
+function createImageDataFor(shape: BuiltInBrushShape): ImageData {
+  const stringBitmap = builtInBrushShapes[shape];
   const width = stringBitmap[0].length;
   const height = stringBitmap.length;
   const imageData = new ImageData(width, height);
@@ -91,4 +88,21 @@ function stringBitmapToImageData(stringBitmap: string[]): ImageData {
     }
   }
   return imageData;
+}
+
+function createColorInderFor(shape: BuiltInBrushShape): Uint8Array {
+  const stringBitmap = builtInBrushShapes[shape].reverse(); // flip y as texture y coordinates start from bottom
+  const width = stringBitmap[0].length;
+  const height = stringBitmap.length;
+  const stride = 4;
+  const brushColorIndex = new Uint8Array(width * height * 4).fill(0); // initialize as all zeros (transparent)
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      if (stringBitmap[y].charAt(x) === '@') {
+        // can be any color index value here, as built in brushes are always colorized and don't have an inherent color
+        brushColorIndex[(y * width + x) * stride] = 1;
+      }
+    }
+  }
+  return brushColorIndex;
 }

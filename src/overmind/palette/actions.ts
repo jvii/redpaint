@@ -2,20 +2,20 @@ import { Action } from 'overmind';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
 import { colorEquals } from '../../components/palette/util';
+import { brushHistory } from '../../brush/BrushHistory';
 
 export const setForegroundColor: Action<string> = ({ state, actions }, key): void => {
   state.palette.foregroundColorId = key;
   actions.tool.activeToolToFGFillStyle();
-  const brush = state.brush.brush;
+  const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     brush.setFGColor(state.palette.foregroundColor);
   }
-  console.log(state.palette.palette)
 };
 
 export const setBackgroundColor: Action<string> = ({ state }, key): void => {
   state.palette.backgroundColorId = key;
-  const brush = state.brush.brush;
+  const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     brush.setBGColor(state.palette.backgroundColor);
   }

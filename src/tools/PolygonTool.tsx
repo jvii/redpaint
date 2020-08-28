@@ -15,6 +15,7 @@ import { overmind } from '../index';
 import { Throttle } from './util/Throttle';
 import { unfilledPolygon } from '../algorithm/shape';
 import { PixelBrush } from '../brush/PixelBrush';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class PolygonTool implements Tool {
   private throttle = new Throttle(20);
@@ -64,12 +65,9 @@ export class PolygonTool implements Tool {
       pointEquals(overmind.state.tool.polygonTool.vertices[0], mousePos)
     ) {
       if (this.filled) {
-        overmind.state.brush.brush.drawFilledPolygon(ctx, overmind.state.tool.polygonTool.vertices);
+        brushHistory.current.drawFilledPolygon(ctx, overmind.state.tool.polygonTool.vertices);
       } else {
-        overmind.state.brush.brush.drawUnfilledPolygon(
-          ctx,
-          overmind.state.tool.polygonTool.vertices
-        );
+        brushHistory.current.drawUnfilledPolygon(ctx, overmind.state.tool.polygonTool.vertices);
       }
       undoPoint();
       onPaint();
@@ -95,7 +93,7 @@ export class PolygonTool implements Tool {
       if (this.filled) {
         unfilledPolygon(ctx, new PixelBrush(), overmind.state.tool.polygonTool.vertices, false);
       } else {
-        overmind.state.brush.brush.drawUnfilledPolygon(
+        brushHistory.current.drawUnfilledPolygon(
           ctx,
           overmind.state.tool.polygonTool.vertices,
           false
@@ -117,7 +115,7 @@ export class PolygonTool implements Tool {
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
       clearOverlayCanvas(canvas);
-      overmind.state.brush.brush.drawDot(ctx, mousePos);
+      brushHistory.current.drawDot(ctx, mousePos);
       onPaint();
       return;
     }
@@ -135,7 +133,7 @@ export class PolygonTool implements Tool {
     } else {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawUnfilledPolygon(
+        brushHistory.current.drawUnfilledPolygon(
           ctx,
           overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
           false
@@ -158,7 +156,7 @@ export class PolygonTool implements Tool {
       if (this.filled) {
         unfilledPolygon(ctx, new PixelBrush(), overmind.state.tool.polygonTool.vertices, false);
       } else {
-        overmind.state.brush.brush.drawUnfilledPolygon(
+        brushHistory.current.drawUnfilledPolygon(
           ctx,
           overmind.state.tool.polygonTool.vertices,
           false

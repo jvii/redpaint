@@ -9,6 +9,7 @@ import { distance } from '../algorithm/shape';
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -57,9 +58,9 @@ export class CircleTool implements Tool {
     const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledCircle(ctx, origin, radius);
+      brushHistory.current.drawFilledCircle(ctx, origin, radius);
     } else {
-      overmind.state.brush.brush.drawUnfilledCircle(ctx, origin, radius);
+      brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
     }
     undoPoint();
     onPaint();
@@ -100,7 +101,7 @@ export class CircleTool implements Tool {
       clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(ctx, mousePos);
+        brushHistory.current.drawDot(ctx, mousePos);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -111,12 +112,12 @@ export class CircleTool implements Tool {
     if (this.filled) {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawFilledCircle(ctx, origin, radius);
+        brushHistory.current.drawFilledCircle(ctx, origin, radius);
       });
     } else {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawUnfilledCircle(ctx, origin, radius);
+        brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
       });
     }
     onPaint();

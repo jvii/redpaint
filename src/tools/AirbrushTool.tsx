@@ -12,6 +12,7 @@ import {
   omit,
 } from './util/util';
 import { overmind } from '../index';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class AirbrushTool implements Tool {
   private timeout = 0;
@@ -51,7 +52,7 @@ export class AirbrushTool implements Tool {
         const angle = getRandomFloat(0, Math.PI * 2);
         const radius = getRandomFloat(0, 20);
         if (overmind.state.tool.airbrushTool.position) {
-          overmind.state.brush.brush.drawDot(ctx, {
+          brushHistory.current.drawDot(ctx, {
             x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
             y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
           });
@@ -96,7 +97,7 @@ export class AirbrushTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    overmind.state.brush.brush.drawDot(ctx, mousePos);
+    brushHistory.current.drawDot(ctx, mousePos);
     onPaint();
   }
 

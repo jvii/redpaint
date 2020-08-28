@@ -8,6 +8,7 @@ import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './uti
 import { Throttle } from './util/Throttle';
 import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class RectangleTool implements Tool {
   private throttle = new Throttle(50);
@@ -56,9 +57,9 @@ export class RectangleTool implements Tool {
     const endPoint = getMousePos(canvas, event);
 
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledRect(ctx, startPoint, endPoint);
+      brushHistory.current.drawFilledRect(ctx, startPoint, endPoint);
     } else {
-      overmind.state.brush.brush.drawUnfilledRect(ctx, startPoint, endPoint);
+      brushHistory.current.drawUnfilledRect(ctx, startPoint, endPoint);
     }
     undoPoint();
     onPaint();
@@ -99,7 +100,7 @@ export class RectangleTool implements Tool {
       clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(ctx, mousePos);
+        brushHistory.current.drawDot(ctx, mousePos);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -109,12 +110,12 @@ export class RectangleTool implements Tool {
     if (this.filled) {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawFilledRect(ctx, startPoint, mousePos);
+        brushHistory.current.drawFilledRect(ctx, startPoint, mousePos);
       });
     } else {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawUnfilledRect(ctx, startPoint, mousePos);
+        brushHistory.current.drawUnfilledRect(ctx, startPoint, mousePos);
       });
     }
     onPaint();

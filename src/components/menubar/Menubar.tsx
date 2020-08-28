@@ -5,6 +5,7 @@ import { MenuItemSave } from './MenuItemSave';
 import { MenuItemOpen } from './MenuItemOpen';
 import { CustomBrush } from '../../brush/CustomBrush';
 import './Menubar.css';
+import { brushHistory } from '../../brush/BrushHistory';
 
 export function Menubar(): JSX.Element {
   const { state, actions } = useOvermind();
@@ -42,7 +43,8 @@ export function Menubar(): JSX.Element {
   };
 
   const getBrushObjectURLToSave = (): string => {
-    return state.brush.brush instanceof CustomBrush ? state.brush.brush.getObjectURL() : '#';
+    const brush = brushHistory.current;
+    return brush instanceof CustomBrush ? brush.getObjectURL() : '#';
   };
 
   const mode = state.brush.mode;

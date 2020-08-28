@@ -14,6 +14,7 @@ import {
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class EllipseTool implements Tool {
   public constructor(filled: boolean) {
@@ -105,9 +106,9 @@ export class EllipseTool implements Tool {
 
     const angle = overmind.state.tool.ellipseTool.angle;
     if (this.filled) {
-      overmind.state.brush.brush.drawFilledEllipse(ctx, origin, radiusX, radiusY, angle);
+      brushHistory.current.drawFilledEllipse(ctx, origin, radiusX, radiusY, angle);
     } else {
-      overmind.state.brush.brush.drawUnfilledEllipse(ctx, origin, radiusX, radiusY, angle);
+      brushHistory.current.drawUnfilledEllipse(ctx, origin, radiusX, radiusY, angle);
     }
     undoPoint();
     onPaint();
@@ -150,7 +151,7 @@ export class EllipseTool implements Tool {
       clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        overmind.state.brush.brush.drawDot(ctx, mousePos);
+        brushHistory.current.drawDot(ctx, mousePos);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -166,7 +167,7 @@ export class EllipseTool implements Tool {
     if (this.filled) {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawFilledEllipse(
+        brushHistory.current.drawFilledEllipse(
           ctx,
           origin,
           radiusX ? radiusX : newRadiusX,
@@ -177,7 +178,7 @@ export class EllipseTool implements Tool {
     } else {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        overmind.state.brush.brush.drawUnfilledEllipse(
+        brushHistory.current.drawUnfilledEllipse(
           ctx,
           origin,
           radiusX ? radiusX : newRadiusX,

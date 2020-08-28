@@ -2,7 +2,7 @@ import { Action } from 'overmind';
 import { Brush } from '../../brush/Brush';
 import { Mode, BuiltInBrushId, builtInBrushes } from './state';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { brushHistory } from './state';
+import { brushHistory } from '../../brush/BrushHistory';
 
 export const setBrush: Action<Brush> = ({ state }, brush): void => {
   brushHistory.set(brush);
@@ -19,7 +19,7 @@ export const selectBuiltInBrush: Action<BuiltInBrushId> = (
 
 export const setMode: Action<Mode> = ({ state }, mode): void => {
   state.brush.mode = mode;
-  const brush = state.brush.brush;
+  const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     if (mode === 'Color') {
       brush.setFGColor(state.palette.foregroundColor);
@@ -33,7 +33,7 @@ export const setMode: Action<Mode> = ({ state }, mode): void => {
 };
 
 export const toFGBrush: Action = ({ state }): void => {
-  const brush = state.brush.brush;
+  const brush = brushHistory.current;
   if (state.brush.mode === 'Color' && brush instanceof CustomBrush) {
     brush.toFGColor();
   }
@@ -43,7 +43,7 @@ export const toFGBrush: Action = ({ state }): void => {
 };
 
 export const toBGBrush: Action = ({ state }): void => {
-  const brush = state.brush.brush;
+  const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     brush.toBGColor();
   }
