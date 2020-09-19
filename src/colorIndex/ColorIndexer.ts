@@ -2,35 +2,64 @@ import { FillRectIndexer } from './indexer/FillRectIndexer';
 import { DrawImageIndexer } from './indexer/DrawImageIndexer';
 import { CustomBrush } from '../brush/CustomBrush';
 import { overmind } from '../index';
-import { Point } from '../types';
-
-// The color index matrix representing the canvas as a two dimensional array.
-// Each value in the matrix represents the color index (index of palette color) of the corresponding
-// pixel, starting from the upper left corner of the canvas (0, 0).
-//const index: number[][] = [];
+import { createIndexerGLContext } from './indexer/IndexerContext';
+import { ColorIndexRenderer } from './renderer/ColorIndexRenderer';
+import { createRendererGLContext } from './renderer/RendererContext';
+import { visualiseTexture } from './util';
 
 let gl: WebGLRenderingContext | null = null;
 
 let fillRectIndexer: FillRectIndexer | null = null;
 let drawImageIndexer: DrawImageIndexer | null = null;
 
-export function init(width: number, height: number): void {
-  // init a webgl context for a canvas element outside the DOM
+let colorIndexRenderer: ColorIndexRenderer | null = null;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = overmind.state.canvas.resolution.width;
-  canvas.height = overmind.state.canvas.resolution.height;
+export function initColorIndex(): void {
+  const width = overmind.state.canvas.resolution.width;
+  const height = overmind.state.canvas.resolution.height;
+  const backgroundColorId = Number(overmind.state.palette.backgroundColorId);
 
-  gl = canvas.getContext('webgl', {
-    preserveDrawingBuffer: true,
-    antialias: false,
-  });
+  gl = createIndexerGLContext(width, height, backgroundColorId);
 
-  if (!gl) {
-    alert('Sorry, ReDPaint requires WebGL support:(');
+  // create indexers
+
+  fillRectIndexer = new FillRectIndexer(gl);
+  drawImageIndexer = new DrawImageIndexer(gl);
+
+  // create renderer
+
+  colorIndexRenderer = new ColorIndexRenderer(createRendererGLContext(width, height));
+}
+
+export function indexFillRect(
+  x: number,
+  y: number,
+  width: number,
+  heigth: number,
+  colorIndex: number
+): void {
+  fillRectIndexer?.indexFillRect(x, y, width, heigth, colorIndex);
+}
+
+export function indexDrawImage(x: number, y: number, brush: CustomBrush): void {
+  drawImageIndexer?.indexDrawImage(x, y, brush);
+}
+
+export function renderToCanvas(destinationCanvasCtx: CanvasRenderingContext2D): void {
+  // render to given canvas from color index
+  const index = getIndex();
+  if (!index) {
     return;
   }
+  const palette = overmind.state.palette.paletteArray;
+  colorIndexRenderer?.render(destinationCanvasCtx, index, palette);
+}
 
+export function resetIndex(): void {
+  if (!gl) {
+    alert('no webl!');
+    return undefined;
+  }
   // create a texture to render to
 
   const targetTexture = gl.createTexture();
@@ -73,27 +102,6 @@ export function init(width: number, height: number): void {
 
   const attachmentPoint = gl.COLOR_ATTACHMENT0;
   gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
-
-  console.log('webgl initialized');
-
-  // create indexers
-
-  fillRectIndexer = new FillRectIndexer(gl);
-  drawImageIndexer = new DrawImageIndexer(gl);
-}
-
-export function indexFillRect(
-  x: number,
-  y: number,
-  width: number,
-  heigth: number,
-  colorIndex: number
-): void {
-  fillRectIndexer?.indexFillRect(x, y, width, heigth, colorIndex);
-}
-
-export function indexDrawImage(x: number, y: number, brush: CustomBrush): void {
-  drawImageIndexer?.indexDrawImage(x, y, brush);
 }
 
 export function getIndex(): Uint8Array | undefined {
@@ -140,9 +148,9 @@ export function getAreaFromIndex(
   }
 
   if (height < 0) {
-    rectLowerLeftY = gl.drawingBufferHeight - (y - Math.abs(height) + Math.abs(height));
+    rectLowerLeftY = gl.drawingBufferHeight - y;
   } else {
-    rectLowerLeftY = gl.drawingBufferHeight - (y + Math.abs(height));
+    rectLowerLeftY = gl.drawingBufferHeight - y - Math.abs(height);
   }
 
   const pixels = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
@@ -180,45 +188,5 @@ export function visualiseIndex(): void {
     return;
   }
   const width = gl.drawingBufferWidth;
-
   visualiseTexture(index, width);
-}
-
-export function visualiseTexture(texture: Uint8Array, width: number): void {
-  console.log('width: ' + width);
-  const indexRedComponent = [];
-  for (let i = 0; i < texture.length; i = i + 4) {
-    indexRedComponent.push(texture[i]);
-  }
-  let j = 0;
-  let row = '';
-  let rowNumber = 1;
-  const rows = [];
-  for (let i = 0; i < indexRedComponent.length; i++) {
-    j++;
-    row = row + indexRedComponent[i];
-    if (j === width) {
-      j = 0;
-      rows.unshift(rowNumber + ': ' + row); // unshift as texture y coords start from bottom
-      row = '';
-      rowNumber++;
-    }
-  }
-  rows.forEach((item, index) => {
-    if (index < 100) {
-      console.log(item.substring(0, 100));
-    }
-  });
-}
-
-/* export function colorizeTexture(texture: Uint8Array, colorIndex: number): void {
-  texture.forEach((item, index) => {
-    if (item !== 0) {
-      texture[index] = colorIndex;
-    }
-  });
-} */
-
-export function colorizeTexture(texture: Uint8Array, colorIndex: number): Uint8Array {
-  return texture.map(item => (item !== 0 ? colorIndex : item));
 }
