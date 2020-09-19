@@ -15,7 +15,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
-import { colorizeTexture } from '../colorIndex/ColorIndexer';
+import { colorizeTexture } from '../colorIndex/util';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -41,18 +41,17 @@ export class CustomBrush implements Brush, CustomBrushFeatures {
   public constructor(dataURL: string, colorIndex?: Uint8Array) {
     this.brushImage.src = dataURL;
     this.brushImage.onload = (): void => {
-      // TODO: loading from dataURL is a bit slow for large brushes
       this.width = this.brushImage.width;
       this.heigth = this.brushImage.height;
       this.setFGColor(overmind.state.palette.foregroundColor);
       this.setBGColor(overmind.state.palette.backgroundColor);
+      if (colorIndex) {
+        this.brushColorIndex = colorIndex;
+        this.brushColorIndexMatte = colorIndex;
+      }
     };
     this.brushImageMatte = this.brushImage;
     this.lastChanged = Date.now();
-    if (colorIndex) {
-      this.brushColorIndex = colorIndex;
-      this.brushColorIndexMatte = colorIndex;
-    }
   }
 
   public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {

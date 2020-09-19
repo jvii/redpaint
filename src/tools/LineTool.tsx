@@ -14,7 +14,7 @@ import {
 } from './util/util';
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
-import { visualiseIndex } from '../colorIndex/ColorIndexer';
+import { visualiseIndex, renderToCanvas } from '../colorIndex/ColorIndexer';
 import { brushHistory } from '../brush/BrushHistory';
 
 export class LineTool implements Tool {
@@ -31,7 +31,10 @@ export class LineTool implements Tool {
     overmind.actions.tool.lineToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
+
+    // TEMP: color index testing
     visualiseIndex();
+    renderToCanvas(params.ctx);
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
