@@ -7,6 +7,7 @@ export class Debounce {
     this.lastFunc = null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-types
   public call(func: Function): void {
     if (this.lastFunc) {
       clearTimeout(this.lastFunc);
