@@ -14,15 +14,15 @@ export type State = {
 
 export const state: State = {
   palette: createPalette(32),
-  get paletteArray(this: State): Color[] {
-    return Object.values(this.palette);
+  get paletteArray(): Color[] {
+    return Object.values(state.palette);
   },
   foregroundColorId: '20',
   backgroundColorId: '1',
-  get foregroundColor(this: State): Color {
+  get foregroundColor(): Color {
     return this.palette[this.foregroundColorId];
   },
-  get backgroundColor(this: State): Color {
+  get backgroundColor(): Color {
     return this.palette[this.backgroundColorId];
   },
 };

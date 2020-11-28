@@ -64,16 +64,16 @@ export const state: State = {
   selectedDrawingToolId: 'freeHand', // one DrawingTool MUST be selected
   selectedSelectorToolId: null, // one SelectorTool CAN be selected
   // current activeTool: primarily the selected SelectorTool, secondarily the selected DrawingTool
-  get activeToolId(this: State): DrawingToolId | SelectorToolId {
+  get activeToolId(): DrawingToolId | SelectorToolId {
     return this.selectedSelectorToolId ? this.selectedSelectorToolId : this.selectedDrawingToolId;
   },
-  get activeTool(this: State): Tool {
+  get activeTool(): Tool {
     return this.selectedSelectorToolId
       ? selectorTools[this.selectedSelectorToolId]
       : drawingTools[this.selectedDrawingToolId];
   },
   previousToolId: null,
-  get previousTool(this: State): Tool | null {
+  get previousTool(): Tool | null {
     if (!this.previousToolId) {
       return null;
     }

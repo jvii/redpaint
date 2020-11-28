@@ -1,5 +1,5 @@
 import { Point } from '../../types';
-import { Derive } from 'overmind';
+import { derived, RootState } from 'overmind';
 import { colorToRGBString } from '../../tools/util/util';
 
 export type State = {
@@ -15,7 +15,7 @@ export type State = {
     lastModifiedOverlay: number;
   };
   loadedImageURL: string;
-  fillStyle: Derive<State, string>;
+  fillStyle: string;
 };
 
 export const state: State = {
@@ -25,10 +25,10 @@ export const state: State = {
   mainCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
   zoomCanvas: { lastModified: 0, lastModifiedOverlay: 0 },
   loadedImageURL: '',
-  fillStyle: (state, rootState): string => {
+  fillStyle: derived((state, rootState: RootState) => {
     if (rootState.tool.activeToolFillStyle) {
       return rootState.tool.activeToolFillStyle.effective;
     }
     return colorToRGBString(rootState.palette.foregroundColor);
-  },
+  }),
 };
