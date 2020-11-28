@@ -1,5 +1,5 @@
 import { Point } from '../../types';
-import { Derive } from 'overmind';
+import { derived, RootState } from 'overmind';
 
 type ToolFillStyle = {
   effective: string;
@@ -52,7 +52,7 @@ export type State = {
     fillStyle: ToolFillStyle;
   };
   brushSelectorTool: { start: Point | null };
-  activeToolFillStyle: Derive<State, ToolFillStyle | null>;
+  activeToolFillStyle: ToolFillStyle | null;
   activeColorIndex: number;
 };
 
@@ -74,7 +74,7 @@ export const state: State = {
   polygonTool: { vertices: [], fillStyle: { effective: '', stored: '' } },
   textTool: { text: '', start: null, fillStyle: { effective: '', stored: '' } },
   brushSelectorTool: { start: null },
-  activeToolFillStyle: (state, rootState): ToolFillStyle | null => {
+  activeToolFillStyle: derived((state: State, rootState: RootState) => {
     if (rootState.toolbox.selectedDrawingToolId === 'dottedFreehand') {
       return rootState.tool.freehandTool.fillStyle;
     }
@@ -118,6 +118,6 @@ export const state: State = {
       return rootState.tool.textTool.fillStyle;
     }
     return null;
-  },
+  }),
   activeColorIndex: 0,
 };

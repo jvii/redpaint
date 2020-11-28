@@ -15,11 +15,14 @@ export function fillRect(
   h: number,
   ctx: CanvasRenderingContext2D
 ): void {
-  ctx.fillRect(x, y, w, h);
+  // draw and index
 
+  ctx.fillRect(x, y, w, h);
   if (ctx.canvas.className === 'canvas') {
     indexFillRect(x, y, w, h, overmind.state.tool.activeColorIndex);
   }
+
+  // handle symmetry
 
   if (!overmind.state.toolbox.symmetryModeOn) {
     return;
@@ -32,30 +35,38 @@ export function fillRect(
 
   // mirror x and y
   const sym1 = {
-    x: originOfSymmetry.x + originOfSymmetry.x - x,
-    y: originOfSymmetry.y + originOfSymmetry.y - y,
+    x: Math.floor(originOfSymmetry.x + originOfSymmetry.x - x),
+    y: Math.floor(originOfSymmetry.y + originOfSymmetry.y - y),
   };
 
   // mirror x
   const sym2 = {
-    x: originOfSymmetry.x + originOfSymmetry.x - x,
+    x: Math.floor(originOfSymmetry.x + originOfSymmetry.x - x),
     y: y,
   };
 
   // mirror y
   const sym3 = {
     x: x,
-    y: originOfSymmetry.y + originOfSymmetry.y - y,
+    y: Math.floor(originOfSymmetry.y + originOfSymmetry.y - y),
   };
 
-  ctx.fillRect(Math.floor(sym1.x), Math.floor(sym1.y), -w, -h);
-  ctx.fillRect(Math.floor(sym2.x), Math.floor(sym2.y), -w, h);
-  ctx.fillRect(Math.floor(sym3.x), Math.floor(sym3.y), w, -h);
+  // draw and index (symmetry)
+
+  ctx.fillRect(sym1.x, sym1.y, -w, -h);
+  ctx.fillRect(sym2.x, sym2.y, -w, h);
+  ctx.fillRect(sym3.x, sym3.y, w, -h);
+  if (ctx.canvas.className === 'canvas') {
+    indexFillRect(sym1.x, sym1.y, -w, -h, overmind.state.tool.activeColorIndex);
+    indexFillRect(sym2.x, sym2.y, -w, h, overmind.state.tool.activeColorIndex);
+    indexFillRect(sym3.x, sym3.y, w, -h, overmind.state.tool.activeColorIndex);
+  }
 }
 
 export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRenderingContext2D): void {
-  ctx.drawImage(brush.brushImage, Math.floor(point.x), Math.floor(point.y));
+  // draw and index
 
+  ctx.drawImage(brush.brushImage, Math.floor(point.x), Math.floor(point.y));
   if (ctx.canvas.className === 'canvas') {
     indexDrawImage(Math.floor(point.x), Math.floor(point.y), brush);
   }
@@ -64,6 +75,8 @@ export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRendering
     return;
   }
 
+  // handle symmetry
+
   const originOfSymmetry: Point = {
     x: Math.round(ctx.canvas.width / 2),
     y: Math.round(ctx.canvas.height / 2),
@@ -71,23 +84,30 @@ export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRendering
 
   // mirror x and y
   const sym1 = {
-    x: originOfSymmetry.x + originOfSymmetry.x - point.x,
-    y: originOfSymmetry.y + originOfSymmetry.y - point.y,
+    x: Math.floor(originOfSymmetry.x + originOfSymmetry.x - point.x),
+    y: Math.floor(originOfSymmetry.y + originOfSymmetry.y - point.y),
   };
 
   // mirror x
   const sym2 = {
-    x: originOfSymmetry.x + originOfSymmetry.x - point.x,
-    y: point.y,
+    x: Math.floor(originOfSymmetry.x + originOfSymmetry.x - point.x),
+    y: Math.floor(point.y),
   };
 
   // mirror y
   const sym3 = {
-    x: point.x,
-    y: originOfSymmetry.y + originOfSymmetry.y - point.y,
+    x: Math.floor(point.x),
+    y: Math.floor(originOfSymmetry.y + originOfSymmetry.y - point.y),
   };
 
-  ctx.drawImage(brush.brushImage, Math.floor(sym1.x), Math.floor(sym1.y));
-  ctx.drawImage(brush.brushImage, Math.floor(sym2.x), Math.floor(sym2.y));
-  ctx.drawImage(brush.brushImage, Math.floor(sym3.x), Math.floor(sym3.y));
+  // draw and index (symmetry)
+
+  ctx.drawImage(brush.brushImage, sym1.x, sym1.y);
+  ctx.drawImage(brush.brushImage, sym2.x, sym2.y);
+  ctx.drawImage(brush.brushImage, sym3.x, sym3.y);
+  if (ctx.canvas.className === 'canvas') {
+    indexDrawImage(sym1.x, sym1.y, brush);
+    indexDrawImage(sym2.x, sym2.y, brush);
+    indexDrawImage(sym3.x, sym3.y, brush);
+  }
 }

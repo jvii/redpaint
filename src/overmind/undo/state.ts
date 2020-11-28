@@ -28,7 +28,7 @@ export type State = {
 
 export const state: State = {
   currentIndex: null,
-  get currentBufferItem(this: State): Blob | null {
+  get currentBufferItem(): Blob | null {
     if (!this.currentIndex) {
       return null;
     }
