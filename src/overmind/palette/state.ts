@@ -1,5 +1,6 @@
 import { Color } from '../../types';
 import { createPalette } from '../../components/palette/util';
+import { derived } from 'overmind';
 
 export type State = {
   palette: {
@@ -14,15 +15,9 @@ export type State = {
 
 export const state: State = {
   palette: createPalette(32),
-  get paletteArray(): Color[] {
-    return Object.values(state.palette);
-  },
+  paletteArray: derived((state: State) => Object.values(state.palette)),
   foregroundColorId: '20',
   backgroundColorId: '1',
-  get foregroundColor(): Color {
-    return this.palette[this.foregroundColorId];
-  },
-  get backgroundColor(): Color {
-    return this.palette[this.backgroundColorId];
-  },
+  foregroundColor: derived((state: State) => state.palette[state.foregroundColorId]),
+  backgroundColor: derived((state: State) => state.palette[state.backgroundColorId]),
 };

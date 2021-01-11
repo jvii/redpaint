@@ -11,6 +11,7 @@ import { BuiltInBrushes } from './toolbox/BuiltInBrushes';
 import { GlobalHotKeyManager } from './GlobalHotkeyManager';
 import { DialogManager } from './dialog/DialogManager';
 import './App.css';
+import { PaletteEditor } from './paletteEditor/PaletteEditor';
 
 const initialCanvasState = new CanvasState();
 
@@ -34,6 +35,7 @@ function App(): JSX.Element {
           <Palette />
         </div>
       </div>
+      <PaletteEditor canvasState={canvasState}></PaletteEditor>
       <DialogManager></DialogManager>
       <GlobalHotKeyManager />
     </div>

@@ -24,7 +24,13 @@ export function ColorIndicator(): JSX.Element {
   };
 
   return (
-    <div className="color-indicator">
+    <div
+      className="color-indicator"
+      onContextMenu={(event): void => {
+        actions.paletteEditor.open();
+        event.preventDefault();
+      }}
+    >
       <div
         style={background}
         onClick={(event): void => {

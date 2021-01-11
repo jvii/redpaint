@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/camelcase */
 import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../util';
 import { CustomBrush } from '../../brush/CustomBrush';
 

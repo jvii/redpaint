@@ -54,7 +54,7 @@ export function useLoadedImage(canvas: HTMLCanvasElement): void {
       return;
     }
     const image = new Image();
-    image.onload = function(): void {
+    image.onload = function (): void {
       // No need to clear canvas, as changing dimensions clears it anyway.
       // Note that context is also reset
       actions.canvas.setResolution({ width: image.width, height: image.height });

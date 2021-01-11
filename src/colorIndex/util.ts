@@ -6,6 +6,11 @@ export function canvasToWebGLCoordY(gl: WebGLRenderingContext, y: number): numbe
   return (y / gl.drawingBufferHeight) * -2 + 1; // because GL is 0 at bottom
 }
 
+export function colorizeTexture(texture: Uint8Array, colorIndex: number): Uint8Array {
+  return texture.map((item) => (item !== 0 ? colorIndex : item));
+}
+
+// testing, debugging purposes only
 export function visualiseTexture(texture: Uint8Array, width: number): void {
   console.log('width: ' + width);
   const indexRedComponent = [];
@@ -31,8 +36,4 @@ export function visualiseTexture(texture: Uint8Array, width: number): void {
       console.log(item.substring(0, 100));
     }
   });
-}
-
-export function colorizeTexture(texture: Uint8Array, colorIndex: number): Uint8Array {
-  return texture.map(item => (item !== 0 ? colorIndex : item));
 }
