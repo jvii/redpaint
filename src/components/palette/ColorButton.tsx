@@ -1,9 +1,9 @@
 import React from 'react';
-import { Color } from '../../types';
+import { useOvermind } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
 
 interface Props {
-  color: Color;
+  colorId: string;
   isSelected: boolean;
   size: number;
   onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -11,14 +11,16 @@ interface Props {
 }
 
 export function ColorButton({
-  color,
+  colorId,
   isSelected,
   size,
   onClick,
   onRightClick,
 }: Props): JSX.Element {
+  const { state } = useOvermind();
+
   const buttonStyle = {
-    backgroundColor: colorToRGBString(color),
+    backgroundColor: colorToRGBString(state.palette.palette[colorId]),
     border: isSelected ? '2px solid white' : '2px solid transparent',
     width: size + 'px',
     heigth: size + 'px',

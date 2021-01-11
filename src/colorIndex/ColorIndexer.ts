@@ -6,6 +6,7 @@ import { createIndexerGLContext } from './indexer/IndexerContext';
 import { ColorIndexRenderer } from './renderer/ColorIndexRenderer';
 import { createRendererGLContext } from './renderer/RendererContext';
 import { visualiseTexture } from './util';
+import { Point } from '../types';
 
 let gl: WebGLRenderingContext | null = null;
 
@@ -178,6 +179,12 @@ export function getAreaFromIndex(
   return pixels;
 }
 
+export function getColorIndexForPixel(point: Point): number | undefined {
+  const colorIndex = getAreaFromIndex(point.x, point.y, 1, 1);
+  return colorIndex?.[0];
+}
+
+// testing, debugging purposes only
 export function visualiseIndex(): void {
   if (!gl) {
     alert('no webl!');

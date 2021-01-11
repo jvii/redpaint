@@ -1,6 +1,5 @@
 import { Color } from '../../types';
 
-/* eslint-disable @typescript-eslint/camelcase */
 export class ColorIndexRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
@@ -46,10 +45,10 @@ export class ColorIndexRenderer {
       paletteTexture[i * 4 + 3] = 255;
     }
 
-    // Testing: change color 4 to white
+    /*     // Testing: change color 4 to white
     paletteTexture[3 * 4 + 0] = 255;
     paletteTexture[3 * 4 + 1] = 255;
-    paletteTexture[3 * 4 + 2] = 255;
+    paletteTexture[3 * 4 + 2] = 255; */
 
     // make palette texture and upload palette
     gl.activeTexture(gl.TEXTURE1);

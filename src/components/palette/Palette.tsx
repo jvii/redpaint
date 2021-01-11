@@ -1,6 +1,5 @@
 import React, { useRef, useState, useLayoutEffect } from 'react';
 import { ColorButton } from './ColorButton';
-import { Color } from '../../types';
 import { useOvermind } from '../../overmind';
 import { overmind } from '../..';
 import { Debounce } from '../../tools/util/Debounce';
@@ -12,10 +11,10 @@ function Palette(): JSX.Element {
 
   const size = useCalcColorButtonSize(containerRef, overmind.state.palette.paletteArray.length);
 
-  const createColorButton = (color: Color, index: number): JSX.Element => {
+  const createColorButton = (index: number): JSX.Element => {
     return (
       <ColorButton
-        color={color}
+        colorId={index.toString()}
         isSelected={index.toString() === state.palette.foregroundColorId}
         size={size}
         onClick={(): void => actions.palette.setForegroundColor(index.toString())}
@@ -27,9 +26,7 @@ function Palette(): JSX.Element {
 
   return (
     <div className="palette" ref={containerRef}>
-      {state.palette.paletteArray.map(
-        (color, index): JSX.Element => createColorButton(color, index + 1)
-      )}
+      {state.palette.paletteArray.map((color, index): JSX.Element => createColorButton(index + 1))}
     </div>
   );
 }
@@ -57,6 +54,7 @@ function useCalcColorButtonSize(
   return calcButtonSize(ref.current.clientHeight, ref.current.clientWidth, colors);
 }
 
+// eslint-disable-next-line max-len
 // adapted from https://math.stackexchange.com/questions/466198/algorithm-to-get-the-maximum-size-of-n-squares-that-fit-into-a-rectangle-with-a
 function calcButtonSize(height: number, width: number, colors: number): number {
   const px = Math.ceil(Math.sqrt((colors * width) / height));

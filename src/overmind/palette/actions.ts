@@ -1,7 +1,6 @@
 import { Action } from 'overmind';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
-import { colorEquals } from '../../components/palette/util';
 import { brushHistory } from '../../brush/BrushHistory';
 
 export const setForegroundColor: Action<string> = ({ state, actions }, key): void => {
@@ -21,20 +20,11 @@ export const setBackgroundColor: Action<string> = ({ state }, key): void => {
   }
 };
 
-export const findAndSetForegroundColor: Action<Color> = ({ state, actions }, color): void => {
-  for (let i = 0; i < state.palette.paletteArray.length; i++) {
-    if (colorEquals(state.palette.paletteArray[i], color)) {
-      actions.palette.setForegroundColor(i.toString());
-      return;
-    }
-  }
-};
+export interface EditColorParams {
+  colorId: string;
+  newColor: Color;
+}
 
-export const findAndSetBackgroundColor: Action<Color> = ({ state, actions }, color): void => {
-  for (let i = 0; i < state.palette.paletteArray.length; i++) {
-    if (colorEquals(state.palette.paletteArray[i], color)) {
-      actions.palette.setBackgroundColor(i.toString());
-      return;
-    }
-  }
+export const editColor: Action<EditColorParams> = ({ state }, editColorParams): void => {
+  state.palette.palette[editColorParams.colorId] = editColorParams.newColor;
 };

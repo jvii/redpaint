@@ -1,7 +1,8 @@
-// We only use two actual drawing methods from the 2d canvas api:
-// fillRect and drawImage.
-// These are our so called 'primitives' that all draw operations must
+// These methods are our so called 'primitives' that all draw operations must
 // call to draw to canvas.
+// We only use two actual drawing methods from the 2d canvas api:
+//  * fillRect
+//  * drawImage
 
 import { Point } from '../types';
 import { overmind } from '../index';

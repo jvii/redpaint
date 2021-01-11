@@ -1,6 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
+import { getColorIndexForPixel } from '../colorIndex/ColorIndexer';
 
 export class ColorSelectorTool implements Tool {
   public constructor(foregroundColor: boolean) {
@@ -11,17 +12,18 @@ export class ColorSelectorTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
     } = params;
     const mousePos = getMousePos(canvas, event);
-    const canvasColor = ctx.getImageData(mousePos.x, mousePos.y, 1, 1).data;
-    const color = { r: canvasColor[0], g: canvasColor[1], b: canvasColor[2] };
+    const colorIndex = getColorIndexForPixel(mousePos);
+    if (!colorIndex) {
+      return;
+    }
     if (this.foregroundColor) {
-      overmind.actions.palette.findAndSetForegroundColor(color);
+      overmind.actions.palette.setForegroundColor(colorIndex.toString());
       overmind.actions.toolbox.toggleForegroundColorSelectionMode();
     } else {
-      overmind.actions.palette.findAndSetBackgroundColor(color);
+      overmind.actions.palette.setBackgroundColor(colorIndex.toString());
       overmind.actions.toolbox.toggleBackgroundColorSelectionMode();
     }
   }

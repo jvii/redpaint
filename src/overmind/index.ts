@@ -5,6 +5,7 @@ import * as app from './app';
 import * as canvas from './canvas';
 import * as dialog from './dialog';
 import * as palette from './palette';
+import * as paletteEditor from './paletteEditor';
 import * as undo from './undo';
 import * as toolbox from './toolbox';
 import * as brush from './brush';
@@ -15,6 +16,7 @@ export const config = namespaced({
   canvas,
   dialog,
   palette,
+  paletteEditor,
   undo,
   toolbox,
   tool,
