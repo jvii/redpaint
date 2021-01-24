@@ -104,6 +104,7 @@ export function filledRect(
   fillRect(start.x, start.y, width, height, ctx);
 }
 
+// eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function filledCircle(
   ctx: CanvasRenderingContext2D,
@@ -134,6 +135,7 @@ export function filledCircle(
   }
 }
 
+// eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function unfilledCircle(
   ctx: CanvasRenderingContext2D,
@@ -181,6 +183,7 @@ export function unfilledEllipse(
   radiusY: number,
   rotationAngle: number
 ): void {
+  // eslint-disable-next-line max-len
   // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
   const a = radiusX;
   const b = radiusY;
@@ -272,6 +275,7 @@ export function filledEllipse(
   radiusY: number,
   rotationAngle: number
 ): void {
+  // eslint-disable-next-line max-len
   // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
   const a = radiusX;
   const b = radiusY;

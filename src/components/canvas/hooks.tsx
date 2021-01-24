@@ -1,8 +1,10 @@
 import { Point } from '../../types';
 import { useEffect } from 'react';
 import { useOvermind } from '../../overmind';
+import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { blobToCanvas } from './util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
+import { renderToCanvasFrom } from '../../colorIndex/ColorIndexer';
 
 export function useInitTool(
   eventHandlerParams: EventHandlerParams,
@@ -40,7 +42,16 @@ export function useFillStyle(ctx: CanvasRenderingContext2D | null): void {
 export function useUndo(canvas: HTMLCanvasElement): void {
   const { state } = useOvermind();
   useEffect((): void => {
-    blobToCanvas(state.undo.currentBufferItem, canvas);
+    //blobToCanvas(state.undo.currentBufferItem, canvas);
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      if (state.undo.currentIndex === null) {
+        return;
+      }
+      const colorIndex = undoBuffer.getItem(state.undo.currentIndex);
+      renderToCanvasFrom(ctx, colorIndex);
+    }
+    console.log('undo hook end');
   }, [state.undo.lastUndoRedoTime]);
 }
 

@@ -107,6 +107,7 @@ export function isLeftOrRightMouseButton(
   return isLeftMouseButton(event) || isRightMouseButton(event);
 }
 
+// eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja
 export function extractBrush(
   sourceCanvas: HTMLCanvasElement,
@@ -174,7 +175,7 @@ export function extractBrush(
 }
 
 export function addTransparency(texture: Uint8Array, transparentColorIndex: number): Uint8Array {
-  return texture.map(item => (item === transparentColorIndex ? 0 : item));
+  return texture.map((item) => (item === transparentColorIndex ? 0 : item));
 }
 
 interface Omit {
