@@ -39,7 +39,8 @@ export function Menubar(): JSX.Element {
   };
 
   const getImageObjectURLToSave = (): string => {
-    return state.undo.currentBufferItem ? URL.createObjectURL(state.undo.currentBufferItem) : '#';
+    //return state.undo.currentBufferItem ? URL.createObjectURL(state.undo.currentBufferItem) : '#';
+    return 'todo';
   };
 
   const getBrushObjectURLToSave = (): string => {

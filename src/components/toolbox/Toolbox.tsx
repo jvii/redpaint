@@ -108,8 +108,8 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         onClick={(): void => {
           clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
           actions.canvas.setCanvasModified(false);
-          actions.undo.setUndoPoint(canvasState.mainCanvas);
           resetIndex();
+          actions.undo.setUndoPoint(canvasState.mainCanvas);
         }}
       />
     </div>

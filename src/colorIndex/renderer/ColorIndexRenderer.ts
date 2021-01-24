@@ -20,21 +20,7 @@ export class ColorIndexRenderer {
       return;
     }
 
-    const imageLoc = gl.getUniformLocation(program, 'u_image');
-    const paletteLoc = gl.getUniformLocation(program, 'u_palette');
-    // tell it to use texture units 0 and 1 for the image and palette
-    gl.uniform1i(imageLoc, 0);
-    gl.uniform1i(paletteLoc, 1);
-
-    // Setup a unit quad
-    const positions = [1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1];
-    const vertBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-    // Setup palette
+    // Setup palette (TODO: optimisation could be to only do this when palette has changed)
 
     const paletteTexture = new Uint8Array(256 * 4);
 
@@ -44,11 +30,6 @@ export class ColorIndexRenderer {
       paletteTexture[i * 4 + 2] = palette[i].b;
       paletteTexture[i * 4 + 3] = 255;
     }
-
-    /*     // Testing: change color 4 to white
-    paletteTexture[3 * 4 + 0] = 255;
-    paletteTexture[3 * 4 + 1] = 255;
-    paletteTexture[3 * 4 + 2] = 255; */
 
     // make palette texture and upload palette
     gl.activeTexture(gl.TEXTURE1);
@@ -89,7 +70,8 @@ export class ColorIndexRenderer {
       index
     );
 
-    gl.drawArrays(gl.TRIANGLES, 0, positions.length / 2);
+    // count = positions.length / 2 = 6
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
     destinationCanvasContext.clearRect(
       0,
       0,
@@ -167,6 +149,23 @@ export class ColorIndexRenderer {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       console.error(gl.getProgramInfoLog(program));
     }
+
+    // tell it to use texture units 0 and 1 for the image and palette
+
+    const imageLoc = gl.getUniformLocation(program, 'u_image');
+    const paletteLoc = gl.getUniformLocation(program, 'u_palette');
+    gl.uniform1i(imageLoc, 0);
+    gl.uniform1i(paletteLoc, 1);
+
+    // Setup a unit quad
+
+    const positions = [1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1];
+    const vertBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
     console.log('Program ready (ColorIndexRenderer)');
   }
 }

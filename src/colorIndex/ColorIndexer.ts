@@ -54,6 +54,20 @@ export function renderToCanvas(destinationCanvasCtx: CanvasRenderingContext2D): 
   }
   const palette = overmind.state.palette.paletteArray;
   colorIndexRenderer?.render(destinationCanvasCtx, index, palette);
+  overmind.actions.canvas.setCanvasModified(false);
+}
+
+export function renderToCanvasFrom(
+  destinationCanvasCtx: CanvasRenderingContext2D,
+  index: Uint8Array | null
+): void {
+  if (!index) {
+    return;
+  }
+  const palette = overmind.state.palette.paletteArray;
+  colorIndexRenderer?.render(destinationCanvasCtx, index, palette);
+  setIndex(index);
+  overmind.actions.canvas.setCanvasModified(false);
 }
 
 export function resetIndex(): void {
@@ -88,6 +102,53 @@ export function resetIndex(): void {
     format,
     type,
     data
+  );
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  // create and bind the framebuffer
+
+  const fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+  // attach the texture as the first color attachment
+
+  const attachmentPoint = gl.COLOR_ATTACHMENT0;
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
+}
+
+export function setIndex(index: Uint8Array | null): void {
+  if (!gl) {
+    alert('no webl!');
+    return undefined;
+  }
+  if (!index) {
+    return;
+  }
+  // create a texture to render to
+
+  const targetTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+
+  const level = 0;
+  const internalFormat = gl.RGBA;
+  const targetTextureWidth = gl.drawingBufferWidth;
+  const targetTextureHeight = gl.drawingBufferHeight;
+  const border = 0;
+  const format = gl.RGBA;
+  const type = gl.UNSIGNED_BYTE;
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    level,
+    internalFormat,
+    targetTextureWidth,
+    targetTextureHeight,
+    border,
+    format,
+    type,
+    index
   );
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -181,6 +242,8 @@ export function getAreaFromIndex(
 
 export function getColorIndexForPixel(point: Point): number | undefined {
   const colorIndex = getAreaFromIndex(point.x, point.y, 1, 1);
+  // eslint-disable-next-line no-debugger
+  debugger;
   return colorIndex?.[0];
 }
 

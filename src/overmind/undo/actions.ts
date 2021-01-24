@@ -1,26 +1,22 @@
-import { Action, AsyncAction } from 'overmind';
-import { buffer } from './state';
+import { Action } from 'overmind';
+import { undoBuffer } from './UndoBuffer';
+import { getIndex } from '../../colorIndex/ColorIndexer';
 
-export const setUndoPoint: AsyncAction<HTMLCanvasElement> = async (
-  { state },
-  canvas
-): Promise<void> => {
-  const blob: Blob | null = await new Promise((resolve): void => {
-    canvas.toBlob(resolve);
-  });
-  if (!blob) {
-    console.log('no blob');
+export const setUndoPoint: Action<HTMLCanvasElement> = ({ state }): void => {
+  const colorIndex = getIndex();
+  if (!colorIndex) {
+    console.log('no index');
     return;
   }
   if (state.undo.currentIndex === null) {
-    buffer.setBuffer([blob]);
+    undoBuffer.setBuffer([colorIndex]);
     state.undo.currentIndex = 0;
   } else {
-    buffer.setBuffer(
-      buffer
+    undoBuffer.setBuffer(
+      undoBuffer
         .getBuffer()
         .slice(0, state.undo.currentIndex + 1)
-        .concat(blob)
+        .concat(colorIndex)
     );
     state.undo.currentIndex = ++state.undo.currentIndex;
   }
@@ -35,7 +31,7 @@ export const undo: Action = ({ state }): void => {
 };
 
 export const redo: Action = ({ state }): void => {
-  if (state.undo.currentIndex === buffer.getBuffer().length - 1) {
+  if (state.undo.currentIndex === undoBuffer.getBuffer().length - 1) {
     return;
   }
   state.undo.currentIndex = state.undo.currentIndex === null ? 0 : ++state.undo.currentIndex;
