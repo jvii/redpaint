@@ -19,9 +19,9 @@ export function createIndexerGLContext(
     throw 'Sorry, ReDPaint requires WebGL support';
   }
 
-  // create a texture to render to
+  // create a texture to render to: TODO: why do we need a texture to render to here?
 
-  const targetTexture = gl.createTexture();
+  /* const targetTexture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, targetTexture);
 
   const level = 0;
@@ -60,7 +60,7 @@ export function createIndexerGLContext(
   // attach the texture as the first color attachment
 
   const attachmentPoint = gl.COLOR_ATTACHMENT0;
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level); */
 
   console.log('Indexer webgl context initialized');
 

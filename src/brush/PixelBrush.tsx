@@ -1,4 +1,4 @@
-import { Brush } from './Brush';
+import { BrushInterface } from './Brush';
 import { Point } from '../types';
 import {
   line,
@@ -13,17 +13,52 @@ import {
   unfilledPolygon,
 } from '../algorithm/shape';
 import { fillRect } from '../algorithm/primitive';
-//import { dot, brush } from '../colorIndex/ColorIndexer';
+import { overmind } from '..';
+import { PaintingCanvasController } from '../components/canvas/PaintingCanvasController';
+import { pointEquals } from '../tools/util/util';
 
-export class PixelBrush implements Brush {
-  public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
-    fillRect(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx);
+export class PixelBrush implements BrushInterface {
+  public drawDot(
+    ctx: CanvasRenderingContext2D,
+    point: Point,
+    canvas?: PaintingCanvasController
+  ): void {
+    //fillRect(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx);
     //dot(Math.floor(point.x), Math.floor(point.y), 1);
     //brush(Math.floor(point.x), Math.floor(point.y));
+    /* if (canvas) {
+      canvas.fillRect(
+        Math.floor(point.x),
+        Math.floor(point.y),
+        1,
+        1,
+        overmind.state.tool.activeColorIndex
+      );
+    } */
+    /* canvas?.fillRect(
+      Math.floor(point.x),
+      Math.floor(point.y),
+      1,
+      1,
+      overmind.state.tool.activeColorIndex
+    ); */
+    canvas?.points([point], overmind.state.tool.activeColorIndex);
   }
 
-  public drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
-    line(ctx, this, start, end);
+  public drawLine(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    canvas?: PaintingCanvasController
+  ): void {
+    //line(ctx, this, start, end, canvas);
+    const lines = [{ p1: start, p2: end }];
+    /*     if (pointEquals(start, end)) {
+      canvas?.fillRect(start.x - 1, start.y, 1, 1, overmind.state.tool.activeColorIndex);
+    } else {
+      canvas?.lines(lines, overmind.state.tool.activeColorIndex);
+    } */
+    canvas?.lines(lines, overmind.state.tool.activeColorIndex);
   }
 
   public drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void {

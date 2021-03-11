@@ -1,4 +1,5 @@
-import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../util';
+import { Line, Point } from '../../types';
+import { canvasToWebGLCoordInvert, canvasToWebGLCoordX, canvasToWebGLCoordY } from '../util';
 
 export class FillRectIndexer {
   private gl: WebGLRenderingContext;
@@ -8,6 +9,67 @@ export class FillRectIndexer {
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.initShaders();
+  }
+
+  public indexPoints(points: Point[], colorIndex: number): void {
+    const gl = this.gl;
+
+    if (!this.program) {
+      return;
+    }
+
+    if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
+      console.log('switching webgl program');
+      gl.useProgram(this.program);
+    }
+
+    if (colorIndex !== this.currentColor) {
+      console.log('updating color index uniform');
+      this.currentColor = colorIndex;
+      const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
+      gl.uniform1f(u_colorIndex, colorIndex);
+    }
+
+    console.log(`x: ${points[0].x}, webgl: ${canvasToWebGLCoordX(gl, points[0].x)}`);
+
+    const vertices = new Float32Array(2 * points.length);
+    vertices[0] = canvasToWebGLCoordX(gl, points[0].x);
+    vertices[1] = canvasToWebGLCoordInvert(gl, points[0].y);
+
+    this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+    this.gl.drawArrays(gl.POINTS, 0, points.length);
+  }
+
+  public indexLines(lines: Line[], colorIndex: number): void {
+    const gl = this.gl;
+
+    if (!this.program) {
+      return;
+    }
+
+    if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
+      console.log('switching webgl program');
+      gl.useProgram(this.program);
+    }
+
+    if (colorIndex !== this.currentColor) {
+      console.log('updating color index uniform');
+      this.currentColor = colorIndex;
+      const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
+      gl.uniform1f(u_colorIndex, colorIndex);
+    }
+
+    console.log(`p1.x: ${lines[0].p1.x}, webgl: ${canvasToWebGLCoordX(gl, lines[0].p1.x)}`);
+
+    const vertices = new Float32Array(2 * 2 * lines.length);
+    vertices[0] = canvasToWebGLCoordX(gl, lines[0].p1.x);
+    vertices[1] = canvasToWebGLCoordInvert(gl, lines[0].p1.y);
+    vertices[2] = canvasToWebGLCoordX(gl, lines[0].p2.x);
+    vertices[3] = canvasToWebGLCoordInvert(gl, lines[0].p2.y);
+
+    this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+    this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
+    //this.gl.drawArrays(gl.POINTS, 0, 2 * lines.length);
   }
 
   public indexFillRect(
@@ -22,6 +84,7 @@ export class FillRectIndexer {
     if (!this.program) {
       return;
     }
+
     if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
       console.log('switching webgl program');
       gl.useProgram(this.program);
@@ -99,7 +162,7 @@ export class FillRectIndexer {
     uniform float u_colorIndex;
 
     void main () {
-      gl_FragColor = vec4(u_colorIndex/255.0, 0.0, 0.0, 1.0);
+      gl_FragColor = vec4(u_colorIndex/255.0, 1.0, 0.0, 1.0);
     }
     `;
 

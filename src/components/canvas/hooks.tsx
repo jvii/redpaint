@@ -4,7 +4,7 @@ import { useOvermind } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { blobToCanvas } from './util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
-import { renderToCanvasFrom } from '../../colorIndex/ColorIndexer';
+//import { renderToCanvasFrom } from '../../colorIndex/ColorIndexer';
 
 export function useInitTool(
   eventHandlerParams: EventHandlerParams,
@@ -49,7 +49,7 @@ export function useUndo(canvas: HTMLCanvasElement): void {
         return;
       }
       const colorIndex = undoBuffer.getItem(state.undo.currentIndex);
-      renderToCanvasFrom(ctx, colorIndex);
+      //renderToCanvasFrom(ctx, colorIndex);
     }
     console.log('undo hook end');
   }, [state.undo.lastUndoRedoTime]);

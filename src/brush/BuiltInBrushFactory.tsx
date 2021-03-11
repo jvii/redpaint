@@ -91,15 +91,18 @@ function createImageDataFor(shape: BuiltInBrushShape): ImageData {
 }
 
 function createColorInderFor(shape: BuiltInBrushShape): Uint8Array {
-  const stringBitmap = builtInBrushShapes[shape].reverse(); // flip y as texture y coordinates start from bottom
+  // flip y as texture y coordinates start from bottom
+  const stringBitmap = builtInBrushShapes[shape].reverse();
   const width = stringBitmap[0].length;
   const height = stringBitmap.length;
   const stride = 4;
-  const brushColorIndex = new Uint8Array(width * height * 4).fill(0); // initialize as all zeros (transparent)
+  // initialize as all zeros (transparent)
+  const brushColorIndex = new Uint8Array(width * height * 4).fill(0);
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       if (stringBitmap[y].charAt(x) === '@') {
-        // can be any color index value here, as built in brushes are always colorized and don't have an inherent color
+        // can be any color index value here, as built in brushes are always colorized
+        // and don't have an inherent color
         brushColorIndex[(y * width + x) * stride] = 1;
       }
     }

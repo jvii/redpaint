@@ -1,8 +1,14 @@
+import { PaintingCanvasController } from '../components/canvas/PaintingCanvasController';
 import { Point } from '../types';
 
-export interface Brush {
-  drawDot(ctx: CanvasRenderingContext2D, point: Point): void;
-  drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void;
+export interface BrushInterface {
+  drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: PaintingCanvasController): void;
+  drawLine(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    canvas?: PaintingCanvasController
+  ): void;
   drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void;
   drawLineHorizontal(ctx: CanvasRenderingContext2D, x1: number, x2: number, y: number): void;
   drawCurve(ctx: CanvasRenderingContext2D, start: Point, end: Point, middlePoint: Point): void;

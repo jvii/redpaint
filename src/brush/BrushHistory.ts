@@ -1,4 +1,4 @@
-import { Brush } from './Brush';
+import { BrushInterface } from './Brush';
 import { PixelBrush } from './PixelBrush';
 
 class BrushHistory {
@@ -6,10 +6,10 @@ class BrushHistory {
     this.history = [];
     this.current = new PixelBrush();
   }
-  history: Brush[];
-  current: Brush;
+  history: BrushInterface[];
+  current: BrushInterface;
 
-  set(newBrush: Brush): void {
+  set(newBrush: BrushInterface): void {
     this.history.push(this.current);
     this.current = newBrush;
   }
