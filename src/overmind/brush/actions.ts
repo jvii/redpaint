@@ -1,10 +1,10 @@
 import { Action } from 'overmind';
-import { Brush } from '../../brush/Brush';
+import { BrushInterface } from '../../brush/Brush';
 import { Mode, BuiltInBrushId, builtInBrushes } from './state';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
 
-export const setBrush: Action<Brush> = ({ state }, brush): void => {
+export const setBrush: Action<BrushInterface> = ({ state }, brush): void => {
   brushHistory.set(brush);
 };
 

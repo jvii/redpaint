@@ -1,14 +1,21 @@
 // Algorithms for composing shapes using primitives
 
 import { Point } from '../types';
-import { Brush } from '../brush/Brush';
+import { BrushInterface } from '../brush/Brush';
 import { fillRect } from './primitive';
+import { PaintingCanvasController } from '../components/canvas/PaintingCanvasController';
 
-export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, end: Point): void {
+export function line(
+  ctx: CanvasRenderingContext2D,
+  brush: BrushInterface,
+  start: Point,
+  end: Point,
+  canvas?: PaintingCanvasController
+): void {
   const dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
-    brush.drawDot(ctx, start);
+    brush.drawDot(ctx, start, canvas);
     return;
   }
 
@@ -16,10 +23,14 @@ export function line(ctx: CanvasRenderingContext2D, brush: Brush, start: Point, 
   const cy = (end.y - start.y) / dist;
 
   for (let i = 0; i <= dist; i++) {
-    brush.drawDot(ctx, {
-      x: start.x + cx * i,
-      y: start.y + cy * i,
-    });
+    brush.drawDot(
+      ctx,
+      {
+        x: start.x + cx * i,
+        y: start.y + cy * i,
+      },
+      canvas
+    );
   }
 }
 
@@ -31,7 +42,7 @@ export function distance(start: Point, end: Point): number {
 // DPaint used conic curves instead.
 export function curve(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   start: Point,
   end: Point,
   middlePoint: Point
@@ -62,7 +73,7 @@ function getQuadraticXY(t: number, start: Point, controlPoint: Point, end: Point
 
 export function unfilledRect(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   start: Point,
   end: Point
 ): void {
@@ -89,7 +100,7 @@ export function unfilledRect(
 
 export function filledRect(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   start: Point,
   end: Point
 ): void {
@@ -108,7 +119,7 @@ export function filledRect(
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function filledCircle(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   center: Point,
   r: number
 ): void {
@@ -139,7 +150,7 @@ export function filledCircle(
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function unfilledCircle(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   center: Point,
   r: number
 ): void {
@@ -177,7 +188,7 @@ export function unfilledCircle(
 
 export function unfilledEllipse(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   center: Point,
   radiusX: number,
   radiusY: number,
@@ -269,7 +280,7 @@ export function unfilledEllipse(
 
 export function filledEllipse(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   center: Point,
   radiusX: number,
   radiusY: number,
@@ -309,7 +320,7 @@ export function filledEllipse(
 
 export function unfilledPolygon(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   vertices: Point[],
   complete = true
 ): void {
@@ -325,7 +336,7 @@ export function unfilledPolygon(
 // TODO: must also draw the outline of the polygon
 export function filledPolygon(
   ctx: CanvasRenderingContext2D,
-  brush: Brush,
+  brush: BrushInterface,
   vertices: Point[]
 ): void {
   // first draw the outline

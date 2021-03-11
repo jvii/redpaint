@@ -2,7 +2,7 @@ import { Point, Color } from '../../types';
 import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { overmind } from '../../index';
-import { getAreaFromIndex } from '../../colorIndex/ColorIndexer';
+import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -66,6 +66,7 @@ export function getEventHandler(
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
       tool[eventHandlerName]!({ event: event, ...eventHandlerParams });
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return (): void => {};
 }
 
@@ -84,6 +85,7 @@ export function getEventHandlerOverlay(
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
       tool[eventHandlerName]!({ event: event, ...eventHandlerParams });
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return (): void => {};
 }
 
@@ -162,7 +164,7 @@ export function extractBrush(
 
   // Extract color index and add tansparency for background color
 
-  const colorIndex = getAreaFromIndex(start.x, start.y, width, height);
+  const colorIndex = colorIndexer.getAreaFromIndex(start.x, start.y, width, height);
   if (!colorIndex) {
     throw 'Error retrieving color index for new brush';
   }
@@ -179,6 +181,7 @@ export function addTransparency(texture: Uint8Array, transparentColorIndex: numb
 }
 
 interface Omit {
+  // eslint-disable-next-line @typescript-eslint/ban-types
   <T extends object, K extends [...(keyof T)[]]>(obj: T, ...keys: K): {
     [K2 in Exclude<keyof T, K[number]>]: T[K2];
   };

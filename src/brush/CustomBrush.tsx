@@ -1,4 +1,4 @@
-import { Brush } from './Brush';
+import { BrushInterface } from './Brush';
 import { Point, Color } from '../types';
 import { drawImage } from '../algorithm/primitive';
 import {
@@ -26,7 +26,7 @@ interface CustomBrushFeatures {
   getObjectURL(): string;
 }
 
-export class CustomBrush implements Brush, CustomBrushFeatures {
+export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public brushImage = new Image(); // TODO: acts like getter, so maybe make it one
   public brushColorIndex = new Uint8Array(); // TODO: acts like getter, so maybe make it one
   public width = 0;

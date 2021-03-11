@@ -3,7 +3,6 @@ import { Button, Slider } from '@material-ui/core';
 import './PaletteEditor.css';
 import { useOvermind } from '../../overmind';
 import { Color } from '../../types';
-import { renderToCanvas } from '../../colorIndex/ColorIndexer';
 import { CanvasState } from '../canvas/CanvasState';
 
 interface Props {
@@ -31,7 +30,7 @@ export function PaletteEditor({ canvasState }: Props): JSX.Element | null {
     actions.palette.editColor({ colorId: state.palette.foregroundColorId, newColor: newColor });
     const ctx = mainCanvas.getContext('2d');
     if (ctx) {
-      renderToCanvas(ctx);
+      //renderToCanvas(ctx);
     }
   }
 

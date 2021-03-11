@@ -7,7 +7,7 @@
 import { Point } from '../types';
 import { overmind } from '../index';
 import { CustomBrush } from '../brush/CustomBrush';
-import { indexFillRect, indexDrawImage } from '../colorIndex/ColorIndexer';
+//import { indexFillRect, indexDrawImage } from '../colorIndex/ColorIndexer';
 
 export function fillRect(
   x: number,
@@ -19,9 +19,9 @@ export function fillRect(
   // draw and index
 
   ctx.fillRect(x, y, w, h);
-  if (ctx.canvas.className === 'canvas') {
+  /*   if (ctx.canvas.className === 'canvas') {
     indexFillRect(x, y, w, h, overmind.state.tool.activeColorIndex);
-  }
+  } */
 
   // handle symmetry
 
@@ -57,20 +57,20 @@ export function fillRect(
   ctx.fillRect(sym1.x, sym1.y, -w, -h);
   ctx.fillRect(sym2.x, sym2.y, -w, h);
   ctx.fillRect(sym3.x, sym3.y, w, -h);
-  if (ctx.canvas.className === 'canvas') {
+  /*   if (ctx.canvas.className === 'canvas') {
     indexFillRect(sym1.x, sym1.y, -w, -h, overmind.state.tool.activeColorIndex);
     indexFillRect(sym2.x, sym2.y, -w, h, overmind.state.tool.activeColorIndex);
     indexFillRect(sym3.x, sym3.y, w, -h, overmind.state.tool.activeColorIndex);
-  }
+  } */
 }
 
 export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRenderingContext2D): void {
   // draw and index
 
   ctx.drawImage(brush.brushImage, Math.floor(point.x), Math.floor(point.y));
-  if (ctx.canvas.className === 'canvas') {
+  /*   if (ctx.canvas.className === 'canvas') {
     indexDrawImage(Math.floor(point.x), Math.floor(point.y), brush);
-  }
+  } */
 
   if (!overmind.state.toolbox.symmetryModeOn) {
     return;
@@ -106,9 +106,9 @@ export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRendering
   ctx.drawImage(brush.brushImage, sym1.x, sym1.y);
   ctx.drawImage(brush.brushImage, sym2.x, sym2.y);
   ctx.drawImage(brush.brushImage, sym3.x, sym3.y);
-  if (ctx.canvas.className === 'canvas') {
+  /*   if (ctx.canvas.className === 'canvas') {
     indexDrawImage(sym1.x, sym1.y, brush);
     indexDrawImage(sym2.x, sym2.y, brush);
     indexDrawImage(sym3.x, sym3.y, brush);
-  }
+  } */
 }

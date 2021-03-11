@@ -5,6 +5,7 @@ import { useOvermind } from '../../overmind';
 import { getEventHandler, getEventHandlerOverlay } from '../../tools/util/util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
 import './Canvas.css';
+import { paintingCanvasController } from './PaintingCanvasController';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
@@ -20,18 +21,25 @@ export function Canvas({
   console.log('render ' + (isZoomCanvas ? 'ZoomCanvas' : 'MainCanvas'));
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
+  const paintingCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
 
   useEffect((): void => {
     canvasDispatch({
       type: isZoomCanvas ? 'setZoomCanvas' : 'setMainCanvas',
       elements: { canvas: canvasRef.current, overlay: overlayCanvasRef.current },
     });
+    if (isZoomCanvas) {
+      paintingCanvasController.attachZoomCanvas(paintingCanvasRef.current);
+    } else {
+      paintingCanvasController.attachMainCanvas(paintingCanvasRef.current);
+    }
   }, []);
 
   const canvasCtx = canvasRef.current.getContext('2d', {
     alpha: false,
     desynchronized: false, // desynchronized caused various problems with Windows version of Chrome
   }) as CanvasRenderingContext2D | null;
+
   const overlayCanvasCtx = overlayCanvasRef.current.getContext('2d', {
     alpha: true,
     desynchronized: false, // desynchronized caused various problems with Windows version of Chrome
@@ -42,7 +50,7 @@ export function Canvas({
   const eventHandlerParams: EventHandlerParams = {
     ctx: canvasCtx!,
     onPaint: (): void => {
-      actions.canvas.setCanvasModified(isZoomCanvas);
+      //actions.canvas.setCanvasModified(isZoomCanvas);
     },
     undoPoint: (): void => {
       actions.undo.setUndoPoint(canvasRef.current);
@@ -51,7 +59,7 @@ export function Canvas({
   const eventHandlerParamsOverlay: EventHandlerParamsOverlay = {
     ctx: overlayCanvasCtx!,
     onPaint: (): void => {
-      actions.canvas.setOverlayCanvasModified(isZoomCanvas);
+      //actions.canvas.setOverlayCanvasModified(isZoomCanvas);
     },
   };
 
@@ -105,6 +113,13 @@ export function Canvas({
           getEventHandlerOverlay(tool, 'onMouseMoveOverlay', eventHandlerParamsOverlay)(event);
         }}
         onContextMenu={getEventHandler(tool, 'onContextMenu', eventHandlerParams)}
+      />
+      <canvas
+        className="canvas canvas--overlay"
+        ref={paintingCanvasRef}
+        width={state.canvas.resolution.width}
+        height={state.canvas.resolution.height}
+        style={CSSZoom}
       />
       <canvas
         className="canvas canvas--overlay"

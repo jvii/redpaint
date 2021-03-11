@@ -6,7 +6,6 @@ import { CanvasState } from '../canvas/CanvasState';
 import { clearCanvas } from '../../tools/util/util';
 import { useOvermind } from '../../overmind';
 import './Toolbox.css';
-import { resetIndex } from '../../colorIndex/ColorIndexer';
 
 export interface Props {
   canvasState: CanvasState;
@@ -108,7 +107,7 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
         onClick={(): void => {
           clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
           actions.canvas.setCanvasModified(false);
-          resetIndex();
+          //resetIndex();
           actions.undo.setUndoPoint(canvasState.mainCanvas);
         }}
       />
