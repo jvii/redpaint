@@ -1,6 +1,6 @@
 import { Action } from 'overmind';
 import { undoBuffer } from './UndoBuffer';
-import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
+import { colorIndexer } from '../../colorIndex/ColorIndexer';
 
 export const setUndoPoint: Action<HTMLCanvasElement> = ({ state }): void => {
   const colorIndex = colorIndexer.getIndex();

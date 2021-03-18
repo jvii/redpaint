@@ -1,7 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
-import { colorIndexer } from '../components/canvas/ColorIndexerClass';
+import { colorIndexer } from '../colorIndex/ColorIndexer';
 
 export class ColorSelectorTool implements Tool {
   public constructor(foregroundColor: boolean) {

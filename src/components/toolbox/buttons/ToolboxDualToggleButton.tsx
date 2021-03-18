@@ -38,8 +38,8 @@ export function ToolboxDualToggleButton({
 }
 
 function isLowerHalfClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): boolean {
-  let x = event.nativeEvent.offsetX;
-  let y = 35 - event.nativeEvent.offsetY; // TODO: fix magic number
+  const x = event.nativeEvent.offsetX;
+  const y = 35 - event.nativeEvent.offsetY; // TODO: fix magic number
   if (y <= x) {
     return true;
   } else {

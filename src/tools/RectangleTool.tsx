@@ -9,6 +9,8 @@ import { Throttle } from './util/Throttle';
 import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
+import { paintingCanvasController } from '../core/PaintingCanvasController';
+import { overlayCanvasController } from '../core/OverlayCanvasController';
 
 export class RectangleTool implements Tool {
   private throttle = new Throttle(50);
@@ -57,7 +59,7 @@ export class RectangleTool implements Tool {
     const endPoint = getMousePos(canvas, event);
 
     if (this.filled) {
-      brushHistory.current.drawFilledRect(ctx, startPoint, endPoint);
+      brushHistory.current.drawFilledRect(ctx, startPoint, endPoint, paintingCanvasController);
     } else {
       brushHistory.current.drawUnfilledRect(ctx, startPoint, endPoint);
     }

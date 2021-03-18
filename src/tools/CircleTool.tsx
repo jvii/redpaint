@@ -10,6 +10,8 @@ import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
 import { brushHistory } from '../brush/BrushHistory';
+import { paintingCanvasController } from '../core/PaintingCanvasController';
+import { overlayCanvasController } from '../core/OverlayCanvasController';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -58,9 +60,11 @@ export class CircleTool implements Tool {
     const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
-      brushHistory.current.drawFilledCircle(ctx, origin, radius);
+      //brushHistory.current.drawFilledCircle(ctx, origin, radius);
+      brushHistory.current.drawFilledCircle(ctx, origin, radius, paintingCanvasController);
     } else {
-      brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
+      //brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
+      brushHistory.current.drawUnfilledCircle(ctx, origin, radius, paintingCanvasController);
     }
     undoPoint();
     onPaint();
@@ -97,10 +101,15 @@ export class CircleTool implements Tool {
     const mousePos = getMousePos(canvas, event);
 
     const origin = overmind.state.tool.circleTool.origin;
+
+    // If no origin has been set, we are still in origin selection mode.
+    // In this case we only need to render the crosshair (and the brush for unfilled cirle).
+
     if (!origin) {
       clearOverlayCanvas(canvas);
       if (!this.filled) {
-        // DPaint only draws unfilled shapes with the current brush
+        // DPaint only draws unfilled shapes with the current brush.
+        // For filled circles we only render the croshair.
         brushHistory.current.drawDot(ctx, mousePos);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
@@ -108,17 +117,22 @@ export class CircleTool implements Tool {
       return;
     }
 
+    // Origin is set, so we render a preview of the cicle
+
     const radius = Math.round(distance(origin, mousePos));
     if (this.filled) {
-      this.throttle.call((): void => {
+      brushHistory.current.drawFilledCircle(ctx, origin, radius, overlayCanvasController);
+      /*       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        brushHistory.current.drawFilledCircle(ctx, origin, radius);
-      });
+        //brushHistory.current.drawFilledCircle(ctx, origin, radius);
+        brushHistory.current.drawFilledCircle(ctx, origin, radius, overlayCanvasController);
+      }); */
     } else {
-      this.throttle.call((): void => {
+      brushHistory.current.drawUnfilledCircle(ctx, origin, radius, overlayCanvasController);
+      /* this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
         brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
-      });
+      }); */
     }
     onPaint();
   }

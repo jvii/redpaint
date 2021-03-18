@@ -2,7 +2,7 @@ import { Point, Color } from '../../types';
 import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { overmind } from '../../index';
-import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
+import { colorIndexer } from '../../colorIndex/ColorIndexer';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';

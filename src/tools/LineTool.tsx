@@ -15,7 +15,8 @@ import {
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../components/canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../core/PaintingCanvasController';
+import { overlayCanvasController } from '../core/OverlayCanvasController';
 
 export class LineTool implements Tool {
   private throttle = new Throttle(50);
@@ -54,7 +55,6 @@ export class LineTool implements Tool {
     const mousePos = getMousePos(canvas, event);
     const start = overmind.state.tool.lineTool.start;
     const end = mousePos;
-    //brushHistory.current.drawLine(ctx, start, end);
     brushHistory.current.drawLine(ctx, start, end, paintingCanvasController);
     undoPoint();
     onPaint();
@@ -90,11 +90,12 @@ export class LineTool implements Tool {
       const end = mousePos;
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        brushHistory.current.drawLine(ctx, start, end);
+        //brushHistory.current.drawLine(ctx, start, end);
+        brushHistory.current.drawLine(ctx, start, end, overlayCanvasController);
       });
     } else {
       clearOverlayCanvas(canvas);
-      brushHistory.current.drawDot(ctx, mousePos);
+      brushHistory.current.drawDot(ctx, mousePos, overlayCanvasController);
     }
     onPaint();
   }

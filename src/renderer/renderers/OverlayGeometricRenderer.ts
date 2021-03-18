@@ -1,18 +1,25 @@
 /* eslint-disable max-len */
-import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
 import { Line, Point } from '../../types';
-import { canvasToWebGLCoordInvert, canvasToWebGLCoordX, canvasToWebGLCoordY } from '../util';
+import {
+  canvasToWebGLCoordInvert,
+  canvasToWebGLCoordX,
+  canvasToWebGLCoordY,
+  shiftLine,
+  shiftPoint,
+} from '../../colorIndex/util';
+import { overmind } from '../..';
 
-export class GeometricRenderer {
+export class OverlayGeometricRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
+  private currentColorIndex = 0;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.initShaders();
   }
 
-  public renderPoints(points: Point[]): void {
+  public renderPoints(points: Point[], colorIndex: number): void {
     const gl = this.gl;
 
     if (!this.program) {
@@ -23,29 +30,22 @@ export class GeometricRenderer {
       gl.useProgram(this.program);
     }
 
+    this.updateColor(colorIndex);
+
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // update color index texture
-
-    gl.activeTexture(gl.TEXTURE0);
-    const level = 0;
-    const format = gl.RGBA;
-    const type = gl.UNSIGNED_BYTE;
-    const indexCanvas = colorIndexer.getIndexAsCanvas();
-    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas);
-
     const vertices = new Float32Array(2 * points.length);
-    vertices[0] = canvasToWebGLCoordX(gl, points[0].x);
-    vertices[1] = canvasToWebGLCoordInvert(gl, points[0].y);
-
-    const resolution = gl.getUniformLocation(this.program, 'resolution');
-    this.gl.uniform2f(resolution, gl.canvas.width, gl.canvas.height);
+    for (let i = 0; i < points.length; i++) {
+      const shiftedPoint = shiftPoint(points[i]);
+      vertices[i * 2] = canvasToWebGLCoordX(gl, shiftedPoint.x);
+      vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+    }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  public renderLines(lines: Line[]): void {
+  public renderLines(lines: Line[], colorIndex: number): void {
     const gl = this.gl;
 
     if (!this.program) {
@@ -56,29 +56,38 @@ export class GeometricRenderer {
       gl.useProgram(this.program);
     }
 
+    this.updateColor(colorIndex);
+
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // update color index texture
-
-    gl.activeTexture(gl.TEXTURE0);
-    const level = 0;
-    const format = gl.RGBA;
-    const type = gl.UNSIGNED_BYTE;
-    const indexCanvas = colorIndexer.getIndexAsCanvas();
-    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas);
-
     const vertices = new Float32Array(2 * 2 * lines.length);
-    vertices[0] = canvasToWebGLCoordX(gl, lines[0].p1.x);
-    vertices[1] = canvasToWebGLCoordInvert(gl, lines[0].p1.y);
-    vertices[2] = canvasToWebGLCoordX(gl, lines[0].p2.x);
-    vertices[3] = canvasToWebGLCoordInvert(gl, lines[0].p2.y);
-
-    const resolution = gl.getUniformLocation(this.program, 'resolution');
-    this.gl.uniform2f(resolution, gl.canvas.width, gl.canvas.height);
+    for (let i = 0; i < lines.length; i++) {
+      const shiftedLine = shiftLine(lines[i]);
+      vertices[i * 4] = canvasToWebGLCoordX(gl, shiftedLine.p1.x);
+      vertices[i * 4 + 1] = canvasToWebGLCoordInvert(gl, shiftedLine.p1.y);
+      vertices[i * 4 + 2] = canvasToWebGLCoordX(gl, shiftedLine.p2.x);
+      vertices[i * 4 + 3] = canvasToWebGLCoordInvert(gl, shiftedLine.p2.y);
+    }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
-    //this.gl.drawArrays(gl.POINTS, 0, 2 * lines.length);
+  }
+
+  private updateColor(colorIndex: number) {
+    if (colorIndex == this.currentColorIndex) {
+      return;
+    }
+
+    if (!this.program) {
+      return;
+    }
+    const gl = this.gl;
+
+    console.log('updating color uniform');
+    this.currentColorIndex = colorIndex;
+    const color = overmind.state.palette.paletteArray[colorIndex - 1];
+    const u_color = gl.getUniformLocation(this.program, 'u_color');
+    gl.uniform3f(u_color, color.r, color.g, color.b);
   }
 
   private initShaders(): void {
@@ -94,20 +103,10 @@ export class GeometricRenderer {
     const fragmentShader = `
     precision mediump float;
 
-    uniform vec2 resolution;
-    uniform sampler2D u_image;
-    uniform sampler2D u_palette;
+    uniform vec3 u_color;
 
-    void main() {
-      vec2 position = vec2((gl_FragCoord.x) / (resolution.x), 1.0 - (gl_FragCoord.y / (resolution.y)));
-      float index = texture2D(u_image, position).r * 255.0 - 1.0;
-      if (index < 0.1) {
-        gl_FragColor = vec4(1,1,1,1);
-      }
-      else {
-        gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
-      }
-      //gl_FragColor = vec4(1,1,1,1);
+    void main () {
+      gl_FragColor = vec4(u_color.x/255.0, u_color.y/255.0, u_color.z/255.0, 1.0);
     }
     `;
 
@@ -137,7 +136,7 @@ export class GeometricRenderer {
       console.error(gl.getShaderInfoLog(fs));
     }
 
-    // Compile the program
+    // Compile to program
     const program = gl.createProgram();
     if (!program) {
       return;
@@ -146,19 +145,12 @@ export class GeometricRenderer {
     gl.attachShader(program, vs);
     gl.attachShader(program, fs);
     gl.linkProgram(program);
-    gl.useProgram(program);
 
     // Catch some possible errors on program
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       console.error(gl.getProgramInfoLog(program));
     }
-
-    // tell it to use texture units 0 and 1 for the image and palette
-
-    const imageLoc = gl.getUniformLocation(program, 'u_image');
-    const paletteLoc = gl.getUniformLocation(program, 'u_palette');
-    gl.uniform1i(imageLoc, 0);
-    gl.uniform1i(paletteLoc, 1);
+    console.log('Program ready (FillRectIndexer)');
 
     // Create a buffer object for vertex coordinates
     const vertexBuffer = gl.createBuffer();
@@ -177,7 +169,5 @@ export class GeometricRenderer {
 
     // Enable the assignment to a_Position variable
     gl.enableVertexAttribArray(a_Position);
-
-    console.log('Program ready (GeometricRenderer)');
   }
 }

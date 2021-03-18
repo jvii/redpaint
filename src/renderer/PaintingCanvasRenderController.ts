@@ -1,13 +1,13 @@
-import { overmind } from '../../index';
-import { Line, Point } from '../../types';
-import { DrawImageRenderer } from './DrawImageRenderer';
-import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
-import { GeometricRenderer } from './GeometricRenderer';
+import { overmind } from '../index';
+import { Line, Point } from '../types';
+import { ColorIndexDrawImageRenderer } from './renderers/ColorIndexDrawImageRenderer';
+import { colorIndexer } from '../colorIndex/ColorIndexer';
+import { ColorIndexGeometricRenderer } from './renderers/ColorIndexGeometricRenderer';
 
-export class ColorIndexRendererClass {
+export class PaintingCanvasRenderController {
   private gl: WebGLRenderingContext;
-  private geometricRenderer: GeometricRenderer;
-  private drawImageRenderer: DrawImageRenderer;
+  private geometricRenderer: ColorIndexGeometricRenderer;
+  private drawImageRenderer: ColorIndexDrawImageRenderer;
 
   constructor(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl', {
@@ -21,13 +21,20 @@ export class ColorIndexRendererClass {
 
     // create renderers
 
-    this.geometricRenderer = new GeometricRenderer(this.gl);
-    this.drawImageRenderer = new DrawImageRenderer(this.gl);
+    this.geometricRenderer = new ColorIndexGeometricRenderer(this.gl);
+    this.drawImageRenderer = new ColorIndexDrawImageRenderer(this.gl);
   }
 
   renderCanvas(): void {
     console.log('rendering canvas');
     this.drawImageRenderer.renderCanvas();
+  }
+
+  renderTo2dCanvas(targetCtx: CanvasRenderingContext2D | null): void {
+    if (overmind.state.toolbox.zoomModeOn) {
+      targetCtx?.clearRect(0, 0, targetCtx.canvas.width, targetCtx.canvas.height);
+      targetCtx?.drawImage(this.gl.canvas, 0, 0);
+    }
   }
 
   /*   fillRect(x: number, y: number, width: number, heigth: number): void {

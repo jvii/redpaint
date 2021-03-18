@@ -1,10 +1,16 @@
 import { Line, Point } from '../../types';
-import { canvasToWebGLCoordInvert, canvasToWebGLCoordX, canvasToWebGLCoordY } from '../util';
+import {
+  canvasToWebGLCoordInvert,
+  canvasToWebGLCoordX,
+  canvasToWebGLCoordY,
+  shiftLine,
+  shiftPoint,
+} from '../util';
 
-export class FillRectIndexer {
+export class GeometricIndexer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
-  private currentColor = 0;
+  private currentColorIndex = 0;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -23,18 +29,19 @@ export class FillRectIndexer {
       gl.useProgram(this.program);
     }
 
-    if (colorIndex !== this.currentColor) {
+    if (colorIndex !== this.currentColorIndex) {
       console.log('updating color index uniform');
-      this.currentColor = colorIndex;
+      this.currentColorIndex = colorIndex;
       const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
       gl.uniform1f(u_colorIndex, colorIndex);
     }
 
-    console.log(`x: ${points[0].x}, webgl: ${canvasToWebGLCoordX(gl, points[0].x)}`);
-
     const vertices = new Float32Array(2 * points.length);
-    vertices[0] = canvasToWebGLCoordX(gl, points[0].x);
-    vertices[1] = canvasToWebGLCoordInvert(gl, points[0].y);
+    for (let i = 0; i < points.length; i++) {
+      const shiftedPoint = shiftPoint(points[i]);
+      vertices[i * 2] = canvasToWebGLCoordX(gl, shiftedPoint.x);
+      vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+    }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.POINTS, 0, points.length);
@@ -52,33 +59,27 @@ export class FillRectIndexer {
       gl.useProgram(this.program);
     }
 
-    if (colorIndex !== this.currentColor) {
+    if (colorIndex !== this.currentColorIndex) {
       console.log('updating color index uniform');
-      this.currentColor = colorIndex;
+      this.currentColorIndex = colorIndex;
       const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
       gl.uniform1f(u_colorIndex, colorIndex);
     }
 
-    console.log(`p1.x: ${lines[0].p1.x}, webgl: ${canvasToWebGLCoordX(gl, lines[0].p1.x)}`);
-
     const vertices = new Float32Array(2 * 2 * lines.length);
-    vertices[0] = canvasToWebGLCoordX(gl, lines[0].p1.x);
-    vertices[1] = canvasToWebGLCoordInvert(gl, lines[0].p1.y);
-    vertices[2] = canvasToWebGLCoordX(gl, lines[0].p2.x);
-    vertices[3] = canvasToWebGLCoordInvert(gl, lines[0].p2.y);
+    for (let i = 0; i < lines.length; i++) {
+      const shiftedLine = shiftLine(lines[i]);
+      vertices[i * 4] = canvasToWebGLCoordX(gl, shiftedLine.p1.x);
+      vertices[i * 4 + 1] = canvasToWebGLCoordInvert(gl, shiftedLine.p1.y);
+      vertices[i * 4 + 2] = canvasToWebGLCoordX(gl, shiftedLine.p2.x);
+      vertices[i * 4 + 3] = canvasToWebGLCoordInvert(gl, shiftedLine.p2.y);
+    }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
-    //this.gl.drawArrays(gl.POINTS, 0, 2 * lines.length);
   }
 
-  public indexFillRect(
-    x: number,
-    y: number,
-    width: number,
-    heigth: number,
-    colorIndex: number
-  ): void {
+  public indexFillRect(start: Point, end: Point, colorIndex: number): void {
     const gl = this.gl;
 
     if (!this.program) {
@@ -90,44 +91,45 @@ export class FillRectIndexer {
       gl.useProgram(this.program);
     }
 
-    if (colorIndex !== this.currentColor) {
+    if (colorIndex !== this.currentColorIndex) {
       console.log('updating color index uniform');
-      this.currentColor = colorIndex;
+      this.currentColorIndex = colorIndex;
       const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
       gl.uniform1f(u_colorIndex, colorIndex);
     }
 
-    /*   console.log('fillRect');
-    console.log('x: ' + x + ', x(gl): ' + canvasToWebGLCoordX(gl, x));
-    console.log('y: ' + y + ', y(gl): ' + canvasToWebGLCoordY(gl, y));
-    console.log('width: ' + width);
-    console.log('heigth: ' + heigth); */
+    const width = end.x - start.x;
+    const height = end.y - start.y;
 
-    if (width === 1 && heigth === 1) {
-      this.fillRectPoint(x, y);
+    if (width === 1 && height === 1) {
+      this.fillRectPoint(start);
     } else {
-      this.fillRectQuad(x, y, width, heigth);
+      this.fillRectQuad(start, end);
     }
   }
 
-  private fillRectPoint(x: number, y: number): void {
+  private fillRectPoint(point: Point): void {
     const gl = this.gl;
 
+    const shiftedPoint = shiftPoint(point);
+
     const vertices = new Float32Array(2);
-    vertices[0] = canvasToWebGLCoordX(gl, x);
-    vertices[1] = canvasToWebGLCoordY(gl, y);
+    vertices[0] = canvasToWebGLCoordX(gl, shiftedPoint.x);
+    vertices[1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.POINTS, 0, 1);
   }
 
-  private fillRectQuad(x: number, y: number, width: number, heigth: number): void {
+  private fillRectQuad(start: Point, end: Point): void {
     const gl = this.gl;
 
-    const xLeft = canvasToWebGLCoordX(gl, x);
-    const xRight = canvasToWebGLCoordX(gl, x + width);
-    const yTop = canvasToWebGLCoordY(gl, y);
-    const yBottom = canvasToWebGLCoordY(gl, y + heigth);
+    const shiftedStart = shiftPoint(start);
+    const shiftedEnd = shiftPoint(end);
+    const xLeft = canvasToWebGLCoordX(gl, shiftedStart.x);
+    const xRight = canvasToWebGLCoordX(gl, shiftedEnd.x);
+    const yTop = canvasToWebGLCoordInvert(gl, shiftedStart.y);
+    const yBottom = canvasToWebGLCoordInvert(gl, shiftedEnd.y);
 
     const vertices = new Float32Array(8);
     vertices[0] = xLeft;
@@ -162,7 +164,7 @@ export class FillRectIndexer {
     uniform float u_colorIndex;
 
     void main () {
-      gl_FragColor = vec4(u_colorIndex/255.0, 1.0, 0.0, 1.0);
+      gl_FragColor = vec4(u_colorIndex/255.0, 0.0, 0.0, 1.0);
     }
     `;
 

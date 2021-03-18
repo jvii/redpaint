@@ -1,16 +1,17 @@
 // Algorithms for composing shapes using primitives
 
-import { Point } from '../types';
+import { Line, Point } from '../types';
 import { BrushInterface } from '../brush/Brush';
 import { fillRect } from './primitive';
-import { PaintingCanvasController } from '../components/canvas/PaintingCanvasController';
+import { PaintingCanvasController } from '../core/PaintingCanvasController';
+import { CanvasController } from '../core/CanvasController';
 
 export function line(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
   start: Point,
   end: Point,
-  canvas?: PaintingCanvasController
+  canvas?: CanvasController
 ): void {
   const dist = Math.round(distance(start, end));
   if (dist === 0) {
@@ -26,12 +27,31 @@ export function line(
     brush.drawDot(
       ctx,
       {
-        x: start.x + cx * i,
-        y: start.y + cy * i,
+        x: Math.floor(start.x + cx * i),
+        y: Math.floor(start.y + cy * i),
       },
       canvas
     );
   }
+}
+
+export function line2(start: Point, end: Point): Point[] {
+  const dist = Math.round(distance(start, end));
+  if (dist === 0) {
+    // just draw a dot
+    //brush.drawDot(ctx, start, canvas);
+    return [{ x: start.x, y: start.y }];
+  }
+
+  const cx = (end.x - start.x) / dist;
+  const cy = (end.y - start.y) / dist;
+
+  const line: Point[] = [];
+
+  for (let i = 0; i <= dist; i++) {
+    line.push({ x: Math.floor(start.x + cx * i), y: Math.floor(start.y + cy * i) });
+  }
+  return line;
 }
 
 export function distance(start: Point, end: Point): number {
@@ -148,6 +168,60 @@ export function filledCircle(
 
 // eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
+export function filledCircle2(center: Point, r: number): Line[] {
+  if (r === 0) {
+    // just draw a dot
+    //fillRect(center.x, center.y, 1, 1, ctx);
+    return [
+      {
+        p1: { x: center.x, y: center.y },
+        p2: { x: center.x, y: center.y },
+      },
+    ];
+  }
+
+  let x = r;
+  let y = 0;
+  let cd = 0;
+
+  const circle: Line[] = [];
+  // middle line
+  //fillRect(center.x - x, center.y, r << 1, 1, ctx);
+  circle[0] = {
+    p1: { x: center.x - x, y: center.y },
+    p2: { x: center.x - x + (r << 1), y: center.y },
+  };
+
+  while (x > y) {
+    cd -= --x - ++y;
+    if (cd < 0) cd += x++;
+    //fillRect(center.x - y, center.y - x, y << 1, 1, ctx); // upper 1/4
+    circle.push({
+      p1: { x: center.x - y, y: center.y - x },
+      p2: { x: center.x - y + (y << 1), y: center.y - x },
+    });
+    //fillRect(center.x - x, center.y - y, x << 1, 1, ctx); // upper 2/4
+    circle.push({
+      p1: { x: center.x - x, y: center.y - y },
+      p2: { x: center.x - x + (x << 1), y: center.y - y },
+    });
+    //fillRect(center.x - x, center.y + y, x << 1, 1, ctx); // lower 3/4
+    circle.push({
+      p1: { x: center.x - x, y: center.y + y },
+      p2: { x: center.x - x + (x << 1), y: center.y + y },
+    });
+    //fillRect(center.x - y, center.y + x, y << 1, 1, ctx); // lower 4/4
+    circle.push({
+      p1: { x: center.x - y, y: center.y + x },
+      p2: { x: center.x - y + (y << 1), y: center.y + x },
+    });
+  }
+
+  return circle;
+}
+
+// eslint-disable-next-line max-len
+// adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function unfilledCircle(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
@@ -184,6 +258,57 @@ export function unfilledCircle(
     brush.drawDot(ctx, { x: center.x + x, y: center.y - y });
     brush.drawDot(ctx, { x: center.x + y, y: center.y - x });
   }
+}
+
+// eslint-disable-next-line max-len
+// adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
+export function unfilledCircle2(center: Point, r: number): Point[] {
+  if (r === 0) {
+    // just draw a dot
+    //brush.drawDot(ctx, center);
+    return [center];
+  }
+
+  let x = r,
+    y = 0,
+    cd = 0;
+
+  const circle: Point[] = [];
+
+  // middle points
+  circle.push({ x: center.x - x, y: center.y });
+  circle.push({ x: center.x + x, y: center.y });
+  circle.push({ x: center.x, y: center.y - r });
+  circle.push({ x: center.x, y: center.y + r });
+  /*   brush.drawDot(ctx, { x: center.x - x, y: center.y });
+  brush.drawDot(ctx, { x: center.x + x, y: center.y });
+  brush.drawDot(ctx, { x: center.x, y: center.y - r });
+  brush.drawDot(ctx, { x: center.x, y: center.y + r }); */
+
+  // octants
+  while (x > y) {
+    cd -= --x - ++y;
+    if (cd < 0) cd += x++;
+    circle.push({ x: center.x - y, y: center.y - x });
+    circle.push({ x: center.x - x, y: center.y - y });
+    circle.push({ x: center.x - x, y: center.y + y });
+    circle.push({ x: center.x - y, y: center.y + x });
+    /*     brush.drawDot(ctx, { x: center.x - y, y: center.y - x });
+    brush.drawDot(ctx, { x: center.x - x, y: center.y - y });
+    brush.drawDot(ctx, { x: center.x - x, y: center.y + y });
+    brush.drawDot(ctx, { x: center.x - y, y: center.y + x }); */
+
+    circle.push({ x: center.x + y, y: center.y + x });
+    circle.push({ x: center.x + x, y: center.y + y });
+    circle.push({ x: center.x + x, y: center.y - y });
+    circle.push({ x: center.x + y, y: center.y - x });
+    /*     brush.drawDot(ctx, { x: center.x + y, y: center.y + x });
+    brush.drawDot(ctx, { x: center.x + x, y: center.y + y });
+    brush.drawDot(ctx, { x: center.x + x, y: center.y - y });
+    brush.drawDot(ctx, { x: center.x + y, y: center.y - x }); */
+  }
+
+  return circle;
 }
 
 export function unfilledEllipse(
