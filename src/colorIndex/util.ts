@@ -1,3 +1,5 @@
+import { Line, Point } from '../types';
+
 export function canvasToWebGLCoordX(gl: WebGLRenderingContext, x: number): number {
   return (x / gl.canvas.width) * 2 - 1;
 }
@@ -13,6 +15,22 @@ export function canvasToWebGLCoordInvert(gl: WebGLRenderingContext, y: number): 
 
 export function colorizeTexture(texture: Uint8Array, colorIndex: number): Uint8Array {
   return texture.map((item) => (item !== 0 ? colorIndex : item));
+}
+
+export function shiftPoint(point: Point): Point {
+  return { x: point.x + 0.5, y: point.y + 0.5 };
+}
+
+export function shiftLine(line: Line): Line {
+  const p1XSmaller = line.p1.x < line.p2.x;
+  const p1YSmaller = line.p1.y < line.p2.y;
+  return {
+    p1: { x: line.p1.x + 0.5, y: line.p1.y + 0.5 },
+    p2: {
+      x: line.p2.x + (p1XSmaller ? 1.5 : 0),
+      y: line.p2.y + (p1YSmaller ? 1.5 : 0),
+    },
+  };
 }
 
 // testing, debugging purposes only

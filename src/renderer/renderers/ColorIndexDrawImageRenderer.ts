@@ -1,6 +1,6 @@
-import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
+import { colorIndexer } from '../../colorIndex/ColorIndexer';
 
-export class DrawImageRenderer {
+export class ColorIndexDrawImageRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
 

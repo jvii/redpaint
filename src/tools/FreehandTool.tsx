@@ -15,7 +15,8 @@ import {
 } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../components/canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../core/PaintingCanvasController';
+import { overlayCanvasController } from '../core/OverlayCanvasController';
 
 export class FreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
@@ -51,15 +52,11 @@ export class FreehandTool implements Tool {
       if (pointEquals(start, end)) {
         return; // this point has already been drawn to canvas
       }
-
       if (points8Connected(start, end)) {
-        // TODO: pitäisikö ctx tilalta olla parametrina CanvasController-tyyppinen olio
-        // (PaintingCanvasController tai OverlayCanvasController)?
         brushHistory.current.drawDot(ctx, end, paintingCanvasController);
       } else {
         brushHistory.current.drawLine(ctx, start, end, paintingCanvasController);
       }
-      //brushHistory.current.drawLine(ctx, start, end, paintingCanvasController);
       overmind.actions.tool.freeHandToolPrevious(end);
       onPaint();
     }
@@ -113,9 +110,10 @@ export class FreehandTool implements Tool {
     if (event.buttons) {
       return;
     }
-    clearOverlayCanvas(canvas);
+    //clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
-    brushHistory.current.drawDot(ctx, mousePos);
+    //brushHistory.current.drawDot(ctx, mousePos);
+    brushHistory.current.drawDot(ctx, mousePos, overlayCanvasController);
     onPaint();
   }
 

@@ -1,6 +1,6 @@
 import { Action } from 'overmind';
-import { colorIndexer } from '../../components/canvas/ColorIndexerClass';
-import { paintingCanvasController } from '../../components/canvas/PaintingCanvasController';
+import { colorIndexer } from '../../colorIndex/ColorIndexer';
+import { paintingCanvasController } from '../../core/PaintingCanvasController';
 import { Point } from '../../types';
 
 type Resolution = { width: number; height: number };

@@ -1,23 +1,45 @@
-import { FillRectIndexer } from '../../colorIndex/indexer/GeometricIndexer';
-import { DrawImageIndexer } from '../../colorIndex/indexer/DrawImageIndexer';
-import { CustomBrush } from '../../brush/CustomBrush';
-import { overmind } from '../../index';
-import { createIndexerGLContext } from '../../colorIndex/indexer/IndexerContext';
-import { Line, Point } from '../../types';
-import { visualiseTexture } from '../../colorIndex/util';
+import { GeometricIndexer } from './indexers/GeometricIndexer';
+import { DrawImageIndexer } from './indexers/DrawImageIndexer';
+import { CustomBrush } from '../brush/CustomBrush';
+import { overmind } from '../index';
+import { Line, Point } from '../types';
+import { visualiseTexture } from './util';
 
-class ColorIndexerClass {
+class ColorIndexer {
   private gl: WebGLRenderingContext;
-  private fillRectIndexer: FillRectIndexer;
+  private geometricIndexer: GeometricIndexer;
   private drawImageIndexer: DrawImageIndexer;
 
   constructor() {
-    this.gl = createIndexerGLContext(0, 0, 0);
+    this.gl = this.createIndexerGLContext(0, 0, 0);
 
     // create indexers
 
-    this.fillRectIndexer = new FillRectIndexer(this.gl);
+    this.geometricIndexer = new GeometricIndexer(this.gl);
     this.drawImageIndexer = new DrawImageIndexer(this.gl);
+  }
+
+  private createIndexerGLContext(
+    width: number,
+    height: number,
+    backgroundColorId: number
+  ): WebGLRenderingContext {
+    // init a webgl context for a canvas element outside the DOM
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const gl = canvas.getContext('webgl', {
+      preserveDrawingBuffer: true,
+      antialias: false,
+    });
+
+    if (!gl) {
+      alert('Sorry, ReDPaint requires WebGL support:(');
+      throw 'Sorry, ReDPaint requires WebGL support';
+    }
+    return gl;
   }
 
   init(): void {
@@ -25,24 +47,24 @@ class ColorIndexerClass {
     const height = overmind.state.canvas.resolution.height;
     const backgroundColorId = Number(overmind.state.palette.backgroundColorId);
     console.log(`ColorIndexer init, width=${width}, heigth=${height}`);
-    this.gl = createIndexerGLContext(width, height, backgroundColorId);
+    this.gl = this.createIndexerGLContext(width, height, backgroundColorId);
 
     // create indexers
 
-    this.fillRectIndexer = new FillRectIndexer(this.gl);
+    this.geometricIndexer = new GeometricIndexer(this.gl);
     this.drawImageIndexer = new DrawImageIndexer(this.gl);
   }
 
-  fillRect(x: number, y: number, width: number, heigth: number, colorIndex: number): void {
-    this.fillRectIndexer.indexFillRect(x, y, width, heigth, colorIndex);
+  fillRect(start: Point, end: Point, colorIndex: number): void {
+    this.geometricIndexer.indexFillRect(start, end, colorIndex);
   }
 
   points(points: Point[], colorIndex: number): void {
-    this.fillRectIndexer.indexPoints(points, colorIndex);
+    this.geometricIndexer.indexPoints(points, colorIndex);
   }
 
   lines(lines: Line[], colorIndex: number): void {
-    this.fillRectIndexer.indexLines(lines, colorIndex);
+    this.geometricIndexer.indexLines(lines, colorIndex);
   }
 
   drawImage(x: number, y: number, brush: CustomBrush): void {
@@ -228,4 +250,4 @@ class ColorIndexerClass {
   }
 }
 
-export const colorIndexer = new ColorIndexerClass();
+export const colorIndexer = new ColorIndexer();

@@ -11,54 +11,33 @@ import {
   filledEllipse,
   filledPolygon,
   unfilledPolygon,
+  filledCircle2,
+  unfilledCircle2,
+  line2,
 } from '../algorithm/shape';
 import { fillRect } from '../algorithm/primitive';
 import { overmind } from '..';
-import { PaintingCanvasController } from '../components/canvas/PaintingCanvasController';
+import { PaintingCanvasController } from '../core/PaintingCanvasController';
 import { pointEquals } from '../tools/util/util';
+import { CanvasController } from '../core/CanvasController';
 
 export class PixelBrush implements BrushInterface {
-  public drawDot(
-    ctx: CanvasRenderingContext2D,
-    point: Point,
-    canvas?: PaintingCanvasController
-  ): void {
-    //fillRect(Math.floor(point.x), Math.floor(point.y), 1, 1, ctx);
-    //dot(Math.floor(point.x), Math.floor(point.y), 1);
-    //brush(Math.floor(point.x), Math.floor(point.y));
-    /* if (canvas) {
-      canvas.fillRect(
-        Math.floor(point.x),
-        Math.floor(point.y),
-        1,
-        1,
-        overmind.state.tool.activeColorIndex
-      );
-    } */
-    /* canvas?.fillRect(
-      Math.floor(point.x),
-      Math.floor(point.y),
-      1,
-      1,
-      overmind.state.tool.activeColorIndex
-    ); */
+  public drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
     canvas?.points([point], overmind.state.tool.activeColorIndex);
+    //fillRect(point.x, point.y, 1, 1, ctx);
   }
 
   public drawLine(
     ctx: CanvasRenderingContext2D,
     start: Point,
     end: Point,
-    canvas?: PaintingCanvasController
+    canvas?: CanvasController
   ): void {
+    //const lines = [{ p1: start, p2: end }];
+    //canvas?.lines?.(lines, overmind.state.tool.activeColorIndex);
     //line(ctx, this, start, end, canvas);
-    const lines = [{ p1: start, p2: end }];
-    /*     if (pointEquals(start, end)) {
-      canvas?.fillRect(start.x - 1, start.y, 1, 1, overmind.state.tool.activeColorIndex);
-    } else {
-      canvas?.lines(lines, overmind.state.tool.activeColorIndex);
-    } */
-    canvas?.lines(lines, overmind.state.tool.activeColorIndex);
+    const line = line2(start, end);
+    canvas?.points(line, overmind.state.tool.activeColorIndex);
   }
 
   public drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void {
@@ -87,16 +66,35 @@ export class PixelBrush implements BrushInterface {
     unfilledRect(ctx, this, start, end);
   }
 
-  public drawFilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
-    filledRect(ctx, this, start, end);
+  public drawFilledRect(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    canvas: CanvasController
+  ): void {
+    //filledRect(ctx, this, start, end);
+    canvas?.fillRect?.(start, end, overmind.state.tool.activeColorIndex);
   }
 
-  public drawUnfilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void {
-    unfilledCircle(ctx, this, center, radius);
+  public drawUnfilledCircle(
+    ctx: CanvasRenderingContext2D,
+    center: Point,
+    radius: number,
+    canvas?: CanvasController
+  ): void {
+    const unfilledCircle = unfilledCircle2(center, radius);
+    canvas?.points(unfilledCircle, overmind.state.tool.activeColorIndex);
+    //unfilledCircle(ctx, this, center, radius);
   }
 
-  public drawFilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void {
-    filledCircle(ctx, this, center, radius);
+  public drawFilledCircle(
+    ctx: CanvasRenderingContext2D,
+    center: Point,
+    radius: number,
+    canvas?: CanvasController
+  ): void {
+    const filledCircle = filledCircle2(center, radius);
+    canvas?.lines(filledCircle, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledEllipse(

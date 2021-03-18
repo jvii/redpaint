@@ -5,7 +5,8 @@ import { useOvermind } from '../../overmind';
 import { getEventHandler, getEventHandlerOverlay } from '../../tools/util/util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
 import './Canvas.css';
-import { paintingCanvasController } from './PaintingCanvasController';
+import { paintingCanvasController } from '../../core/PaintingCanvasController';
+import { overlayCanvasController } from '../../core/OverlayCanvasController';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;
@@ -22,6 +23,7 @@ export function Canvas({
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const paintingCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
+  const overlay2CanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
 
   useEffect((): void => {
     canvasDispatch({
@@ -30,8 +32,10 @@ export function Canvas({
     });
     if (isZoomCanvas) {
       paintingCanvasController.attachZoomCanvas(paintingCanvasRef.current);
+      overlayCanvasController.attachZoomCanvas(overlay2CanvasRef.current);
     } else {
       paintingCanvasController.attachMainCanvas(paintingCanvasRef.current);
+      overlayCanvasController.attachMainCanvas(overlay2CanvasRef.current);
     }
   }, []);
 
@@ -117,6 +121,13 @@ export function Canvas({
       <canvas
         className="canvas canvas--overlay"
         ref={paintingCanvasRef}
+        width={state.canvas.resolution.width}
+        height={state.canvas.resolution.height}
+        style={CSSZoom}
+      />
+      <canvas
+        className="canvas canvas--overlay"
+        ref={overlay2CanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}
         style={CSSZoom}
