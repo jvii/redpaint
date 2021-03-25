@@ -3,9 +3,9 @@ import { Line, Point } from '../types';
 import { OverlayCanvasRenderController } from '../renderer/OverlayCanvasRenderController';
 import { CanvasController } from './CanvasController';
 
-// OverlayController is a singleton class responsible for controlling
+// OverlayController is a singleton responsible for controlling
 // the two overlay canvases in the app for MainCanvas and ZoomCanvas.
-export class OverlayController implements CanvasController {
+class OverlayController implements CanvasController {
   private mainCanvasOverlay: HTMLCanvasElement;
   private zoomCanvasOverlay: HTMLCanvasElement;
   private zoomCanvasOverlayCtx: CanvasRenderingContext2D | null = null;

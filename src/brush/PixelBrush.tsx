@@ -17,7 +17,6 @@ import {
 } from '../algorithm/shape';
 import { fillRect } from '../algorithm/primitive';
 import { overmind } from '..';
-import { PaintingCanvasController } from '../core/PaintingCanvasController';
 import { pointEquals } from '../tools/util/util';
 import { CanvasController } from '../core/CanvasController';
 

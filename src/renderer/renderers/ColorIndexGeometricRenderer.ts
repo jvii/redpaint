@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-import { colorIndexer } from '../../colorIndex/ColorIndexer';
 import { Line, Point } from '../../types';
 import {
   canvasToWebGLCoordInvert,
@@ -8,6 +7,7 @@ import {
   shiftLine,
   shiftPoint,
 } from '../../colorIndex/util';
+import { paintingCanvasController } from '../../core/PaintingCanvasController';
 
 export class ColorIndexGeometricRenderer {
   private gl: WebGLRenderingContext;
@@ -45,7 +45,10 @@ export class ColorIndexGeometricRenderer {
     const level = 0;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
-    const indexCanvas = colorIndexer.getIndexAsCanvas();
+    const indexCanvas = paintingCanvasController.colorIndexer?.getIndexAsCanvas();
+    if (!indexCanvas) {
+      throw 'no indexcanvas';
+    }
     gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas);
 
     const vertices = new Float32Array(2 * points.length);
@@ -77,13 +80,13 @@ export class ColorIndexGeometricRenderer {
 
     // update color index texture
 
-    gl.activeTexture(gl.TEXTURE0);
+    /*     gl.activeTexture(gl.TEXTURE0);
     const level = 0;
     const internalFormat = gl.RGBA;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
     const indexCanvas = colorIndexer.getIndexAsCanvas();
-    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, indexCanvas);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, indexCanvas); */
 
     /*     gl.activeTexture(gl.TEXTURE0);
     const level = 0;
@@ -136,8 +139,8 @@ export class ColorIndexGeometricRenderer {
         gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
       }
       */
-      //gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
-      gl_FragColor = vec4(1,1,1,1);
+      gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
+      //gl_FragColor = vec4(1,1,1,1);
     }
     `;
 
