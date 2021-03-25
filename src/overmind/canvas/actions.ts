@@ -1,5 +1,4 @@
 import { Action } from 'overmind';
-import { colorIndexer } from '../../colorIndex/ColorIndexer';
 import { paintingCanvasController } from '../../core/PaintingCanvasController';
 import { Point } from '../../types';
 
@@ -7,7 +6,7 @@ type Resolution = { width: number; height: number };
 
 export const setResolution: Action<Resolution> = ({ state }, resolution): void => {
   state.canvas.resolution = resolution;
-  colorIndexer.init();
+  paintingCanvasController.colorIndexer?.init();
   paintingCanvasController.initColorIndexRenderer();
 };
 

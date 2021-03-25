@@ -5,7 +5,7 @@ import { overmind } from '../index';
 import { Line, Point } from '../types';
 import { visualiseTexture } from './util';
 
-class ColorIndexer {
+export class ColorIndexer {
   private gl: WebGLRenderingContext;
   private geometricIndexer: GeometricIndexer;
   private drawImageIndexer: DrawImageIndexer;
@@ -250,4 +250,4 @@ class ColorIndexer {
   }
 }
 
-export const colorIndexer = new ColorIndexer();
+//export const colorIndexer = new ColorIndexer();

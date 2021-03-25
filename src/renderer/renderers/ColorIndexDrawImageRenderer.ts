@@ -1,5 +1,3 @@
-import { colorIndexer } from '../../colorIndex/ColorIndexer';
-
 export class ColorIndexDrawImageRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
@@ -9,7 +7,7 @@ export class ColorIndexDrawImageRenderer {
     this.initShaders();
   }
 
-  public renderCanvas(): void {
+  /* public renderCanvas(): void {
     const gl = this.gl;
 
     if (!this.program) {
@@ -37,7 +35,7 @@ export class ColorIndexDrawImageRenderer {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     // count = positions.length / 2 = 6
     gl.drawArrays(gl.TRIANGLES, 0, 6);
-  }
+  } */
 
   private initShaders(): void {
     const vertexShader = `

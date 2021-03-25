@@ -1,23 +1,21 @@
 import { CustomBrush } from '../brush/CustomBrush';
+import { ColorIndexer } from '../colorIndex/ColorIndexer';
 import { PaintingCanvasRenderController } from '../renderer/PaintingCanvasRenderController';
 import { Line, Point } from '../types';
-import { colorIndexer } from '../colorIndex/ColorIndexer';
 import { CanvasController } from './CanvasController';
-//import { ColorIndexerClass } from './ColorIndexerClass';
 
-// PaintingCanvasController is a singleton class responsible for controlling
+// PaintingCanvasController is a singleton responsible for controlling
 // the two painting canvases in the app: MainCanvas and ZoomCanvas.
 // Note that overlay canvases are controllod separately by OverlayCanvasController.
-export class PaintingCanvasController implements CanvasController {
-  //private colorIndexer: ColorIndexerClass; // can be located here later
+class PaintingCanvasController implements CanvasController {
   private mainCanvas: HTMLCanvasElement;
   private zoomCanvas: HTMLCanvasElement;
   private zoomCanvasCtx: CanvasRenderingContext2D | null = null;
   private mainCanvasRenderer: PaintingCanvasRenderController | null = null;
+  public colorIndexer: ColorIndexer | null = null;
   //private zoomCanvasRenderer: PaintingCanvasRenderController | null = null;
 
   constructor() {
-    //this.colorIndexer = new ColorIndexerClass();
     this.mainCanvas = document.createElement('canvas');
     this.zoomCanvas = document.createElement('canvas');
   }
@@ -25,6 +23,8 @@ export class PaintingCanvasController implements CanvasController {
   attachMainCanvas(mainCanvas: HTMLCanvasElement): void {
     this.mainCanvas = mainCanvas;
     this.mainCanvasRenderer = new PaintingCanvasRenderController(mainCanvas);
+    //this.mainCanvasRenderer.initColorIndexTexture();
+    this.colorIndexer = new ColorIndexer();
     this.mainCanvasRenderer.initColorIndexTexture();
   }
 
@@ -39,13 +39,13 @@ export class PaintingCanvasController implements CanvasController {
   }
 
   fillRect(start: Point, end: Point, colorIndex: number): void {
-    colorIndexer.fillRect(start, end, colorIndex);
+    this.colorIndexer?.fillRect(start, end, colorIndex);
     console.log('fillrect');
     this.render();
   }
 
   points(points: Point[], colorIndex: number): void {
-    colorIndexer.points(points, colorIndex);
+    this.colorIndexer?.points(points, colorIndex);
     this.mainCanvasRenderer?.points(points);
     this.mainCanvasRenderer?.renderTo2dCanvas(this.zoomCanvasCtx);
     //this.zoomCanvasRenderer?.points(points);
@@ -53,7 +53,7 @@ export class PaintingCanvasController implements CanvasController {
   }
 
   lines(lines: Line[], colorIndex: number): void {
-    colorIndexer.lines(lines, colorIndex);
+    this.colorIndexer?.lines(lines, colorIndex);
     this.mainCanvasRenderer?.lines(lines);
     this.mainCanvasRenderer?.renderTo2dCanvas(this.zoomCanvasCtx);
     //this.zoomCanvasRenderer?.lines(lines);
@@ -61,10 +61,9 @@ export class PaintingCanvasController implements CanvasController {
   }
 
   drawImage(x: number, y: number, brush: CustomBrush): void {
-    colorIndexer.drawImage(x, y, brush);
+    this.colorIndexer?.drawImage(x, y, brush);
     this.render();
   }
-
   render(): void {
     this.mainCanvasRenderer?.renderCanvas();
     //this.zoomCanvasRenderer?.renderCanvas();

@@ -2,7 +2,6 @@ import { Point, Color } from '../../types';
 import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { overmind } from '../../index';
-import { colorIndexer } from '../../colorIndex/ColorIndexer';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -164,7 +163,8 @@ export function extractBrush(
 
   // Extract color index and add tansparency for background color
 
-  const colorIndex = colorIndexer.getAreaFromIndex(start.x, start.y, width, height);
+  //const colorIndex = colorIndexer.getAreaFromIndex(start.x, start.y, width, height);
+  const colorIndex = new Uint8Array(); // TODO
   if (!colorIndex) {
     throw 'Error retrieving color index for new brush';
   }

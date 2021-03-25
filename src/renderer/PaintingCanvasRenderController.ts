@@ -1,7 +1,7 @@
+import { paintingCanvasController } from '../core/PaintingCanvasController';
 import { overmind } from '../index';
 import { Line, Point } from '../types';
 import { ColorIndexDrawImageRenderer } from './renderers/ColorIndexDrawImageRenderer';
-import { colorIndexer } from '../colorIndex/ColorIndexer';
 import { ColorIndexGeometricRenderer } from './renderers/ColorIndexGeometricRenderer';
 
 export class PaintingCanvasRenderController {
@@ -27,7 +27,7 @@ export class PaintingCanvasRenderController {
 
   renderCanvas(): void {
     console.log('rendering canvas');
-    this.drawImageRenderer.renderCanvas();
+    //this.drawImageRenderer.renderCanvas();
   }
 
   renderTo2dCanvas(targetCtx: CanvasRenderingContext2D | null): void {
@@ -71,7 +71,10 @@ export class PaintingCanvasRenderController {
     const internalFormat = gl.RGBA;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
-    const indexCanvas = colorIndexer.getIndexAsCanvas();
+    const indexCanvas = paintingCanvasController.colorIndexer?.getIndexAsCanvas();
+    if (!indexCanvas) {
+      throw 'no indexcanvas';
+    }
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, indexCanvas);
 
     // Setup palette (TODO: optimisation could be to only do this when palette has changed)
