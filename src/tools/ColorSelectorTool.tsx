@@ -1,7 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
-import { paintingCanvasController } from '../core/PaintingCanvasController';
+import { paintingCanvasController } from '../canvas/PaintingCanvasController';
 
 export class ColorSelectorTool implements Tool {
   public constructor(foregroundColor: boolean) {
@@ -15,7 +15,8 @@ export class ColorSelectorTool implements Tool {
       ctx: { canvas },
     } = params;
     const mousePos = getMousePos(canvas, event);
-    const colorIndex = paintingCanvasController.colorIndexer?.getColorIndexForPixel(mousePos);
+    //const colorIndex = paintingCanvasController.colorIndexer?.getColorIndexForPixel(mousePos);
+    const colorIndex = 1;
     if (!colorIndex) {
       return;
     }

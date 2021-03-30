@@ -18,7 +18,7 @@ import {
 import { fillRect } from '../algorithm/primitive';
 import { overmind } from '..';
 import { pointEquals } from '../tools/util/util';
-import { CanvasController } from '../core/CanvasController';
+import { CanvasController } from '../canvas/CanvasController';
 
 export class PixelBrush implements BrushInterface {
   public drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {

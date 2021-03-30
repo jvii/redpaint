@@ -7,7 +7,7 @@ import {
   shiftLine,
   shiftPoint,
 } from '../../colorIndex/util';
-import { paintingCanvasController } from '../../core/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
 
 export class ColorIndexGeometricRenderer {
   private gl: WebGLRenderingContext;
@@ -31,6 +31,9 @@ export class ColorIndexGeometricRenderer {
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
+    // render to the canvas
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
     // update color index texture
 
     /* gl.activeTexture(gl.TEXTURE0);
@@ -41,7 +44,7 @@ export class ColorIndexGeometricRenderer {
     const indexCanvas = colorIndexer.getIndexAsCanvas();
     gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, indexCanvas); */
 
-    gl.activeTexture(gl.TEXTURE0);
+    /*     gl.activeTexture(gl.TEXTURE0);
     const level = 0;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
@@ -49,7 +52,7 @@ export class ColorIndexGeometricRenderer {
     if (!indexCanvas) {
       throw 'no indexcanvas';
     }
-    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas);
+    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas); */
 
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {

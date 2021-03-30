@@ -7,19 +7,21 @@ import { visualiseTexture } from './util';
 
 export class ColorIndexer {
   private gl: WebGLRenderingContext;
+  private fb: WebGLFramebuffer | null = null;
   private geometricIndexer: GeometricIndexer;
   private drawImageIndexer: DrawImageIndexer;
 
-  constructor() {
-    this.gl = this.createIndexerGLContext(0, 0, 0);
-
+  constructor(gl: WebGLRenderingContext) {
+    //this.gl = this.createIndexerGLContext(0, 0, 0);
+    this.gl = gl;
     // create indexers
 
     this.geometricIndexer = new GeometricIndexer(this.gl);
     this.drawImageIndexer = new DrawImageIndexer(this.gl);
+    this.resetIndex();
   }
 
-  private createIndexerGLContext(
+  /*   private createIndexerGLContext(
     width: number,
     height: number,
     backgroundColorId: number
@@ -40,9 +42,9 @@ export class ColorIndexer {
       throw 'Sorry, ReDPaint requires WebGL support';
     }
     return gl;
-  }
+  } */
 
-  init(): void {
+  /*   init(): void {
     const width = overmind.state.canvas.resolution.width;
     const height = overmind.state.canvas.resolution.height;
     const backgroundColorId = Number(overmind.state.palette.backgroundColorId);
@@ -53,17 +55,20 @@ export class ColorIndexer {
 
     this.geometricIndexer = new GeometricIndexer(this.gl);
     this.drawImageIndexer = new DrawImageIndexer(this.gl);
-  }
+  } */
 
   fillRect(start: Point, end: Point, colorIndex: number): void {
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb);
     this.geometricIndexer.indexFillRect(start, end, colorIndex);
   }
 
   points(points: Point[], colorIndex: number): void {
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb);
     this.geometricIndexer.indexPoints(points, colorIndex);
   }
 
   lines(lines: Line[], colorIndex: number): void {
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb);
     this.geometricIndexer.indexLines(lines, colorIndex);
   }
 
@@ -90,7 +95,7 @@ export class ColorIndexer {
   }
 
   resetIndex(): void {
-    /* const gl = this.gl;
+    const gl = this.gl;
 
     // create a texture to render to
 
@@ -127,14 +132,13 @@ export class ColorIndexer {
 
     // create and bind the framebuffer
 
-    const fb = gl.createFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    this.fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fb);
 
     // attach the texture as the first color attachment
 
     const attachmentPoint = gl.COLOR_ATTACHMENT0;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
-    */
   }
 
   setIndex(index: Uint8Array | null): void {

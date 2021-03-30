@@ -40,7 +40,7 @@ export class OverlayCanvasRenderController {
   }*/
 
   points(points: Point[], colorIndex: number): void {
-    console.log('rendering point, x = ', points[0].x);
+    //console.log('rendering point, x = ', points[0].x);
     this.geometricRenderer.renderPoints(points, colorIndex);
   }
 

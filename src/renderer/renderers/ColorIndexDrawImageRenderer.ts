@@ -7,7 +7,7 @@ export class ColorIndexDrawImageRenderer {
     this.initShaders();
   }
 
-  /* public renderCanvas(): void {
+  public renderCanvas(): void {
     const gl = this.gl;
 
     if (!this.program) {
@@ -20,14 +20,17 @@ export class ColorIndexDrawImageRenderer {
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // update color index texture
+    // render to the canvas
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    /*     // update color index texture
 
     gl.activeTexture(gl.TEXTURE0);
     const level = 0;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
     const indexCanvas = colorIndexer.getIndexAsCanvas();
-    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas);
+    gl.texSubImage2D(gl.TEXTURE_2D, level, 0, 0, format, type, indexCanvas); */
 
     // Setup a unit quad
 
@@ -35,7 +38,7 @@ export class ColorIndexDrawImageRenderer {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
     // count = positions.length / 2 = 6
     gl.drawArrays(gl.TRIANGLES, 0, 6);
-  } */
+  }
 
   private initShaders(): void {
     const vertexShader = `

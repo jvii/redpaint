@@ -1,13 +1,15 @@
 import { Action } from 'overmind';
-import { paintingCanvasController } from '../../core/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
 import { Point } from '../../types';
 
 type Resolution = { width: number; height: number };
 
 export const setResolution: Action<Resolution> = ({ state }, resolution): void => {
   state.canvas.resolution = resolution;
-  paintingCanvasController.colorIndexer?.init();
-  paintingCanvasController.initColorIndexRenderer();
+  //paintingCanvasController.colorIndexer?.init();
+  //paintingCanvasController.initColorIndexRenderer();
+  //paintingCanvasController.colorIndexer?.resetIndex();
+  paintingCanvasController.init();
 };
 
 export const setScrollFocusPoint: Action<Point> = ({ state }, point): void => {

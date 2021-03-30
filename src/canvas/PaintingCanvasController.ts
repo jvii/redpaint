@@ -3,6 +3,7 @@ import { ColorIndexer } from '../colorIndex/ColorIndexer';
 import { PaintingCanvasRenderController } from '../renderer/PaintingCanvasRenderController';
 import { Line, Point } from '../types';
 import { CanvasController } from './CanvasController';
+import { PaintingCanvasControllerSimple } from './paintingCanvas/PaintingCanvasControllerSimple';
 
 // PaintingCanvasController is a singleton responsible for controlling
 // the two painting canvases in the app: MainCanvas and ZoomCanvas.
@@ -22,9 +23,17 @@ class PaintingCanvasController implements CanvasController {
 
   attachMainCanvas(mainCanvas: HTMLCanvasElement): void {
     this.mainCanvas = mainCanvas;
-    this.mainCanvasRenderer = new PaintingCanvasRenderController(mainCanvas);
-    //this.mainCanvasRenderer.initColorIndexTexture();
-    this.colorIndexer = new ColorIndexer();
+
+    const gl = mainCanvas.getContext('webgl', {
+      preserveDrawingBuffer: true,
+      antialias: false,
+    });
+    if (!gl) {
+      throw 'No webgl';
+    }
+
+    this.mainCanvasRenderer = new PaintingCanvasRenderController(gl);
+    this.colorIndexer = new ColorIndexer(gl);
     this.mainCanvasRenderer.initColorIndexTexture();
   }
 
@@ -46,16 +55,18 @@ class PaintingCanvasController implements CanvasController {
 
   points(points: Point[], colorIndex: number): void {
     this.colorIndexer?.points(points, colorIndex);
+    this.colorIndexer?.visualiseIndex();
     this.mainCanvasRenderer?.points(points);
-    this.mainCanvasRenderer?.renderTo2dCanvas(this.zoomCanvasCtx);
+    //this.mainCanvasRenderer?.renderTo2dCanvas(this.zoomCanvasCtx);
+
     //this.zoomCanvasRenderer?.points(points);
     //this.render();
   }
 
   lines(lines: Line[], colorIndex: number): void {
     this.colorIndexer?.lines(lines, colorIndex);
-    this.mainCanvasRenderer?.lines(lines);
-    this.mainCanvasRenderer?.renderTo2dCanvas(this.zoomCanvasCtx);
+    //this.mainCanvasRenderer?.lines(lines);
+    //this.mainCanvasRenderer?.renderTo2dCanvas(this.zoomCanvasCtx);
     //this.zoomCanvasRenderer?.lines(lines);
     //this.render();
   }
@@ -79,4 +90,5 @@ class PaintingCanvasController implements CanvasController {
   }
 }
 
-export const paintingCanvasController = new PaintingCanvasController();
+//export const paintingCanvasController = new PaintingCanvasController();
+export const paintingCanvasController = new PaintingCanvasControllerSimple();
