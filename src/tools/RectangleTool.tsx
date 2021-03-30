@@ -9,8 +9,8 @@ import { Throttle } from './util/Throttle';
 import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../core/PaintingCanvasController';
-import { overlayCanvasController } from '../core/OverlayCanvasController';
+import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class RectangleTool implements Tool {
   private throttle = new Throttle(50);

@@ -1,9 +1,10 @@
 import { Action } from 'overmind';
-import { paintingCanvasController } from '../../core/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
 import { undoBuffer } from './UndoBuffer';
 
 export const setUndoPoint: Action<HTMLCanvasElement> = ({ state }): void => {
-  const colorIndex = paintingCanvasController.colorIndexer?.getIndex();
+  //const colorIndex = paintingCanvasController.colorIndexer?.getIndex();
+  const colorIndex = new Uint8Array(); // temp
   if (!colorIndex) {
     console.log('no index');
     return;

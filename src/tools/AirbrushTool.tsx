@@ -47,6 +47,7 @@ export class AirbrushTool implements Tool {
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const { event, ctx, onPaint } = params;
 
+    // eslint-disable-next-line @typescript-eslint/ban-types
     const draw = (ctx: CanvasRenderingContext2D, onPaint: Function): void => {
       for (let i = 50; i--; ) {
         const angle = getRandomFloat(0, Math.PI * 2);

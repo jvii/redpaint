@@ -1,4 +1,4 @@
-import { CanvasController } from '../core/CanvasController';
+import { CanvasController } from '../canvas/CanvasController';
 import { Point } from '../types';
 
 export interface BrushInterface {

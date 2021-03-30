@@ -1,7 +1,7 @@
-import { CustomBrush } from '../brush/CustomBrush';
-import { Line, Point } from '../types';
-import { OverlayCanvasRenderController } from '../renderer/OverlayCanvasRenderController';
-import { CanvasController } from './CanvasController';
+import { CustomBrush } from '../../brush/CustomBrush';
+import { Line, Point } from '../../types';
+import { OverlayCanvasRenderController } from '../../renderer/OverlayCanvasRenderController';
+import { CanvasController } from '../CanvasController';
 
 // OverlayController is a singleton responsible for controlling
 // the two overlay canvases in the app for MainCanvas and ZoomCanvas.

@@ -10,8 +10,8 @@ import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../core/PaintingCanvasController';
-import { overlayCanvasController } from '../core/OverlayCanvasController';
+import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {

@@ -1,4 +1,3 @@
-import { paintingCanvasController } from '../core/PaintingCanvasController';
 import { overmind } from '../index';
 import { Line, Point } from '../types';
 import { ColorIndexDrawImageRenderer } from './renderers/ColorIndexDrawImageRenderer';
@@ -9,14 +8,7 @@ export class PaintingCanvasRenderController {
   private geometricRenderer: ColorIndexGeometricRenderer;
   private drawImageRenderer: ColorIndexDrawImageRenderer;
 
-  constructor(canvas: HTMLCanvasElement) {
-    const gl = canvas.getContext('webgl', {
-      preserveDrawingBuffer: true,
-      antialias: false,
-    });
-    if (!gl) {
-      throw 'No webgl';
-    }
+  constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
 
     // create renderers
@@ -27,7 +19,7 @@ export class PaintingCanvasRenderController {
 
   renderCanvas(): void {
     console.log('rendering canvas');
-    //this.drawImageRenderer.renderCanvas();
+    this.drawImageRenderer.renderCanvas();
   }
 
   renderTo2dCanvas(targetCtx: CanvasRenderingContext2D | null): void {
@@ -43,7 +35,8 @@ export class PaintingCanvasRenderController {
 
   points(points: Point[]): void {
     console.log('rendering point, x = ', points[0].x);
-    this.geometricRenderer.renderPoints(points);
+    this.renderCanvas();
+    //this.geometricRenderer.renderPoints(points);
   }
 
   lines(lines: Line[]): void {
@@ -58,7 +51,7 @@ export class PaintingCanvasRenderController {
   public initColorIndexTexture(): void {
     const gl = this.gl;
 
-    // upload color index texture
+    /*     // upload color index texture
     gl.activeTexture(gl.TEXTURE0);
     const imageTex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, imageTex);
@@ -75,7 +68,7 @@ export class PaintingCanvasRenderController {
     if (!indexCanvas) {
       throw 'no indexcanvas';
     }
-    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, indexCanvas);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, format, type, indexCanvas); */
 
     // Setup palette (TODO: optimisation could be to only do this when palette has changed)
 

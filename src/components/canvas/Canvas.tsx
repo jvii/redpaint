@@ -5,8 +5,8 @@ import { useOvermind } from '../../overmind';
 import { getEventHandler, getEventHandlerOverlay } from '../../tools/util/util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
 import './Canvas.css';
-import { paintingCanvasController } from '../../core/PaintingCanvasController';
-import { overlayCanvasController } from '../../core/OverlayCanvasController';
+import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
 interface Props {
   canvasDispatch: React.Dispatch<CanvasStateAction>;

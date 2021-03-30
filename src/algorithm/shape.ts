@@ -3,7 +3,7 @@
 import { Line, Point } from '../types';
 import { BrushInterface } from '../brush/Brush';
 import { fillRect } from './primitive';
-import { CanvasController } from '../core/CanvasController';
+import { CanvasController } from '../canvas/CanvasController';
 
 export function line(
   ctx: CanvasRenderingContext2D,

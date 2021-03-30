@@ -1,31 +1,40 @@
-import { Line, Point } from '../../types';
+import { Line, Point } from '../../../types';
 import {
   canvasToWebGLCoordInvert,
   canvasToWebGLCoordX,
   canvasToWebGLCoordY,
   shiftLine,
   shiftPoint,
-} from '../util';
+} from '../../util';
+import { PaintingCanvasControllerSimple } from '../PaintingCanvasControllerSimple';
 
 export class GeometricIndexer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram | null = null;
+  private targetFrameBuffer: WebGLFramebuffer;
   private currentColorIndex = 0;
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(
+    gl: WebGLRenderingContext,
+    paintingCanvasController: PaintingCanvasControllerSimple
+  ) {
     this.gl = gl;
     this.initShaders();
+    this.targetFrameBuffer = paintingCanvasController.getColorIndexFrameBuffer();
   }
 
   public indexPoints(points: Point[], colorIndex: number): void {
     const gl = this.gl;
+    if (!gl) {
+      throw 'No webgl';
+    }
 
     if (!this.program) {
       return;
     }
 
     if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
-      console.log('switching webgl program GeometricIndexer');
+      console.log('switching webgl program colorIndexerProgram');
       gl.useProgram(this.program);
     }
 
@@ -36,18 +45,31 @@ export class GeometricIndexer {
       gl.uniform1f(u_colorIndex, colorIndex);
     }
 
+    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+
+    // Assign the buffer object to a_Position variable
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+
+    // Enable the assignment to a_Position variable
+    gl.enableVertexAttribArray(a_Position);
+
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {
       const shiftedPoint = shiftPoint(points[i]);
       vertices[i * 2] = canvasToWebGLCoordX(gl, shiftedPoint.x);
-      vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+      //vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+      vertices[i * 2 + 1] = canvasToWebGLCoordY(gl, shiftedPoint.y);
     }
 
-    this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-    this.gl.drawArrays(gl.POINTS, 0, points.length);
+    // Render to to the target framebuffer (color index texture)
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
+
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+    gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  public indexLines(lines: Line[], colorIndex: number): void {
+  /* public indexLines(lines: Line[], colorIndex: number): void {
     const gl = this.gl;
 
     if (!this.program) {
@@ -146,7 +168,7 @@ export class GeometricIndexer {
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  }
+  } */
 
   private initShaders(): void {
     const vertexShader = `
@@ -169,6 +191,9 @@ export class GeometricIndexer {
     `;
 
     const gl = this.gl;
+    if (!gl) {
+      throw 'No webgl';
+    }
 
     const vs = gl.createShader(gl.VERTEX_SHADER);
     if (!vs) {
@@ -199,7 +224,6 @@ export class GeometricIndexer {
     if (!program) {
       return;
     }
-    this.program = program;
     gl.attachShader(program, vs);
     gl.attachShader(program, fs);
     gl.linkProgram(program);
@@ -208,24 +232,8 @@ export class GeometricIndexer {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       console.error(gl.getProgramInfoLog(program));
     }
+
+    this.program = program;
     console.log('Program ready (GeometricIndexer)');
-
-    // Create a buffer object for vertex coordinates
-    const vertexBuffer = gl.createBuffer();
-    if (!vertexBuffer) {
-      console.log('Failed to create the buffer object ');
-      return;
-    }
-
-    // Bind the buffer object to target
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
-    const a_Position = gl.getAttribLocation(program, 'a_Position');
-
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
   }
 }

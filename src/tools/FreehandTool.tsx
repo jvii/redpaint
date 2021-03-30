@@ -15,8 +15,8 @@ import {
 } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../core/PaintingCanvasController';
-import { overlayCanvasController } from '../core/OverlayCanvasController';
+import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class FreehandTool implements Tool {
   private prepareToPaint(withBGColor: boolean): void {
