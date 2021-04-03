@@ -15,7 +15,7 @@ import {
 } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class FreehandTool implements Tool {

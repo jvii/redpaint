@@ -12,10 +12,12 @@ import {
   filledEllipse,
   filledPolygon,
   unfilledPolygon,
+  line2,
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
 import { colorizeTexture } from '../colorIndex/util';
+import { CanvasController } from '../canvas/CanvasController';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -54,17 +56,25 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.lastChanged = Date.now();
   }
 
-  public drawDot(ctx: CanvasRenderingContext2D, point: Point): void {
+  public drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
     const pointAdj = this.adjustHandle(point);
-    drawImage(pointAdj, this, ctx);
+    //drawImage(pointAdj, this, ctx);
+    canvas?.drawImage?.([pointAdj], this);
   }
 
   private adjustHandle(point: Point): Point {
     return { x: point.x - (this.width - 1) / 2, y: point.y - (this.heigth - 2) / 2 };
   }
 
-  public drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
-    line(ctx, this, start, end);
+  public drawLine(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    canvas?: CanvasController
+  ): void {
+    //line(ctx, this, start, end);
+    const line = line2(this.adjustHandle(start), this.adjustHandle(end));
+    canvas?.drawImage?.(line, this);
   }
 
   public drawCurve(

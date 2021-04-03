@@ -5,7 +5,7 @@ import { useOvermind } from '../../overmind';
 import { getEventHandler, getEventHandlerOverlay } from '../../tools/util/util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
 import './Canvas.css';
-import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
 interface Props {

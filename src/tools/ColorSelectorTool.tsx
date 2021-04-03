@@ -1,7 +1,7 @@
 import { Tool, EventHandlerParamsWithEvent } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
-import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 
 export class ColorSelectorTool implements Tool {
   public constructor(foregroundColor: boolean) {

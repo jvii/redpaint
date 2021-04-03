@@ -38,7 +38,6 @@ export function line2(start: Point, end: Point): Point[] {
   const dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
-    //brush.drawDot(ctx, start, canvas);
     return [{ x: start.x, y: start.y }];
   }
 
