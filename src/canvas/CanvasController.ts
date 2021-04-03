@@ -1,3 +1,4 @@
+import { CustomBrush } from '../brush/CustomBrush';
 import { Line, Point } from '../types';
 
 export interface CanvasController {
@@ -6,4 +7,5 @@ export interface CanvasController {
   points(points: Point[], colorIndex: number): void;
   lines(lines: Line[], colorIndex: number): void;
   fillRect?(start: Point, end: Point, colorIndex: number): void;
+  drawImage?(points: Point[], brush: CustomBrush): void;
 }

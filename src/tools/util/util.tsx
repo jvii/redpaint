@@ -2,6 +2,7 @@ import { Point, Color } from '../../types';
 import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { overmind } from '../../index';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -163,8 +164,7 @@ export function extractBrush(
 
   // Extract color index and add tansparency for background color
 
-  //const colorIndex = colorIndexer.getAreaFromIndex(start.x, start.y, width, height);
-  const colorIndex = new Uint8Array(); // TODO
+  const colorIndex = paintingCanvasController.getAreaFromIndex(start.x, start.y, width, height);
   if (!colorIndex) {
     throw 'Error retrieving color index for new brush';
   }
@@ -173,7 +173,21 @@ export function extractBrush(
     Number(overmind.state.palette.backgroundColorId)
   );
 
-  return new CustomBrush(bufferCanvas.toDataURL(), colorIndexWithTransparency);
+  // invert y
+  /*
+    for (let i = 0; i < pixelsYInvert.length; i++) {
+      pixelsYInvert[i] = pixels[i];
+    } */
+  const colorIndexInverted = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
+  for (let y = 0; y < bufferCanvas.height; y++) {
+    for (let x = 0; x < bufferCanvas.width * 4; x++) {
+      const index = x + y * bufferCanvas.width * 4;
+      const indexOrig = x + (bufferCanvas.height - 1 - y) * (bufferCanvas.width * 4);
+      colorIndexInverted[index] = colorIndexWithTransparency[indexOrig];
+    }
+  }
+
+  return new CustomBrush(bufferCanvas.toDataURL(), colorIndexInverted);
 }
 
 export function addTransparency(texture: Uint8Array, transparentColorIndex: number): Uint8Array {

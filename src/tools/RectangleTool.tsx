@@ -9,7 +9,7 @@ import { Throttle } from './util/Throttle';
 import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class RectangleTool implements Tool {

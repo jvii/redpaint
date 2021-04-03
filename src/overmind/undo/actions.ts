@@ -1,5 +1,5 @@
 import { Action } from 'overmind';
-import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { undoBuffer } from './UndoBuffer';
 
 export const setUndoPoint: Action<HTMLCanvasElement> = ({ state }): void => {

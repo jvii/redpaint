@@ -1,5 +1,5 @@
 import { Action } from 'overmind';
-import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { Point } from '../../types';
 
 type Resolution = { width: number; height: number };

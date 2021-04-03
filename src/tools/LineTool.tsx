@@ -15,7 +15,7 @@ import {
 import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
-import { paintingCanvasController } from '../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class LineTool implements Tool {

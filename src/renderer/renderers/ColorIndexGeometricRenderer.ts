@@ -7,7 +7,7 @@ import {
   shiftLine,
   shiftPoint,
 } from '../../colorIndex/util';
-import { paintingCanvasController } from '../../canvas/PaintingCanvasController';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export class ColorIndexGeometricRenderer {
   private gl: WebGLRenderingContext;

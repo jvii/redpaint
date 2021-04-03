@@ -1,42 +1,26 @@
 import { Line, Point } from '../../../types';
-import {
-  canvasToWebGLCoordInvert,
-  canvasToWebGLCoordX,
-  canvasToWebGLCoordY,
-  shiftLine,
-  shiftPoint,
-} from '../../util';
-import { PaintingCanvasControllerSimple } from '../PaintingCanvasControllerSimple';
+import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util';
+import { createProgram, useProgram } from '../../webglUtil';
 
 export class GeometricIndexer {
   private gl: WebGLRenderingContext;
-  private program: WebGLProgram | null = null;
+  private program: WebGLProgram;
   private targetFrameBuffer: WebGLFramebuffer;
   private currentColorIndex = 0;
 
-  public constructor(
-    gl: WebGLRenderingContext,
-    paintingCanvasController: PaintingCanvasControllerSimple
-  ) {
+  public constructor(gl: WebGLRenderingContext, targetFrameBuffer: WebGLFramebuffer) {
     this.gl = gl;
-    this.initShaders();
-    this.targetFrameBuffer = paintingCanvasController.getColorIndexFrameBuffer();
+    this.program = this.createProgram();
+    this.targetFrameBuffer = targetFrameBuffer;
   }
 
   public indexPoints(points: Point[], colorIndex: number): void {
     const gl = this.gl;
-    if (!gl) {
-      throw 'No webgl';
-    }
 
-    if (!this.program) {
-      return;
-    }
+    useProgram(gl, this.program);
 
-    if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
-      console.log('switching webgl program colorIndexerProgram');
-      gl.useProgram(this.program);
-    }
+    // Render to to the target framebuffer (color index texture)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorIndex !== this.currentColorIndex) {
       console.log('updating color index uniform');
@@ -57,13 +41,8 @@ export class GeometricIndexer {
     for (let i = 0; i < points.length; i++) {
       const shiftedPoint = shiftPoint(points[i]);
       vertices[i * 2] = canvasToWebGLCoordX(gl, shiftedPoint.x);
-      //vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
       vertices[i * 2 + 1] = canvasToWebGLCoordY(gl, shiftedPoint.y);
     }
-
-    // Render to to the target framebuffer (color index texture)
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     gl.drawArrays(gl.POINTS, 0, points.length);
@@ -170,7 +149,7 @@ export class GeometricIndexer {
     this.gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   } */
 
-  private initShaders(): void {
+  private createProgram(): WebGLProgram {
     const vertexShader = `
     attribute vec4 a_Position;
 
@@ -190,50 +169,8 @@ export class GeometricIndexer {
     }
     `;
 
-    const gl = this.gl;
-    if (!gl) {
-      throw 'No webgl';
-    }
-
-    const vs = gl.createShader(gl.VERTEX_SHADER);
-    if (!vs) {
-      return;
-    }
-    gl.shaderSource(vs, vertexShader);
-    gl.compileShader(vs);
-
-    // Catch some possible errors on vertex shader
-    if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
-      console.error(gl.getShaderInfoLog(vs));
-    }
-
-    const fs = gl.createShader(gl.FRAGMENT_SHADER);
-    if (!fs) {
-      return;
-    }
-    gl.shaderSource(fs, fragmentShader);
-    gl.compileShader(fs);
-
-    // Catch some possible errors on fragment shader
-    if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
-      console.error(gl.getShaderInfoLog(fs));
-    }
-
-    // Compile to program
-    const program = gl.createProgram();
-    if (!program) {
-      return;
-    }
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-
-    // Catch some possible errors on program
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error(gl.getProgramInfoLog(program));
-    }
-
-    this.program = program;
+    const program = createProgram(this.gl, vertexShader, fragmentShader);
     console.log('Program ready (GeometricIndexer)');
+    return program;
   }
 }
