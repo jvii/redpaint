@@ -1,4 +1,4 @@
-import { createProgram, useProgram } from '../../webglUtil';
+import { createProgram, useProgram } from '../../util/webglUtil';
 
 export class DrawImageRenderer {
   private gl: WebGLRenderingContext;

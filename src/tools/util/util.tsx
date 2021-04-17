@@ -174,10 +174,7 @@ export function extractBrush(
   );
 
   // invert y
-  /*
-    for (let i = 0; i < pixelsYInvert.length; i++) {
-      pixelsYInvert[i] = pixels[i];
-    } */
+
   const colorIndexInverted = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
   for (let y = 0; y < bufferCanvas.height; y++) {
     for (let x = 0; x < bufferCanvas.width * 4; x++) {

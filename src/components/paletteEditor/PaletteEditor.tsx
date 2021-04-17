@@ -4,6 +4,8 @@ import './PaletteEditor.css';
 import { useOvermind } from '../../overmind';
 import { Color } from '../../types';
 import { CanvasState } from '../canvas/CanvasState';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
 interface Props {
   canvasState: CanvasState;
@@ -28,10 +30,8 @@ export function PaletteEditor({ canvasState }: Props): JSX.Element | null {
       b: state.palette.foregroundColor.b,
     };
     actions.palette.editColor({ colorId: state.palette.foregroundColorId, newColor: newColor });
-    const ctx = mainCanvas.getContext('2d');
-    if (ctx) {
-      //renderToCanvas(ctx);
-    }
+    paintingCanvasController.updatePalette();
+    overlayCanvasController.updatePalette();
   }
 
   return (

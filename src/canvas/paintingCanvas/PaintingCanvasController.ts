@@ -1,42 +1,33 @@
-/* eslint-disable max-len */
 import { overmind } from '../..';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { visualiseTexture } from '../../colorIndex/util';
-import { Throttle } from '../../tools/util/Throttle';
 import { Line, Point } from '../../types';
 import { CanvasController } from '../CanvasController';
-import { DrawImageIndexer } from './program/DrawImageIndexer';
-import { DrawImageRenderer } from './program/DrawImageRenderer';
-import { GeometricIndexer } from './program/GeometricIndexer';
-import { GeometricRenderer } from './program/GeometricRenderer';
+import { ColorIndexer } from './ColorIndexer';
+import { MainCanvasRenderer } from './MainCanvasRenderer';
+import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
+
+type GLBuffers = {
+  colorIndexFramebuffer: WebGLFramebuffer | null;
+  vertexBuffer: WebGLBuffer | null;
+  textureCoordBuffer: WebGLBuffer | null;
+};
 
 // PaintingCanvasController is a singleton responsible for controlling
 // the two painting canvases in the app: MainCanvas and ZoomCanvas.
-// Note that overlay canvases are controllod separately by OverlayCanvasController.
+// Note that overlay canvases are controlled separately by OverlayCanvasController.
 export class PaintingCanvasController implements CanvasController {
-  private mainCanvas: HTMLCanvasElement;
+  private mainCanvas: HTMLCanvasElement = document.createElement('canvas');
   private gl: WebGLRenderingContext | null = null;
 
-  private zoomCanvas: HTMLCanvasElement;
-  private zoomCanvasCtx: CanvasRenderingContext2D | null = null;
+  private colorIndexer: ColorIndexer | null = null;
+  private mainCanvasRenderer: MainCanvasRenderer | null = null;
+  private zoomCanvasRenderer: ZoomCanvasRenderer | null = null;
 
-  private geometricIndexer: GeometricIndexer | null = null;
-  private drawImageIndexer: DrawImageIndexer | null = null;
-  private geometricRenderer: GeometricRenderer | null = null;
-  private drawImageRenderer: DrawImageRenderer | null = null;
-
-  private throttle = new Throttle(1000 / 60);
-  private colorIndexFrameBuffer: WebGLFramebuffer | null = null;
-
-  public buffers: { vertexBuffer: WebGLBuffer | null; textureCoordBuffer: WebGLBuffer | null } = {
+  private buffers: GLBuffers = {
+    colorIndexFramebuffer: null,
     vertexBuffer: null,
     textureCoordBuffer: null,
   };
-
-  constructor() {
-    this.mainCanvas = document.createElement('canvas');
-    this.zoomCanvas = document.createElement('canvas');
-  }
 
   attachMainCanvas(mainCanvas: HTMLCanvasElement): void {
     this.mainCanvas = mainCanvas;
@@ -49,82 +40,72 @@ export class PaintingCanvasController implements CanvasController {
       throw 'No webgl';
     }
     this.gl = gl;
-    this.init();
+
+    this.buffers.vertexBuffer = this.initVertexBuffer();
+    this.buffers.textureCoordBuffer = this.initTextureCoordBuffer();
+    this.buffers.colorIndexFramebuffer = this.initColorIndexFramebuffer();
+
+    this.colorIndexer = new ColorIndexer(gl, {
+      colorIndexFramebuffer: this.buffers.colorIndexFramebuffer,
+      vertexBuffer: this.buffers.vertexBuffer,
+      textureCoordBuffer: this.buffers.textureCoordBuffer,
+    });
+    this.mainCanvasRenderer = new MainCanvasRenderer(gl);
   }
 
   attachZoomCanvas(zoomCanvas: HTMLCanvasElement): void {
-    this.zoomCanvas = zoomCanvas;
-    this.zoomCanvasCtx = zoomCanvas.getContext('2d', {
-      alpha: true,
-      // desynchronized caused various problems with Windows version of Chrome
-      // TODO: test again with the new version
-      desynchronized: false,
-    });
+    this.zoomCanvasRenderer = new ZoomCanvasRenderer(zoomCanvas);
+  }
+
+  init(): void {
+    const gl = this.gl;
+    if (!gl) {
+      throw 'No webgl, call attachMainCanvas() first.';
+    }
+
+    // color index texture always in texture unit 0
+    // palette texture always in texture unit 1
+    // brush texture always in texture unit 2
+
+    this.initColorIndexTexture();
+    this.initPaletteTexture();
   }
 
   points(points: Point[], colorIndex: number): void {
-    this.geometricIndexer?.indexPoints(points, colorIndex);
-    this.geometricRenderer?.renderPoints(points);
-    this.renderZoomCanvas();
+    this.colorIndexer?.points(points, colorIndex);
+    this.mainCanvasRenderer?.points(points);
+    this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
   lines(lines: Line[], colorIndex: number): void {
-    //TODO
+    this.colorIndexer?.lines(lines, colorIndex);
+    this.mainCanvasRenderer?.lines(lines);
+    this.zoomCanvasRenderer?.render(this.mainCanvas);
+  }
+
+  quad(start: Point, end: Point, colorIndex: number): void {
+    this.colorIndexer?.quad(start, end, colorIndex);
+    this.mainCanvasRenderer?.renderCanvas(); // TODO: renderQuad?
+    this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
-    this.drawImageIndexer?.indexDrawImage(points, brush);
-    this.drawImageRenderer?.renderCanvas();
-    this.renderZoomCanvas();
+    this.colorIndexer?.drawImage(points, brush);
+    this.mainCanvasRenderer?.renderCanvas(); // TODO: renderDrawImage?
+    this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
-  renderZoomCanvas(): void {
-    if (!overmind.state.toolbox.zoomModeOn) {
-      return;
-    }
-    // maybe not necessary to clear canvas?
-    //this.zoomCanvasCtx?.clearRect(0, 0, this.zoomCanvas.width, this.zoomCanvas.height);
-    this.zoomCanvasCtx?.drawImage(this.mainCanvas, 0, 0);
-    /*
-    // throttle copying to zoomCanvas when drawing on mainCanvas
-    // This an optimization for Firefox where copying from gl canvas to 2d canvas is slow
-    this.throttle.call((): void => {
-      this.zoomCanvasCtx?.drawImage(this.mainCanvas, 0, 0);
-    }); */
+  render(): void {
+    this.mainCanvasRenderer?.renderCanvas();
+    this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
-  getIndex(): Uint8Array {
-    const gl = this.gl;
-    if (!gl) {
-      throw 'No webgl';
-    }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFrameBuffer);
-
-    const pixels = new Uint8Array(gl.drawingBufferHeight * gl.drawingBufferWidth * 4);
-    gl.readPixels(
-      0,
-      0,
-      gl.drawingBufferWidth,
-      gl.drawingBufferHeight,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      pixels
-    );
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    return pixels;
+  clear(): void {
+    //
   }
 
-  // testing, debugging purposes only
-  visualiseIndex(): void {
-    const gl = this.gl;
-    if (!gl) {
-      throw 'No webgl';
-    }
-
-    const index = this.getIndex();
-    const width = gl.drawingBufferWidth;
-    visualiseTexture(index, width);
+  getIndex(): Uint8Array | undefined {
+    return this.colorIndexer?.getIndex();
   }
 
   getAreaFromIndex(
@@ -133,82 +114,35 @@ export class PaintingCanvasController implements CanvasController {
     width: number, // canvas coord, can be negative
     height: number // canvas coord, can be negative
   ): Uint8Array | undefined {
+    return this.colorIndexer?.getAreaFromIndex(x, y, width, height);
+  }
+
+  // testing, debugging purposes only
+  visualiseIndex(): void {
+    this.colorIndexer?.visualiseIndex();
+  }
+
+  updatePalette(): void {
     const gl = this.gl;
     if (!gl) {
       throw 'No webgl';
     }
 
-    // for readPixels we need to define the area with:
-    // - lower left corner of the area and
-    // - width and height as positive integers
-    // Texture coordinates
-
-    let rectLowerLeftX: number;
-    let rectLowerLeftY: number;
-
-    if (width < 0) {
-      rectLowerLeftX = x - Math.abs(width);
-    } else {
-      rectLowerLeftX = x;
+    const paletteTexture = new Uint8Array(256 * 4);
+    const palette = overmind.state.palette.paletteArray;
+    for (let i = 0; i < palette.length; i++) {
+      paletteTexture[i * 4 + 0] = palette[i].r;
+      paletteTexture[i * 4 + 1] = palette[i].g;
+      paletteTexture[i * 4 + 2] = palette[i].b;
+      paletteTexture[i * 4 + 3] = 255;
     }
+    gl.activeTexture(gl.TEXTURE1);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, paletteTexture);
 
-    if (height < 0) {
-      rectLowerLeftY = gl.drawingBufferHeight - y;
-    } else {
-      rectLowerLeftY = gl.drawingBufferHeight - y - Math.abs(height);
-    }
-
-    const pixels = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
-    console.log('canvas: x:' + x + ' y: ' + y + ' w: ' + width + ' h: ' + height);
-    console.log(
-      'texture: x:' +
-        rectLowerLeftX +
-        ' y: ' +
-        rectLowerLeftY +
-        ' w: ' +
-        Math.abs(width) +
-        ' h: ' +
-        Math.abs(height)
-    );
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFrameBuffer);
-    gl.readPixels(
-      rectLowerLeftX,
-      y,
-      Math.abs(width),
-      Math.abs(height),
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      pixels
-    );
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    return pixels;
+    this.render();
   }
 
-  init(): void {
-    const gl = this.gl;
-    if (!gl) {
-      throw 'No webgl';
-    }
-
-    // color index texture always in texture unit 0
-    // palette texture always in texture unit 1
-    // brush texture always in texture unit 2
-
-    const colorIndexFramebuffer = this.initColorIndexTexture();
-    this.colorIndexFrameBuffer = colorIndexFramebuffer;
-    this.initPaletteTexture();
-    this.initVertexBuffer();
-    this.initTextureCoordBuffer();
-
-    this.geometricIndexer = new GeometricIndexer(gl, colorIndexFramebuffer);
-    this.drawImageIndexer = new DrawImageIndexer(gl, colorIndexFramebuffer, this);
-
-    this.geometricRenderer = new GeometricRenderer(gl);
-    this.drawImageRenderer = new DrawImageRenderer(gl);
-  }
-
-  private initColorIndexTexture(): WebGLFramebuffer {
+  private initColorIndexTexture(): void {
     const gl = this.gl;
     if (!gl) {
       throw 'No webgl';
@@ -254,20 +188,11 @@ export class PaintingCanvasController implements CanvasController {
 
     gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
 
-    // Create a framebuffer for rendering to this texture and store the reference.
-
-    const colorIndexFramebuffer = gl.createFramebuffer();
-    if (!colorIndexFramebuffer) {
-      throw 'Failed to create framebuffer for color index';
-    }
-    gl.bindFramebuffer(gl.FRAMEBUFFER, colorIndexFramebuffer);
-
     // attach the texture as the first color attachment of the framebuffer
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
     const attachmentPoint = gl.COLOR_ATTACHMENT0;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
-
-    return colorIndexFramebuffer;
   }
 
   private initPaletteTexture(): void {
@@ -300,7 +225,21 @@ export class PaintingCanvasController implements CanvasController {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, paletteTexture);
   }
 
-  private initVertexBuffer(): void {
+  private initColorIndexFramebuffer(): WebGLFramebuffer {
+    const gl = this.gl;
+    if (!gl) {
+      throw 'No webgl';
+    }
+    // Create a framebuffer for rendering to this texture and store the reference.
+
+    const fb = gl.createFramebuffer();
+    if (!fb) {
+      throw 'Failed to create framebuffer for color index';
+    }
+    return fb;
+  }
+
+  private initVertexBuffer(): WebGLBuffer {
     const gl = this.gl;
     if (!gl) {
       throw 'No webgl';
@@ -316,10 +255,10 @@ export class PaintingCanvasController implements CanvasController {
     // Bind the buffer object to target (this is the default)
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
-    this.buffers.vertexBuffer = vertexBuffer;
+    return vertexBuffer;
   }
 
-  private initTextureCoordBuffer(): void {
+  private initTextureCoordBuffer(): WebGLBuffer {
     const gl = this.gl;
     if (!gl) {
       throw 'No webgl';
@@ -331,7 +270,7 @@ export class PaintingCanvasController implements CanvasController {
       throw 'Failed to create the buffer object (textureCoordBuffer)';
     }
 
-    this.buffers.textureCoordBuffer = textureCoordBuffer;
+    return textureCoordBuffer;
   }
 }
 

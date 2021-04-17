@@ -107,6 +107,7 @@ export class CircleTool implements Tool {
 
     if (!origin) {
       clearOverlayCanvas(canvas);
+      //overlayCanvasController.clear();
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush.
         // For filled circles we only render the croshair.
@@ -142,6 +143,7 @@ export class CircleTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
+    overlayCanvasController.clear();
     clearOverlayCanvas(canvas);
     onPaint();
   }
@@ -151,6 +153,7 @@ export class CircleTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
+    overlayCanvasController.clear();
     clearOverlayCanvas(canvas);
     onPaint();
   }

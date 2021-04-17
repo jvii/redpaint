@@ -61,7 +61,7 @@ export class RectangleTool implements Tool {
     if (this.filled) {
       brushHistory.current.drawFilledRect(ctx, startPoint, endPoint, paintingCanvasController);
     } else {
-      brushHistory.current.drawUnfilledRect(ctx, startPoint, endPoint);
+      brushHistory.current.drawUnfilledRect(ctx, startPoint, endPoint, paintingCanvasController);
     }
     undoPoint();
     onPaint();
@@ -102,7 +102,7 @@ export class RectangleTool implements Tool {
       clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        brushHistory.current.drawDot(ctx, mousePos);
+        brushHistory.current.drawDot(ctx, mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -110,14 +110,12 @@ export class RectangleTool implements Tool {
     }
 
     if (this.filled) {
-      this.throttle.call((): void => {
-        clearOverlayCanvas(canvas);
-        brushHistory.current.drawFilledRect(ctx, startPoint, mousePos);
-      });
+      clearOverlayCanvas(canvas);
+      brushHistory.current.drawFilledRect(ctx, startPoint, mousePos, overlayCanvasController);
     } else {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        brushHistory.current.drawUnfilledRect(ctx, startPoint, mousePos);
+        brushHistory.current.drawUnfilledRect(ctx, startPoint, mousePos, overlayCanvasController);
       });
     }
     onPaint();
