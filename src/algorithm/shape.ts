@@ -116,6 +116,33 @@ export function unfilledRect(
   brush.drawLineVertical(ctx, y1, y2, x2);
 }
 
+export function unfilledRect2(start: Point, end: Point): Line[] {
+  if (start === end) {
+    // just draw a dot
+    return [
+      {
+        p1: { x: start.x, y: start.y },
+        p2: { x: start.x, y: start.y },
+      },
+    ];
+  }
+
+  // rectangle vertices
+
+  const v1 = start;
+  const v2 = { x: start.x, y: end.y };
+  const v3 = end;
+  const v4 = { x: end.x, y: start.y };
+
+  const rect: Line[] = [];
+  rect.push({ p1: v1, p2: v2 });
+  rect.push({ p1: v2, p2: v3 });
+  rect.push({ p1: v3, p2: v4 });
+  rect.push({ p1: v4, p2: v1 });
+
+  return rect;
+}
+
 export function filledRect(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,

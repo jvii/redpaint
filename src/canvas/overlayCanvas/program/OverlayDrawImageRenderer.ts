@@ -1,15 +1,18 @@
 import { CustomBrush } from '../../../brush/CustomBrush';
+import {
+  canvasToWebGLCoordInvert,
+  canvasToWebGLCoordX,
+  shiftPoint,
+} from '../../../colorIndex/util';
 import { Point } from '../../../types';
-import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util/util';
 import { createProgram, useProgram } from '../../util/webglUtil';
 
 type GLBuffers = {
-  colorIndexFramebuffer: WebGLFramebuffer;
   vertexBuffer: WebGLBuffer;
   textureCoordBuffer: WebGLBuffer;
 };
 
-export class DrawImageIndexer {
+export class OverlayDrawImageRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
   private currentBrushId = 0;
@@ -21,21 +24,19 @@ export class DrawImageIndexer {
     this.buffers = buffers;
   }
 
-  public indexDrawImage(points: Point[], brush: CustomBrush): void {
+  public renderDrawImage(points: Point[], brush: CustomBrush): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
 
-    // Render to to the target framebuffer (color index texture)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
-
     if (this.currentBrushId !== brush.lastChanged) {
       console.log('loading texture for brush');
       this.loadBrushAsTexture(brush);
-      console.log(this.currentBrushId);
-      console.log(brush.lastChanged);
     }
     this.currentBrushId = brush.lastChanged;
+
+    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
+    gl.uniform1i(paletteLoc, 1);
 
     const u_Sampler = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_Sampler');
     gl.uniform1i(u_Sampler, 2); // texture unit 2
@@ -46,8 +47,8 @@ export class DrawImageIndexer {
       const shiftedPoint = shiftPoint(points[i]);
       const xLeft = canvasToWebGLCoordX(gl, shiftedPoint.x);
       const xRight = canvasToWebGLCoordX(gl, shiftedPoint.x + brush.width);
-      const yTop = canvasToWebGLCoordY(gl, shiftedPoint.y);
-      const yBottom = canvasToWebGLCoordY(gl, shiftedPoint.y + brush.heigth);
+      const yTop = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+      const yBottom = canvasToWebGLCoordInvert(gl, shiftedPoint.y + brush.heigth);
 
       const offset = i * 12;
 
@@ -85,7 +86,6 @@ export class DrawImageIndexer {
       textureCoords[10 + offset] = 1.0;
       textureCoords[11 + offset] = 0.0;
     }
-
     // texture coords
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
@@ -94,12 +94,7 @@ export class DrawImageIndexer {
     gl.enableVertexAttribArray(a_TexCoord);
 
     gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      // eslint-disable-next-line prettier/prettier
-      textureCoords,
-      gl.DYNAMIC_DRAW
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.DYNAMIC_DRAW);
 
     // vertex coords
 
@@ -137,6 +132,7 @@ export class DrawImageIndexer {
     precision mediump float;
 
     uniform sampler2D u_Sampler;
+    uniform sampler2D u_palette;
     varying vec2 v_TexCoord;
 
     void main () {
@@ -145,12 +141,14 @@ export class DrawImageIndexer {
         discard; // zero means this pixel of the brush is transparent
       }
 
-      gl_FragColor = color;
+      //gl_FragColor = color;
+      gl_FragColor = texture2D(u_palette, vec2((color.r) - 1.0/256.0, 0.5));
+      //gl_FragColor = vec4(1,1,1,1);
     }
     `;
 
     const program = createProgram(this.gl, vertexShader, fragmentShader);
-    console.log('Program ready (DrawImageIndexer)');
+    console.log('Program ready (OverlayDrawImageRenderer)');
 
     return program;
   }

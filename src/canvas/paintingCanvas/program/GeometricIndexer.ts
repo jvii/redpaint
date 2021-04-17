@@ -1,6 +1,6 @@
 import { Line, Point } from '../../../types';
-import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util';
-import { createProgram, useProgram } from '../../webglUtil';
+import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
+import { createProgram, useProgram } from '../../util/webglUtil';
 
 export class GeometricIndexer {
   private gl: WebGLRenderingContext;
@@ -48,17 +48,13 @@ export class GeometricIndexer {
     gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  /* public indexLines(lines: Line[], colorIndex: number): void {
+  public indexLines(lines: Line[], colorIndex: number): void {
     const gl = this.gl;
 
-    if (!this.program) {
-      return;
-    }
+    useProgram(gl, this.program);
 
-    if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
-      console.log('switching webgl program GeometricIndexer');
-      gl.useProgram(this.program);
-    }
+    // Render to to the target framebuffer (color index texture)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorIndex !== this.currentColorIndex) {
       console.log('updating color index uniform');
@@ -67,30 +63,34 @@ export class GeometricIndexer {
       gl.uniform1f(u_colorIndex, colorIndex);
     }
 
+    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+
+    // Assign the buffer object to a_Position variable
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+
+    // Enable the assignment to a_Position variable
+    gl.enableVertexAttribArray(a_Position);
+
     const vertices = new Float32Array(2 * 2 * lines.length);
     for (let i = 0; i < lines.length; i++) {
       const shiftedLine = shiftLine(lines[i]);
       vertices[i * 4] = canvasToWebGLCoordX(gl, shiftedLine.p1.x);
-      vertices[i * 4 + 1] = canvasToWebGLCoordInvert(gl, shiftedLine.p1.y);
+      vertices[i * 4 + 1] = canvasToWebGLCoordY(gl, shiftedLine.p1.y);
       vertices[i * 4 + 2] = canvasToWebGLCoordX(gl, shiftedLine.p2.x);
-      vertices[i * 4 + 3] = canvasToWebGLCoordInvert(gl, shiftedLine.p2.y);
+      vertices[i * 4 + 3] = canvasToWebGLCoordY(gl, shiftedLine.p2.y);
     }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
   }
 
-  public indexFillRect(start: Point, end: Point, colorIndex: number): void {
+  public indexQuad(start: Point, end: Point, colorIndex: number): void {
     const gl = this.gl;
 
-    if (!this.program) {
-      return;
-    }
+    useProgram(gl, this.program);
 
-    if (gl.getParameter(gl.CURRENT_PROGRAM) !== this.program) {
-      console.log('switching webgl program GeometricIndexer');
-      gl.useProgram(this.program);
-    }
+    // Render to to the target framebuffer (color index texture)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorIndex !== this.currentColorIndex) {
       console.log('updating color index uniform');
@@ -99,38 +99,20 @@ export class GeometricIndexer {
       gl.uniform1f(u_colorIndex, colorIndex);
     }
 
-    const width = end.x - start.x;
-    const height = end.y - start.y;
+    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
 
-    if (width === 1 && height === 1) {
-      this.fillRectPoint(start);
-    } else {
-      this.fillRectQuad(start, end);
-    }
-  }
+    // Assign the buffer object to a_Position variable
+    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
 
-  private fillRectPoint(point: Point): void {
-    const gl = this.gl;
-
-    const shiftedPoint = shiftPoint(point);
-
-    const vertices = new Float32Array(2);
-    vertices[0] = canvasToWebGLCoordX(gl, shiftedPoint.x);
-    vertices[1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
-
-    this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-    this.gl.drawArrays(gl.POINTS, 0, 1);
-  }
-
-  private fillRectQuad(start: Point, end: Point): void {
-    const gl = this.gl;
+    // Enable the assignment to a_Position variable
+    gl.enableVertexAttribArray(a_Position);
 
     const shiftedStart = shiftPoint(start);
     const shiftedEnd = shiftPoint(end);
     const xLeft = canvasToWebGLCoordX(gl, shiftedStart.x);
     const xRight = canvasToWebGLCoordX(gl, shiftedEnd.x);
-    const yTop = canvasToWebGLCoordInvert(gl, shiftedStart.y);
-    const yBottom = canvasToWebGLCoordInvert(gl, shiftedEnd.y);
+    const yTop = canvasToWebGLCoordY(gl, shiftedStart.y);
+    const yBottom = canvasToWebGLCoordY(gl, shiftedEnd.y);
 
     const vertices = new Float32Array(8);
     vertices[0] = xLeft;
@@ -147,7 +129,7 @@ export class GeometricIndexer {
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  } */
+  }
 
   private createProgram(): WebGLProgram {
     const vertexShader = `

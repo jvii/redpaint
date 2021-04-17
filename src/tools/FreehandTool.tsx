@@ -122,7 +122,8 @@ export class FreehandTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    clearOverlayCanvas(canvas);
+    //clearOverlayCanvas(canvas);
+    overlayCanvasController.clear();
     onPaint();
   }
 
@@ -131,7 +132,8 @@ export class FreehandTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    clearOverlayCanvas(canvas);
+    //clearOverlayCanvas(canvas);
+    overlayCanvasController.clear();
     onPaint();
   }
 }

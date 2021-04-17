@@ -1,4 +1,4 @@
-import { Line, Point } from '../types';
+import { Line, Point } from '../../types';
 
 export function canvasToWebGLCoordX(gl: WebGLRenderingContext, x: number): number {
   return (x / gl.canvas.width) * 2 - 1;

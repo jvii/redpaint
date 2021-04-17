@@ -13,6 +13,8 @@ import {
   filledPolygon,
   unfilledPolygon,
   line2,
+  unfilledRect2,
+  unfilledCircle2,
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
@@ -119,17 +121,45 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     }
   }
 
-  public drawUnfilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
-    unfilledRect(ctx, this, start, end);
+  public drawUnfilledRect(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    canvas: CanvasController
+  ): void {
+    const vertice1 = start;
+    const vertice2 = { x: start.x, y: end.y };
+    const vertice3 = end;
+    const vertice4 = { x: end.x, y: start.y };
+    const edge1 = line2(vertice1, vertice2);
+    const edge2 = line2(vertice2, vertice3);
+    const edge3 = line2(vertice3, vertice4);
+    const edge4 = line2(vertice4, vertice1);
+
+    const edges = edge1.concat(edge2, edge3, edge4);
+
+    canvas?.drawImage?.(edges, this);
   }
 
-  public drawFilledRect(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
+  public drawFilledRect(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    canvas: CanvasController
+  ): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    filledRect(ctx, this, start, end);
+    canvas?.quad?.(start, end, overmind.state.tool.activeColorIndex);
   }
 
-  public drawUnfilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void {
-    unfilledCircle(ctx, this, center, radius);
+  public drawUnfilledCircle(
+    ctx: CanvasRenderingContext2D,
+    center: Point,
+    radius: number,
+    canvas: CanvasController
+  ): void {
+    const centerAdj = this.adjustHandle(center);
+    const unfilledCircle = unfilledCircle2(centerAdj, radius);
+    canvas?.drawImage?.(unfilledCircle, this);
   }
 
   public drawFilledCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number): void {
