@@ -4,6 +4,8 @@ import { Line, Point } from '../types';
 import { BrushInterface } from '../brush/Brush';
 import { fillRect } from './primitive';
 import { CanvasController } from '../canvas/CanvasController';
+import { LineH } from '../domain/LineH';
+import { LineV } from '../domain/LineV';
 
 export function line(
   ctx: CanvasRenderingContext2D,
@@ -54,6 +56,30 @@ export function line2(start: Point, end: Point): Point[] {
 
 export function distance(start: Point, end: Point): number {
   return Math.sqrt((end.x - start.x) * (end.x - start.x) + (end.y - start.y) * (end.y - start.y));
+}
+
+// Quadratic bezier curve with one control point.
+// DPaint used conic curves instead.
+export function curve2(start: Point, end: Point, middlePoint: Point): Point[] {
+  // calculate control point for the bezier curve when middlepoint given
+  const controlPoint: Point = {
+    x: 2 * middlePoint.x - 0.5 * start.x - 0.5 * end.x,
+    y: 2 * middlePoint.y - 0.5 * start.y - 0.5 * end.y,
+  };
+
+  const curve: Point[] = [];
+
+  let i: number;
+  let previous: Point = start;
+  // TODO: get rid of the magic number
+  for (i = 0; i <= 1; i = i + 0.02) {
+    const current = getQuadraticXY(i, start, controlPoint, end);
+    curve.push(...line2(previous, current));
+    previous = current;
+  }
+  curve.push(...line2(previous, end));
+
+  return curve;
 }
 
 // Quadratic bezier curve with one control point.
@@ -116,15 +142,10 @@ export function unfilledRect(
   brush.drawLineVertical(ctx, y1, y2, x2);
 }
 
-export function unfilledRect2(start: Point, end: Point): Line[] {
+export function unfilledRect2(start: Point, end: Point): (LineH | LineV)[] {
   if (start === end) {
     // just draw a dot
-    return [
-      {
-        p1: { x: start.x, y: start.y },
-        p2: { x: start.x, y: start.y },
-      },
-    ];
+    return [new LineH({ x: start.x, y: start.y }, { x: start.x, y: start.y })];
   }
 
   // rectangle vertices
@@ -134,11 +155,11 @@ export function unfilledRect2(start: Point, end: Point): Line[] {
   const v3 = end;
   const v4 = { x: end.x, y: start.y };
 
-  const rect: Line[] = [];
-  rect.push({ p1: v1, p2: v2 });
-  rect.push({ p1: v2, p2: v3 });
-  rect.push({ p1: v3, p2: v4 });
-  rect.push({ p1: v4, p2: v1 });
+  const rect = [];
+  rect.push(new LineV(v1, v2));
+  rect.push(new LineH(v2, v3));
+  rect.push(new LineV(v3, v4));
+  rect.push(new LineH(v4, v1));
 
   return rect;
 }
@@ -193,53 +214,50 @@ export function filledCircle(
 
 // eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
-export function filledCircle2(center: Point, r: number): Line[] {
+export function filledCircle2(center: Point, r: number): LineH[] {
   if (r === 0) {
     // just draw a dot
-    //fillRect(center.x, center.y, 1, 1, ctx);
-    return [
-      {
-        p1: { x: center.x, y: center.y },
-        p2: { x: center.x, y: center.y },
-      },
-    ];
+    return [new LineH({ x: center.x, y: center.y }, { x: center.x, y: center.y })];
   }
 
   let x = r;
   let y = 0;
   let cd = 0;
 
-  const circle: Line[] = [];
+  const circle: LineH[] = [];
   // middle line
-  //fillRect(center.x - x, center.y, r << 1, 1, ctx);
-  circle[0] = {
-    p1: { x: center.x - x, y: center.y },
-    p2: { x: center.x - x + (r << 1), y: center.y },
-  };
+  circle[0] = new LineH(
+    { x: center.x - x, y: center.y },
+    { x: center.x - x + (r << 1), y: center.y }
+  );
 
   while (x > y) {
     cd -= --x - ++y;
     if (cd < 0) cd += x++;
-    //fillRect(center.x - y, center.y - x, y << 1, 1, ctx); // upper 1/4
-    circle.push({
-      p1: { x: center.x - y, y: center.y - x },
-      p2: { x: center.x - y + (y << 1), y: center.y - x },
-    });
-    //fillRect(center.x - x, center.y - y, x << 1, 1, ctx); // upper 2/4
-    circle.push({
-      p1: { x: center.x - x, y: center.y - y },
-      p2: { x: center.x - x + (x << 1), y: center.y - y },
-    });
-    //fillRect(center.x - x, center.y + y, x << 1, 1, ctx); // lower 3/4
-    circle.push({
-      p1: { x: center.x - x, y: center.y + y },
-      p2: { x: center.x - x + (x << 1), y: center.y + y },
-    });
-    //fillRect(center.x - y, center.y + x, y << 1, 1, ctx); // lower 4/4
-    circle.push({
-      p1: { x: center.x - y, y: center.y + x },
-      p2: { x: center.x - y + (y << 1), y: center.y + x },
-    });
+    circle.push(
+      new LineH(
+        { x: center.x - y, y: center.y - x },
+        { x: center.x - y + (y << 1), y: center.y - x }
+      )
+    );
+    circle.push(
+      new LineH(
+        { x: center.x - x, y: center.y - y },
+        { x: center.x - x + (x << 1), y: center.y - y }
+      )
+    );
+    circle.push(
+      new LineH(
+        { x: center.x - x, y: center.y + y },
+        { x: center.x - x + (x << 1), y: center.y + y }
+      )
+    );
+    circle.push(
+      new LineH(
+        { x: center.x - y, y: center.y + x },
+        { x: center.x - y + (y << 1), y: center.y + x }
+      )
+    );
   }
 
   return circle;

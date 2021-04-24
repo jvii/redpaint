@@ -1,3 +1,5 @@
+import { LineH } from '../../domain/LineH';
+import { LineV } from '../../domain/LineV';
 import { Line, Point } from '../../types';
 import { DrawImageRenderer } from './program/DrawImageRenderer';
 import { GeometricRenderer } from './program/GeometricRenderer';
@@ -29,7 +31,7 @@ export class MainCanvasRenderer {
     this.geometricRenderer.renderPoints(points);
   }
 
-  lines(lines: Line[]): void {
+  lines(lines: (LineH | LineV)[]): void {
     this.geometricRenderer.renderLines(lines);
   }
 

@@ -5,12 +5,7 @@ export function canvasToWebGLCoordX(gl: WebGLRenderingContext, x: number): numbe
 }
 
 export function canvasToWebGLCoordY(gl: WebGLRenderingContext, y: number): number {
-  //return (y / gl.drawingBufferHeight) * -2 + 1; // because GL is 0 at bottom
-  return (y / gl.canvas.height) * 2 - 1;
-}
-
-export function canvasToWebGLCoordInvert(gl: WebGLRenderingContext, y: number): number {
-  return (y / gl.canvas.height) * -2 + 1; // because GL is 0 at bottom
+  return (y / gl.drawingBufferHeight) * -2 + 1; // because GL is 0 at bottom
 }
 
 export function colorizeTexture(texture: Uint8Array, colorIndex: number): Uint8Array {

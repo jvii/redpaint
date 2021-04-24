@@ -11,7 +11,13 @@ export interface BrushInterface {
   ): void;
   drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void;
   drawLineHorizontal(ctx: CanvasRenderingContext2D, x1: number, x2: number, y: number): void;
-  drawCurve(ctx: CanvasRenderingContext2D, start: Point, end: Point, middlePoint: Point): void;
+  drawCurve(
+    ctx: CanvasRenderingContext2D,
+    start: Point,
+    end: Point,
+    middlePoint: Point,
+    canvas?: CanvasController
+  ): void;
   drawUnfilledRect(
     ctx: CanvasRenderingContext2D,
     start: Point,

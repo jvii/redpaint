@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 
 import {
-  canvasToWebGLCoordInvert,
+  canvasToWebGLCoordY,
   canvasToWebGLCoordX,
   shiftLine,
   shiftPoint,
@@ -39,7 +39,7 @@ export class OverlayGeometricRenderer {
     for (let i = 0; i < points.length; i++) {
       const shiftedPoint = shiftPoint(points[i]);
       vertices[i * 2] = canvasToWebGLCoordX(gl, shiftedPoint.x);
-      vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+      vertices[i * 2 + 1] = canvasToWebGLCoordY(gl, shiftedPoint.y);
     }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
@@ -66,9 +66,9 @@ export class OverlayGeometricRenderer {
     for (let i = 0; i < lines.length; i++) {
       const shiftedLine = shiftLine(lines[i]);
       vertices[i * 4] = canvasToWebGLCoordX(gl, shiftedLine.p1.x);
-      vertices[i * 4 + 1] = canvasToWebGLCoordInvert(gl, shiftedLine.p1.y);
+      vertices[i * 4 + 1] = canvasToWebGLCoordY(gl, shiftedLine.p1.y);
       vertices[i * 4 + 2] = canvasToWebGLCoordX(gl, shiftedLine.p2.x);
-      vertices[i * 4 + 3] = canvasToWebGLCoordInvert(gl, shiftedLine.p2.y);
+      vertices[i * 4 + 3] = canvasToWebGLCoordY(gl, shiftedLine.p2.y);
     }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
@@ -95,8 +95,8 @@ export class OverlayGeometricRenderer {
     const shiftedEnd = shiftPoint(end);
     const xLeft = canvasToWebGLCoordX(gl, shiftedStart.x);
     const xRight = canvasToWebGLCoordX(gl, shiftedEnd.x);
-    const yTop = canvasToWebGLCoordInvert(gl, shiftedStart.y);
-    const yBottom = canvasToWebGLCoordInvert(gl, shiftedEnd.y);
+    const yTop = canvasToWebGLCoordY(gl, shiftedStart.y);
+    const yBottom = canvasToWebGLCoordY(gl, shiftedEnd.y);
 
     const vertices = new Float32Array(8);
     vertices[0] = xLeft;

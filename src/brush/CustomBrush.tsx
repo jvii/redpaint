@@ -15,11 +15,14 @@ import {
   line2,
   unfilledRect2,
   unfilledCircle2,
+  curve2,
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
 import { colorizeTexture } from '../colorIndex/util';
 import { CanvasController } from '../canvas/CanvasController';
+import { LineV } from '../domain/LineV';
+import { LineH } from '../domain/LineH';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -60,7 +63,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
     const pointAdj = this.adjustHandle(point);
-    //drawImage(pointAdj, this, ctx);
     canvas?.drawImage?.([pointAdj], this);
   }
 
@@ -74,7 +76,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     end: Point,
     canvas?: CanvasController
   ): void {
-    //line(ctx, this, start, end);
     const line = line2(this.adjustHandle(start), this.adjustHandle(end));
     canvas?.drawImage?.(line, this);
   }
@@ -83,9 +84,15 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     ctx: CanvasRenderingContext2D,
     start: Point,
     end: Point,
-    middlePoint: Point
+    middlePoint: Point,
+    canvas?: CanvasController
   ): void {
-    curve(ctx, this, start, end, middlePoint);
+    const curve = curve2(
+      this.adjustHandle(start),
+      this.adjustHandle(end),
+      this.adjustHandle(middlePoint)
+    );
+    canvas?.drawImage?.(curve, this);
   }
 
   public drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void {
@@ -127,18 +134,16 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     end: Point,
     canvas: CanvasController
   ): void {
-    const vertice1 = start;
-    const vertice2 = { x: start.x, y: end.y };
-    const vertice3 = end;
-    const vertice4 = { x: end.x, y: start.y };
-    const edge1 = line2(vertice1, vertice2);
-    const edge2 = line2(vertice2, vertice3);
-    const edge3 = line2(vertice3, vertice4);
-    const edge4 = line2(vertice4, vertice1);
-
-    const edges = edge1.concat(edge2, edge3, edge4);
-
-    canvas?.drawImage?.(edges, this);
+    const startAdj = this.adjustHandle(start);
+    const endAdj = this.adjustHandle(end);
+    const unfilledRect = unfilledRect2(startAdj, endAdj);
+    const unfilledRectAsPoints = [
+      ...unfilledRect[0].asPoints(),
+      ...unfilledRect[1].asPoints(),
+      ...unfilledRect[2].asPoints(),
+      ...unfilledRect[3].asPoints(),
+    ];
+    canvas?.drawImage?.(unfilledRectAsPoints, this);
   }
 
   public drawFilledRect(

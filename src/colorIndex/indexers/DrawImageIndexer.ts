@@ -1,4 +1,4 @@
-import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../util';
+import { canvasToWebGLCoordY, canvasToWebGLCoordX } from '../util';
 import { CustomBrush } from '../../brush/CustomBrush';
 
 export class DrawImageIndexer {

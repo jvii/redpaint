@@ -15,6 +15,7 @@ import {
   unfilledCircle2,
   line2,
   unfilledRect2,
+  curve2,
 } from '../algorithm/shape';
 import { fillRect } from '../algorithm/primitive';
 import { overmind } from '..';
@@ -57,9 +58,12 @@ export class PixelBrush implements BrushInterface {
     ctx: CanvasRenderingContext2D,
     start: Point,
     end: Point,
-    middlePoint: Point
+    middlePoint: Point,
+    canvas?: CanvasController
   ): void {
-    curve(ctx, this, start, end, middlePoint);
+    //curve(ctx, this, start, end, middlePoint);
+    const curve = curve2(start, end, middlePoint);
+    canvas?.points(curve, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledRect(
@@ -68,7 +72,6 @@ export class PixelBrush implements BrushInterface {
     end: Point,
     canvas: CanvasController
   ): void {
-    //unfilledRect(ctx, this, start, end);
     const unfilledRect = unfilledRect2(start, end);
     canvas?.lines(unfilledRect, overmind.state.tool.activeColorIndex);
   }
@@ -79,7 +82,6 @@ export class PixelBrush implements BrushInterface {
     end: Point,
     canvas: CanvasController
   ): void {
-    //filledRect(ctx, this, start, end);
     canvas?.quad?.(start, end, overmind.state.tool.activeColorIndex);
   }
 
