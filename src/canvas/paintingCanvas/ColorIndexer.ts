@@ -3,6 +3,8 @@ import { DrawImageIndexer } from './program/DrawImageIndexer';
 import { Line, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../../colorIndex/util';
+import { LineV } from '../../domain/LineV';
+import { LineH } from '../../domain/LineH';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -30,7 +32,7 @@ export class ColorIndexer {
     this.geometricIndexer.indexPoints(points, colorIndex);
   }
 
-  lines(lines: Line[], colorIndex: number): void {
+  lines(lines: (LineH | LineV)[], colorIndex: number): void {
     this.geometricIndexer.indexLines(lines, colorIndex);
   }
 

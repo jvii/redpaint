@@ -40,10 +40,16 @@ export class DrawImageIndexer {
     const u_Sampler = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_Sampler');
     gl.uniform1i(u_Sampler, 2); // texture unit 2
 
+    console.log('points:' + points.length);
+    console.log('point[0].y=' + points[0].y);
+    console.log('brush.heigth=' + brush.heigth);
+    // ei toimi oikein jos brush.height on parillinen???
+
     const textureCoords = new Float32Array(12 * points.length);
     const vertices = new Float32Array(12 * points.length);
     for (let i = 0; i < points.length; i++) {
       const shiftedPoint = shiftPoint(points[i]);
+
       const xLeft = canvasToWebGLCoordX(gl, shiftedPoint.x);
       const xRight = canvasToWebGLCoordX(gl, shiftedPoint.x + brush.width);
       const yTop = canvasToWebGLCoordY(gl, shiftedPoint.y);
@@ -94,12 +100,7 @@ export class DrawImageIndexer {
     gl.enableVertexAttribArray(a_TexCoord);
 
     gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      // eslint-disable-next-line prettier/prettier
-      textureCoords,
-      gl.DYNAMIC_DRAW
-    );
+    gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.DYNAMIC_DRAW);
 
     // vertex coords
 
@@ -141,10 +142,10 @@ export class DrawImageIndexer {
 
     void main () {
       vec4 color = texture2D(u_Sampler, v_TexCoord);
+
       if (color.r == 0.0) {
         discard; // zero means this pixel of the brush is transparent
       }
-
       gl_FragColor = color;
     }
     `;
@@ -190,7 +191,5 @@ export class DrawImageIndexer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    console.log(brush.brushColorIndex);
   }
 }

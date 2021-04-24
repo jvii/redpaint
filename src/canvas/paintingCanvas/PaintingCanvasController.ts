@@ -5,6 +5,8 @@ import { CanvasController } from '../CanvasController';
 import { ColorIndexer } from './ColorIndexer';
 import { MainCanvasRenderer } from './MainCanvasRenderer';
 import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
+import { LineV } from '../../domain/LineV';
+import { LineH } from '../../domain/LineH';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer | null;
@@ -77,7 +79,7 @@ export class PaintingCanvasController implements CanvasController {
     this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
-  lines(lines: Line[], colorIndex: number): void {
+  lines(lines: (LineH | LineV)[], colorIndex: number): void {
     this.colorIndexer?.lines(lines, colorIndex);
     this.mainCanvasRenderer?.lines(lines);
     this.zoomCanvasRenderer?.render(this.mainCanvas);
@@ -93,6 +95,7 @@ export class PaintingCanvasController implements CanvasController {
     this.colorIndexer?.drawImage(points, brush);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderDrawImage?
     this.zoomCanvasRenderer?.render(this.mainCanvas);
+    //this.visualiseIndex();
   }
 
   render(): void {

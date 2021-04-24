@@ -1,9 +1,5 @@
 import { CustomBrush } from '../../../brush/CustomBrush';
-import {
-  canvasToWebGLCoordInvert,
-  canvasToWebGLCoordX,
-  shiftPoint,
-} from '../../../colorIndex/util';
+import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftPoint } from '../../../colorIndex/util';
 import { Point } from '../../../types';
 import { createProgram, useProgram } from '../../util/webglUtil';
 
@@ -47,8 +43,8 @@ export class OverlayDrawImageRenderer {
       const shiftedPoint = shiftPoint(points[i]);
       const xLeft = canvasToWebGLCoordX(gl, shiftedPoint.x);
       const xRight = canvasToWebGLCoordX(gl, shiftedPoint.x + brush.width);
-      const yTop = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
-      const yBottom = canvasToWebGLCoordInvert(gl, shiftedPoint.y + brush.heigth);
+      const yTop = canvasToWebGLCoordY(gl, shiftedPoint.y);
+      const yBottom = canvasToWebGLCoordY(gl, shiftedPoint.y + brush.heigth);
 
       const offset = i * 12;
 

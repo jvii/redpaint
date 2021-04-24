@@ -47,7 +47,7 @@ export class DrawImageRenderer {
       gl_Position = a_position;
 
       // assuming a unit quad for position we can just use that for texcoords
-      v_texcoord = a_position.xy * vec2(0.5, 0.5) + 0.5;
+      v_texcoord = a_position.xy * vec2(0.5, -0.5) + 0.5;
     }
     `;
 

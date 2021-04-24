@@ -1,9 +1,8 @@
 /* eslint-disable max-len */
 import { Line, Point } from '../../types';
 import {
-  canvasToWebGLCoordInvert,
-  canvasToWebGLCoordX,
   canvasToWebGLCoordY,
+  canvasToWebGLCoordX,
   shiftLine,
   shiftPoint,
 } from '../../colorIndex/util';
@@ -38,7 +37,7 @@ export class OverlayGeometricRenderer {
     for (let i = 0; i < points.length; i++) {
       const shiftedPoint = shiftPoint(points[i]);
       vertices[i * 2] = canvasToWebGLCoordX(gl, shiftedPoint.x);
-      vertices[i * 2 + 1] = canvasToWebGLCoordInvert(gl, shiftedPoint.y);
+      vertices[i * 2 + 1] = canvasToWebGLCoordY(gl, shiftedPoint.y);
     }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
@@ -64,9 +63,9 @@ export class OverlayGeometricRenderer {
     for (let i = 0; i < lines.length; i++) {
       const shiftedLine = shiftLine(lines[i]);
       vertices[i * 4] = canvasToWebGLCoordX(gl, shiftedLine.p1.x);
-      vertices[i * 4 + 1] = canvasToWebGLCoordInvert(gl, shiftedLine.p1.y);
+      vertices[i * 4 + 1] = canvasToWebGLCoordY(gl, shiftedLine.p1.y);
       vertices[i * 4 + 2] = canvasToWebGLCoordX(gl, shiftedLine.p2.x);
-      vertices[i * 4 + 3] = canvasToWebGLCoordInvert(gl, shiftedLine.p2.y);
+      vertices[i * 4 + 3] = canvasToWebGLCoordY(gl, shiftedLine.p2.y);
     }
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
