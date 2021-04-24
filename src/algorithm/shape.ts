@@ -115,7 +115,7 @@ function getQuadraticXY(t: number, start: Point, controlPoint: Point, end: Point
   };
 }
 
-export function unfilledRect(
+/* export function unfilledRect(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
   start: Point,
@@ -140,7 +140,7 @@ export function unfilledRect(
   brush.drawLineHorizontal(ctx, x1, x2, y2);
   brush.drawLineVertical(ctx, y1, y2, x1);
   brush.drawLineVertical(ctx, y1, y2, x2);
-}
+} */
 
 export function unfilledRect2(start: Point, end: Point): (LineH | LineV)[] {
   if (start === end) {
@@ -354,7 +354,7 @@ export function unfilledCircle2(center: Point, r: number): Point[] {
   return circle;
 }
 
-export function unfilledEllipse(
+/* export function unfilledEllipse(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
   center: Point,
@@ -363,7 +363,6 @@ export function unfilledEllipse(
   rotationAngle: number
 ): void {
   // eslint-disable-next-line max-len
-  // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
   const a = radiusX;
   const b = radiusY;
   const phi = rotationAngle * (Math.PI / 180);
@@ -398,8 +397,6 @@ export function unfilledEllipse(
     ellipsePointsLowerHalf.push({ x: x + center.x, y: y1 + center.y });
     ellipsePointsUpperHalf.push({ x: x + center.x, y: y2 + center.y });
   }
-
-  // Draw ellipse
 
   // Lower half
 
@@ -444,6 +441,96 @@ export function unfilledEllipse(
   const endX = ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1].x;
   brush.drawLineVertical(ctx, endYLower, endYUpper - 1, endX);
   brush.drawDot(ctx, ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1]);
+} */
+
+export function unfilledEllipse2(
+  center: Point,
+  radiusX: number,
+  radiusY: number,
+  rotationAngle: number
+): LineV[] {
+  // eslint-disable-next-line max-len
+  // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
+  const a = radiusX;
+  const b = radiusY;
+  const phi = rotationAngle * (Math.PI / 180);
+
+  const xStart = Math.ceil(-Math.sqrt(a ** 2 * Math.cos(phi) ** 2 + b ** 2 * Math.sin(phi) ** 2));
+  const xEnd = -xStart;
+  if (xEnd === xStart) {
+    return [new LineV(center, center)];
+  }
+
+  // Define some constants for calculation
+
+  const a2 = a ** 2;
+  const b2 = b ** 2;
+  const ab = a * b;
+  const k = 2 * (Math.sin(phi) ** 2 / a2 + Math.cos(phi) ** 2 / b2);
+  const sinphicosphi = Math.sin(phi) * Math.cos(phi);
+  const cos2phi = Math.cos(2 * phi);
+  const c = a2 * cos2phi + a2 - b2 * cos2phi + b2;
+  const sqrt2 = Math.sqrt(2);
+
+  // Calculate y points of ellipse given x points
+
+  const ellipsePointsLowerHalf: Point[] = [];
+  const ellipsePointsUpperHalf: Point[] = [];
+  for (let x = xStart; x <= xEnd; x++) {
+    const nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
+    let y1 = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    y1 = Math.round(y1 / k);
+    let y2 = -nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    y2 = Math.round(y2 / k);
+    ellipsePointsLowerHalf.push({ x: x + center.x, y: y1 + center.y });
+    ellipsePointsUpperHalf.push({ x: x + center.x, y: y2 + center.y });
+  }
+
+  // Collect ellipse lines
+
+  const ellipse: LineV[] = [];
+
+  // Lower half
+
+  for (let i = 1; i < ellipsePointsLowerHalf.length - 1; i++) {
+    const point = ellipsePointsLowerHalf[i];
+    const previousPoint = ellipsePointsLowerHalf[i - 1];
+    const nextPoint = ellipsePointsLowerHalf[i + 1];
+    if (point.y > previousPoint.y + 1) {
+      ellipse.push(new LineV({ x: point.x, y: previousPoint.y + 1 }, point));
+    } else if (point.y > nextPoint.y + 1) {
+      ellipse.push(new LineV({ x: point.x, y: nextPoint.y + 1 }, point));
+    } else {
+      ellipse.push(new LineV(point, point));
+    }
+  }
+
+  // Upper half
+
+  for (let i = 1; i < ellipsePointsUpperHalf.length - 1; i++) {
+    const point = ellipsePointsUpperHalf[i];
+    const previousPoint = ellipsePointsUpperHalf[i - 1];
+    const nextPoint = ellipsePointsUpperHalf[i + 1];
+    if (point.y < previousPoint.y - 1) {
+      ellipse.push(new LineV({ x: point.x, y: previousPoint.y - 1 }, point));
+    } else if (point.y < nextPoint.y - 1) {
+      ellipse.push(new LineV({ x: point.x, y: nextPoint.y - 1 }, point));
+    } else {
+      ellipse.push(new LineV(point, point));
+    }
+  }
+
+  // Close both ends of ellipse by drawing a vertical line at x = 0 and x = length - 1
+
+  ellipse.push(new LineV(ellipsePointsLowerHalf[0], ellipsePointsUpperHalf[0]));
+  ellipse.push(
+    new LineV(
+      ellipsePointsLowerHalf[ellipsePointsUpperHalf.length - 1],
+      ellipsePointsUpperHalf[ellipsePointsUpperHalf.length - 1]
+    )
+  );
+
+  return ellipse;
 }
 
 export function filledEllipse(
@@ -484,6 +571,50 @@ export function filledEllipse(
 
     fillRect(x + center.x, y1 + center.y, 1, -h, ctx);
   }
+}
+
+export function filledEllipse2(
+  center: Point,
+  radiusX: number,
+  radiusY: number,
+  rotationAngle: number
+): LineV[] {
+  // eslint-disable-next-line max-len
+  // https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1
+  const a = radiusX;
+  const b = radiusY;
+  const phi = rotationAngle * (Math.PI / 180);
+
+  const xStart = Math.ceil(-Math.sqrt(a ** 2 * Math.cos(phi) ** 2 + b ** 2 * Math.sin(phi) ** 2));
+  const xEnd = -xStart;
+
+  // Define some constants for calculation
+
+  const a2 = a ** 2;
+  const b2 = b ** 2;
+  const ab = a * b;
+  const k = 2 * (Math.sin(phi) ** 2 / a2 + Math.cos(phi) ** 2 / b2);
+  const sinphicosphi = Math.sin(phi) * Math.cos(phi);
+  const cos2phi = Math.cos(2 * phi);
+  const c = a2 * cos2phi + a2 - b2 * cos2phi + b2;
+  const sqrt2 = Math.sqrt(2);
+
+  // Collect ellipse lines
+
+  const ellipse: LineV[] = [];
+
+  for (let x = xStart; x <= xEnd; x++) {
+    const nominator = sqrt2 * Math.sqrt(c - 2 * x ** 2);
+    const y1 = nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+    const y2 = -nominator / ab - (2 * x * sinphicosphi) / a2 + (2 * x * sinphicosphi) / b2;
+
+    const p1 = { x: x + center.x, y: Math.round(y1 / k) + center.y };
+    const p2 = { x: x + center.x, y: Math.round(y2 / k) + center.y };
+
+    ellipse.push(new LineV(p1, p2));
+  }
+
+  return ellipse;
 }
 
 export function unfilledPolygon(

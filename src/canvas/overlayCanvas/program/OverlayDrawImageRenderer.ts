@@ -1,5 +1,5 @@
 import { CustomBrush } from '../../../brush/CustomBrush';
-import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftPoint } from '../../../colorIndex/util';
+import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftPoint } from '../../util/util';
 import { Point } from '../../../types';
 import { createProgram, useProgram } from '../../util/webglUtil';
 

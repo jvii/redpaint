@@ -2,7 +2,7 @@ import { GeometricIndexer } from './program/GeometricIndexer';
 import { DrawImageIndexer } from './program/DrawImageIndexer';
 import { Line, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { visualiseTexture } from '../../colorIndex/util';
+import { visualiseTexture } from '../util/util';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
 

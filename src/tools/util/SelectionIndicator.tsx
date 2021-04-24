@@ -1,10 +1,10 @@
 import { Point } from '../../types';
 import { PixelBrush } from '../../brush/PixelBrush';
-import { unfilledRect } from '../../algorithm/shape';
 import { overmind } from '../../index';
 
 let invertedCanvas: CanvasPattern | null = null;
 
+//TODO: move these to OverlayCanvasController
 export const selection = {
   prepare(canvas: HTMLCanvasElement): void {
     const bufferCanvas = document.createElement('canvas');
@@ -38,7 +38,7 @@ export const selection = {
     if (invertedCanvas) {
       ctx.fillStyle = invertedCanvas;
     }
-    unfilledRect(ctx, new PixelBrush(), start, end);
+    //unfilledRect(ctx, new PixelBrush(), start, end);
     ctx.fillStyle = overmind.state.canvas.fillStyle;
   },
   textCursor(ctx: CanvasRenderingContext2D, height: number): void {
@@ -54,7 +54,7 @@ export const selection = {
       y: start.y,
     };
     console.log(point);
-    unfilledRect(ctx, new PixelBrush(), point, { x: point.x, y: point.y - height });
+    //unfilledRect(ctx, new PixelBrush(), point, { x: point.x, y: point.y - height });
     ctx.fillStyle = overmind.state.canvas.fillStyle;
   },
 };
