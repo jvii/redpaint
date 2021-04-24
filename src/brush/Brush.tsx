@@ -9,8 +9,8 @@ export interface BrushInterface {
     end: Point,
     canvas?: CanvasController
   ): void;
-  drawLineVertical(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void;
-  drawLineHorizontal(ctx: CanvasRenderingContext2D, x1: number, x2: number, y: number): void;
+  drawLineVertical?(ctx: CanvasRenderingContext2D, y1: number, y2: number, x: number): void;
+  drawLineHorizontal?(ctx: CanvasRenderingContext2D, x1: number, x2: number, y: number): void;
   drawCurve(
     ctx: CanvasRenderingContext2D,
     start: Point,
@@ -47,14 +47,16 @@ export interface BrushInterface {
     center: Point,
     radiusX: number,
     radiusY: number,
-    rotationAngle: number
+    rotationAngle: number,
+    canvas?: CanvasController
   ): void;
   drawFilledEllipse(
     ctx: CanvasRenderingContext2D,
     center: Point,
     radiusX: number,
     radiusY: number,
-    rotationAngle: number
+    rotationAngle: number,
+    canvas?: CanvasController
   ): void;
   drawUnfilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[], complete?: boolean): void;
   drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void;

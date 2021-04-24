@@ -111,7 +111,7 @@ export class CurveTool implements Tool {
       ctx: { canvas },
       onPaint,
     } = params;
-    clearOverlayCanvas(canvas);
+    overlayCanvasController.clear();
     onPaint();
   }
 }

@@ -144,7 +144,6 @@ export class CircleTool implements Tool {
       onPaint,
     } = params;
     overlayCanvasController.clear();
-    clearOverlayCanvas(canvas);
     onPaint();
   }
 
@@ -154,7 +153,6 @@ export class CircleTool implements Tool {
       onPaint,
     } = params;
     overlayCanvasController.clear();
-    clearOverlayCanvas(canvas);
     onPaint();
   }
 }
