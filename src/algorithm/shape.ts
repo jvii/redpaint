@@ -17,7 +17,7 @@ export function line(
   const dist = Math.round(distance(start, end));
   if (dist === 0) {
     // just draw a dot
-    brush.drawDot(ctx, start, canvas);
+    brush.drawPoint(ctx, start, canvas);
     return;
   }
 
@@ -25,7 +25,7 @@ export function line(
   const cy = (end.y - start.y) / dist;
 
   for (let i = 0; i <= dist; i++) {
-    brush.drawDot(
+    brush.drawPoint(
       ctx,
       {
         x: Math.floor(start.x + cx * i),
@@ -273,7 +273,7 @@ export function unfilledCircle(
 ): void {
   if (r === 0) {
     // just draw a dot
-    brush.drawDot(ctx, center);
+    brush.drawPoint(ctx, center);
     return;
   }
 
@@ -282,24 +282,24 @@ export function unfilledCircle(
     cd = 0;
 
   // middle points
-  brush.drawDot(ctx, { x: center.x - x, y: center.y });
-  brush.drawDot(ctx, { x: center.x + x, y: center.y });
-  brush.drawDot(ctx, { x: center.x, y: center.y - r });
-  brush.drawDot(ctx, { x: center.x, y: center.y + r });
+  brush.drawPoint(ctx, { x: center.x - x, y: center.y });
+  brush.drawPoint(ctx, { x: center.x + x, y: center.y });
+  brush.drawPoint(ctx, { x: center.x, y: center.y - r });
+  brush.drawPoint(ctx, { x: center.x, y: center.y + r });
 
   // octants
   while (x > y) {
     cd -= --x - ++y;
     if (cd < 0) cd += x++;
-    brush.drawDot(ctx, { x: center.x - y, y: center.y - x });
-    brush.drawDot(ctx, { x: center.x - x, y: center.y - y });
-    brush.drawDot(ctx, { x: center.x - x, y: center.y + y });
-    brush.drawDot(ctx, { x: center.x - y, y: center.y + x });
+    brush.drawPoint(ctx, { x: center.x - y, y: center.y - x });
+    brush.drawPoint(ctx, { x: center.x - x, y: center.y - y });
+    brush.drawPoint(ctx, { x: center.x - x, y: center.y + y });
+    brush.drawPoint(ctx, { x: center.x - y, y: center.y + x });
 
-    brush.drawDot(ctx, { x: center.x + y, y: center.y + x });
-    brush.drawDot(ctx, { x: center.x + x, y: center.y + y });
-    brush.drawDot(ctx, { x: center.x + x, y: center.y - y });
-    brush.drawDot(ctx, { x: center.x + y, y: center.y - x });
+    brush.drawPoint(ctx, { x: center.x + y, y: center.y + x });
+    brush.drawPoint(ctx, { x: center.x + x, y: center.y + y });
+    brush.drawPoint(ctx, { x: center.x + x, y: center.y - y });
+    brush.drawPoint(ctx, { x: center.x + y, y: center.y - x });
   }
 }
 
@@ -629,6 +629,17 @@ export function unfilledPolygon(
   if (complete) {
     brush.drawLine(ctx, vertices[vertices.length - 1], vertices[0]);
   }
+}
+
+export function unfilledPolygon2(vertices: Point[], complete = true): Point[] {
+  const unfilledPolygon: Point[] = [];
+  for (let i = 1; i < vertices.length; i++) {
+    unfilledPolygon.push(...line2(vertices[i - 1], vertices[i]));
+  }
+  if (complete) {
+    unfilledPolygon.push(...line2(vertices[vertices.length - 1], vertices[0]));
+  }
+  return unfilledPolygon;
 }
 
 // adapted from https://alienryderflex.com/polygon_fill/

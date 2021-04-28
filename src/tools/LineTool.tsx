@@ -95,7 +95,7 @@ export class LineTool implements Tool {
       });
     } else {
       clearOverlayCanvas(canvas);
-      brushHistory.current.drawDot(ctx, mousePos, overlayCanvasController);
+      brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
     }
     onPaint();
   }

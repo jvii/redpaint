@@ -42,7 +42,7 @@ export class DottedFreehandTool implements Tool {
 
     if (event.buttons) {
       const mousePos = getMousePos(canvas, event);
-      brushHistory.current.drawDot(ctx, mousePos);
+      brushHistory.current.drawPoint(ctx, mousePos);
       onPaint();
     }
   }
@@ -57,7 +57,7 @@ export class DottedFreehandTool implements Tool {
 
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawDot(ctx, mousePos);
+    brushHistory.current.drawPoint(ctx, mousePos);
     onPaint();
   }
 
@@ -98,7 +98,7 @@ export class DottedFreehandTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    brushHistory.current.drawDot(ctx, mousePos);
+    brushHistory.current.drawPoint(ctx, mousePos);
     onPaint();
   }
 

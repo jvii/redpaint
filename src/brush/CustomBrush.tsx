@@ -1,14 +1,6 @@
 import { BrushInterface } from './Brush';
 import { Point, Color } from '../types';
-import { drawImage } from '../algorithm/primitive';
 import {
-  line,
-  filledRect,
-  unfilledCircle,
-  filledCircle,
-  curve,
-  filledEllipse,
-  filledPolygon,
   unfilledPolygon,
   line2,
   unfilledRect2,
@@ -17,13 +9,14 @@ import {
   filledCircle2,
   unfilledEllipse2,
   filledEllipse2,
+  filledPolygon,
+  unfilledPolygon2,
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
 import { colorizeTexture } from '../canvas/util/util';
 import { CanvasController } from '../canvas/CanvasController';
 import { LineV } from '../domain/LineV';
-import { LineH } from '../domain/LineH';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -62,9 +55,8 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.lastChanged = Date.now();
   }
 
-  public drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
-    const pointAdj = this.adjustHandle(point);
-    canvas?.drawImage?.([pointAdj], this);
+  public drawPoint(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
+    canvas?.drawImage?.([this.adjustHandle(point)], this);
   }
 
   public drawLine(
@@ -98,9 +90,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     end: Point,
     canvas: CanvasController
   ): void {
-    const startAdj = this.adjustHandle(start);
-    const endAdj = this.adjustHandle(end);
-    const unfilledRect = unfilledRect2(startAdj, endAdj);
+    const unfilledRect = unfilledRect2(this.adjustHandle(start), this.adjustHandle(end));
     const unfilledRectAsPoints: Point[] = [
       ...unfilledRect[0].asPoints(),
       ...unfilledRect[1].asPoints(),
@@ -126,8 +116,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     radius: number,
     canvas: CanvasController
   ): void {
-    const centerAdj = this.adjustHandle(center);
-    const unfilledCircle = unfilledCircle2(centerAdj, radius);
+    const unfilledCircle = unfilledCircle2(this.adjustHandle(center), radius);
     canvas?.drawImage?.(unfilledCircle, this);
   }
 
@@ -150,7 +139,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     rotationAngle: number,
     canvas?: CanvasController
   ): void {
-    const unfilledEllipse = unfilledEllipse2(center, radiusX, radiusY, rotationAngle);
+    const unfilledEllipse = unfilledEllipse2(
+      this.adjustHandle(center),
+      radiusX,
+      radiusY,
+      rotationAngle
+    );
     // ellipse lines as an array of Points for drawImage
     const unfilledEllipseAsPoints: Point[] = unfilledEllipse.reduce(
       (acc: Point[], item: LineV): Point[] => acc.concat(item.asPoints()),
@@ -175,9 +169,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public drawUnfilledPolygon(
     ctx: CanvasRenderingContext2D,
     vertices: Point[],
-    complete?: boolean
+    complete?: boolean,
+    canvas?: CanvasController
   ): void {
-    unfilledPolygon(ctx, this, vertices, complete);
+    const unfilledPolygon = unfilledPolygon2(vertices.map(this.adjustHandle), complete);
+    canvas?.drawImage?.(unfilledPolygon, this);
   }
 
   public drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void {

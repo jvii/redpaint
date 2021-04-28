@@ -13,6 +13,8 @@ import {
 } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
+import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class AirbrushTool implements Tool {
   private timeout = 0;
@@ -49,14 +51,20 @@ export class AirbrushTool implements Tool {
 
     // eslint-disable-next-line @typescript-eslint/ban-types
     const draw = (ctx: CanvasRenderingContext2D, onPaint: Function): void => {
+      //TODO: draw in bigger batches, maybe drawDot should accept an array? Or new method
+      // drawDots
       for (let i = 50; i--; ) {
         const angle = getRandomFloat(0, Math.PI * 2);
         const radius = getRandomFloat(0, 20);
         if (overmind.state.tool.airbrushTool.position) {
-          brushHistory.current.drawDot(ctx, {
-            x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
-            y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
-          });
+          brushHistory.current.drawPoint(
+            ctx,
+            {
+              x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
+              y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
+            },
+            paintingCanvasController
+          );
         }
       }
       onPaint();
@@ -98,7 +106,7 @@ export class AirbrushTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    brushHistory.current.drawDot(ctx, mousePos);
+    brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
     onPaint();
   }
 
@@ -108,6 +116,7 @@ export class AirbrushTool implements Tool {
       onPaint,
     } = params;
     clearOverlayCanvas(canvas);
+    overlayCanvasController.clear();
     onPaint();
   }
 
@@ -117,6 +126,7 @@ export class AirbrushTool implements Tool {
       onPaint,
     } = params;
     clearOverlayCanvas(canvas);
+    overlayCanvasController.clear();
     onPaint();
   }
 }
