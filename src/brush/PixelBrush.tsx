@@ -1,12 +1,6 @@
 import { BrushInterface } from './Brush';
 import { Point } from '../types';
 import {
-  line,
-  unfilledCircle,
-  filledCircle,
-  filledRect,
-  curve,
-  filledEllipse,
   filledPolygon,
   unfilledPolygon,
   filledCircle2,
@@ -16,14 +10,13 @@ import {
   curve2,
   unfilledEllipse2,
   filledEllipse2,
+  unfilledPolygon2,
 } from '../algorithm/shape';
-import { fillRect } from '../algorithm/primitive';
 import { overmind } from '..';
-import { pointEquals } from '../tools/util/util';
 import { CanvasController } from '../canvas/CanvasController';
 
 export class PixelBrush implements BrushInterface {
-  public drawDot(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
+  public drawPoint(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void {
     canvas?.points([point], overmind.state.tool.activeColorIndex);
   }
 
@@ -95,7 +88,6 @@ export class PixelBrush implements BrushInterface {
     rotationAngle: number,
     canvas?: CanvasController
   ): void {
-    //unfilledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
     const unfilledEllipse = unfilledEllipse2(center, radiusX, radiusY, rotationAngle);
     canvas?.lines(unfilledEllipse, overmind.state.tool.activeColorIndex);
   }
@@ -108,7 +100,6 @@ export class PixelBrush implements BrushInterface {
     rotationAngle: number,
     canvas?: CanvasController
   ): void {
-    //filledEllipse(ctx, this, center, radiusX, radiusY, rotationAngle);
     const filledEllipse = filledEllipse2(center, radiusX, radiusY, rotationAngle);
     canvas?.lines(filledEllipse, overmind.state.tool.activeColorIndex);
   }
@@ -116,9 +107,11 @@ export class PixelBrush implements BrushInterface {
   public drawUnfilledPolygon(
     ctx: CanvasRenderingContext2D,
     vertices: Point[],
-    complete?: boolean
+    complete?: boolean,
+    canvas?: CanvasController
   ): void {
-    unfilledPolygon(ctx, this, vertices, complete);
+    const unfilledPolygon = unfilledPolygon2(vertices, complete);
+    canvas?.points(unfilledPolygon, overmind.state.tool.activeColorIndex);
   }
 
   public drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void {

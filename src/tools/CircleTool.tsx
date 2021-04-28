@@ -111,7 +111,7 @@ export class CircleTool implements Tool {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush.
         // For filled circles we only render the croshair.
-        brushHistory.current.drawDot(ctx, mousePos);
+        brushHistory.current.drawPoint(ctx, mousePos);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();

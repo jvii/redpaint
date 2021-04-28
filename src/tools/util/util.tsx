@@ -175,16 +175,16 @@ export function extractBrush(
 
   // invert y
 
-  const colorIndexInverted = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
+  /*   const colorIndexInverted = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
   for (let y = 0; y < bufferCanvas.height; y++) {
     for (let x = 0; x < bufferCanvas.width * 4; x++) {
       const index = x + y * bufferCanvas.width * 4;
       const indexOrig = x + (bufferCanvas.height - 1 - y) * (bufferCanvas.width * 4);
       colorIndexInverted[index] = colorIndexWithTransparency[indexOrig];
     }
-  }
+  } */
 
-  return new CustomBrush(bufferCanvas.toDataURL(), colorIndexInverted);
+  return new CustomBrush(bufferCanvas.toDataURL(), colorIndexWithTransparency);
 }
 
 export function addTransparency(texture: Uint8Array, transparentColorIndex: number): Uint8Array {

@@ -53,7 +53,7 @@ export class FreehandTool implements Tool {
         return; // this point has already been drawn to canvas
       }
       if (points8Connected(start, end)) {
-        brushHistory.current.drawDot(ctx, end, paintingCanvasController);
+        brushHistory.current.drawPoint(ctx, end, paintingCanvasController);
       } else {
         brushHistory.current.drawLine(ctx, start, end, paintingCanvasController);
       }
@@ -71,7 +71,7 @@ export class FreehandTool implements Tool {
     } = params;
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawDot(ctx, mousePos, paintingCanvasController);
+    brushHistory.current.drawPoint(ctx, mousePos, paintingCanvasController);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
@@ -113,7 +113,7 @@ export class FreehandTool implements Tool {
     //clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
     //brushHistory.current.drawDot(ctx, mousePos);
-    brushHistory.current.drawDot(ctx, mousePos, overlayCanvasController);
+    brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
     onPaint();
   }
 

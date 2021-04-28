@@ -107,7 +107,7 @@ export class ColorIndexer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
     gl.readPixels(
       rectLowerLeftX,
-      y,
+      rectLowerLeftY,
       Math.abs(width),
       Math.abs(height),
       gl.RGBA,
