@@ -36,6 +36,7 @@ function BrushButton({ svg, brushId }: ButtonProps): JSX.Element {
   const onClick = (): void => {
     actions.brush.selectBuiltInBrush(brushId);
   };
+
   const isSelected = state.brush.selectedBuiltInBrushId === brushId;
   return (
     <div
