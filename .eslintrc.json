@@ -19,7 +19,13 @@
       { "functions": false, "classes": false, "variables": false }
     ],
     "max-len": ["error", { "code": 100 }],
-    "prettier/prettier": ["error", { "singleQuote": true }],
+    "prettier/prettier": [
+      "error",
+      { "singleQuote": true },
+      {
+        "endOfLine": "auto"
+      }
+    ],
     "@typescript-eslint/prefer-interface": "off"
   },
   "settings": {
