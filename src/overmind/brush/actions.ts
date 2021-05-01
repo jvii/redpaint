@@ -22,11 +22,11 @@ export const setMode: Action<Mode> = ({ state }, mode): void => {
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     if (mode === 'Color') {
-      brush.setFGColor(state.palette.foregroundColor);
-      brush.setBGColor(state.palette.backgroundColor);
+      brush.setFGColor();
+      brush.setBGColor();
       brush.toFGColor();
     } else if (mode === 'Matte') {
-      brush.setBGColor(state.palette.backgroundColor);
+      brush.setBGColor();
       brush.toMatte();
     }
   }

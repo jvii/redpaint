@@ -31,7 +31,7 @@ export function Menubar(): JSX.Element {
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
-      actions.brush.setBrush(new CustomBrush(URL.createObjectURL(input.files[0])));
+      //actions.brush.setBrush(new CustomBrush(URL.createObjectURL(input.files[0])));
       actions.brush.setMode('Matte');
     } else {
       alert('Failed to open file!');

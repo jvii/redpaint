@@ -8,7 +8,7 @@ export const setForegroundColor: Action<string> = ({ state, actions }, key): voi
   actions.tool.activeToolToFGFillStyle();
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
-    brush.setFGColor(state.palette.foregroundColor);
+    brush.setFGColor();
   }
 };
 
@@ -16,7 +16,7 @@ export const setBackgroundColor: Action<string> = ({ state }, key): void => {
   state.palette.backgroundColorId = key;
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
-    brush.setBGColor(state.palette.backgroundColor);
+    brush.setBGColor();
   }
 };
 

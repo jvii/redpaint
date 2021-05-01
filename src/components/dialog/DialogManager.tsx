@@ -13,7 +13,7 @@ export function DialogManager(): JSX.Element | null {
         <Dialog header="Image from clipboard" prompt="Select how to use this image.">
           <button
             onClick={(): void => {
-              actions.brush.setBrush(new CustomBrush(state.app.pasteBufferImageObjectURL));
+              //actions.brush.setBrush(new CustomBrush(state.app.pasteBufferImageObjectURL));
               actions.brush.setMode('Matte');
               actions.dialog.close();
             }}
