@@ -35,7 +35,7 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: CanvasController): void {
-    canvas.quad?.(start, end, overmind.state.tool.activeColorIndex);
+    canvas.quad(start, end, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: CanvasController): void {

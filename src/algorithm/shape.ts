@@ -372,7 +372,6 @@ export function filledPolygon(vertices: Point[]): LineH[] {
       if (nodeX[i + 1] > imageLeft) {
         if (nodeX[i] < imageLeft) nodeX[i] = imageLeft;
         if (nodeX[i + 1] > imageRight) nodeX[i + 1] = imageRight;
-        //fillRect(nodeX[i], pixelY, nodeX[i + 1] - nodeX[i], 1, ctx);
         const p1: Point = { x: nodeX[i], y: pixelY };
         const p2: Point = { x: nodeX[i + 1], y: pixelY };
         filledPolygon.push(new LineH(p1, p2));

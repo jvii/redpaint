@@ -1,3 +1,4 @@
+// TODO: REMOVE
 // These methods are our so called 'primitives' that all draw operations must
 // call to draw to canvas.
 // We only use two actual drawing methods from the 2d canvas api:
@@ -9,13 +10,7 @@ import { overmind } from '../index';
 import { CustomBrush } from '../brush/CustomBrush';
 //import { indexFillRect, indexDrawImage } from '../colorIndex/ColorIndexer';
 
-export function fillRect(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  ctx: CanvasRenderingContext2D
-): void {
+function fillRect(x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D): void {
   // draw and index
 
   ctx.fillRect(x, y, w, h);
@@ -64,7 +59,7 @@ export function fillRect(
   } */
 }
 
-export function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRenderingContext2D): void {
+function drawImage(point: Point, brush: CustomBrush, ctx: CanvasRenderingContext2D): void {
   // draw and index
 
   ctx.drawImage(brush.brushImage, Math.floor(point.x), Math.floor(point.y));
