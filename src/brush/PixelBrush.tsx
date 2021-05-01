@@ -1,8 +1,6 @@
 import { BrushInterface } from './Brush';
 import { Point } from '../types';
 import {
-  filledPolygon,
-  unfilledPolygon,
   filledCircle2,
   unfilledCircle2,
   line2,
@@ -11,6 +9,7 @@ import {
   unfilledEllipse2,
   filledEllipse2,
   unfilledPolygon2,
+  filledPolygon2,
 } from '../algorithm/shape';
 import { overmind } from '..';
 import { CanvasController } from '../canvas/CanvasController';
@@ -114,7 +113,12 @@ export class PixelBrush implements BrushInterface {
     canvas?.points(unfilledPolygon, overmind.state.tool.activeColorIndex);
   }
 
-  public drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void {
-    filledPolygon(ctx, this, vertices);
+  public drawFilledPolygon(
+    ctx: CanvasRenderingContext2D,
+    vertices: Point[],
+    canvas?: CanvasController
+  ): void {
+    const filledPolygon = filledPolygon2(vertices);
+    canvas?.lines(filledPolygon, overmind.state.tool.activeColorIndex);
   }
 }

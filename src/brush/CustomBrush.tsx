@@ -1,7 +1,6 @@
 import { BrushInterface } from './Brush';
 import { Point, Color } from '../types';
 import {
-  unfilledPolygon,
   line2,
   unfilledRect2,
   unfilledCircle2,
