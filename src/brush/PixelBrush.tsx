@@ -1,15 +1,15 @@
 import { BrushInterface } from './Brush';
 import { Point } from '../types';
 import {
-  filledCircle2,
-  unfilledCircle2,
-  line2,
-  unfilledRect2,
-  curve2,
-  unfilledEllipse2,
-  filledEllipse2,
-  unfilledPolygon2,
-  filledPolygon2,
+  filledCircle,
+  unfilledCircle,
+  line,
+  unfilledRect,
+  curve,
+  unfilledEllipse,
+  filledEllipse,
+  unfilledPolygon,
+  filledPolygon,
 } from '../algorithm/shape';
 import { overmind } from '..';
 import { CanvasController } from '../canvas/CanvasController';
@@ -20,18 +20,18 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawLine(start: Point, end: Point, canvas: CanvasController): void {
-    const line = line2(start, end);
-    canvas.points(line, overmind.state.tool.activeColorIndex);
+    const lineAsPoints = line(start, end);
+    canvas.points(lineAsPoints, overmind.state.tool.activeColorIndex);
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: CanvasController): void {
-    const curve = curve2(start, end, middlePoint);
-    canvas.points(curve, overmind.state.tool.activeColorIndex);
+    const curveAsPoints = curve(start, end, middlePoint);
+    canvas.points(curveAsPoints, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: CanvasController): void {
-    const unfilledRect = unfilledRect2(start, end);
-    canvas.lines(unfilledRect, overmind.state.tool.activeColorIndex);
+    const unfilledRectSides = unfilledRect(start, end);
+    canvas.lines(unfilledRectSides, overmind.state.tool.activeColorIndex);
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: CanvasController): void {
@@ -39,13 +39,13 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: CanvasController): void {
-    const unfilledCircle = unfilledCircle2(center, radius);
-    canvas.points(unfilledCircle, overmind.state.tool.activeColorIndex);
+    const unfilledCircleAsPoints = unfilledCircle(center, radius);
+    canvas.points(unfilledCircleAsPoints, overmind.state.tool.activeColorIndex);
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: CanvasController): void {
-    const filledCircle = filledCircle2(center, radius);
-    canvas.lines(filledCircle, overmind.state.tool.activeColorIndex);
+    const filledCircleAsLines = filledCircle(center, radius);
+    canvas.lines(filledCircleAsLines, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledEllipse(
@@ -55,8 +55,8 @@ export class PixelBrush implements BrushInterface {
     rotationAngle: number,
     canvas: CanvasController
   ): void {
-    const unfilledEllipse = unfilledEllipse2(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(unfilledEllipse, overmind.state.tool.activeColorIndex);
+    const unfilledEllipseAsLines = unfilledEllipse(center, radiusX, radiusY, rotationAngle);
+    canvas.lines(unfilledEllipseAsLines, overmind.state.tool.activeColorIndex);
   }
 
   public drawFilledEllipse(
@@ -66,17 +66,17 @@ export class PixelBrush implements BrushInterface {
     rotationAngle: number,
     canvas: CanvasController
   ): void {
-    const filledEllipse = filledEllipse2(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(filledEllipse, overmind.state.tool.activeColorIndex);
+    const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
+    canvas.lines(filledEllipseAsLines, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: CanvasController): void {
-    const unfilledPolygon = unfilledPolygon2(vertices, complete);
-    canvas.points(unfilledPolygon, overmind.state.tool.activeColorIndex);
+    const unfilledPolygonAsPoints = unfilledPolygon(vertices, complete);
+    canvas.points(unfilledPolygonAsPoints, overmind.state.tool.activeColorIndex);
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: CanvasController): void {
-    const filledPolygon = filledPolygon2(vertices);
-    canvas.lines(filledPolygon, overmind.state.tool.activeColorIndex);
+    const filledPolygonAsLines = filledPolygon(vertices);
+    canvas.lines(filledPolygonAsLines, overmind.state.tool.activeColorIndex);
   }
 }
