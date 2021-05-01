@@ -2,7 +2,7 @@ import { CanvasController } from '../canvas/CanvasController';
 import { Point } from '../types';
 
 export interface BrushInterface {
-  drawPoint(ctx: CanvasRenderingContext2D, point: Point, canvas?: CanvasController): void;
+  drawPoint(ctx: CanvasRenderingContext2D, point: Point, canvas: CanvasController): void;
   drawLine(
     ctx: CanvasRenderingContext2D,
     start: Point,
@@ -62,5 +62,9 @@ export interface BrushInterface {
     complete?: boolean,
     canvas?: CanvasController
   ): void;
-  drawFilledPolygon(ctx: CanvasRenderingContext2D, vertices: Point[]): void;
+  drawFilledPolygon(
+    ctx: CanvasRenderingContext2D,
+    vertices: Point[],
+    canvas?: CanvasController
+  ): void;
 }

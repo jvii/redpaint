@@ -7,7 +7,7 @@ import { CanvasController } from '../canvas/CanvasController';
 import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
 
-export function line(
+/* export function line(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
   start: Point,
@@ -34,7 +34,7 @@ export function line(
       canvas
     );
   }
-}
+} */
 
 export function line2(start: Point, end: Point): Point[] {
   const dist = Math.round(distance(start, end));
@@ -82,7 +82,7 @@ export function curve2(start: Point, end: Point, middlePoint: Point): Point[] {
   return curve;
 }
 
-// Quadratic bezier curve with one control point.
+/* // Quadratic bezier curve with one control point.
 // DPaint used conic curves instead.
 export function curve(
   ctx: CanvasRenderingContext2D,
@@ -106,7 +106,7 @@ export function curve(
     previous = current;
   }
   line(ctx, brush, previous, end);
-}
+} */
 
 function getQuadraticXY(t: number, start: Point, controlPoint: Point, end: Point): Point {
   return {
@@ -263,8 +263,7 @@ export function filledCircle2(center: Point, r: number): LineH[] {
   return circle;
 }
 
-// eslint-disable-next-line max-len
-// adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
+/* // eslint-disable-next-line max-len
 export function unfilledCircle(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
@@ -301,7 +300,7 @@ export function unfilledCircle(
     brush.drawPoint(ctx, { x: center.x + x, y: center.y - y });
     brush.drawPoint(ctx, { x: center.x + y, y: center.y - x });
   }
-}
+} */
 
 // eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
@@ -617,7 +616,7 @@ export function filledEllipse2(
   return ellipse;
 }
 
-export function unfilledPolygon(
+/* export function unfilledPolygon(
   ctx: CanvasRenderingContext2D,
   brush: BrushInterface,
   vertices: Point[],
@@ -629,7 +628,7 @@ export function unfilledPolygon(
   if (complete) {
     brush.drawLine(ctx, vertices[vertices.length - 1], vertices[0]);
   }
-}
+} */
 
 export function unfilledPolygon2(vertices: Point[], complete = true): Point[] {
   const unfilledPolygon: Point[] = [];
@@ -702,4 +701,72 @@ export function filledPolygon(
       }
     }
   }
+}
+
+// adapted from https://alienryderflex.com/polygon_fill/
+// TODO: must also draw the outline of the polygon
+export function filledPolygon2(vertices: Point[]): LineH[] {
+  const filledPolygon: LineH[] = [];
+
+  // first draw the outline
+  //unfilledPolygon(ctx, new PixelBrush(), vertices);
+
+  const imageTop = Math.min(...vertices.map((point): number => point.y));
+  const imageBottom = Math.max(...vertices.map((point): number => point.y));
+  const imageLeft = Math.min(...vertices.map((point): number => point.x));
+  const imageRight = Math.max(...vertices.map((point): number => point.x));
+
+  const nodeX: number[] = [];
+
+  //  Loop through the rows of the image.
+
+  for (let pixelY = imageTop; pixelY < imageBottom; pixelY++) {
+    //  Build a list of nodes.
+    let nodes = 0;
+    const polyCorners = vertices.length;
+    let j = polyCorners - 1;
+    for (let i = 0; i < polyCorners; i++) {
+      if (
+        (vertices[i].y < pixelY && vertices[j].y >= pixelY) ||
+        (vertices[j].y < pixelY && vertices[i].y >= pixelY)
+      ) {
+        nodeX[nodes++] = Math.round(
+          vertices[i].x +
+            ((pixelY - vertices[i].y) / (vertices[j].y - vertices[i].y)) *
+              (vertices[j].x - vertices[i].x)
+        );
+      }
+      j = i;
+    }
+
+    //  Sort the nodes, via a simple Bubble sort.
+
+    let i = 0;
+    while (i < nodes - 1) {
+      if (nodeX[i] > nodeX[i + 1]) {
+        const swap = nodeX[i];
+        nodeX[i] = nodeX[i + 1];
+        nodeX[i + 1] = swap;
+        if (i) i--;
+      } else {
+        i++;
+      }
+    }
+
+    //  Horixontal lines to fill the pixels between node pairs.
+
+    for (i = 0; i < nodes; i += 2) {
+      if (nodeX[i] >= imageRight) break;
+      if (nodeX[i + 1] > imageLeft) {
+        if (nodeX[i] < imageLeft) nodeX[i] = imageLeft;
+        if (nodeX[i + 1] > imageRight) nodeX[i + 1] = imageRight;
+        //fillRect(nodeX[i], pixelY, nodeX[i + 1] - nodeX[i], 1, ctx);
+        const p1: Point = { x: nodeX[i], y: pixelY };
+        const p2: Point = { x: nodeX[i + 1], y: pixelY };
+        filledPolygon.push(new LineH(p1, p2));
+      }
+    }
+  }
+
+  return filledPolygon;
 }

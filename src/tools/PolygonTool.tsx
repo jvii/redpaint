@@ -13,7 +13,6 @@ import {
 } from './util/util';
 import { overmind } from '../index';
 import { Throttle } from './util/Throttle';
-import { unfilledPolygon } from '../algorithm/shape';
 import { PixelBrush } from '../brush/PixelBrush';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -67,7 +66,11 @@ export class PolygonTool implements Tool {
       pointEquals(overmind.state.tool.polygonTool.vertices[0], mousePos)
     ) {
       if (this.filled) {
-        brushHistory.current.drawFilledPolygon(ctx, overmind.state.tool.polygonTool.vertices);
+        brushHistory.current.drawFilledPolygon(
+          ctx,
+          overmind.state.tool.polygonTool.vertices,
+          paintingCanvasController
+        );
       } else {
         brushHistory.current.drawUnfilledPolygon(
           ctx,
@@ -98,7 +101,12 @@ export class PolygonTool implements Tool {
 
     if (overmind.state.tool.polygonTool.vertices.length > 1) {
       if (this.filled) {
-        unfilledPolygon(ctx, new PixelBrush(), overmind.state.tool.polygonTool.vertices, false);
+        new PixelBrush().drawUnfilledPolygon(
+          ctx,
+          overmind.state.tool.polygonTool.vertices,
+          false,
+          overlayCanvasController
+        );
       } else {
         brushHistory.current.drawUnfilledPolygon(
           ctx,
@@ -121,7 +129,6 @@ export class PolygonTool implements Tool {
     const mousePos = getMousePos(canvas, event);
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
-      clearOverlayCanvas(canvas);
       overlayCanvasController.clear();
       brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
       onPaint();
@@ -129,17 +136,14 @@ export class PolygonTool implements Tool {
     }
 
     if (this.filled) {
-      this.throttle.call((): void => {
-        clearOverlayCanvas(canvas);
-        unfilledPolygon(
-          ctx,
-          new PixelBrush(),
-          overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
-          false
-        );
-      });
-    } else {
       clearOverlayCanvas(canvas);
+      new PixelBrush().drawUnfilledPolygon(
+        ctx,
+        overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
+        false,
+        overlayCanvasController
+      );
+    } else {
       overlayCanvasController.clear();
       brushHistory.current.drawUnfilledPolygon(
         ctx,
@@ -159,11 +163,15 @@ export class PolygonTool implements Tool {
     } = params;
 
     overlayCanvasController.clear();
-    clearOverlayCanvas(canvas);
 
     if (overmind.state.tool.polygonTool.vertices.length > 0) {
       if (this.filled) {
-        unfilledPolygon(ctx, new PixelBrush(), overmind.state.tool.polygonTool.vertices, false);
+        new PixelBrush().drawUnfilledPolygon(
+          ctx,
+          overmind.state.tool.polygonTool.vertices,
+          false,
+          overlayCanvasController
+        );
       } else {
         brushHistory.current.drawUnfilledPolygon(
           ctx,
