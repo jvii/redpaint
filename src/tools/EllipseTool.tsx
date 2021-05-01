@@ -78,7 +78,6 @@ export class EllipseTool implements Tool {
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
       undoPoint,
@@ -107,7 +106,6 @@ export class EllipseTool implements Tool {
     const angle = overmind.state.tool.ellipseTool.angle;
     if (this.filled) {
       brushHistory.current.drawFilledEllipse(
-        ctx,
         origin,
         radiusX,
         radiusY,
@@ -116,7 +114,6 @@ export class EllipseTool implements Tool {
       );
     } else {
       brushHistory.current.drawUnfilledEllipse(
-        ctx,
         origin,
         radiusX,
         radiusY,
@@ -166,7 +163,7 @@ export class EllipseTool implements Tool {
       overlayCanvasController.clear();
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
+        brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -183,7 +180,6 @@ export class EllipseTool implements Tool {
       clearOverlayCanvas(canvas);
       overlayCanvasController.clear();
       brushHistory.current.drawFilledEllipse(
-        ctx,
         origin,
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,
@@ -194,7 +190,6 @@ export class EllipseTool implements Tool {
       clearOverlayCanvas(canvas);
       overlayCanvasController.clear();
       brushHistory.current.drawUnfilledEllipse(
-        ctx,
         origin,
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,

@@ -6,7 +6,6 @@ import {
 } from './Tool';
 import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
 import { distance } from '../algorithm/shape';
-import { Throttle } from './util/Throttle';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
 import { brushHistory } from '../brush/BrushHistory';
@@ -18,7 +17,6 @@ export class CircleTool implements Tool {
     this.filled = filled;
   }
   private filled: boolean;
-  private throttle = new Throttle(50);
 
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
@@ -45,7 +43,6 @@ export class CircleTool implements Tool {
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
       undoPoint,
@@ -60,11 +57,9 @@ export class CircleTool implements Tool {
     const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
-      //brushHistory.current.drawFilledCircle(ctx, origin, radius);
-      brushHistory.current.drawFilledCircle(ctx, origin, radius, paintingCanvasController);
+      brushHistory.current.drawFilledCircle(origin, radius, paintingCanvasController);
     } else {
-      //brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
-      brushHistory.current.drawUnfilledCircle(ctx, origin, radius, paintingCanvasController);
+      brushHistory.current.drawUnfilledCircle(origin, radius, paintingCanvasController);
     }
     undoPoint();
     onPaint();
@@ -107,11 +102,10 @@ export class CircleTool implements Tool {
 
     if (!origin) {
       clearOverlayCanvas(canvas);
-      //overlayCanvasController.clear();
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush.
         // For filled circles we only render the croshair.
-        brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
+        brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -122,36 +116,21 @@ export class CircleTool implements Tool {
 
     const radius = Math.round(distance(origin, mousePos));
     if (this.filled) {
-      brushHistory.current.drawFilledCircle(ctx, origin, radius, overlayCanvasController);
-      /*       this.throttle.call((): void => {
-        clearOverlayCanvas(canvas);
-        //brushHistory.current.drawFilledCircle(ctx, origin, radius);
-        brushHistory.current.drawFilledCircle(ctx, origin, radius, overlayCanvasController);
-      }); */
+      brushHistory.current.drawFilledCircle(origin, radius, overlayCanvasController);
     } else {
-      brushHistory.current.drawUnfilledCircle(ctx, origin, radius, overlayCanvasController);
-      /* this.throttle.call((): void => {
-        clearOverlayCanvas(canvas);
-        brushHistory.current.drawUnfilledCircle(ctx, origin, radius);
-      }); */
+      brushHistory.current.drawUnfilledCircle(origin, radius, overlayCanvasController);
     }
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
+    const { onPaint } = params;
     overlayCanvasController.clear();
     onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
+    const { onPaint } = params;
     overlayCanvasController.clear();
     onPaint();
   }

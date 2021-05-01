@@ -6,7 +6,6 @@ import {
 } from './Tool';
 import {
   getMousePos,
-  clearOverlayCanvas,
   isRightMouseButton,
   isLeftOrRightMouseButton,
   omit,
@@ -40,7 +39,6 @@ export class FreehandTool implements Tool {
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
@@ -53,9 +51,9 @@ export class FreehandTool implements Tool {
         return; // this point has already been drawn to canvas
       }
       if (points8Connected(start, end)) {
-        brushHistory.current.drawPoint(ctx, end, paintingCanvasController);
+        brushHistory.current.drawPoint(end, paintingCanvasController);
       } else {
-        brushHistory.current.drawLine(ctx, start, end, paintingCanvasController);
+        brushHistory.current.drawLine(start, end, paintingCanvasController);
       }
       overmind.actions.tool.freeHandToolPrevious(end);
       onPaint();
@@ -65,13 +63,12 @@ export class FreehandTool implements Tool {
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawPoint(ctx, mousePos, paintingCanvasController);
+    brushHistory.current.drawPoint(mousePos, paintingCanvasController);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
     onPaint();
   }
@@ -103,7 +100,6 @@ export class FreehandTool implements Tool {
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
@@ -112,27 +108,18 @@ export class FreehandTool implements Tool {
     }
     //clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
-    //brushHistory.current.drawDot(ctx, mousePos);
-    brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
+    brushHistory.current.drawPoint(mousePos, overlayCanvasController);
     onPaint();
   }
 
   public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
-    //clearOverlayCanvas(canvas);
+    const { onPaint } = params;
     overlayCanvasController.clear();
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
-    //clearOverlayCanvas(canvas);
+    const { onPaint } = params;
     overlayCanvasController.clear();
     onPaint();
   }

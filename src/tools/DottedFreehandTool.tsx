@@ -37,14 +37,13 @@ export class DottedFreehandTool implements Tool {
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
 
     if (event.buttons) {
       const mousePos = getMousePos(canvas, event);
-      brushHistory.current.drawPoint(ctx, mousePos, paintingCanvasController);
+      brushHistory.current.drawPoint(mousePos, paintingCanvasController);
       onPaint();
     }
   }
@@ -52,14 +51,13 @@ export class DottedFreehandTool implements Tool {
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
 
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawPoint(ctx, mousePos, paintingCanvasController);
+    brushHistory.current.drawPoint(mousePos, paintingCanvasController);
     onPaint();
   }
 
@@ -90,7 +88,6 @@ export class DottedFreehandTool implements Tool {
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;
@@ -100,7 +97,7 @@ export class DottedFreehandTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
+    brushHistory.current.drawPoint(mousePos, overlayCanvasController);
     onPaint();
   }
 
