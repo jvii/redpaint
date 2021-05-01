@@ -1,15 +1,15 @@
 import { BrushInterface } from './Brush';
 import { Point, Color } from '../types';
 import {
-  line2,
-  unfilledRect2,
-  unfilledCircle2,
-  curve2,
-  filledCircle2,
-  unfilledEllipse2,
-  filledEllipse2,
-  unfilledPolygon2,
-  filledPolygon2,
+  line,
+  unfilledRect,
+  unfilledCircle,
+  curve,
+  filledCircle,
+  unfilledEllipse,
+  filledEllipse,
+  unfilledPolygon,
+  filledPolygon,
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { colorToRGBString } from '../tools/util/util';
@@ -59,26 +59,26 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawLine(start: Point, end: Point, canvas: CanvasController): void {
-    const line = line2(this.adjustHandle(start), this.adjustHandle(end));
-    canvas.drawImage?.(line, this);
+    const lineAsPoints = line(this.adjustHandle(start), this.adjustHandle(end));
+    canvas.drawImage?.(lineAsPoints, this);
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: CanvasController): void {
-    const curve = curve2(
+    const curveAsPoints = curve(
       this.adjustHandle(start),
       this.adjustHandle(end),
       this.adjustHandle(middlePoint)
     );
-    canvas.drawImage?.(curve, this);
+    canvas.drawImage?.(curveAsPoints, this);
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: CanvasController): void {
-    const unfilledRect = unfilledRect2(this.adjustHandle(start), this.adjustHandle(end));
+    const unfilledRectSides = unfilledRect(this.adjustHandle(start), this.adjustHandle(end));
     const unfilledRectAsPoints: Point[] = [
-      ...unfilledRect[0].asPoints(),
-      ...unfilledRect[1].asPoints(),
-      ...unfilledRect[2].asPoints(),
-      ...unfilledRect[3].asPoints(),
+      ...unfilledRectSides[0].asPoints(),
+      ...unfilledRectSides[1].asPoints(),
+      ...unfilledRectSides[2].asPoints(),
+      ...unfilledRectSides[3].asPoints(),
     ]; // rect sides as an array of Points for drawImage
     canvas.drawImage?.(unfilledRectAsPoints, this);
   }
@@ -89,14 +89,14 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: CanvasController): void {
-    const unfilledCircle = unfilledCircle2(this.adjustHandle(center), radius);
-    canvas.drawImage?.(unfilledCircle, this);
+    const unfilledCircleAsPoints = unfilledCircle(this.adjustHandle(center), radius);
+    canvas.drawImage?.(unfilledCircleAsPoints, this);
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: CanvasController): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    const filledCircle = filledCircle2(center, radius);
-    canvas.lines(filledCircle, overmind.state.tool.activeColorIndex);
+    const filledCircleAsLines = filledCircle(center, radius);
+    canvas.lines(filledCircleAsLines, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledEllipse(
@@ -106,14 +106,14 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     rotationAngle: number,
     canvas: CanvasController
   ): void {
-    const unfilledEllipse = unfilledEllipse2(
+    const unfilledEllipseAsLines = unfilledEllipse(
       this.adjustHandle(center),
       radiusX,
       radiusY,
       rotationAngle
     );
     // ellipse lines as an array of Points for drawImage
-    const unfilledEllipseAsPoints: Point[] = unfilledEllipse.reduce(
+    const unfilledEllipseAsPoints = unfilledEllipseAsLines.reduce(
       (acc: Point[], item: LineV): Point[] => acc.concat(item.asPoints()),
       []
     );
@@ -128,18 +128,18 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     canvas: CanvasController
   ): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    const filledEllipse = filledEllipse2(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(filledEllipse, overmind.state.tool.activeColorIndex);
+    const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
+    canvas.lines(filledEllipseAsLines, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: CanvasController): void {
-    const unfilledPolygon = unfilledPolygon2(vertices.map(this.adjustHandle), complete);
-    canvas.drawImage?.(unfilledPolygon, this);
+    const unfilledPolygonAsPoints = unfilledPolygon(vertices.map(this.adjustHandle), complete);
+    canvas.drawImage?.(unfilledPolygonAsPoints, this);
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: CanvasController): void {
-    const filledPolygon = filledPolygon2(vertices);
-    canvas.lines(filledPolygon, overmind.state.tool.activeColorIndex);
+    const filledPolygonAsLines = filledPolygon(vertices);
+    canvas.lines(filledPolygonAsLines, overmind.state.tool.activeColorIndex);
   }
 
   private adjustHandle(point: Point): Point {
