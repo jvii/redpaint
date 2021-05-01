@@ -60,37 +60,13 @@ const builtInBrushShapes = {
 type BuiltInBrushShape = keyof typeof builtInBrushShapes;
 
 export function createBuiltInBrush(shape: BuiltInBrushShape): CustomBrush {
-  const imageData = createImageDataFor(shape);
-  const canvas = document.createElement('canvas');
-  canvas.height = imageData.height;
-  canvas.width = imageData.width;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    throw new Error('Error retreiving context while creating built-in brush');
-  }
-  ctx.putImageData(imageData, 0, 0);
-  return new CustomBrush(canvas.toDataURL(), createColorInderFor(shape));
-}
-
-function createImageDataFor(shape: BuiltInBrushShape): ImageData {
   const stringBitmap = builtInBrushShapes[shape];
   const width = stringBitmap[0].length;
   const height = stringBitmap.length;
-  const imageData = new ImageData(width, height);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      if (stringBitmap[y].charAt(x) === '@') {
-        imageData.data[(y * width + x) * 4 + 0] = 0;
-        imageData.data[(y * width + x) * 4 + 1] = 0;
-        imageData.data[(y * width + x) * 4 + 2] = 0;
-        imageData.data[(y * width + x) * 4 + 3] = 255;
-      }
-    }
-  }
-  return imageData;
+  return new CustomBrush(createColorIndexFor(shape), width, height);
 }
 
-function createColorInderFor(shape: BuiltInBrushShape): Uint8Array {
+function createColorIndexFor(shape: BuiltInBrushShape): Uint8Array {
   // flip y as texture y coordinates start from bottom
   const stringBitmap = builtInBrushShapes[shape].reverse();
   const width = stringBitmap[0].length;

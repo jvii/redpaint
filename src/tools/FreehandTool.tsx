@@ -40,7 +40,6 @@ export class FreehandTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
     } = params;
 
     if (event.buttons && overmind.state.tool.freehandTool.previous) {
@@ -56,7 +55,6 @@ export class FreehandTool implements Tool {
         brushHistory.current.drawLine(start, end, paintingCanvasController);
       }
       overmind.actions.tool.freeHandToolPrevious(end);
-      onPaint();
     }
   }
 
@@ -64,13 +62,11 @@ export class FreehandTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
     } = params;
     const mousePos = getMousePos(canvas, event);
     this.prepareToPaint(isRightMouseButton(event));
     brushHistory.current.drawPoint(mousePos, paintingCanvasController);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
-    onPaint();
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
@@ -101,7 +97,6 @@ export class FreehandTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
     } = params;
     if (event.buttons) {
       return;
@@ -109,18 +104,13 @@ export class FreehandTool implements Tool {
     //clearOverlayCanvas(canvas);
     const mousePos = getMousePos(canvas, event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
-    onPaint();
   }
 
   public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 }

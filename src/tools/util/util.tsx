@@ -184,7 +184,7 @@ export function extractBrush(
     }
   } */
 
-  return new CustomBrush(bufferCanvas.toDataURL(), colorIndexWithTransparency);
+  return new CustomBrush(colorIndexWithTransparency, width, height);
 }
 
 export function addTransparency(texture: Uint8Array, transparentColorIndex: number): Uint8Array {
