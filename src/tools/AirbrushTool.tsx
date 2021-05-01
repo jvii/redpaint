@@ -58,7 +58,6 @@ export class AirbrushTool implements Tool {
         const radius = getRandomFloat(0, 20);
         if (overmind.state.tool.airbrushTool.position) {
           brushHistory.current.drawPoint(
-            ctx,
             {
               x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
               y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
@@ -106,7 +105,7 @@ export class AirbrushTool implements Tool {
     clearOverlayCanvas(canvas);
 
     const mousePos = getMousePos(canvas, event);
-    brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
+    brushHistory.current.drawPoint(mousePos, overlayCanvasController);
     onPaint();
   }
 

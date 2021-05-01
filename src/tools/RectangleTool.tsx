@@ -45,7 +45,6 @@ export class RectangleTool implements Tool {
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
       undoPoint,
@@ -59,9 +58,9 @@ export class RectangleTool implements Tool {
     const endPoint = getMousePos(canvas, event);
 
     if (this.filled) {
-      brushHistory.current.drawFilledRect(ctx, startPoint, endPoint, paintingCanvasController);
+      brushHistory.current.drawFilledRect(startPoint, endPoint, paintingCanvasController);
     } else {
-      brushHistory.current.drawUnfilledRect(ctx, startPoint, endPoint, paintingCanvasController);
+      brushHistory.current.drawUnfilledRect(startPoint, endPoint, paintingCanvasController);
     }
     undoPoint();
     onPaint();
@@ -102,7 +101,7 @@ export class RectangleTool implements Tool {
       clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        brushHistory.current.drawPoint(ctx, mousePos, overlayCanvasController);
+        brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
       onPaint();
@@ -111,30 +110,24 @@ export class RectangleTool implements Tool {
 
     if (this.filled) {
       clearOverlayCanvas(canvas);
-      brushHistory.current.drawFilledRect(ctx, startPoint, mousePos, overlayCanvasController);
+      brushHistory.current.drawFilledRect(startPoint, mousePos, overlayCanvasController);
     } else {
       this.throttle.call((): void => {
         clearOverlayCanvas(canvas);
-        brushHistory.current.drawUnfilledRect(ctx, startPoint, mousePos, overlayCanvasController);
+        brushHistory.current.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
       });
     }
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
+    const { onPaint } = params;
     overlayCanvasController.clear();
     onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
+    const { onPaint } = params;
     overlayCanvasController.clear();
     onPaint();
   }
