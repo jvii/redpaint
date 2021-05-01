@@ -95,7 +95,6 @@ export class AirbrushTool implements Tool {
   public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       onPaint,
     } = params;

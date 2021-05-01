@@ -8,7 +8,7 @@ export interface CanvasController {
   attachZoomCanvas(zoomCanvas: HTMLCanvasElement): void;
   points(points: Point[], colorIndex: number): void;
   lines(lines: (LineH | LineV)[], colorIndex: number): void;
-  quad?(start: Point, end: Point, colorIndex: number): void;
-  drawImage?(points: Point[], brush: CustomBrush): void;
+  quad(start: Point, end: Point, colorIndex: number): void;
+  drawImage(points: Point[], brush: CustomBrush): void;
   clear(): void;
 }

@@ -55,12 +55,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawPoint(point: Point, canvas: CanvasController): void {
-    canvas.drawImage?.([this.adjustHandle(point)], this);
+    canvas.drawImage([this.adjustHandle(point)], this);
   }
 
   public drawLine(start: Point, end: Point, canvas: CanvasController): void {
     const lineAsPoints = line(this.adjustHandle(start), this.adjustHandle(end));
-    canvas.drawImage?.(lineAsPoints, this);
+    canvas.drawImage(lineAsPoints, this);
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: CanvasController): void {
@@ -69,7 +69,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       this.adjustHandle(end),
       this.adjustHandle(middlePoint)
     );
-    canvas.drawImage?.(curveAsPoints, this);
+    canvas.drawImage(curveAsPoints, this);
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: CanvasController): void {
@@ -80,17 +80,17 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       ...unfilledRectSides[2].asPoints(),
       ...unfilledRectSides[3].asPoints(),
     ]; // rect sides as an array of Points for drawImage
-    canvas.drawImage?.(unfilledRectAsPoints, this);
+    canvas.drawImage(unfilledRectAsPoints, this);
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: CanvasController): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    canvas.quad?.(start, end, overmind.state.tool.activeColorIndex);
+    canvas.quad(start, end, overmind.state.tool.activeColorIndex);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: CanvasController): void {
     const unfilledCircleAsPoints = unfilledCircle(this.adjustHandle(center), radius);
-    canvas.drawImage?.(unfilledCircleAsPoints, this);
+    canvas.drawImage(unfilledCircleAsPoints, this);
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: CanvasController): void {
@@ -117,7 +117,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       (acc: Point[], item: LineV): Point[] => acc.concat(item.asPoints()),
       []
     );
-    canvas.drawImage?.(unfilledEllipseAsPoints, this);
+    canvas.drawImage(unfilledEllipseAsPoints, this);
   }
 
   public drawFilledEllipse(
@@ -134,7 +134,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: CanvasController): void {
     const unfilledPolygonAsPoints = unfilledPolygon(vertices.map(this.adjustHandle), complete);
-    canvas.drawImage?.(unfilledPolygonAsPoints, this);
+    canvas.drawImage(unfilledPolygonAsPoints, this);
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: CanvasController): void {
