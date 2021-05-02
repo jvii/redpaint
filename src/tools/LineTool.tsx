@@ -40,17 +40,13 @@ export class LineTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
 
     if (!overmind.state.tool.lineTool.start) {
       return;
     }
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     const start = overmind.state.tool.lineTool.start;
     const end = mousePos;
     brushHistory.current.drawLine(start, end, paintingCanvasController);
@@ -59,12 +55,9 @@ export class LineTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
     this.prepareToPaint(isRightMouseButton(event));
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.lineToolStart(mousePos);
   }
 

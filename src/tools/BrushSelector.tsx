@@ -10,11 +10,8 @@ import { selection } from './util/SelectionIndicator';
 
 export class BrushSelector implements Tool {
   public onInit(params: EventHandlerParams): void {
-    const {
-      ctx: { canvas },
-    } = params;
     overmind.actions.tool.brushSelectionStart(null);
-    selection.prepare(canvas);
+    //selection.prepare(canvas);
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
@@ -23,21 +20,18 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
 
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
       return;
     }
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     const width = mousePos.x - start.x;
     const height = mousePos.y - start.y;
 
-    const brush = extractBrush(canvas, start, width, height);
+    const brush = extractBrush(event.currentTarget, start, width, height);
     overmind.actions.brush.setBrush(brush);
     overmind.actions.brush.setMode('Matte');
 
@@ -48,8 +42,8 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, ctx } = params;
-    const mousePos = getMousePos(ctx.canvas, event);
+    const { event } = params;
+    const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.brushSelectionStart(mousePos);
   }
 
@@ -64,7 +58,6 @@ export class BrushSelector implements Tool {
       event,
       ctx,
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
 
@@ -73,29 +66,23 @@ export class BrushSelector implements Tool {
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
       selection.edgeToEdgeCrosshair(ctx, mousePos);
-      onPaint();
       return;
     }
 
     selection.box(ctx, start, mousePos);
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
-    onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
-    onPaint();
   }
 }

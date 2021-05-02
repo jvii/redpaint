@@ -39,18 +39,14 @@ export class CurveTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
       return;
     }
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     const endPoint = overmind.state.tool.curveTool.end;
 
     if (endPoint) {
@@ -63,14 +59,11 @@ export class CurveTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
 
     if (!overmind.state.tool.curveTool.end) {
       this.prepareToPaint(isRightMouseButton(event));
-      const mousePos = getMousePos(canvas, event);
+      const mousePos = getMousePos(event.currentTarget, event);
       overmind.actions.tool.curveToolStart(mousePos);
     }
   }
@@ -82,7 +75,7 @@ export class CurveTool implements Tool {
       event,
       ctx: { canvas },
     } = params;
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {

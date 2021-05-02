@@ -12,38 +12,24 @@ interface ColorRGBA {
 
 export class FloodFillTool implements Tool {
   public onClick(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-      onPaint,
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
 
-    const mousePos = getMousePos(canvas, event);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    floodFill(imageData, overmind.state.palette.foregroundColor, mousePos);
-    ctx.putImageData(imageData, 0, 0);
+    const mousePos = getMousePos(event.currentTarget, event);
+    //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    //floodFill(imageData, overmind.state.palette.foregroundColor, mousePos);
+    //ctx.putImageData(imageData, 0, 0);
     undoPoint();
-    onPaint();
   }
 
   public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-      onPaint,
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
     event.preventDefault();
 
-    const mousePos = getMousePos(canvas, event);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    floodFill(imageData, overmind.state.palette.backgroundColor, mousePos);
-    ctx.putImageData(imageData, 0, 0);
+    const mousePos = getMousePos(event.currentTarget, event);
+    //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    //floodFill(imageData, overmind.state.palette.backgroundColor, mousePos);
+    //ctx.putImageData(imageData, 0, 0);
     undoPoint();
-    onPaint();
   }
 }
 

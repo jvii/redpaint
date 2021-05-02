@@ -28,10 +28,7 @@ export class RectangleTool implements Tool {
   }
 
   public onInit(params: EventHandlerParams): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    selection.prepare(canvas);
+    //selection.prepare(canvas);
     overmind.actions.tool.rectangleToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -43,18 +40,14 @@ export class RectangleTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
 
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {
       return;
     }
 
-    const endPoint = getMousePos(canvas, event);
+    const endPoint = getMousePos(event.currentTarget, event);
 
     if (this.filled) {
       brushHistory.current.drawFilledRect(startPoint, endPoint, paintingCanvasController);
@@ -66,12 +59,9 @@ export class RectangleTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
     this.prepareToPaint(isRightMouseButton(event));
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.rectangleToolStart(mousePos);
   }
 

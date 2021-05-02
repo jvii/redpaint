@@ -4,7 +4,7 @@ import {
   OverlayEventHandlerParamsWithEvent,
   EventHandlerParams,
 } from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
+import { getMousePos, isRightMouseButton, omit } from './util/util';
 import { distance } from '../algorithm/shape';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
@@ -26,10 +26,7 @@ export class CircleTool implements Tool {
   }
 
   public onInit(params: EventHandlerParams): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    selection.prepare(canvas);
+    //selection.prepare(canvas);
     overmind.actions.tool.circleToolOrigin(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -41,18 +38,14 @@ export class CircleTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
 
     const origin = overmind.state.tool.circleTool.origin;
     if (!origin) {
       return;
     }
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
@@ -65,12 +58,9 @@ export class CircleTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
     this.prepareToPaint(isRightMouseButton(event));
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.circleToolOrigin(mousePos);
   }
 
@@ -83,14 +73,10 @@ export class CircleTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-    } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event } = params;
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
 
     const origin = overmind.state.tool.circleTool.origin;
 
@@ -98,13 +84,12 @@ export class CircleTool implements Tool {
     // In this case we only need to render the crosshair (and the brush for unfilled cirle).
 
     if (!origin) {
-      clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush.
         // For filled circles we only render the croshair.
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
-      selection.edgeToEdgeCrosshair(ctx, mousePos);
+      //selection.edgeToEdgeCrosshair(ctx, mousePos);
       return;
     }
 

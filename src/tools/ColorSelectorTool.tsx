@@ -10,11 +10,8 @@ export class ColorSelectorTool implements Tool {
   private foregroundColor: boolean;
 
   public onClick(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
-    const mousePos = getMousePos(canvas, event);
+    const { event } = params;
+    const mousePos = getMousePos(event.currentTarget, event);
     //const colorIndex = paintingCanvasController.colorIndexer?.getColorIndexForPixel(mousePos);
     const colorIndex = 1;
     if (!colorIndex) {

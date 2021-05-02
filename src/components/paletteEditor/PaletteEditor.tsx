@@ -3,22 +3,14 @@ import { Button, Slider } from '@material-ui/core';
 import './PaletteEditor.css';
 import { useOvermind } from '../../overmind';
 import { Color } from '../../types';
-import { CanvasState } from '../canvas/CanvasState';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
-interface Props {
-  canvasState: CanvasState;
-}
-
-export function PaletteEditor({ canvasState }: Props): JSX.Element | null {
+export function PaletteEditor(): JSX.Element | null {
   const { state, actions } = useOvermind();
 
   const overlayRef = useRef<HTMLDivElement>(document.createElement('div'));
 
-  const { mainCanvas } = canvasState;
-
-  // eslint-disable-next-line no-constant-condition
   if (!state.paletteEditor.isOpen) {
     return null;
   }
