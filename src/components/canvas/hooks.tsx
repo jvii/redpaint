@@ -10,12 +10,14 @@ export function useInitTool(isZoomCanvas: boolean): void {
     if (!isZoomCanvas) {
       state.toolbox.previousTool?.onExit?.();
       state.toolbox.previousTool?.onExitOverlay?.();
+      console.log('init tool pre');
     }
   }, [state.toolbox.previousTool]);
   useEffect((): void => {
     if (!isZoomCanvas) {
       state.toolbox.activeTool.onInit?.();
       state.toolbox.activeTool.onInitOverlay?.();
+      console.log('init tool active');
     }
   }, [state.toolbox.activeTool]);
 }
