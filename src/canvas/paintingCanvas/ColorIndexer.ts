@@ -5,6 +5,7 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
+import { overmind } from '../..';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -47,21 +48,55 @@ export class ColorIndexer {
   getIndex(): Uint8Array {
     const gl = this.gl;
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
+    const width = overmind.state.canvas.resolution.width;
+    const height = overmind.state.canvas.resolution.height;
 
-    const pixels = new Uint8Array(gl.drawingBufferHeight * gl.drawingBufferWidth * 4);
-    gl.readPixels(
-      0,
-      0,
-      gl.drawingBufferWidth,
-      gl.drawingBufferHeight,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      pixels
-    );
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
+    this.colorIndexFramebuffer;
+    const pixels = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return pixels;
+  }
+
+  setIndex(colorIndex: Uint8Array): void {
+    const gl = this.gl;
+    gl.activeTexture(gl.TEXTURE0);
+
+    const targetTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const targetTextureWidth = overmind.state.canvas.resolution.width;
+    const targetTextureHeight = overmind.state.canvas.resolution.height;
+    const border = 0;
+    const format = gl.RGBA;
+    const type = gl.UNSIGNED_BYTE;
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      level,
+      internalFormat,
+      targetTextureWidth,
+      targetTextureHeight,
+      border,
+      format,
+      type,
+      colorIndex
+    );
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    gl.viewport(0, 0, targetTextureWidth, targetTextureHeight);
+
+    // attach the texture as the first color attachment of the framebuffer
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
+    const attachmentPoint = gl.COLOR_ATTACHMENT0;
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
   }
 
   getAreaFromIndex(

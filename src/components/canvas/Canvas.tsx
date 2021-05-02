@@ -57,7 +57,7 @@ export function Canvas({
       //actions.canvas.setCanvasModified(isZoomCanvas);
     },
     undoPoint: (): void => {
-      actions.undo.setUndoPoint(canvasRef.current);
+      actions.undo.setUndoPoint();
     },
   };
   const eventHandlerParamsOverlay: EventHandlerParamsOverlay = {
@@ -67,7 +67,7 @@ export function Canvas({
     },
   };
 
-  useUndo(canvasRef.current);
+  useUndo();
   useInitTool(eventHandlerParams, eventHandlerParamsOverlay, isZoomCanvas);
 
   useFillStyle(canvasCtx);

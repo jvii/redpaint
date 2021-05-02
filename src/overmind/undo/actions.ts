@@ -2,9 +2,8 @@ import { Action } from 'overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { undoBuffer } from './UndoBuffer';
 
-export const setUndoPoint: Action<HTMLCanvasElement> = ({ state }): void => {
-  //const colorIndex = paintingCanvasController.colorIndexer?.getIndex();
-  const colorIndex = new Uint8Array(); // temp
+export const setUndoPoint: Action = ({ state }): void => {
+  const colorIndex = paintingCanvasController.getIndex();
   if (!colorIndex) {
     console.log('no index');
     return;
@@ -25,6 +24,7 @@ export const setUndoPoint: Action<HTMLCanvasElement> = ({ state }): void => {
 
 export const undo: Action = ({ state }): void => {
   if (!state.undo.currentIndex) {
+    // already at index zero or null
     return;
   }
   state.undo.currentIndex = --state.undo.currentIndex;
@@ -33,6 +33,7 @@ export const undo: Action = ({ state }): void => {
 
 export const redo: Action = ({ state }): void => {
   if (state.undo.currentIndex === undoBuffer.getBuffer().length - 1) {
+    // already at the last index
     return;
   }
   state.undo.currentIndex = state.undo.currentIndex === null ? 0 : ++state.undo.currentIndex;

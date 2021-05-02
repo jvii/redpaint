@@ -3,9 +3,9 @@ import { ToolboxToggleButton } from './buttons/ToolboxToggleButton';
 import { ToolboxDualToggleButton } from './buttons/ToolboxDualToggleButton';
 import { ToolboxActionButton } from './buttons/ToolboxActionButton';
 import { CanvasState } from '../canvas/CanvasState';
-import { clearCanvas } from '../../tools/util/util';
 import { useOvermind } from '../../overmind';
 import './Toolbox.css';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export interface Props {
   canvasState: CanvasState;
@@ -105,10 +105,8 @@ export function Toolbox({ canvasState }: Props): JSX.Element {
       <ToolboxActionButton
         buttonClass="clr"
         onClick={(): void => {
-          clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
-          actions.canvas.setCanvasModified(false);
-          //resetIndex();
-          actions.undo.setUndoPoint(canvasState.mainCanvas);
+          paintingCanvasController.clear();
+          actions.undo.setUndoPoint();
         }}
       />
     </div>
