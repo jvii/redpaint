@@ -121,7 +121,10 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: CanvasController): void {
-    const unfilledPolygonAsPoints = unfilledPolygon(vertices.map(this.adjustHandle), complete);
+    const unfilledPolygonAsPoints = unfilledPolygon(
+      vertices.map(this.adjustHandle.bind(this)),
+      complete
+    );
     canvas.drawImage(unfilledPolygonAsPoints, this);
   }
 
