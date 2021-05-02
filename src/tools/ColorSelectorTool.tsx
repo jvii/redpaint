@@ -10,7 +10,7 @@ export class ColorSelectorTool implements Tool {
   private foregroundColor: boolean;
 
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     //const colorIndex = paintingCanvasController.colorIndexer?.getColorIndexForPixel(mousePos);
     const colorIndex = 1;
     if (!colorIndex) {

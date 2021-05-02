@@ -10,7 +10,7 @@ export class ZoomInitialPointSelectorTool implements Tool {
   }
 
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     overmind.actions.canvas.setZoomFocusPoint(mousePos);
   }
 
@@ -21,7 +21,7 @@ export class ZoomInitialPointSelectorTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     const start = { x: mousePos.x - 30, y: mousePos.y - 30 };
     const end = { x: mousePos.x + 30, y: mousePos.y + 30 };
     //selection.box(ctx, start, end);

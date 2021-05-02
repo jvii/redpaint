@@ -29,12 +29,12 @@ export class CurveTool implements Tool {
       return;
     }
 
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     const endPoint = overmind.state.tool.curveTool.end;
 
     if (endPoint) {
       brushHistory.current.drawCurve(startPoint, endPoint, mousePos, paintingCanvasController);
-      //undoPoint();
+      overmind.actions.undo.setUndoPoint();
       this.onInit();
     } else {
       overmind.actions.tool.curveToolEnd(mousePos);
@@ -44,7 +44,7 @@ export class CurveTool implements Tool {
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!overmind.state.tool.curveTool.end) {
       this.prepareToPaint(isRightMouseButton(event));
-      const mousePos = getMousePos(event.currentTarget, event);
+      const mousePos = getMousePos(event);
       overmind.actions.tool.curveToolStart(mousePos);
     }
   }
@@ -52,7 +52,7 @@ export class CurveTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {

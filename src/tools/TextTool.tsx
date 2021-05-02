@@ -29,7 +29,7 @@ export class TextTool implements Tool {
   }
 
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     const start = overmind.state.tool.textTool.start;
     const text = overmind.state.tool.textTool.text;
@@ -66,7 +66,7 @@ export class TextTool implements Tool {
     const start = overmind.state.tool.textTool.start;
     if (!start) {
       //clearOverlayCanvas(canvas);
-      const mousePos = getMousePos(event.currentTarget, event);
+      const mousePos = getMousePos(event);
       //selection.box(ctx, mousePos, { x: mousePos.x + 20, y: mousePos.y - 50 });
     }
   }

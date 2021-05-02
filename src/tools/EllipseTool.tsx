@@ -43,7 +43,7 @@ export class EllipseTool implements Tool {
 
     // Change rotation angle if left mouse button down, otherwise re-adjust radius
 
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     if (isLeftMouseButton(event)) {
       const rotationAngle = mousePos.y - origin.y - overmind.state.tool.ellipseTool.radiusY;
@@ -66,7 +66,7 @@ export class EllipseTool implements Tool {
     const radiusX = overmind.state.tool.ellipseTool.radiusX;
     const radiusY = overmind.state.tool.ellipseTool.radiusY;
     if (!radiusX || !radiusY) {
-      const mousePos = getMousePos(event.currentTarget, event);
+      const mousePos = getMousePos(event);
       overmind.actions.tool.ellipseToolRadius({
         x: Math.abs(mousePos.x - origin.x),
         y: Math.abs(mousePos.y - origin.y),
@@ -94,12 +94,12 @@ export class EllipseTool implements Tool {
         paintingCanvasController
       );
     }
-    //undoPoint();
+    overmind.actions.undo.setUndoPoint();
     this.onInit();
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     if (!overmind.state.tool.ellipseTool.origin) {
       overmind.actions.tool.ellipseToolOrigin(mousePos);
       this.prepareToPaint(isRightMouseButton(event));
@@ -115,7 +115,7 @@ export class EllipseTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {

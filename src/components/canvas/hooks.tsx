@@ -20,19 +20,6 @@ export function useInitTool(isZoomCanvas: boolean): void {
   }, [state.toolbox.activeTool]);
 }
 
-// Update current fillStyle from state to canvas context when:
-// 1. fillStyle has been changed
-// 2. canvas resolution changes, as this also resets context
-export function useFillStyle(ctx: CanvasRenderingContext2D | null): void {
-  const { state } = useOvermind();
-  useEffect((): void => {
-    if (ctx) {
-      ctx.fillStyle = state.canvas.fillStyle;
-      ctx.strokeStyle = state.canvas.fillStyle;
-    }
-  }, [state.canvas.fillStyle, state.canvas.resolution]);
-}
-
 export function useUndo(): void {
   const { state } = useOvermind();
   useEffect((): void => {

@@ -30,7 +30,7 @@ export class PolygonTool implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     // first click (left or right) determines polygon fill color
     if (!overmind.state.tool.polygonTool.vertices.length) {
@@ -56,7 +56,7 @@ export class PolygonTool implements Tool {
           paintingCanvasController
         );
       }
-      //undoPoint();
+      overmind.actions.undo.setUndoPoint();
       this.onInit();
       return;
     }
@@ -86,7 +86,7 @@ export class PolygonTool implements Tool {
   }
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();

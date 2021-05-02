@@ -24,20 +24,20 @@ export class DottedFreehandTool implements Tool {
 
   public onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (event.buttons) {
-      const mousePos = getMousePos(event.currentTarget, event);
+      const mousePos = getMousePos(event);
       brushHistory.current.drawPoint(mousePos, paintingCanvasController);
     }
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     this.prepareToPaint(isRightMouseButton(event));
     brushHistory.current.drawPoint(mousePos, paintingCanvasController);
   }
 
   public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     this.onInit();
-    //undoPoint();
+    overmind.actions.undo.setUndoPoint();
   }
 
   public onMouseLeave(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -47,7 +47,7 @@ export class DottedFreehandTool implements Tool {
   public onMouseEnter(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (isLeftOrRightMouseButton(event)) {
       this.prepareToPaint(isRightMouseButton(event));
-      const mousePos = getMousePos(event.currentTarget, event);
+      const mousePos = getMousePos(event);
       overmind.actions.tool.freeHandToolPrevious(mousePos);
     }
   }
@@ -58,7 +58,7 @@ export class DottedFreehandTool implements Tool {
     if (event.buttons) {
       return;
     }
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
   }
 
