@@ -61,12 +61,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: CanvasController): void {
-    const unfilledRectSides = unfilledRect(this.adjustHandle(start), this.adjustHandle(end));
+    const unfilledRectAsLines = unfilledRect(this.adjustHandle(start), this.adjustHandle(end));
     const unfilledRectAsPoints: Point[] = [
-      ...unfilledRectSides[0].asPoints(),
-      ...unfilledRectSides[1].asPoints(),
-      ...unfilledRectSides[2].asPoints(),
-      ...unfilledRectSides[3].asPoints(),
+      ...unfilledRectAsLines[0].asPoints(),
+      ...unfilledRectAsLines[1].asPoints(),
+      ...unfilledRectAsLines[2].asPoints(),
+      ...unfilledRectAsLines[3].asPoints(),
     ]; // rect sides as an array of Points for drawImage
     canvas.drawImage(unfilledRectAsPoints, this);
   }
@@ -126,6 +126,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: CanvasController): void {
+    // DPaint just draws the filled shape as if using a pixel brush
     const filledPolygonAsLines = filledPolygon(vertices);
     canvas.lines(filledPolygonAsLines, overmind.state.tool.activeColorIndex);
   }

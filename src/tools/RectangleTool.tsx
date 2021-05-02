@@ -46,7 +46,6 @@ export class RectangleTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
       undoPoint,
     } = params;
 
@@ -63,7 +62,6 @@ export class RectangleTool implements Tool {
       brushHistory.current.drawUnfilledRect(startPoint, endPoint, paintingCanvasController);
     }
     undoPoint();
-    onPaint();
     this.onInit(omit(params, 'event'));
   }
 
@@ -91,7 +89,6 @@ export class RectangleTool implements Tool {
       event,
       ctx,
       ctx: { canvas },
-      onPaint,
     } = params;
 
     const mousePos = getMousePos(canvas, event);
@@ -104,7 +101,6 @@ export class RectangleTool implements Tool {
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
-      onPaint();
       return;
     }
 
@@ -117,18 +113,13 @@ export class RectangleTool implements Tool {
         brushHistory.current.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
       });
     }
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 }

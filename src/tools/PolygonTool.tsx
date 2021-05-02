@@ -46,7 +46,6 @@ export class PolygonTool implements Tool {
       event,
       ctx: { canvas },
       undoPoint,
-      onPaint,
     } = params;
     const mousePos = getMousePos(canvas, event);
 
@@ -75,7 +74,6 @@ export class PolygonTool implements Tool {
         );
       }
       undoPoint();
-      onPaint();
       this.onInit(omit(params, 'event'));
       return;
     }
@@ -89,7 +87,6 @@ export class PolygonTool implements Tool {
   public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
 
@@ -108,14 +105,12 @@ export class PolygonTool implements Tool {
         );
       }
     }
-    onPaint();
   }
 
   public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       event,
       ctx: { canvas },
-      onPaint,
     } = params;
 
     const mousePos = getMousePos(canvas, event);
@@ -123,7 +118,6 @@ export class PolygonTool implements Tool {
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();
       brushHistory.current.drawPoint(mousePos, overlayCanvasController);
-      onPaint();
       return;
     }
 
@@ -142,12 +136,9 @@ export class PolygonTool implements Tool {
         overlayCanvasController
       );
     }
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
-
     overlayCanvasController.clear();
 
     if (overmind.state.tool.polygonTool.vertices.length > 0) {
@@ -164,7 +155,6 @@ export class PolygonTool implements Tool {
           overlayCanvasController
         );
       }
-      onPaint();
     }
   }
 }

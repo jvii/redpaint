@@ -47,10 +47,10 @@ export class AirbrushTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, ctx, onPaint } = params;
+    const { event, ctx } = params;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    const draw = (ctx: CanvasRenderingContext2D, onPaint: Function): void => {
+    const draw = (ctx: CanvasRenderingContext2D): void => {
       //TODO: draw in bigger batches, maybe drawDot should accept an array? Or new method
       // drawDots
       for (let i = 50; i--; ) {
@@ -66,12 +66,11 @@ export class AirbrushTool implements Tool {
           );
         }
       }
-      onPaint();
-      this.timeout = setTimeout(draw, 20, ctx, onPaint);
+      this.timeout = setTimeout(draw, 20, ctx);
     };
 
     this.prepareToPaint(isRightMouseButton(event));
-    this.timeout = setTimeout(draw, 20, ctx, onPaint);
+    this.timeout = setTimeout(draw, 20, ctx);
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
@@ -96,7 +95,6 @@ export class AirbrushTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
     } = params;
     if (event.buttons) {
       return;
@@ -105,27 +103,22 @@ export class AirbrushTool implements Tool {
 
     const mousePos = getMousePos(canvas, event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
-    onPaint();
   }
 
   public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
     overlayCanvasController.clear();
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
     overlayCanvasController.clear();
-    onPaint();
   }
 }
 

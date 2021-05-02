@@ -53,18 +53,12 @@ export function Canvas({
 
   const eventHandlerParams: EventHandlerParams = {
     ctx: canvasCtx!,
-    onPaint: (): void => {
-      //actions.canvas.setCanvasModified(isZoomCanvas);
-    },
     undoPoint: (): void => {
       actions.undo.setUndoPoint();
     },
   };
   const eventHandlerParamsOverlay: EventHandlerParamsOverlay = {
     ctx: overlayCanvasCtx!,
-    onPaint: (): void => {
-      //actions.canvas.setOverlayCanvasModified(isZoomCanvas);
-    },
   };
 
   useUndo();

@@ -30,8 +30,8 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: CanvasController): void {
-    const unfilledRectSides = unfilledRect(start, end);
-    canvas.lines(unfilledRectSides, overmind.state.tool.activeColorIndex);
+    const unfilledRectAsLines = unfilledRect(start, end);
+    canvas.lines(unfilledRectAsLines, overmind.state.tool.activeColorIndex);
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: CanvasController): void {
