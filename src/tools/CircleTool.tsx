@@ -1,9 +1,4 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
+import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, omit } from './util/util';
 import { distance } from '../algorithm/shape';
 import { overmind } from '../index';
@@ -25,21 +20,18 @@ export class CircleTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     //selection.prepare(canvas);
     overmind.actions.tool.circleToolOrigin(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const origin = overmind.state.tool.circleTool.origin;
     if (!origin) {
       return;
@@ -53,29 +45,25 @@ export class CircleTool implements Tool {
     } else {
       brushHistory.current.drawUnfilledCircle(origin, radius, paintingCanvasController);
     }
-    undoPoint();
-    this.onInit(omit(params, 'event'));
+    //undoPoint();
+    this.onInit();
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     this.prepareToPaint(isRightMouseButton(event));
     const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.circleToolOrigin(mousePos);
   }
 
-  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseEnter(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!event.buttons) {
-      this.onInit(omit(params, 'event'));
+      this.onInit();
     }
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
 
     const origin = overmind.state.tool.circleTool.origin;
@@ -103,11 +91,11 @@ export class CircleTool implements Tool {
     }
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 
-  public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseUpOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }

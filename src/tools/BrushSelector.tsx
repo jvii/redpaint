@@ -1,27 +1,20 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import { getMousePos, clearOverlayCanvas, extractBrush } from './util/util';
+import { Tool } from './Tool';
+import { getMousePos, extractBrush } from './util/util';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class BrushSelector implements Tool {
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     overmind.actions.tool.brushSelectionStart(null);
     //selection.prepare(canvas);
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
       return;
@@ -41,48 +34,34 @@ export class BrushSelector implements Tool {
     overmind.actions.toolbox.setSelectedDrawingTool('dottedFreehand');
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.brushSelectionStart(mousePos);
   }
 
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
+  public onMouseLeave(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overmind.actions.tool.brushSelectionStart(null);
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
-
-    const mousePos = getMousePos(canvas, event);
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event.currentTarget, event);
 
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
-      selection.edgeToEdgeCrosshair(ctx, mousePos);
+      //selection.edgeToEdgeCrosshair(ctx, mousePos);
       return;
     }
 
-    selection.box(ctx, start, mousePos);
+    //selection.box(ctx, start, mousePos);
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    overlayCanvasController.clear();
   }
 
-  public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onMouseUpOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    overlayCanvasController.clear();
   }
 }

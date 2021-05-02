@@ -2,25 +2,20 @@ import { Point } from '../../types';
 import { useEffect } from 'react';
 import { useOvermind } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
-import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
-export function useInitTool(
-  eventHandlerParams: EventHandlerParams,
-  eventHandlerParamsOverlay: EventHandlerParamsOverlay,
-  isZoomCanvas: boolean
-): void {
+export function useInitTool(isZoomCanvas: boolean): void {
   const { state } = useOvermind();
   useEffect((): void => {
     if (!isZoomCanvas) {
-      state.toolbox.previousTool?.onExit?.(eventHandlerParams);
-      state.toolbox.previousTool?.onExitOverlay?.(eventHandlerParamsOverlay);
+      state.toolbox.previousTool?.onExit?.();
+      state.toolbox.previousTool?.onExitOverlay?.();
     }
   }, [state.toolbox.previousTool]);
   useEffect((): void => {
     if (!isZoomCanvas) {
-      state.toolbox.activeTool.onInit?.(eventHandlerParams);
-      state.toolbox.activeTool.onInitOverlay?.(eventHandlerParamsOverlay);
+      state.toolbox.activeTool.onInit?.();
+      state.toolbox.activeTool.onInitOverlay?.();
     }
   }, [state.toolbox.activeTool]);
 }

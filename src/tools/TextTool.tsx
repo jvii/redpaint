@@ -1,11 +1,5 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-  EventHandlerParamsOverlay,
-} from './Tool';
-import { getMousePos, clearOverlayCanvas, omit } from './util/util';
+import { Tool } from './Tool';
+import { getMousePos } from './util/util';
 import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 
@@ -15,106 +9,78 @@ export class TextTool implements Tool {
   }
   private filled: boolean;
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     //selection.prepare(canvas);
     overmind.actions.tool.textToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
   }
 
-  public onExit(params: EventHandlerParams): void {
-    const { undoPoint } = params;
+  public onExit(): void {
     const start = overmind.state.tool.textTool.start;
     const text = overmind.state.tool.textTool.text;
     if (start && text !== '') {
       //this.renderText(ctx);
-      undoPoint();
+      //undoPoint();
     }
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
 
     const start = overmind.state.tool.textTool.start;
     const text = overmind.state.tool.textTool.text;
     if (start && text !== '') {
       //this.renderText(ctx);
-      undoPoint();
-      this.onInit(omit(params, 'event'));
+      //undoPoint();
+      this.onInit();
     }
     overmind.actions.tool.textToolStart(mousePos);
   }
 
   // Overlay
 
-  public onInitOverlay(params: EventHandlerParamsOverlay): void {
-    const {
-      ctx,
-      ctx: { canvas },
-    } = params;
+  public onInitOverlay(): void {
     window.onkeydown = (event: KeyboardEvent): void => {
       overmind.actions.tool.textToolKey(event.key);
-      clearOverlayCanvas(canvas);
-      this.renderText(ctx);
-      selection.textCursor(ctx, 50);
+      //clearOverlayCanvas(canvas);
+      //this.renderText(ctx);
+      //selection.textCursor(ctx, 50);
     };
-    clearOverlayCanvas(canvas);
+    //clearOverlayCanvas(canvas);
   }
 
-  public onExitOverlay(params: EventHandlerParamsOverlay): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onExitOverlay(): void {
+    //clearOverlayCanvas(canvas);
   }
 
-  public onClickOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx,
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
-    selection.textCursor(ctx, 50);
+  public onClickOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    //clearOverlayCanvas(canvas);
+    //selection.textCursor(ctx, 50);
   }
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-    } = params;
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const start = overmind.state.tool.textTool.start;
     if (!start) {
-      clearOverlayCanvas(canvas);
-      const mousePos = getMousePos(canvas, event);
-      selection.box(ctx, mousePos, { x: mousePos.x + 20, y: mousePos.y - 50 });
+      //clearOverlayCanvas(canvas);
+      const mousePos = getMousePos(event.currentTarget, event);
+      //selection.box(ctx, mousePos, { x: mousePos.x + 20, y: mousePos.y - 50 });
     }
   }
 
-  public onMouseEnterOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx,
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
-    this.renderText(ctx);
-    selection.textCursor(ctx, 50);
+  public onMouseEnterOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    //clearOverlayCanvas(canvas);
+    //this.renderText(ctx);
+    //selection.textCursor(ctx, 50);
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx,
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
-    this.renderText(ctx);
-    selection.textCursor(ctx, 50);
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    //clearOverlayCanvas(canvas);
+    //this.renderText(ctx);
+    //selection.textCursor(ctx, 50);
   }
 
   private renderText(ctx: CanvasRenderingContext2D): void {

@@ -1,14 +1,8 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
+import { Tool } from './Tool';
 import {
   getMousePos,
   isRightMouseButton,
   isLeftOrRightMouseButton,
-  omit,
   pointEquals,
   points8Connected,
 } from './util/util';
@@ -25,20 +19,17 @@ export class FreehandTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     overmind.actions.tool.freeHandToolPrevious(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (event.buttons && overmind.state.tool.freehandTool.previous) {
       const mousePos = getMousePos(event.currentTarget, event);
       const start = overmind.state.tool.freehandTool.previous;
@@ -55,26 +46,23 @@ export class FreehandTool implements Tool {
     }
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     this.prepareToPaint(isRightMouseButton(event));
     brushHistory.current.drawPoint(mousePos, paintingCanvasController);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { undoPoint } = params;
-    this.onInit(omit(params, 'event'));
-    undoPoint();
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    this.onInit();
+    //undoPoint();
   }
 
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    this.onInit(omit(params, 'event'));
+  public onMouseLeave(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    this.onInit();
   }
 
-  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseEnter(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (isLeftOrRightMouseButton(event)) {
       this.prepareToPaint(isRightMouseButton(event));
       const mousePos = getMousePos(event.currentTarget, event);
@@ -84,24 +72,20 @@ export class FreehandTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (event.buttons) {
       return;
     }
     //clearOverlayCanvas(canvas);
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
   }
 
-  public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }

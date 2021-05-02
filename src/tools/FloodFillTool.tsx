@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool } from './Tool';
 import { Point, Color } from '../types';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
@@ -11,25 +11,22 @@ interface ColorRGBA {
 }
 
 export class FloodFillTool implements Tool {
-  public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     //floodFill(imageData, overmind.state.palette.foregroundColor, mousePos);
     //ctx.putImageData(imageData, 0, 0);
-    undoPoint();
+    //undoPoint();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
 
     const mousePos = getMousePos(event.currentTarget, event);
     //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     //floodFill(imageData, overmind.state.palette.backgroundColor, mousePos);
     //ctx.putImageData(imageData, 0, 0);
-    undoPoint();
+    //undoPoint();
   }
 }
 

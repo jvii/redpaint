@@ -1,26 +1,12 @@
 /* eslint-disable no-undef */
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isRightMouseButton,
-  isLeftMouseButton,
-  omit,
-} from './util/util';
-import { Throttle } from './util/Throttle';
+import { Tool } from './Tool';
+import { getMousePos, isRightMouseButton, isLeftMouseButton } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class LineTool implements Tool {
-  private throttle = new Throttle(50);
-
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
@@ -28,20 +14,17 @@ export class LineTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     overmind.actions.tool.lineToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!overmind.state.tool.lineTool.start) {
       return;
     }
@@ -50,12 +33,11 @@ export class LineTool implements Tool {
     const start = overmind.state.tool.lineTool.start;
     const end = mousePos;
     brushHistory.current.drawLine(start, end, paintingCanvasController);
-    undoPoint();
-    this.onInit(omit(params, 'event'));
+    //undoPoint();
+    this.onInit();
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     this.prepareToPaint(isRightMouseButton(event));
     const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.lineToolStart(mousePos);
@@ -63,12 +45,8 @@ export class LineTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
-    const mousePos = getMousePos(canvas, event);
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event.currentTarget, event);
 
     if (
       overmind.state.tool.lineTool.start &&
@@ -76,17 +54,13 @@ export class LineTool implements Tool {
     ) {
       const start = overmind.state.tool.lineTool.start;
       const end = mousePos;
-      this.throttle.call((): void => {
-        clearOverlayCanvas(canvas);
-        brushHistory.current.drawLine(start, end, overlayCanvasController);
-      });
+      brushHistory.current.drawLine(start, end, overlayCanvasController);
     } else {
-      clearOverlayCanvas(canvas);
       brushHistory.current.drawPoint(mousePos, overlayCanvasController);
     }
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }

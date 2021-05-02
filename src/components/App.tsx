@@ -8,8 +8,8 @@ import ColorIndicator from './palette/ColorIndicator';
 import { BuiltInBrushes } from './toolbox/BuiltInBrushes';
 import { GlobalHotKeyManager } from './GlobalHotkeyManager';
 import { DialogManager } from './dialog/DialogManager';
-import './App.css';
 import { PaletteEditor } from './paletteEditor/PaletteEditor';
+import './App.css';
 
 function App(): JSX.Element {
   console.log('render App');

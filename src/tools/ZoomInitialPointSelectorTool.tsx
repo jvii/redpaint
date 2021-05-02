@@ -1,56 +1,37 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import { getMousePos, clearOverlayCanvas } from './util/util';
+import { Tool } from './Tool';
+import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class ZoomInitialPointSelectorTool implements Tool {
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     //selection.prepare(canvas);
   }
 
-  public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.canvas.setZoomFocusPoint(mousePos);
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
-
-    const mousePos = getMousePos(canvas, event);
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event.currentTarget, event);
     const start = { x: mousePos.x - 30, y: mousePos.y - 30 };
     const end = { x: mousePos.x + 30, y: mousePos.y + 30 };
-    selection.box(ctx, start, end);
+    //selection.box(ctx, start, end);
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    overlayCanvasController.clear();
   }
 
-  public onClickOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onClickOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    overlayCanvasController.clear();
   }
 }

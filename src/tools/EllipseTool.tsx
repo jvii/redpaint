@@ -1,16 +1,5 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isLeftMouseButton,
-  isRightMouseButton,
-  omit,
-} from './util/util';
+import { Tool } from './Tool';
+import { getMousePos, isLeftMouseButton, isRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { selection } from './util/SelectionIndicator';
 import { brushHistory } from '../brush/BrushHistory';
@@ -30,21 +19,18 @@ export class EllipseTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     //selection.prepare(canvas);
     overmind.actions.tool.ellipseToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     // Do nothing if center point not set, or radius not yet set
 
     const origin = overmind.state.tool.ellipseTool.origin;
@@ -69,9 +55,7 @@ export class EllipseTool implements Tool {
     }
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
       return;
@@ -110,12 +94,11 @@ export class EllipseTool implements Tool {
         paintingCanvasController
       );
     }
-    undoPoint();
-    this.onInit(omit(params, 'event'));
+    //undoPoint();
+    this.onInit();
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     if (!overmind.state.tool.ellipseTool.origin) {
       overmind.actions.tool.ellipseToolOrigin(mousePos);
@@ -123,33 +106,25 @@ export class EllipseTool implements Tool {
     }
   }
 
-  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseEnter(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!event.buttons) {
-      this.onInit(omit(params, 'event'));
+      this.onInit();
     }
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-    } = params;
-
-    const mousePos = getMousePos(canvas, event);
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event.currentTarget, event);
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
-      clearOverlayCanvas(canvas);
       overlayCanvasController.clear();
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
-      selection.edgeToEdgeCrosshair(ctx, mousePos);
+      //selection.edgeToEdgeCrosshair(ctx, mousePos);
       return;
     }
 
@@ -160,7 +135,6 @@ export class EllipseTool implements Tool {
     const angle = overmind.state.tool.ellipseTool.angle;
 
     if (this.filled) {
-      clearOverlayCanvas(canvas);
       overlayCanvasController.clear();
       brushHistory.current.drawFilledEllipse(
         origin,
@@ -170,7 +144,6 @@ export class EllipseTool implements Tool {
         overlayCanvasController
       );
     } else {
-      clearOverlayCanvas(canvas);
       overlayCanvasController.clear();
       brushHistory.current.drawUnfilledEllipse(
         origin,
@@ -182,11 +155,7 @@ export class EllipseTool implements Tool {
     }
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }

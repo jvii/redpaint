@@ -1,16 +1,5 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isRightMouseButton,
-  isLeftOrRightMouseButton,
-  omit,
-} from './util/util';
+import { Tool } from './Tool';
+import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -28,26 +17,21 @@ export class AirbrushTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.airbrushToolPosition(mousePos);
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     // eslint-disable-next-line @typescript-eslint/ban-types
     const draw = (): void => {
       //TODO: draw in bigger batches, maybe drawDot should accept an array? Or new method
@@ -72,51 +56,35 @@ export class AirbrushTool implements Tool {
     this.timeout = setTimeout(draw, 20);
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { undoPoint } = params;
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     clearTimeout(this.timeout);
-    this.onInit(omit(params, 'event'));
-    undoPoint();
+    this.onInit();
+    //undoPoint();
   }
 
-  public onMouseLeave(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
+  public onMouseLeave(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     clearTimeout(this.timeout);
-    this.onInit(omit(params, 'event'));
+    this.onInit();
     if (isLeftOrRightMouseButton(event)) {
-      undoPoint();
+      //undoPoint();
     }
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (event.buttons) {
       return;
     }
-    clearOverlayCanvas(canvas);
-
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
   }
 
-  public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }
