@@ -44,7 +44,6 @@ export class CircleTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
       undoPoint,
     } = params;
 
@@ -62,7 +61,6 @@ export class CircleTool implements Tool {
       brushHistory.current.drawUnfilledCircle(origin, radius, paintingCanvasController);
     }
     undoPoint();
-    onPaint();
     this.onInit(omit(params, 'event'));
   }
 
@@ -90,7 +88,6 @@ export class CircleTool implements Tool {
       event,
       ctx,
       ctx: { canvas },
-      onPaint,
     } = params;
 
     const mousePos = getMousePos(canvas, event);
@@ -108,7 +105,6 @@ export class CircleTool implements Tool {
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
-      onPaint();
       return;
     }
 
@@ -120,18 +116,13 @@ export class CircleTool implements Tool {
     } else {
       brushHistory.current.drawUnfilledCircle(origin, radius, overlayCanvasController);
     }
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 
   public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 }

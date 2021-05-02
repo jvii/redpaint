@@ -1,12 +1,10 @@
 export interface EventHandlerParams {
   ctx: CanvasRenderingContext2D;
-  onPaint: () => void;
   undoPoint: () => void;
 }
 
 export interface EventHandlerParamsOverlay {
   ctx: CanvasRenderingContext2D;
-  onPaint: () => void;
 }
 
 export interface EventHandlerParamsWithEvent extends EventHandlerParams {

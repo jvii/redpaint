@@ -41,10 +41,8 @@ export class CurveTool implements Tool {
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
     const {
       event,
-      ctx,
       ctx: { canvas },
       undoPoint,
-      onPaint,
     } = params;
 
     const startPoint = overmind.state.tool.curveTool.start;
@@ -58,7 +56,6 @@ export class CurveTool implements Tool {
     if (endPoint) {
       brushHistory.current.drawCurve(startPoint, endPoint, mousePos, paintingCanvasController);
       undoPoint();
-      onPaint();
       this.onInit(omit(params, 'event'));
     } else {
       overmind.actions.tool.curveToolEnd(mousePos);
@@ -84,7 +81,6 @@ export class CurveTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
     } = params;
     const mousePos = getMousePos(canvas, event);
 
@@ -92,7 +88,6 @@ export class CurveTool implements Tool {
     if (!startPoint) {
       clearOverlayCanvas(canvas);
       brushHistory.current.drawPoint(mousePos, overlayCanvasController);
-      onPaint();
       return;
     }
 
@@ -102,12 +97,9 @@ export class CurveTool implements Tool {
     } else if (isLeftOrRightMouseButton(event)) {
       brushHistory.current.drawLine(startPoint, mousePos, overlayCanvasController);
     }
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const { onPaint } = params;
     overlayCanvasController.clear();
-    onPaint();
   }
 }

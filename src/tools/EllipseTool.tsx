@@ -79,7 +79,6 @@ export class EllipseTool implements Tool {
     const {
       event,
       ctx: { canvas },
-      onPaint,
       undoPoint,
     } = params;
 
@@ -122,7 +121,6 @@ export class EllipseTool implements Tool {
       );
     }
     undoPoint();
-    onPaint();
     this.onInit(omit(params, 'event'));
   }
 
@@ -152,7 +150,6 @@ export class EllipseTool implements Tool {
       event,
       ctx,
       ctx: { canvas },
-      onPaint,
     } = params;
 
     const mousePos = getMousePos(canvas, event);
@@ -166,7 +163,6 @@ export class EllipseTool implements Tool {
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
       selection.edgeToEdgeCrosshair(ctx, mousePos);
-      onPaint();
       return;
     }
 
@@ -197,16 +193,13 @@ export class EllipseTool implements Tool {
         overlayCanvasController
       );
     }
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
     overlayCanvasController.clear();
-    onPaint();
   }
 }
