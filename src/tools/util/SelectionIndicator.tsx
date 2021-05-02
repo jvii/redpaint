@@ -32,14 +32,14 @@ export const selection = {
     }
     ctx.fillRect(position.x, 0, 1, ctx.canvas.height);
     ctx.fillRect(0, position.y, ctx.canvas.width, 1);
-    ctx.fillStyle = overmind.state.canvas.fillStyle;
+    //ctx.fillStyle = overmind.state.canvas.fillStyle;
   },
   box(ctx: CanvasRenderingContext2D, start: Point, end: Point): void {
     if (invertedCanvas) {
       ctx.fillStyle = invertedCanvas;
     }
     //unfilledRect(ctx, new PixelBrush(), start, end);
-    ctx.fillStyle = overmind.state.canvas.fillStyle;
+    //ctx.fillStyle = overmind.state.canvas.fillStyle;
   },
   textCursor(ctx: CanvasRenderingContext2D, height: number): void {
     if (invertedCanvas) {
@@ -55,6 +55,6 @@ export const selection = {
     };
     console.log(point);
     //unfilledRect(ctx, new PixelBrush(), point, { x: point.x, y: point.y - height });
-    ctx.fillStyle = overmind.state.canvas.fillStyle;
+    //ctx.fillStyle = overmind.state.canvas.fillStyle;
   },
 };

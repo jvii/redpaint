@@ -51,7 +51,6 @@ export function useLoadedImage(canvas: HTMLCanvasElement): void {
       actions.canvas.setResolution({ width: image.width, height: image.height });
       ctx.drawImage(image, 0, 0);
       actions.undo.setUndoPoint();
-      actions.canvas.setCanvasModified(false);
     };
     image.src = state.canvas.loadedImageURL;
   }, [state.canvas.loadedImageURL]);

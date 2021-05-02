@@ -1,23 +1,12 @@
 import { Action } from 'overmind';
 import { Point } from '../../types';
-import { colorToRGBString } from '../../tools/util/util';
 
 export const activeToolToFGFillStyle: Action = ({ state }): void => {
   state.tool.activeColorIndex = Number(state.palette.foregroundColorId);
-  const fillStyle = state.tool.activeToolFillStyle;
-  if (!fillStyle) {
-    return;
-  }
-  fillStyle.effective = colorToRGBString(state.palette.foregroundColor);
 };
 
 export const activeToolToBGFillStyle: Action = ({ state }): void => {
   state.tool.activeColorIndex = Number(state.palette.backgroundColorId);
-  const fillStyle = state.tool.activeToolFillStyle;
-  if (!fillStyle) {
-    return;
-  }
-  fillStyle.effective = colorToRGBString(state.palette.backgroundColor);
 };
 
 // freehand
