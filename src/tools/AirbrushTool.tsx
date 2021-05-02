@@ -27,7 +27,7 @@ export class AirbrushTool implements Tool {
   }
 
   public onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     overmind.actions.tool.airbrushToolPosition(mousePos);
   }
 
@@ -59,14 +59,14 @@ export class AirbrushTool implements Tool {
   public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     clearTimeout(this.timeout);
     this.onInit();
-    //undoPoint();
+    overmind.actions.undo.setUndoPoint();
   }
 
   public onMouseLeave(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     clearTimeout(this.timeout);
     this.onInit();
     if (isLeftOrRightMouseButton(event)) {
-      //undoPoint();
+      overmind.actions.undo.setUndoPoint();
     }
   }
 
@@ -76,7 +76,7 @@ export class AirbrushTool implements Tool {
     if (event.buttons) {
       return;
     }
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
   }
 

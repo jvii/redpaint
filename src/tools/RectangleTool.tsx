@@ -36,20 +36,20 @@ export class RectangleTool implements Tool {
       return;
     }
 
-    const endPoint = getMousePos(event.currentTarget, event);
+    const endPoint = getMousePos(event);
 
     if (this.filled) {
       brushHistory.current.drawFilledRect(startPoint, endPoint, paintingCanvasController);
     } else {
       brushHistory.current.drawUnfilledRect(startPoint, endPoint, paintingCanvasController);
     }
-    //undoPoint();
+    overmind.actions.undo.setUndoPoint();
     this.onInit();
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     this.prepareToPaint(isRightMouseButton(event));
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     overmind.actions.tool.rectangleToolStart(mousePos);
   }
 
@@ -62,7 +62,7 @@ export class RectangleTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {

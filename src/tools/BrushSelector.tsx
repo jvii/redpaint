@@ -20,7 +20,7 @@ export class BrushSelector implements Tool {
       return;
     }
 
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     const width = mousePos.x - start.x;
     const height = mousePos.y - start.y;
 
@@ -35,7 +35,7 @@ export class BrushSelector implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     overmind.actions.tool.brushSelectionStart(mousePos);
   }
 
@@ -46,7 +46,7 @@ export class BrushSelector implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {

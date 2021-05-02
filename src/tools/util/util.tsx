@@ -8,14 +8,11 @@ export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
 }
 
-export function getMousePos(
-  canvas: HTMLCanvasElement,
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
-): Point {
-  const canvas1: HTMLCanvasElement = event.currentTarget;
-  const rect = canvas1.getBoundingClientRect(); // abs. size of element
-  const scaleX = canvas1.width / rect.width; // relationship bitmap vs. element for X
-  const scaleY = canvas1.height / rect.height; // relationship bitmap vs. element for Y
+export function getMousePos(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): Point {
+  const canvas: HTMLCanvasElement = event.currentTarget;
+  const rect = canvas.getBoundingClientRect(); // abs. size of element
+  const scaleX = canvas.width / rect.width; // relationship bitmap vs. element for X
+  const scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
 
   return {
     x: Math.floor((event.clientX - rect.left) * scaleX), // scale mouse coordinates after they have

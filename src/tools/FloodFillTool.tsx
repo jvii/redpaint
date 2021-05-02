@@ -12,7 +12,7 @@ interface ColorRGBA {
 
 export class FloodFillTool implements Tool {
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     //floodFill(imageData, overmind.state.palette.foregroundColor, mousePos);
     //ctx.putImageData(imageData, 0, 0);
@@ -22,7 +22,7 @@ export class FloodFillTool implements Tool {
   public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
 
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     //const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     //floodFill(imageData, overmind.state.palette.backgroundColor, mousePos);
     //ctx.putImageData(imageData, 0, 0);

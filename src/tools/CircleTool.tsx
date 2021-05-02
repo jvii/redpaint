@@ -37,7 +37,7 @@ export class CircleTool implements Tool {
       return;
     }
 
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
@@ -45,13 +45,13 @@ export class CircleTool implements Tool {
     } else {
       brushHistory.current.drawUnfilledCircle(origin, radius, paintingCanvasController);
     }
-    //undoPoint();
+    overmind.actions.undo.setUndoPoint();
     this.onInit();
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     this.prepareToPaint(isRightMouseButton(event));
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
     overmind.actions.tool.circleToolOrigin(mousePos);
   }
 
@@ -64,7 +64,7 @@ export class CircleTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const mousePos = getMousePos(event.currentTarget, event);
+    const mousePos = getMousePos(event);
 
     const origin = overmind.state.tool.circleTool.origin;
 
