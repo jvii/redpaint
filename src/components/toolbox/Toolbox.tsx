@@ -2,16 +2,11 @@ import React from 'react';
 import { ToolboxToggleButton } from './buttons/ToolboxToggleButton';
 import { ToolboxDualToggleButton } from './buttons/ToolboxDualToggleButton';
 import { ToolboxActionButton } from './buttons/ToolboxActionButton';
-import { CanvasState } from '../canvas/CanvasState';
 import { useOvermind } from '../../overmind';
 import './Toolbox.css';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
-export interface Props {
-  canvasState: CanvasState;
-}
-
-export function Toolbox({ canvasState }: Props): JSX.Element {
+export function Toolbox(): JSX.Element {
   const { state, actions } = useOvermind();
   return (
     <div className="toolbox">

@@ -42,12 +42,8 @@ export class PolygonTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
-    const mousePos = getMousePos(canvas, event);
+    const { event, undoPoint } = params;
+    const mousePos = getMousePos(event.currentTarget, event);
 
     // first click (left or right) determines polygon fill color
     if (!overmind.state.tool.polygonTool.vertices.length) {

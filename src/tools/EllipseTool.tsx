@@ -31,10 +31,7 @@ export class EllipseTool implements Tool {
   }
 
   public onInit(params: EventHandlerParams): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    selection.prepare(canvas);
+    //selection.prepare(canvas);
     overmind.actions.tool.ellipseToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -46,10 +43,7 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
 
     // Do nothing if center point not set, or radius not yet set
 
@@ -63,7 +57,7 @@ export class EllipseTool implements Tool {
 
     // Change rotation angle if left mouse button down, otherwise re-adjust radius
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
 
     if (isLeftMouseButton(event)) {
       const rotationAngle = mousePos.y - origin.y - overmind.state.tool.ellipseTool.radiusY;
@@ -76,11 +70,7 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-      undoPoint,
-    } = params;
+    const { event, undoPoint } = params;
 
     const origin = overmind.state.tool.ellipseTool.origin;
     if (!origin) {
@@ -92,7 +82,7 @@ export class EllipseTool implements Tool {
     const radiusX = overmind.state.tool.ellipseTool.radiusX;
     const radiusY = overmind.state.tool.ellipseTool.radiusY;
     if (!radiusX || !radiusY) {
-      const mousePos = getMousePos(canvas, event);
+      const mousePos = getMousePos(event.currentTarget, event);
       overmind.actions.tool.ellipseToolRadius({
         x: Math.abs(mousePos.x - origin.x),
         y: Math.abs(mousePos.y - origin.y),
@@ -125,11 +115,8 @@ export class EllipseTool implements Tool {
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
-    const mousePos = getMousePos(canvas, event);
+    const { event } = params;
+    const mousePos = getMousePos(event.currentTarget, event);
     if (!overmind.state.tool.ellipseTool.origin) {
       overmind.actions.tool.ellipseToolOrigin(mousePos);
       this.prepareToPaint(isRightMouseButton(event));

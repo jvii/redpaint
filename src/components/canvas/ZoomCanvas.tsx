@@ -1,16 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Canvas } from './Canvas';
-import { CanvasStateAction } from './CanvasState';
 import { useScrollToFocusPoint } from './hooks';
 import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
 import './Canvas.css';
 
-interface Props {
-  canvasDispatch: React.Dispatch<CanvasStateAction>;
-}
-
-export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
+export function ZoomCanvas(): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(20);
 
@@ -59,7 +54,7 @@ export function ZoomCanvas({ canvasDispatch }: Props): JSX.Element {
         onScroll={updateScrollFocusPoint}
         style={{ display: visible ? 'initial' : 'none' }}
       >
-        <Canvas canvasDispatch={canvasDispatch} isZoomCanvas={true} zoomFactor={zoomFactor} />
+        <Canvas isZoomCanvas={true} zoomFactor={zoomFactor} />
       </div>
     </>
   );

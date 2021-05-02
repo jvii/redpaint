@@ -29,24 +29,18 @@ export class DottedFreehandTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
 
     if (event.buttons) {
-      const mousePos = getMousePos(canvas, event);
+      const mousePos = getMousePos(event.currentTarget, event);
       brushHistory.current.drawPoint(mousePos, paintingCanvasController);
     }
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     this.prepareToPaint(isRightMouseButton(event));
     brushHistory.current.drawPoint(mousePos, paintingCanvasController);
   }
@@ -62,28 +56,22 @@ export class DottedFreehandTool implements Tool {
   }
 
   public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
     if (isLeftOrRightMouseButton(event)) {
       this.prepareToPaint(isRightMouseButton(event));
-      const mousePos = getMousePos(canvas, event);
+      const mousePos = getMousePos(event.currentTarget, event);
       overmind.actions.tool.freeHandToolPrevious(mousePos);
     }
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+    const { event } = params;
     if (event.buttons) {
       return;
     }
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
   }
 

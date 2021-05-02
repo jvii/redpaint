@@ -10,18 +10,12 @@ import { selection } from './util/SelectionIndicator';
 
 export class ZoomInitialPointSelectorTool implements Tool {
   public onInit(params: EventHandlerParams): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    selection.prepare(canvas);
+    //selection.prepare(canvas);
   }
 
   public onClick(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
-    const mousePos = getMousePos(canvas, event);
+    const { event } = params;
+    const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.canvas.setZoomFocusPoint(mousePos);
   }
 
@@ -37,7 +31,6 @@ export class ZoomInitialPointSelectorTool implements Tool {
       event,
       ctx,
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
 
@@ -45,24 +38,19 @@ export class ZoomInitialPointSelectorTool implements Tool {
     const start = { x: mousePos.x - 30, y: mousePos.y - 30 };
     const end = { x: mousePos.x + 30, y: mousePos.y + 30 };
     selection.box(ctx, start, end);
-    onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
-    onPaint();
   }
 
   public onClickOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       ctx: { canvas },
-      onPaint,
     } = params;
     clearOverlayCanvas(canvas);
-    onPaint();
   }
 }

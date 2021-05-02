@@ -1,5 +1,4 @@
 export interface EventHandlerParams {
-  ctx: CanvasRenderingContext2D;
   undoPoint: () => void;
 }
 

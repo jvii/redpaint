@@ -17,7 +17,9 @@ import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanva
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class AirbrushTool implements Tool {
-  private timeout = 0;
+  // TODO fix
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private timeout: any = 0;
 
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
@@ -37,20 +39,17 @@ export class AirbrushTool implements Tool {
   }
 
   public onMouseMove(params: EventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+    const { event } = params;
 
-    const mousePos = getMousePos(canvas, event);
+    const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.airbrushToolPosition(mousePos);
   }
 
   public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, ctx } = params;
+    const { event } = params;
 
     // eslint-disable-next-line @typescript-eslint/ban-types
-    const draw = (ctx: CanvasRenderingContext2D): void => {
+    const draw = (): void => {
       //TODO: draw in bigger batches, maybe drawDot should accept an array? Or new method
       // drawDots
       for (let i = 50; i--; ) {
@@ -66,11 +65,11 @@ export class AirbrushTool implements Tool {
           );
         }
       }
-      this.timeout = setTimeout(draw, 20, ctx);
+      this.timeout = setTimeout(draw, 20);
     };
 
     this.prepareToPaint(isRightMouseButton(event));
-    this.timeout = setTimeout(draw, 20, ctx);
+    this.timeout = setTimeout(draw, 20);
   }
 
   public onMouseUp(params: EventHandlerParamsWithEvent): void {
@@ -91,7 +90,7 @@ export class AirbrushTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: EventHandlerParamsWithEvent): void {
+  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
     const {
       event,
       ctx: { canvas },

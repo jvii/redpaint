@@ -18,7 +18,7 @@ type GLBuffers = {
 // the two painting canvases in the app: MainCanvas and ZoomCanvas.
 // Note that overlay canvases are controlled separately by OverlayCanvasController.
 export class PaintingCanvasController implements CanvasController {
-  private mainCanvas: HTMLCanvasElement = document.createElement('canvas');
+  public mainCanvas: HTMLCanvasElement = document.createElement('canvas');
   private gl: WebGLRenderingContext | null = null;
 
   private colorIndexer: ColorIndexer | null = null;
