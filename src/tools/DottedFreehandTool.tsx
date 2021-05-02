@@ -4,13 +4,7 @@ import {
   OverlayEventHandlerParamsWithEvent,
   EventHandlerParams,
 } from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isRightMouseButton,
-  omit,
-  isLeftOrRightMouseButton,
-} from './util/util';
+import { getMousePos, isRightMouseButton, omit, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -94,28 +88,20 @@ export class DottedFreehandTool implements Tool {
     if (event.buttons) {
       return;
     }
-    clearOverlayCanvas(canvas);
-
     const mousePos = getMousePos(canvas, event);
     brushHistory.current.drawPoint(mousePos, overlayCanvasController);
     onPaint();
   }
 
   public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
-    clearOverlayCanvas(canvas);
+    const { onPaint } = params;
+    overlayCanvasController.clear();
     onPaint();
   }
 
   public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-      onPaint,
-    } = params;
-    clearOverlayCanvas(canvas);
+    const { onPaint } = params;
+    overlayCanvasController.clear();
     onPaint();
   }
 }

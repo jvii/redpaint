@@ -71,6 +71,8 @@ export class PaintingCanvasController implements CanvasController {
 
     this.initColorIndexTexture();
     this.initPaletteTexture();
+
+    overmind.actions.undo.setUndoPoint(); // initial undo point
   }
 
   points(points: Point[], colorIndex: number): void {
@@ -104,11 +106,16 @@ export class PaintingCanvasController implements CanvasController {
   }
 
   clear(): void {
-    //
+    this.initColorIndexTexture();
+    this.render();
   }
 
   getIndex(): Uint8Array | undefined {
     return this.colorIndexer?.getIndex();
+  }
+
+  setIndex(colorIndex: Uint8Array): void {
+    this.colorIndexer?.setIndex(colorIndex);
   }
 
   getAreaFromIndex(

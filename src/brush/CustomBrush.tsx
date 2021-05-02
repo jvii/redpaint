@@ -141,6 +141,9 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       this.brushColorIndex,
       Number(overmind.state.palette.foregroundColorId)
     );
+    if (overmind.state.brush.mode === 'Color') {
+      this.toFGColor(); // must be set here for fg color, not ideal:(
+    }
   }
 
   public setBGColor(): void {

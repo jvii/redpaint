@@ -19,7 +19,6 @@ export class MainCanvasRenderer {
   }
 
   renderCanvas(): void {
-    console.log('rendering canvas');
     this.drawImageRenderer.renderCanvas();
   }
 

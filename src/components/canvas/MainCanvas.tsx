@@ -26,14 +26,14 @@ export function MainCanvas({ canvasDispatch, canvasState }: Props): JSX.Element 
     });
   }, []);
 
-  // set initial undo point
+  /*   // set initial undo point
   useEffect((): void => {
     console.log('initial undopoint');
     clearCanvas(canvasState.mainCanvas, state.palette.backgroundColor);
     if (state.undo.currentIndex === null) {
       actions.undo.setUndoPoint(canvasState.mainCanvas);
     }
-  }, [canvasState.mainCanvas]);
+  }, [canvasState.mainCanvas]); */
 
   // handle drawing newly loaded image to canvas
   useLoadedImage(canvasState.mainCanvas);

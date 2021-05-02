@@ -2,9 +2,8 @@ import { Point } from '../../types';
 import { useEffect } from 'react';
 import { useOvermind } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
-import { blobToCanvas } from './util';
 import { EventHandlerParams, EventHandlerParamsOverlay } from '../../tools/Tool';
-//import { renderToCanvasFrom } from '../../colorIndex/ColorIndexer';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function useInitTool(
   eventHandlerParams: EventHandlerParams,
@@ -39,19 +38,18 @@ export function useFillStyle(ctx: CanvasRenderingContext2D | null): void {
   }, [state.canvas.fillStyle, state.canvas.resolution]);
 }
 
-export function useUndo(canvas: HTMLCanvasElement): void {
+export function useUndo(): void {
   const { state } = useOvermind();
   useEffect((): void => {
-    //blobToCanvas(state.undo.currentBufferItem, canvas);
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      if (state.undo.currentIndex === null) {
-        return;
-      }
-      const colorIndex = undoBuffer.getItem(state.undo.currentIndex);
-      //renderToCanvasFrom(ctx, colorIndex);
+    if (state.undo.currentIndex === null) {
+      return;
     }
-    console.log('undo hook end');
+    const colorIndex = undoBuffer.getItem(state.undo.currentIndex);
+    if (!colorIndex) {
+      throw 'No color index in undo buffer at index' + state.undo.currentIndex;
+    }
+    paintingCanvasController.setIndex(colorIndex);
+    paintingCanvasController.render();
   }, [state.undo.lastUndoRedoTime]);
 }
 
@@ -70,7 +68,7 @@ export function useLoadedImage(canvas: HTMLCanvasElement): void {
       // Note that context is also reset
       actions.canvas.setResolution({ width: image.width, height: image.height });
       ctx.drawImage(image, 0, 0);
-      actions.undo.setUndoPoint(canvas);
+      actions.undo.setUndoPoint();
       actions.canvas.setCanvasModified(false);
     };
     image.src = state.canvas.loadedImageURL;
