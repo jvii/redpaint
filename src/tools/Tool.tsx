@@ -1,35 +1,19 @@
-export interface EventHandlerParams {
-  undoPoint: () => void;
-}
-
-export interface EventHandlerParamsOverlay {
-  ctx: CanvasRenderingContext2D;
-}
-
-export interface EventHandlerParamsWithEvent extends EventHandlerParams {
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
-}
-
-export interface OverlayEventHandlerParamsWithEvent extends EventHandlerParamsOverlay {
-  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>;
-}
-
 export interface Tool {
-  onInit?(params: EventHandlerParams): void;
-  onExit?(params: EventHandlerParams): void;
-  onClick?(params: EventHandlerParamsWithEvent): void;
-  onContextMenu?(params: EventHandlerParamsWithEvent): void;
-  onMouseMove?(params: EventHandlerParamsWithEvent): void;
-  onMouseUp?(params: EventHandlerParamsWithEvent): void;
-  onMouseDown?(params: EventHandlerParamsWithEvent): void;
-  onMouseLeave?(params: EventHandlerParamsWithEvent): void;
-  onMouseEnter?(params: EventHandlerParamsWithEvent): void;
-  onInitOverlay?(params: EventHandlerParamsOverlay): void;
-  onExitOverlay?(params: EventHandlerParamsOverlay): void;
-  onClickOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
-  onMouseMoveOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
-  onMouseUpOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
-  onMouseDownOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
-  onMouseLeaveOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
-  onMouseEnterOverlay?(params: OverlayEventHandlerParamsWithEvent): void;
+  onInit?(): void;
+  onExit?(): void;
+  onClick?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onContextMenu?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseMove?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseUp?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseDown?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseLeave?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseEnter?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onInitOverlay?(): void;
+  onExitOverlay?(): void;
+  onClickOverlay?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseMoveOverlay?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseUpOverlay?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseDownOverlay?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseLeaveOverlay?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
+  onMouseEnterOverlay?(pevent: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
 }

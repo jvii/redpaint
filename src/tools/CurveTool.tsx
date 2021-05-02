@@ -1,25 +1,11 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isRightMouseButton,
-  isLeftOrRightMouseButton,
-  omit,
-} from './util/util';
-import { Throttle } from './util/Throttle';
+import { Tool } from './Tool';
+import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class CurveTool implements Tool {
-  private throttle = new Throttle(50);
-
   private prepareToPaint(withBGColor: boolean): void {
     if (withBGColor) {
       overmind.actions.tool.activeToolToBGFillStyle();
@@ -27,20 +13,17 @@ export class CurveTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     overmind.actions.tool.curveToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
       return;
@@ -51,16 +34,14 @@ export class CurveTool implements Tool {
 
     if (endPoint) {
       brushHistory.current.drawCurve(startPoint, endPoint, mousePos, paintingCanvasController);
-      undoPoint();
-      this.onInit(omit(params, 'event'));
+      //undoPoint();
+      this.onInit();
     } else {
       overmind.actions.tool.curveToolEnd(mousePos);
     }
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
-
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!overmind.state.tool.curveTool.end) {
       this.prepareToPaint(isRightMouseButton(event));
       const mousePos = getMousePos(event.currentTarget, event);
@@ -70,16 +51,11 @@ export class CurveTool implements Tool {
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
-      clearOverlayCanvas(canvas);
       brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       return;
     }
@@ -92,7 +68,7 @@ export class CurveTool implements Tool {
     }
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }

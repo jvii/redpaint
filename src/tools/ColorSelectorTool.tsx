@@ -1,4 +1,4 @@
-import { Tool, EventHandlerParamsWithEvent } from './Tool';
+import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -9,8 +9,7 @@ export class ColorSelectorTool implements Tool {
   }
   private foregroundColor: boolean;
 
-  public onClick(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
     //const colorIndex = paintingCanvasController.colorIndexer?.getColorIndexForPixel(mousePos);
     const colorIndex = 1;
@@ -26,8 +25,7 @@ export class ColorSelectorTool implements Tool {
     }
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 

@@ -1,16 +1,5 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import {
-  getMousePos,
-  clearOverlayCanvas,
-  isRightMouseButton,
-  pointEquals,
-  omit,
-} from './util/util';
+import { Tool } from './Tool';
+import { getMousePos, isRightMouseButton, pointEquals } from './util/util';
 import { overmind } from '../index';
 import { PixelBrush } from '../brush/PixelBrush';
 import { brushHistory } from '../brush/BrushHistory';
@@ -30,19 +19,17 @@ export class PolygonTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     overmind.actions.tool.polygonToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event.currentTarget, event);
 
     // first click (left or right) determines polygon fill color
@@ -69,8 +56,8 @@ export class PolygonTool implements Tool {
           paintingCanvasController
         );
       }
-      undoPoint();
-      this.onInit(omit(params, 'event'));
+      //undoPoint();
+      this.onInit();
       return;
     }
 
@@ -80,12 +67,7 @@ export class PolygonTool implements Tool {
 
   // Overlay
 
-  public onMouseDownOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      ctx: { canvas },
-    } = params;
-    clearOverlayCanvas(canvas);
-
+  public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (overmind.state.tool.polygonTool.vertices.length > 1) {
       if (this.filled) {
         new PixelBrush().drawUnfilledPolygon(
@@ -103,13 +85,8 @@ export class PolygonTool implements Tool {
     }
   }
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx: { canvas },
-    } = params;
-
-    const mousePos = getMousePos(canvas, event);
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event.currentTarget, event);
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();
@@ -118,7 +95,6 @@ export class PolygonTool implements Tool {
     }
 
     if (this.filled) {
-      //clearOverlayCanvas(canvas);
       new PixelBrush().drawUnfilledPolygon(
         overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
         false,
@@ -134,7 +110,7 @@ export class PolygonTool implements Tool {
     }
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
 
     if (overmind.state.tool.polygonTool.vertices.length > 0) {

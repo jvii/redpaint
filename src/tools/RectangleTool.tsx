@@ -1,11 +1,5 @@
-import {
-  Tool,
-  EventHandlerParamsWithEvent,
-  OverlayEventHandlerParamsWithEvent,
-  EventHandlerParams,
-} from './Tool';
-import { getMousePos, clearOverlayCanvas, isRightMouseButton, omit } from './util/util';
-import { Throttle } from './util/Throttle';
+import { Tool } from './Tool';
+import { getMousePos, isRightMouseButton } from './util/util';
 import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
@@ -13,8 +7,6 @@ import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanva
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class RectangleTool implements Tool {
-  private throttle = new Throttle(50);
-
   public constructor(filled: boolean) {
     this.filled = filled;
   }
@@ -27,21 +19,18 @@ export class RectangleTool implements Tool {
     }
   }
 
-  public onInit(params: EventHandlerParams): void {
+  public onInit(): void {
     //selection.prepare(canvas);
     overmind.actions.tool.rectangleToolStart(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
   }
 
-  public onContextMenu(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     event.preventDefault();
   }
 
-  public onMouseUp(params: EventHandlerParamsWithEvent): void {
-    const { event, undoPoint } = params;
-
+  public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {
       return;
@@ -54,62 +43,49 @@ export class RectangleTool implements Tool {
     } else {
       brushHistory.current.drawUnfilledRect(startPoint, endPoint, paintingCanvasController);
     }
-    undoPoint();
-    this.onInit(omit(params, 'event'));
+    //undoPoint();
+    this.onInit();
   }
 
-  public onMouseDown(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     this.prepareToPaint(isRightMouseButton(event));
     const mousePos = getMousePos(event.currentTarget, event);
     overmind.actions.tool.rectangleToolStart(mousePos);
   }
 
-  public onMouseEnter(params: EventHandlerParamsWithEvent): void {
-    const { event } = params;
+  public onMouseEnter(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (!event.buttons) {
-      this.onInit(omit(params, 'event'));
+      this.onInit();
     }
   }
 
   // Overlay
 
-  public onMouseMoveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
-    const {
-      event,
-      ctx,
-      ctx: { canvas },
-    } = params;
-
-    const mousePos = getMousePos(canvas, event);
+  public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event.currentTarget, event);
 
     const startPoint = overmind.state.tool.rectangleTool.start;
     if (!startPoint) {
-      clearOverlayCanvas(canvas);
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
-      selection.edgeToEdgeCrosshair(ctx, mousePos);
+      //selection.edgeToEdgeCrosshair(ctx, mousePos);
       return;
     }
 
     if (this.filled) {
-      clearOverlayCanvas(canvas);
       brushHistory.current.drawFilledRect(startPoint, mousePos, overlayCanvasController);
     } else {
-      this.throttle.call((): void => {
-        clearOverlayCanvas(canvas);
-        brushHistory.current.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
-      });
+      brushHistory.current.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
     }
   }
 
-  public onMouseLeaveOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 
-  public onMouseUpOverlay(params: OverlayEventHandlerParamsWithEvent): void {
+  public onMouseUpOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 }

@@ -1,5 +1,5 @@
 import { Point, Color } from '../../types';
-import { Tool, EventHandlerParams, EventHandlerParamsOverlay } from '../Tool';
+import { Tool } from '../Tool';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { overmind } from '../../index';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
@@ -60,31 +60,18 @@ export function getEventHandler(
     | 'onMouseUp'
     | 'onMouseDown'
     | 'onMouseLeave'
-    | 'onMouseEnter',
-  eventHandlerParams: EventHandlerParams
-): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
-  if (hasKey(tool, eventHandlerName)) {
-    return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-      tool[eventHandlerName]!({ event: event, ...eventHandlerParams });
-  }
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  return (): void => {};
-}
-
-export function getEventHandlerOverlay(
-  tool: Tool,
-  eventHandlerName:
+    | 'onMouseEnter'
     | 'onMouseMoveOverlay'
     | 'onMouseLeaveOverlay'
     | 'onMouseEnterOverlay'
     | 'onMouseUpOverlay'
     | 'onMouseDownOverlay'
-    | 'onClickOverlay',
-  eventHandlerParams: EventHandlerParamsOverlay
+    | 'onClickOverlay'
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
   if (hasKey(tool, eventHandlerName)) {
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-      tool[eventHandlerName]!({ event: event, ...eventHandlerParams });
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      tool[eventHandlerName]!(event);
   }
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   return (): void => {};
