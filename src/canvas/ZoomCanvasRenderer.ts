@@ -12,7 +12,7 @@ export class ZoomCanvasRenderer {
       alpha: true,
       // desynchronized caused various problems with Windows version of Chrome
       // TODO: test again with the new version
-      desynchronized: true,
+      desynchronized: false,
     });
     if (!ctx) {
       throw 'Could not get 2d context for ZoomCanvas';
