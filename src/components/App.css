@@ -21,7 +21,7 @@
 
 .toolbox-container {
   display: flex;
-  width: 80px;
+  width: 81px; /* 40px icon, 1px divider, 40pc icon */
   flex-direction: column;
   flex-shrink: 0; /* never shrink width smaller than content (toolbar) */
   overflow: hidden; /* never show a scrollbar here */

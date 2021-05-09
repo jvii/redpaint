@@ -15,6 +15,7 @@ export function Toolbox(): JSX.Element {
         isSelected={state.toolbox.selectedDrawingToolId === 'dottedFreehand'}
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('dottedFreehand')}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxToggleButton
         buttonClass="freehand"
         isSelected={state.toolbox.selectedDrawingToolId === 'freeHand'}
@@ -25,6 +26,7 @@ export function Toolbox(): JSX.Element {
         isSelected={state.toolbox.selectedDrawingToolId === 'line'}
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('line')}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxToggleButton
         buttonClass="curve"
         isSelected={state.toolbox.selectedDrawingToolId === 'curve'}
@@ -35,6 +37,7 @@ export function Toolbox(): JSX.Element {
         isSelected={state.toolbox.selectedDrawingToolId === 'floodFill'}
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('floodFill')}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxToggleButton
         buttonClass="airbrush"
         isSelected={state.toolbox.selectedDrawingToolId === 'airbrush'}
@@ -47,6 +50,7 @@ export function Toolbox(): JSX.Element {
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('rectangleNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('rectangleFilled')}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxDualToggleButton
         buttonClass="circle"
         isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'circleNoFill'}
@@ -61,6 +65,7 @@ export function Toolbox(): JSX.Element {
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseFilled')}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxDualToggleButton
         buttonClass="polygon"
         isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'polygonNoFill'}
@@ -73,6 +78,7 @@ export function Toolbox(): JSX.Element {
         isSelected={state.toolbox.activeToolId === 'brushSelectorTool'}
         onClick={(): void => actions.toolbox.toggleBrushSelectionMode()}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxDualToggleButton
         buttonClass="text"
         isUpperHalfSelected={state.toolbox.selectedDrawingToolId === 'textNoFill'}
@@ -87,6 +93,7 @@ export function Toolbox(): JSX.Element {
         }
         onClick={(): void => actions.toolbox.toggleZoomMode()}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxToggleButton
         buttonClass="symmetry"
         isSelected={state.toolbox.symmetryModeOn}
@@ -97,6 +104,7 @@ export function Toolbox(): JSX.Element {
         onClick={(): void => actions.undo.undo()}
         onRightClick={(): void => actions.undo.redo()}
       />
+      <div className="toolbox-button-divider"></div>
       <ToolboxActionButton
         buttonClass="clr"
         onClick={(): void => {

@@ -30,10 +30,12 @@ export function ToolboxDualToggleButton({
     modifier = modifier + '-upper-half-selected';
   }
   return (
-    <button
-      className={'toolbox__button toolbox__button--' + modifier}
-      onClick={handleClick}
-    ></button>
+    <div className="toolbox_button_container">
+      <button
+        className={'toolbox__button toolbox__button--' + modifier}
+        onClick={handleClick}
+      ></button>
+    </div>
   );
 }
 

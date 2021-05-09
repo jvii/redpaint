@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToolboxButtonContainer } from './ToolboxButtonContainer';
 
 interface Props {
   buttonClass: string;
@@ -14,10 +15,12 @@ export function ToolboxActionButton({ buttonClass, onClick, onRightClick }: Prop
     event.preventDefault();
   };
   return (
-    <button
-      className={'toolbox__button toolbox__button--' + buttonClass}
-      onClick={onClick}
-      onContextMenu={handleRightClick}
-    ></button>
+    <ToolboxButtonContainer>
+      <button
+        className={'toolbox__button toolbox__button--' + buttonClass}
+        onClick={onClick}
+        onContextMenu={handleRightClick}
+      ></button>
+    </ToolboxButtonContainer>
   );
 }
