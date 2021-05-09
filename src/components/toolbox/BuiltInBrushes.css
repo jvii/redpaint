@@ -1,9 +1,9 @@
 .built-in-brushes-container {
-  border: 1px solid white;
+  border: 1px solid #EFEFF1;
 }
 
 .built-in-brushes {
-  background: white;
+  background: #EFEFF1;
   display: grid;
   grid-template-rows: 20px;
 }
@@ -29,13 +29,13 @@
 }
 
 .built-in-brush-bg {
-  background: white;
+  background: #EFEFF1;
   fill: black;
 }
 
 .built-in-brush-bg--selected {
   background: black;
-  fill: white;
+  fill: #EFEFF1;
 }
 
 .built-in-brush-svg {

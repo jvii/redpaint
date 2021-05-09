@@ -3,12 +3,13 @@
 .menubar {
   border-bottom: 1px solid black;
   margin-bottom: 1px solid;
+  background-color: white;
   font-family: 'Press Start 2P';
   display: grid;
   grid-template-areas: 'title modeIndicator .';
   font-size: 16px;
   user-select: none;
-  height: 40px; /* helps with Firefox pointer hotspot issues */
+  height: 50px; /* helps with Firefox pointer hotspot issues */
   flex-shrink: 0; /* helps with Firefox pointer hotspot issues */
   align-items: center;
 }
@@ -52,7 +53,7 @@
   border-bottom: white;
   padding-bottom: 5px;
   font-size: 32px;
-  color: #ffffff;
+  color: white;
   margin-left: 30px;
   margin-right: 20px;
   margin-bottom: 15px;

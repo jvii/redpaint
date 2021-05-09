@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ToolboxButtonContainer } from './ToolboxButtonContainer';
 
 interface Props {
   buttonClass: string;
@@ -19,16 +20,19 @@ export function ToolboxToggleButton({
     }
     event.preventDefault();
   };
+
   return (
-    <button
-      className={
-        'toolbox__button ' +
-        (isSelected
-          ? 'toolbox__button--' + buttonClass + '-selected'
-          : 'toolbox__button--' + buttonClass)
-      }
-      onClick={onClick}
-      onContextMenu={handleRightClick}
-    ></button>
+    <ToolboxButtonContainer>
+      <button
+        className={
+          'toolbox__button ' +
+          (isSelected
+            ? 'toolbox__button--' + buttonClass + '-selected'
+            : 'toolbox__button--' + buttonClass)
+        }
+        onClick={onClick}
+        onContextMenu={handleRightClick}
+      ></button>
+    </ToolboxButtonContainer>
   );
 }

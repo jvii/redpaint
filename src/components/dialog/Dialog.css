@@ -36,6 +36,7 @@
   background-color: white;
   color: rgba(17, 51, 202, 0.9);
   border-radius: 10px 10px 0 0;
+  border-bottom: 2px red;
 }
 
 .modal-header > p {
