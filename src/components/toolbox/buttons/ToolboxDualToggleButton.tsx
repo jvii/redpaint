@@ -1,4 +1,5 @@
 import React from 'react';
+import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
 
 interface Props {
   buttonClass: string;
@@ -22,6 +23,7 @@ export function ToolboxDualToggleButton({
       onUpperHalfClick(event);
     }
   };
+
   let modifier = buttonClass;
   if (isLowerHalfSelected) {
     modifier = modifier + '-lower-half-selected';
@@ -30,18 +32,22 @@ export function ToolboxDualToggleButton({
     modifier = modifier + '-upper-half-selected';
   }
   return (
-    <div className="toolbox_button_container">
+    <ToolboxButtonHoverManager isDualToggleButton={true}>
       <button
-        className={'toolbox__button toolbox__button--' + modifier}
+        className={
+          'toolbox__button toolbox__button--' +
+          modifier +
+          (isLowerHalfSelected || isUpperHalfSelected ? ' toolbox_button_color_active' : '')
+        }
         onClick={handleClick}
       ></button>
-    </div>
+    </ToolboxButtonHoverManager>
   );
 }
 
 function isLowerHalfClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): boolean {
   const x = event.nativeEvent.offsetX;
-  const y = 35 - event.nativeEvent.offsetY; // TODO: fix magic number
+  const y = 40 - event.nativeEvent.offsetY; // TODO: fix magic number
   if (y <= x) {
     return true;
   } else {

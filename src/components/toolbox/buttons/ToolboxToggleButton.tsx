@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ToolboxButtonContainer } from './ToolboxButtonContainer';
+import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
 
 interface Props {
   buttonClass: string;
@@ -22,17 +22,17 @@ export function ToolboxToggleButton({
   };
 
   return (
-    <ToolboxButtonContainer>
+    <ToolboxButtonHoverManager isDualToggleButton={false}>
       <button
         className={
           'toolbox__button ' +
           (isSelected
-            ? 'toolbox__button--' + buttonClass + '-selected'
+            ? 'toolbox__button--' + buttonClass + '-selected' + ' toolbox_button_color_active'
             : 'toolbox__button--' + buttonClass)
         }
         onClick={onClick}
         onContextMenu={handleRightClick}
       ></button>
-    </ToolboxButtonContainer>
+    </ToolboxButtonHoverManager>
   );
 }

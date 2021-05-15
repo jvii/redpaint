@@ -50,90 +50,126 @@
   </symbol>
 
   <symbol id="brush-selector" viewBox="0 0 26.458 26.458">
-    <g transform="translate(-3.635 -3.4126)" fill="#EFEFF1">
+    <defs>
+      <mask id="brush-selector-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g fill-rule="evenodd" fill="white">
+          <rect
+            x="7.5099"
+            y="7.6933"
+            width="18.335"
+            height="18.326"
+            stroke="black"
+            stroke-width="1.82"
+          />
+          <rect x="11.125" y="3.4522" width="11.031" height="26.474" stroke-width="1.0729" />
+          <rect x="3.6746" y="11.389" width="26.419" height="10.771" stroke-width="1.065" />
+        </g>
+      </mask>
+    </defs>
+    <g transform="translate(-3.635 -3.4126)">
       <rect
         x="3.7417"
         y="3.5192"
         width="26.245"
         height="26.245"
-        stroke="#fff"
-        stroke-linecap="round"
-        stroke-linejoin="bevel"
-        stroke-width=".21324"
+        fill="#EFEFF1"
+        mask="url(#brush-selector-mask)"
       />
-      <g fill-rule="evenodd">
-        <rect
-          x="7.5099"
-          y="7.6933"
-          width="18.335"
-          height="18.326"
-          stroke="#000"
-          stroke-width="1.82"
-        />
-        <rect x="11.125" y="3.4522" width="11.031" height="26.474" stroke-width="1.0729" />
-        <rect x="3.6746" y="11.389" width="26.419" height="10.771" stroke-width="1.065" />
-      </g>
     </g>
   </symbol>
 
   <symbol id="brush-selector-active" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="brush-selector-active-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g fill="black">
+          <rect
+            x="11.125"
+            y="3.4522"
+            width="11.031"
+            height="26.474"
+            stroke-width="1.0729"
+            stroke="black"
+          />
+          <rect x="3.6746" y="11.389" width="26.419" height="10.771" stroke-width="1.065" />
+        </g>
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="white"
+        fill="transparent"
+      />
       <rect
         x="7.5099"
         y="7.6933"
         width="18.335"
         height="18.326"
-        fill="none"
-        stroke="#fff"
+        fill="transparent"
+        stroke="white"
         stroke-width="1.82"
-      />
-      <rect x="11.125" y="4.4522" width="11.031" height="24.474" fill-rule="evenodd" />
-      <rect
-        x="4.6746"
-        y="11.389"
-        width="24.419"
-        height="10.771"
-        fill="#030000"
-        fill-rule="evenodd"
-        stroke-width="1.065"
+        mask="url(#brush-selector-active-mask)"
       />
     </g>
   </symbol>
 
   <symbol id="circle" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="circle-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g stroke="black">
+          <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
+          <circle
+            transform="rotate(-2.1486)"
+            cx="16.248"
+            cy="16.939"
+            r="9.8182"
+            fill="none"
+            stroke-linecap="round"
+            stroke-width="1.4797"
+          />
+          <path
+            d="m16.059 26.136c-1.2608-0.06139-2.4956-0.38395-3.6852-0.9627-0.54279-0.26406-1.5538-0.90424-1.8876-1.1952l-0.16352-0.14254 5.4381-5.5171c2.9909-3.0344 6.0643-6.1485 6.8296-6.9202l1.3915-1.4031 0.2789 0.3471c1.9123 2.3799 2.5829 5.5797 1.7933 8.5581-0.43697 1.6484-1.3136 3.1716-2.5176 4.3745-0.82376 0.82301-1.5635 1.3512-2.6284 1.8769-1.5495 0.7649-3.0593 1.0713-4.849 0.9842z"
+            stroke-linecap="round"
+            stroke-width=".060927"
+            fill="black"
+          />
+        </g>
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
-      <g stroke="black">
-        <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
-        <circle
-          transform="rotate(-2.1486)"
-          cx="16.248"
-          cy="16.939"
-          r="9.8182"
-          fill="none"
-          stroke-linecap="round"
-          stroke-width="1.4797"
-        />
-        <path
-          d="m16.059 26.136c-1.2608-0.06139-2.4956-0.38395-3.6852-0.9627-0.54279-0.26406-1.5538-0.90424-1.8876-1.1952l-0.16352-0.14254 5.4381-5.5171c2.9909-3.0344 6.0643-6.1485 6.8296-6.9202l1.3915-1.4031 0.2789 0.3471c1.9123 2.3799 2.5829 5.5797 1.7933 8.5581-0.43697 1.6484-1.3136 3.1716-2.5176 4.3745-0.82376 0.82301-1.5635 1.3512-2.6284 1.8769-1.5495 0.7649-3.0593 1.0713-4.849 0.9842z"
-          stroke-linecap="round"
-          stroke-width=".060927"
-          fill="black"
-        />
-      </g>
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#circle-mask)"
+      />
     </g>
   </symbol>
 
   <symbol id="circle-filled-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="black" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="transparent"
+        stroke="white"
+      />
       <circle transform="rotate(-2.1486)" cx="16.248" cy="16.939" r="9.8182" fill="#EFEFF1" />
     </g>
   </symbol>
 
   <symbol id="circle-nofill-active" viewBox="0 0 26.458 26.458">
-    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
+    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round" fill="transparent">
       <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
       <circle
         transform="rotate(-2.1486)"
@@ -147,20 +183,25 @@
   </symbol>
 
   <symbol id="curve" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="curve-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <path
+          d="m6.032 7.0839c22.289-0.026568 20.424 19.23 20.465 20.47"
+          fill="none"
+          stroke="black"
+          stroke-width="2.0032"
+        />
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.0423)" fill="#EFEFF1">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" />
-      <path
-        d="m6.032 7.0839c22.289-0.026568 20.424 19.23 20.465 20.47"
-        fill="none"
-        stroke="#000"
-        stroke-width="2.0032"
-      />
+      <rect x="3.7417" y="3.1179" width="26.245" height="26.245" mask="url(#curve-mask)" />
     </g>
   </symbol>
 
   <symbol id="curve-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="#00000e" stroke="white" />
+      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="transparent" stroke="white" />
       <path
         d="m6.032 7.0839c22.289-0.026568 20.424 19.23 20.465 20.47"
         fill="none"
@@ -171,32 +212,44 @@
   </symbol>
 
   <symbol id="clr" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="clr-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g stroke="#000">
+          <g stroke-width="1.5874">
+            <path d="m6.9232 6.9808v18.379" />
+            <path d="m6.1295 7.4184h5.1061" />
+            <path d="m6.1295 24.964h5.1061" />
+          </g>
+          <path d="m14.455 6.6027v19.162" stroke-width="1.591" />
+          <path d="m13.889 24.964h5.1061" stroke-width="1.5874" />
+          <path d="m20.777 6.4061v19.427" stroke-width="1.5808" />
+          <g stroke-width="1.5874">
+            <path d="m20.311 7.1998h5.1061" />
+            <path d="m26.208 7.9179v6.9921" />
+            <path d="m20.682 15.628h4.7359" />
+          </g>
+          <path d="m26.212 17.732v8.0882" stroke-width="1.5833" />
+          <path d="m24.608 15.877v1.9264" stroke-width="1.5874" />
+        </g>
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.0423)" fill="#EFEFF1">
-      <rect x="3.7417" y="3.1179" width="26.245" height="26.245" />
-      <g fill="none" stroke="#000">
-        <g stroke-width="1.5874">
-          <path d="m6.9232 6.9808v18.379" />
-          <path d="m6.1295 7.4184h5.1061" />
-          <path d="m6.1295 24.964h5.1061" />
-        </g>
-        <path d="m14.455 6.6027v19.162" stroke-width="1.591" />
-        <path d="m13.889 24.964h5.1061" stroke-width="1.5874" />
-        <path d="m20.777 6.4061v19.427" stroke-width="1.5808" />
-        <g stroke-width="1.5874">
-          <path d="m20.311 7.1998h5.1061" />
-          <path d="m26.208 7.9179v6.9921" />
-          <path d="m20.682 15.628h4.7359" />
-        </g>
-        <path d="m26.212 17.732v8.0882" stroke-width="1.5833" />
-        <path d="m24.608 15.877v1.9264" stroke-width="1.5874" />
-      </g>
+      <rect x="3.7417" y="3.1179" width="26.245" height="26.245" mask="url(#clr-mask)" />
     </g>
   </symbol>
 
   <symbol id="clr-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.1179" width="26.245" height="26.245" stroke="white" />
-      <g fill="none" stroke="#fffffb">
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        stroke="white"
+        fill="transparent"
+      />
+      <g fill="none" stroke="white">
         <g stroke-width="1.5874">
           <path d="m6.9232 6.9808v18.379" />
           <path d="m6.1295 7.4184h5.1061" />
@@ -218,7 +271,7 @@
 
   <symbol id="dotted-freehand" viewBox="0 0 26.458 26.458">
     <defs>
-      <mask id="image-mask">
+      <mask id="dotted-freehand-mask">
         <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
         <g stroke-width=".93573" fill="black">
           <rect x="9.8288" y="7.6877" width="2.6457" height="2.6457" />
@@ -228,7 +281,6 @@
         </g>
       </mask>
     </defs>
-
     <g transform="translate(-3.635 -3.0423)">
       <rect
         x="3.7417"
@@ -236,14 +288,21 @@
         width="26.245"
         height="26.245"
         fill="#EFEFF1"
-        mask="url(#image-mask)"
+        mask="url(#dotted-freehand-mask)"
       />
     </g>
   </symbol>
 
   <symbol id="dotted-freehand-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        stroke="#EFEFF1"
+        fill="transparent"
+      />
       <g fill="#fffffc" fill-rule="evenodd" stroke-width=".93573">
         <rect x="9.8288" y="7.6877" width="2.6457" height="2.6457" />
         <rect x="15.306" y="10.741" width="2.6457" height="2.6457" />
@@ -254,32 +313,51 @@
   </symbol>
 
   <symbol id="ellipse" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="ellipse-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g stroke="black">
+          <ellipse
+            transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
+            cx="15.581"
+            cy="17.498"
+            rx="10.53"
+            ry="5.171"
+            fill="#EFEFF1"
+            stroke-linecap="round"
+            stroke-width="1.1121"
+          />
+          <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
+          <path
+            transform="translate(3.635 3.4126)"
+            d="m11.781 18.254c-1.0127-0.097045-2.0151-0.23442-2.1152-0.28989-0.078828-0.043653 1.1851-1.379 3.9543-4.1775l4.0701-4.1134 0.57759 0.14947c2.1278 0.55061 4.0251 1.7312 4.6615 2.9005 1.3081 2.4034-2.3355 4.9564-7.8477 5.4986-0.85601 0.0842-2.5826 0.10109-3.3006 0.03227z"
+            stroke-width=".84661"
+          />
+        </g>
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
-      <g stroke="#000">
-        <ellipse
-          transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
-          cx="15.581"
-          cy="17.498"
-          rx="10.53"
-          ry="5.171"
-          fill="#EFEFF1"
-          stroke-linecap="round"
-          stroke-width="1.1121"
-        />
-        <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
-        <path
-          transform="translate(3.635 3.4126)"
-          d="m11.781 18.254c-1.0127-0.097045-2.0151-0.23442-2.1152-0.28989-0.078828-0.043653 1.1851-1.379 3.9543-4.1775l4.0701-4.1134 0.57759 0.14947c2.1278 0.55061 4.0251 1.7312 4.6615 2.9005 1.3081 2.4034-2.3355 4.9564-7.8477 5.4986-0.85601 0.0842-2.5826 0.10109-3.3006 0.03227z"
-          stroke-width=".84661"
-        />
-      </g>
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#ellipse-mask)"
+      />
     </g>
   </symbol>
 
   <symbol id="ellipse-filled-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="transparent"
+        stroke="#EFEFF1"
+      />
       <ellipse
         transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
         cx="15.581"
@@ -294,16 +372,8 @@
   </symbol>
 
   <symbol id="ellipse-nofill-active" viewBox="0 0 26.458 26.458">
-    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round">
-      <rect
-        x="3.7417"
-        y="3.5192"
-        width="26.245"
-        height="26.245"
-        stroke="#000"
-        stroke-linejoin="bevel"
-        stroke-width=".21324"
-      />
+    <g transform="translate(-3.635 -3.4126)" stroke-linecap="round" fill="transparent">
+      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="#EFEFF1" />
       <ellipse
         transform="matrix(.99983 -.018371 .076387 .99708 0 0)"
         cx="15.581"
@@ -353,21 +423,40 @@
   </symbol>
 
   <symbol id="freehand" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="freehand-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <path
+          transform="matrix(.97643 0 0 1.0266 .72127 -.24277)"
+          d="m6.6807 9.4413c1.0992-0.89481 2.177-1.7722 3.4245-2.1054s2.5693-0.099241 3.3156 0.43941c0.74626 0.53865 0.8798 1.3714 1.0289 2.2338 0.14906 0.86238 0.31491 1.7619 0.52125 2.8075 0.20634 1.0456 0.45371 2.2396 0.67465 3.3808 0.22094 1.1412 0.42789 2.2942 0.62413 3.1456 0.19624 0.85144 0.3821 1.4077 0.59957 2.0433s0.46243 1.3384 0.76589 1.9417c0.30345 0.60331 0.661 1.0971 0.9851 1.4545 0.32411 0.35748 0.61355 0.57882 0.92858 0.72272 0.31503 0.1439 0.65555 0.212 1.0638 0.22009 0.40826 0.0081 0.88499-0.043 1.4378-0.19638 0.55285-0.15338 1.1828-0.40877 1.9059-0.86832 0.72308-0.45955 1.5403-1.1236 2.3573-1.7873"
+          stroke-width="2.0158"
+          stroke="black"
+          fill="transparent"
+        />
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.0423)" stroke-linecap="round">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="#EFEFF1" />
-      <path
-        transform="matrix(.97643 0 0 1.0266 .72127 -.24277)"
-        d="m6.6807 9.4413c1.0992-0.89481 2.177-1.7722 3.4245-2.1054s2.5693-0.099241 3.3156 0.43941c0.74626 0.53865 0.8798 1.3714 1.0289 2.2338 0.14906 0.86238 0.31491 1.7619 0.52125 2.8075 0.20634 1.0456 0.45371 2.2396 0.67465 3.3808 0.22094 1.1412 0.42789 2.2942 0.62413 3.1456 0.19624 0.85144 0.3821 1.4077 0.59957 2.0433s0.46243 1.3384 0.76589 1.9417c0.30345 0.60331 0.661 1.0971 0.9851 1.4545 0.32411 0.35748 0.61355 0.57882 0.92858 0.72272 0.31503 0.1439 0.65555 0.212 1.0638 0.22009 0.40826 0.0081 0.88499-0.043 1.4378-0.19638 0.55285-0.15338 1.1828-0.40877 1.9059-0.86832 0.72308-0.45955 1.5403-1.1236 2.3573-1.7873"
-        fill="none"
-        stroke="#000"
-        stroke-width="2.0158"
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#freehand-mask)"
       />
     </g>
   </symbol>
 
   <symbol id="freehand-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)" stroke-linecap="round">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        stroke="#EFEFF1"
+        fill="transparent"
+      />
       <path
         transform="matrix(.97643 0 0 1.0266 .72127 -.24277)"
         d="m6.6807 9.4413c1.0992-0.89481 2.177-1.7722 3.4245-2.1054s2.5693-0.099241 3.3156 0.43941c0.74626 0.53865 0.8798 1.3714 1.0289 2.2338 0.14906 0.86238 0.31491 1.7619 0.52125 2.8075 0.20634 1.0456 0.45371 2.2396 0.67465 3.3808 0.22094 1.1412 0.42789 2.2942 0.62413 3.1456 0.19624 0.85144 0.3821 1.4077 0.59957 2.0433s0.46243 1.3384 0.76589 1.9417c0.30345 0.60331 0.661 1.0971 0.9851 1.4545 0.32411 0.35748 0.61355 0.57882 0.92858 0.72272 0.31503 0.1439 0.65555 0.212 1.0638 0.22009 0.40826 0.0081 0.88499-0.043 1.4378-0.19638 0.55285-0.15338 1.1828-0.40877 1.9059-0.86832 0.72308-0.45955 1.5403-1.1236 2.3573-1.7873"
@@ -379,20 +468,32 @@
   </symbol>
 
   <symbol id="line" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="line-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <path
+          d="m6.9901 25.75c19.187-19.356 19.187-19.356 19.187-19.356"
+          fill="none"
+          stroke="black"
+          stroke-width="1.7575"
+        />
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="#EFEFF1" />
-      <path
-        d="m6.9901 25.75c19.187-19.356 19.187-19.356 19.187-19.356"
-        fill="none"
-        stroke="#000"
-        stroke-width="1.7575"
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#line-mask)"
       />
     </g>
   </symbol>
 
   <symbol id="line-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="#000001" stroke="white" />
+      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="transparent" stroke="white" />
       <path
         d="m6.9901 25.75c19.187-19.356 19.187-19.356 19.187-19.356"
         fill="none"
@@ -403,32 +504,49 @@
   </symbol>
 
   <symbol id="polygon" viewBox="0 0 26.458 26.458">
-    <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
-      <g stroke="#000">
-        <rect
-          transform="rotate(45)"
-          x="16.405"
-          y="-7.5099"
-          width="15.149"
-          height="15.149"
-          fill="none"
-          stroke-width="1.4978"
-        />
-        <path d="m6.3057 27.676 20.678-20.972" fill="none" stroke-width="1.3366" />
-        <path
-          d="m14.512 24.698-2.2336-2.2336 9.9618-10.137 4.5547 4.5547-10.049 10.049z"
-          fill-rule="evenodd"
-          stroke-linecap="round"
-          stroke-width=".023136"
-        />
-      </g>
+    <defs>
+      <mask id="polygon-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g stroke="black">
+          <rect
+            transform="rotate(45)"
+            x="16.405"
+            y="-7.5099"
+            width="14.149"
+            height="14.149"
+            fill="none"
+            stroke-width="1.4978"
+          />
+          <path d="m6.3057 27.676 20.678-20.972" stroke-width="1.3366" />
+          <path
+            d="m14.512 24.698-2.2336-2.2336 9.9618-10.137 4.5547 4.5547-10.049 10.049z"
+            stroke-linecap="round"
+            stroke-width=".023136"
+          />
+        </g>
+      </mask>
+    </defs>
+    <g transform="translate(-3.635 -3.5126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#polygon-mask)"
+      />
     </g>
   </symbol>
-
   <symbol id="polygon-filled-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="white"
+        fill="transparent"
+      />
       <rect
         transform="rotate(45)"
         x="16.405"
@@ -444,7 +562,7 @@
   </symbol>
 
   <symbol id="polygon-nofill-active" viewBox="0 0 26.458 26.458">
-    <g transform="translate(-3.635 -3.4126)">
+    <g transform="translate(-3.635 -3.4126)" fill="transparent">
       <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
       <rect
         transform="rotate(45)"
@@ -460,32 +578,51 @@
   </symbol>
 
   <symbol id="rectangle" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="rectangle-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g stroke="black">
+          <rect
+            x="7.7936"
+            y="7.9751"
+            width="17.582"
+            height="17.582"
+            fill="none"
+            stroke-width="1.3152"
+          />
+          <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
+          <path
+            transform="translate(3.635 3.4126)"
+            d="m8.2832 19.135c1.2759-1.2914 4.4988-4.5595 7.1619-7.2626 2.6631-2.7031 5.0142-5.0888 5.2246-5.3016l0.38252-0.38693v15.299h-15.089z"
+            stroke-linecap="round"
+            stroke-width=".42331"
+            fill="black"
+          />
+        </g>
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
-      <g stroke="black">
-        <rect
-          x="7.7936"
-          y="7.9751"
-          width="17.582"
-          height="17.582"
-          fill="none"
-          stroke-width="1.3152"
-        />
-        <path d="m5.9914 27.548 21.342-21.645" fill="none" stroke-width="1.3795" />
-        <path
-          transform="translate(3.635 3.4126)"
-          d="m8.2832 19.135c1.2759-1.2914 4.4988-4.5595 7.1619-7.2626 2.6631-2.7031 5.0142-5.0888 5.2246-5.3016l0.38252-0.38693v15.299h-15.089z"
-          stroke-linecap="round"
-          stroke-width=".42331"
-          fill="black"
-        />
-      </g>
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#rectangle-mask)"
+      />
     </g>
   </symbol>
 
   <symbol id="rectangle-filled-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="white"
+        fill="transparent"
+      />
       <rect
         x="8.1704"
         y="7.9751"
@@ -500,7 +637,7 @@
   </symbol>
 
   <symbol id="rectangle-nofill-active" viewBox="0 0 26.458 26.458">
-    <g transform="translate(-3.635 -3.4126)">
+    <g transform="translate(-3.635 -3.4126)" fill="transparent">
       <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
       <rect
         x="8.1704"
@@ -861,8 +998,14 @@
       </mask>
     </defs>
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.1179" width="26.245" height="26.245" fill="#EFEFF1" mask="url(#undo-mask)"/>
-
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#undo-mask)"
+      />
     </g>
   </symbol>
 
@@ -873,7 +1016,14 @@
     xmlns="http://www.w3.org/2000/svg"
   >
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.1179" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.1179"
+        width="26.245"
+        height="26.245"
+        fill="transparent"
+        stroke="white"
+      />
       <g fill="none" stroke="#fff">
         <path d="m7.2349 4.9802v8.1445" stroke-width="1.8898" />
         <path d="m8.1753 14.052h5.2485" stroke-width="1.8898" />
@@ -898,8 +1048,8 @@
   </symbol>
 
   <symbol id="zoom" version="1.1" viewBox="0 0 26.458 26.458" xmlns="http://www.w3.org/2000/svg">
-    <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
+    <mask id="zoom-mask">
+      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
       <ellipse
         cx="19.254"
         cy="13.561"
@@ -910,7 +1060,17 @@
         stroke-linecap="round"
         stroke-width="1.597"
       />
-      <path d="m7.8899 25.005 7.372-7.1027" fill="none" stroke="#000" stroke-width="4.097" />
+      <path d="m7.8899 25.005 7.372-7.1027" fill="none" stroke="black" stroke-width="4.097" />
+    </mask>
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#zoom-mask)"
+      />
     </g>
   </symbol>
 
@@ -921,7 +1081,14 @@
     xmlns="http://www.w3.org/2000/svg"
   >
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        stroke="white"
+        fill="transparent"
+      />
       <ellipse
         cx="19.254"
         cy="13.561"
