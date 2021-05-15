@@ -1,5 +1,5 @@
 import React from 'react';
-import { ToolboxButtonContainer } from './ToolboxButtonContainer';
+import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
 
 interface Props {
   buttonClass: string;
@@ -15,12 +15,12 @@ export function ToolboxActionButton({ buttonClass, onClick, onRightClick }: Prop
     event.preventDefault();
   };
   return (
-    <ToolboxButtonContainer>
+    <ToolboxButtonHoverManager isDualToggleButton={false}>
       <button
         className={'toolbox__button toolbox__button--' + buttonClass}
         onClick={onClick}
         onContextMenu={handleRightClick}
       ></button>
-    </ToolboxButtonContainer>
+    </ToolboxButtonHoverManager>
   );
 }

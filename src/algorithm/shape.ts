@@ -16,10 +16,10 @@ export function line(start: Point, end: Point): Point[] {
   const cx = (end.x - start.x) / dist;
   const cy = (end.y - start.y) / dist;
 
-  const line: Point[] = [];
+  const line: Point[] = new Array(Math.floor(dist));
 
   for (let i = 0; i <= dist; i++) {
-    line.push({ x: Math.floor(start.x + cx * i), y: Math.floor(start.y + cy * i) });
+    line[i] = { x: Math.floor(start.x + cx * i), y: Math.floor(start.y + cy * i) };
   }
   return line;
 }

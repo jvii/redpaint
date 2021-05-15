@@ -38,23 +38,26 @@
 }
 
 .toolbox_button_color_hover {
-  background-color: #004085;
+  background-color: #004fa1;
+}
+
+.toolbox_dual_toggle_button_color_upper_hover {
+  background: linear-gradient(135deg, #004fa1 52%, rgb(116, 116, 116) 52% 100%);
+  /*background: linear-gradient(135deg, #004fa1 0% 25%, darkgrey 75% 100%)*/
+}
+
+.toolbox_dual_toggle_button_color_lower_hover {
+  background: linear-gradient(135deg, rgb(116, 116, 116) 48%, #004fa1 48% 100%);
+  /*background: linear-gradient(135deg, darkgrey 0% 25%, #004fa1 75% 100%)*/
 }
 
 .toolbox_button_container {
   position: relative;
   box-sizing: border-box;
-  /*outline: 3px solid white;*/
-  /*border-left: 1px solid rgb(227, 231, 226);
-  border-right: 1px solid lightgrey;*/
   padding: none;
   margin: 0;
   border: none;
   background-color: transparent;
-  /*border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;*/
 }
 
 .toolbox__button--dottedfreehand {
@@ -62,7 +65,7 @@
 }
 
 .toolbox__button--dottedfreehand-selected {
-  background: url(../../resources/toolbar.svg#dotted-freehand-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#dotted-freehand-active-view) no-repeat;
 }
 
 .toolbox__button--freehand {
@@ -70,7 +73,7 @@
 }
 
 .toolbox__button--freehand-selected {
-  background: url(../../resources/toolbar.svg#freehand-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#freehand-active-view) no-repeat;
 }
 
 .toolbox__button--line {
@@ -78,7 +81,7 @@
 }
 
 .toolbox__button--line-selected {
-  background: url(../../resources/toolbar.svg#line-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#line-active-view) no-repeat;
 }
 
 .toolbox__button--curve {
@@ -86,7 +89,7 @@
 }
 
 .toolbox__button--curve-selected {
-  background: url(../../resources/toolbar.svg#curve-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#curve-active-view) no-repeat;
 }
 
 .toolbox__button--airbrush {
@@ -94,7 +97,7 @@
 }
 
 .toolbox__button--airbrush-selected {
-  background: url(../../resources/toolbar.svg#airbrush-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#airbrush-active-view) no-repeat;
 }
 
 .toolbox__button--floodfill {
@@ -102,7 +105,7 @@
 }
 
 .toolbox__button--floodfill-selected {
-  background: url(../../resources/toolbar.svg#floodfill-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#floodfill-active-view) no-repeat;
 }
 
 .toolbox__button--rectangle {
@@ -110,11 +113,11 @@
 }
 
 .toolbox__button--rectangle-lower-half-selected {
-  background: url(../../resources/toolbar.svg#rectangle-filled-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#rectangle-filled-active-view) no-repeat;
 }
 
 .toolbox__button--rectangle-upper-half-selected {
-  background: url(../../resources/toolbar.svg#rectangle-nofill-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#rectangle-nofill-active-view) no-repeat;
 }
 
 .toolbox__button--circle {
@@ -122,11 +125,11 @@
 }
 
 .toolbox__button--circle-lower-half-selected {
-  background: url(../../resources/toolbar.svg#circle-filled-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#circle-filled-active-view) no-repeat;
 }
 
 .toolbox__button--circle-upper-half-selected {
-  background: url(../../resources/toolbar.svg#circle-nofill-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#circle-nofill-active-view) no-repeat;
 }
 
 .toolbox__button--ellipse {
@@ -134,11 +137,11 @@
 }
 
 .toolbox__button--ellipse-lower-half-selected {
-  background: url(../../resources/toolbar.svg#ellipse-filled-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#ellipse-filled-active-view) no-repeat;
 }
 
 .toolbox__button--ellipse-upper-half-selected {
-  background: url(../../resources/toolbar.svg#ellipse-nofill-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#ellipse-nofill-active-view) no-repeat;
 }
 
 .toolbox__button--polygon {
@@ -146,11 +149,11 @@
 }
 
 .toolbox__button--polygon-lower-half-selected {
-  background: url(../../resources/toolbar.svg#polygon-filled-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#polygon-filled-active-view) no-repeat;
 }
 
 .toolbox__button--polygon-upper-half-selected {
-  background: url(../../resources/toolbar.svg#polygon-nofill-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#polygon-nofill-active-view) no-repeat;
 }
 
 .toolbox__button--text {
@@ -170,7 +173,7 @@
 }
 
 .toolbox__button--zoom-selected {
-  background: url(../../resources/toolbar.svg#zoom-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#zoom-active-view) no-repeat;
 }
 
 .toolbox__button--symmetry {
@@ -178,7 +181,7 @@
 }
 
 .toolbox__button--symmetry-selected {
-  background: url(../../resources/toolbar.svg#symmetry-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#symmetry-active-view) no-repeat;
 }
 
 .toolbox__button--brushselect {
@@ -186,7 +189,7 @@
 }
 
 .toolbox__button--brushselect-selected {
-  background: url(../../resources/toolbar.svg#brush-selector-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#brush-selector-active-view) no-repeat;
 }
 
 .toolbox__button--undo {
@@ -194,7 +197,7 @@
 }
 
 .toolbox__button--undo:active {
-  background: url(../../resources/toolbar.svg#undo-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#undo-active-view) #004fa1 no-repeat;
 }
 
 .toolbox__button--clr {
@@ -202,5 +205,9 @@
 }
 
 .toolbox__button--clr:active {
-  background: url(../../resources/toolbar.svg#clr-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#clr-active-view) #004fa1 no-repeat;
+}
+
+.toolbox_button_color_active {
+  background-color: #004fa1;
 }
