@@ -2,32 +2,42 @@
   <!-- SVG sprite for Toolbox. See end of file for view definition of each icon -->
 
   <symbol id="airbrush" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="airbrush-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+          <g stroke-width=".93573" fill="black">
+            <rect x="22.647" y="7.0713" width="2.6457" height="2.6457" />
+            <rect x="12.064" y="12.363" width="2.6457" height="2.6457" />
+            <rect x="14.71" y="9.717" width="2.6457" height="2.6457" />
+            <rect x="17.356" y="7.0713" width="2.6457" height="2.6457" />
+            <rect x="14.71" y="15.008" width="2.6457" height="2.6457" />
+            <rect x="12.064" y="17.654" width="2.6457" height="2.6457" />
+            <rect x="20.002" y="12.363" width="2.6457" height="2.6457" />
+            <rect x="14.71" y="20.3" width="2.6457" height="2.6457" />
+            <rect x="17.356" y="22.945" width="2.6457" height="2.6457" />
+            <rect x="20.002" y="17.654" width="2.6457" height="2.6457" />
+            <rect x="22.647" y="22.945" width="2.6457" height="2.6457" />
+            <rect x="25.294" y="12.363" width="2.6457" height="2.6457" />
+            <rect x="25.294" y="17.654" width="2.6457" height="2.6457" />
+          </g>
+          <rect x="4.6527" y="15.008" width="7.4115" height="2.6457" stroke-width="1.5662" />
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="#EFEFF1" />
-      <g fill-rule="evenodd">
-        <g stroke-width=".93573">
-          <rect x="22.647" y="7.0713" width="2.6457" height="2.6457" />
-          <rect x="12.064" y="12.363" width="2.6457" height="2.6457" />
-          <rect x="14.71" y="9.717" width="2.6457" height="2.6457" />
-          <rect x="17.356" y="7.0713" width="2.6457" height="2.6457" />
-          <rect x="14.71" y="15.008" width="2.6457" height="2.6457" />
-          <rect x="12.064" y="17.654" width="2.6457" height="2.6457" />
-          <rect x="20.002" y="12.363" width="2.6457" height="2.6457" />
-          <rect x="14.71" y="20.3" width="2.6457" height="2.6457" />
-          <rect x="17.356" y="22.945" width="2.6457" height="2.6457" />
-          <rect x="20.002" y="17.654" width="2.6457" height="2.6457" />
-          <rect x="22.647" y="22.945" width="2.6457" height="2.6457" />
-          <rect x="25.294" y="12.363" width="2.6457" height="2.6457" />
-          <rect x="25.294" y="17.654" width="2.6457" height="2.6457" />
-        </g>
-        <rect x="4.6527" y="15.008" width="7.4115" height="2.6457" stroke-width="1.5662" />
-      </g>
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#airbrush-mask)"
+      />
     </g>
   </symbol>
 
   <symbol id="airbrush-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.0423)">
-      <rect x="3.7417" y="3.149" width="26.245" height="26.245" stroke="white" />
+      <rect x="3.7417" y="3.149" width="26.245" height="26.245" stroke="white" fill="transparent"/>
       <g fill="#fff" fill-rule="evenodd">
         <g stroke-width=".93573">
           <rect x="22.647" y="7.0713" width="2.6457" height="2.6457" />
@@ -387,26 +397,38 @@
   </symbol>
 
   <symbol id="floodfill" viewBox="0 0 26.458 26.458">
+    <defs>
+      <mask id="floodfill-mask">
+        <rect x="3.7417" y="3.149" width="26.245" height="26.245" fill="white" />
+        <g fill="transparent" stroke="black">
+          <rect
+            transform="rotate(45)"
+            x="16.248"
+            y="-7.1208"
+            width="11.319"
+            height="11.319"
+            stroke-width="1.6139"
+          />
+          <path d="m15.555 21.495v6.3424" stroke-width="1.3833" />
+          <path d="m11.217 27.49h8.6364" stroke-width="1.3795" />
+        </g>
+      </mask>
+    </defs>
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
-      <g fill="none" stroke="#000">
-        <rect
-          transform="rotate(45)"
-          x="16.248"
-          y="-7.1208"
-          width="11.319"
-          height="11.319"
-          stroke-width="1.6139"
-        />
-        <path d="m15.555 21.495v6.3424" stroke-width="1.3833" />
-        <path d="m11.217 27.49h8.6364" stroke-width="1.3795" />
-      </g>
+      <rect
+        x="3.7417"
+        y="3.149"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#floodfill-mask)"
+      />
     </g>
   </symbol>
 
   <symbol id="floodfill-active" viewBox="0 0 26.458 26.458">
     <g transform="translate(-3.635 -3.4126)" stroke="#fff">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" fill="transparent"/>
       <g fill="none">
         <rect
           transform="rotate(45)"
