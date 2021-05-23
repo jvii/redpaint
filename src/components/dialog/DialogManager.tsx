@@ -3,12 +3,14 @@ import { useOvermind } from '../../overmind';
 import { Dialog } from './Dialog';
 import { CustomBrush } from '../../brush/CustomBrush';
 import './Dialog.css';
+import { Button } from '@material-ui/core';
 
 export function DialogManager(): JSX.Element | null {
   const { state, actions } = useOvermind();
 
   switch (state.dialog.activeDialog) {
     case 'PASTE_SELECT':
+      // TODO: create components i.e. PasteDialog
       return (
         <Dialog header="Image from clipboard" prompt="Select how to use this image.">
           <button
@@ -34,7 +36,9 @@ export function DialogManager(): JSX.Element | null {
     case 'PASTE_ERROR':
       return (
         <Dialog header="Image from clipboard" prompt="Clipboard item not recognized as an image.">
-          <button onClick={actions.dialog.close}>OK</button>
+          <Button variant="contained" color="primary" onClick={actions.dialog.close}>
+            OK
+          </Button>
         </Dialog>
       );
 

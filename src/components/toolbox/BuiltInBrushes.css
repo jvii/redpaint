@@ -33,8 +33,13 @@
   fill: black;
 }
 
+.built-in-brush-bg:hover {
+  background: #EFEFF1;
+  fill: #004fa1;
+}
+
 .built-in-brush-bg--selected {
-  background: black;
+  background: #004fa1;
   fill: #EFEFF1;
 }
 
