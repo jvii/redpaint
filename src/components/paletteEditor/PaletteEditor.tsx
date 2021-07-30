@@ -21,9 +21,7 @@ export function PaletteEditor(): JSX.Element | null {
       g: state.palette.foregroundColor.g,
       b: state.palette.foregroundColor.b,
     };
-    actions.palette.editColor({ colorId: state.palette.foregroundColorId, newColor: newColor });
-    paintingCanvasController.updatePalette();
-    overlayCanvasController.updatePalette();
+    setColor(newColor);
   }
 
   function setG(value: number) {
@@ -32,9 +30,7 @@ export function PaletteEditor(): JSX.Element | null {
       g: value,
       b: state.palette.foregroundColor.b,
     };
-    actions.palette.editColor({ colorId: state.palette.foregroundColorId, newColor: newColor });
-    paintingCanvasController.updatePalette();
-    overlayCanvasController.updatePalette();
+    setColor(newColor);
   }
 
   function setB(value: number) {
@@ -43,6 +39,10 @@ export function PaletteEditor(): JSX.Element | null {
       g: state.palette.foregroundColor.g,
       b: value,
     };
+    setColor(newColor);
+  }
+
+  function setColor(newColor: Color) {
     actions.palette.editColor({ colorId: state.palette.foregroundColorId, newColor: newColor });
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
@@ -65,7 +65,7 @@ export function PaletteEditor(): JSX.Element | null {
         <div className="palette-editor__container">
           <div className="palette-editor__sliders">
             <Slider
-              defaultValue={state.palette.foregroundColor.r}
+              value={state.palette.foregroundColor.r}
               step={1}
               min={0}
               max={255}
@@ -74,7 +74,7 @@ export function PaletteEditor(): JSX.Element | null {
               onChange={(event, value) => setR(Number(value))}
             />
             <Slider
-              defaultValue={state.palette.foregroundColor.g}
+              value={state.palette.foregroundColor.g}
               step={1}
               min={0}
               max={255}
@@ -83,13 +83,14 @@ export function PaletteEditor(): JSX.Element | null {
               onChange={(event, value) => setG(Number(value))}
             />
             <Slider
-              defaultValue={state.palette.foregroundColor.b}
+              value={state.palette.foregroundColor.b}
               step={1}
               min={0}
               max={255}
               valueLabelDisplay="auto"
               orientation="vertical"
               onChange={(event, value) => setB(Number(value))}
+              marks={colorMarks}
             />
           </div>
           <div className="palette-editor__palette-container">

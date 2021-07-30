@@ -97,7 +97,6 @@ export class PaintingCanvasController implements CanvasController {
     this.colorIndexer?.drawImage(points, brush);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderDrawImage?
     this.zoomCanvasRenderer?.render(this.mainCanvas);
-    //this.visualiseIndex();
   }
 
   render(): void {
@@ -114,17 +113,25 @@ export class PaintingCanvasController implements CanvasController {
     return this.colorIndexer?.getIndex();
   }
 
-  setIndex(colorIndex: Uint8Array): void {
-    this.colorIndexer?.setIndex(colorIndex);
+  getIndexForPoint(point: Point): number | undefined {
+    const array = this.colorIndexer?.getAreaFromIndex(point.x, point.y, 1, 1);
+    if (array?.length === 4) {
+      return array[0];
+    }
+    return undefined;
   }
 
-  getAreaFromIndex(
+  getIndexForArea(
     x: number, // canvas coord (origin upper left corner)
     y: number, // canvas coord (origin upper left corner)
     width: number, // canvas coord, can be negative
     height: number // canvas coord, can be negative
   ): Uint8Array | undefined {
     return this.colorIndexer?.getAreaFromIndex(x, y, width, height);
+  }
+
+  setIndex(colorIndex: Uint8Array): void {
+    this.colorIndexer?.setIndex(colorIndex);
   }
 
   // testing, debugging purposes only
