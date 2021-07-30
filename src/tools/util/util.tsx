@@ -149,7 +149,7 @@ export function extractBrush(
 
   // Extract color index and add tansparency for background color
 
-  const colorIndex = paintingCanvasController.getAreaFromIndex(start.x, start.y, width, height);
+  const colorIndex = paintingCanvasController.getIndexForArea(start.x, start.y, width, height);
   if (!colorIndex) {
     throw 'Error retrieving color index for new brush';
   }

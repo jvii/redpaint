@@ -4,6 +4,7 @@
   display: flex;
   align-items: stretch;
   justify-content: space-around;
+  -webkit-font-smoothing: ;
 }
 
 .palette-editor__palette-container {
