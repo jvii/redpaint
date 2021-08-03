@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Canvas } from './Canvas';
-import { useScrollToFocusPoint } from './hooks';
+import { useRefreshZoomCanvas, useScrollToFocusPoint } from './hooks';
 import { useOvermind } from '../../overmind';
 import { Point } from '../../types';
 import './Canvas.css';
@@ -12,6 +12,7 @@ export function ZoomCanvas(): JSX.Element {
   const { state, actions } = useOvermind();
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.zoomFocusPoint, zoomFactor);
+  useRefreshZoomCanvas(state.toolbox.zoomModeOn);
 
   const updateZoomFocusPoint = (): void => {
     actions.canvas.setZoomFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));

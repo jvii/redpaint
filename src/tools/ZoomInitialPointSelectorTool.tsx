@@ -1,7 +1,6 @@
 import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
-import { selection } from './util/SelectionIndicator';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
 export class ZoomInitialPointSelectorTool implements Tool {
@@ -24,7 +23,7 @@ export class ZoomInitialPointSelectorTool implements Tool {
     const mousePos = getMousePos(event);
     const start = { x: mousePos.x - 30, y: mousePos.y - 30 };
     const end = { x: mousePos.x + 30, y: mousePos.y + 30 };
-    //selection.box(ctx, start, end);
+    overlayCanvasController.selectionBox(start, end);
   }
 
   public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {

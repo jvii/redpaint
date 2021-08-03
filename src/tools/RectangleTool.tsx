@@ -1,6 +1,5 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton } from './util/util';
-import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -70,7 +69,7 @@ export class RectangleTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
-      //selection.edgeToEdgeCrosshair(ctx, mousePos);
+      overlayCanvasController.selectionCrosshair(mousePos);
       return;
     }
 

@@ -1,13 +1,12 @@
 import { Tool } from './Tool';
 import { getMousePos, extractBrush } from './util/util';
 import { overmind } from '../index';
-import { selection } from './util/SelectionIndicator';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+import { brushHistory } from '../brush/BrushHistory';
 
 export class BrushSelector implements Tool {
   public onInit(): void {
     overmind.actions.tool.brushSelectionStart(null);
-    //selection.prepare(canvas);
   }
 
   public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -25,7 +24,7 @@ export class BrushSelector implements Tool {
     const height = mousePos.y - start.y;
 
     const brush = extractBrush(event.currentTarget, start, width, height);
-    overmind.actions.brush.setBrush(brush);
+    brushHistory.set(brush);
     overmind.actions.brush.setMode('Matte');
 
     // exit brush selection tool
@@ -50,11 +49,10 @@ export class BrushSelector implements Tool {
 
     const start = overmind.state.tool.brushSelectorTool.start;
     if (!start) {
-      //selection.edgeToEdgeCrosshair(ctx, mousePos);
+      overlayCanvasController.selectionCrosshair(mousePos);
       return;
     }
-
-    //selection.box(ctx, start, mousePos);
+    overlayCanvasController.selectionBox(start, mousePos);
   }
 
   public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {

@@ -2,6 +2,7 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { Line, Point } from '../../types';
 import { OverlayDrawImageRenderer } from './program/OverlayDrawImageRenderer';
 import { OverlayGeometricRenderer } from './program/OverlayGeometricRenderer';
+import { OverlaySelectionIndicatorRenderer } from './program/OverlaySelectionIndicatorRenderer';
 
 type GLBuffers = {
   vertexBuffer: WebGLBuffer;
@@ -12,6 +13,7 @@ export class OverlayMainCanvasRenderer {
   private gl: WebGLRenderingContext;
   private geometricRenderer: OverlayGeometricRenderer;
   private drawImageRenderer: OverlayDrawImageRenderer;
+  private selectionIndicatorRenderer: OverlaySelectionIndicatorRenderer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -20,6 +22,7 @@ export class OverlayMainCanvasRenderer {
 
     this.geometricRenderer = new OverlayGeometricRenderer(gl);
     this.drawImageRenderer = new OverlayDrawImageRenderer(gl, buffers);
+    this.selectionIndicatorRenderer = new OverlaySelectionIndicatorRenderer(gl);
   }
 
   points(points: Point[], colorIndex: number): void {
@@ -37,6 +40,16 @@ export class OverlayMainCanvasRenderer {
   drawImage(points: Point[], brush: CustomBrush): void {
     console.log('overlay drawimage');
     this.drawImageRenderer.renderDrawImage(points, brush);
+  }
+
+  selectionBox(start: Point, end: Point): void {
+    console.log('overlay selection box');
+    this.selectionIndicatorRenderer.renderSelectionBox(start, end);
+  }
+
+  selectionCrosshair(point: Point): void {
+    console.log('overlay selection crosshair');
+    this.selectionIndicatorRenderer.renderSelectionCrosshair(point);
   }
 
   renderCanvas(): void {

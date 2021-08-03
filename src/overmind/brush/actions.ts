@@ -1,19 +1,14 @@
 import { Action } from 'overmind';
-import { BrushInterface } from '../../brush/Brush';
 import { Mode, BuiltInBrushId, builtInBrushes } from './state';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
-
-export const setBrush: Action<BrushInterface> = ({ state }, brush): void => {
-  brushHistory.set(brush);
-};
 
 export const selectBuiltInBrush: Action<BuiltInBrushId> = (
   { state, actions },
   brushNumber
 ): void => {
   state.brush.selectedBuiltInBrushId = brushNumber;
-  actions.brush.setBrush(builtInBrushes[brushNumber]);
+  brushHistory.set(builtInBrushes[brushNumber]);
   actions.brush.setMode('Color');
 };
 

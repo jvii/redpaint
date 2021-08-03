@@ -74,3 +74,12 @@ export function useScrollToFocusPoint(
     canvasDiv.scrollTo(scrollOptions);
   }, [focusPoint]);
 }
+
+export function useRefreshZoomCanvas(zoomModeOn: boolean): void {
+  useEffect((): void => {
+    if (!zoomModeOn) {
+      return;
+    }
+    paintingCanvasController.render();
+  }, [zoomModeOn]);
+}

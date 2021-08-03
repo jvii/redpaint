@@ -1,6 +1,6 @@
 import { overmind } from '../..';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { Line, Point } from '../../types';
+import { Point } from '../../types';
 import { CanvasController } from '../CanvasController';
 import { ColorIndexer } from './ColorIndexer';
 import { MainCanvasRenderer } from './MainCanvasRenderer';
