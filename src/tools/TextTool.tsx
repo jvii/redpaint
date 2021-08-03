@@ -1,6 +1,5 @@
 import { Tool } from './Tool';
 import { getMousePos } from './util/util';
-import { selection } from './util/SelectionIndicator';
 import { overmind } from '../index';
 
 export class TextTool implements Tool {

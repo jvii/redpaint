@@ -20,6 +20,7 @@ export const setUndoPoint: Action = ({ state }): void => {
     );
     state.undo.currentIndex = ++state.undo.currentIndex;
   }
+  state.undo.lastUndoPointTime = Date.now();
 };
 
 export const undo: Action = ({ state }): void => {

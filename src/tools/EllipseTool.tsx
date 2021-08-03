@@ -1,7 +1,6 @@
 import { Tool } from './Tool';
 import { getMousePos, isLeftMouseButton, isRightMouseButton } from './util/util';
 import { overmind } from '../index';
-import { selection } from './util/SelectionIndicator';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
@@ -124,7 +123,7 @@ export class EllipseTool implements Tool {
         // DPaint only draws unfilled shapes with the current brush
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
-      //selection.edgeToEdgeCrosshair(ctx, mousePos);
+      overlayCanvasController.selectionCrosshair(mousePos);
       return;
     }
 

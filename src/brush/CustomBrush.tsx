@@ -135,7 +135,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   private adjustHandle(point: Point): Point {
-    return { x: point.x - (this.width - 1) / 2, y: point.y - (this.heigth - 2) / 2 };
+    return { x: point.x - this.width / 2, y: point.y - this.heigth / 2 }; // center handle to brush
   }
 
   // CustomBrushFeatures

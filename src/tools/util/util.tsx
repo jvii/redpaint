@@ -102,72 +102,17 @@ export function extractBrush(
   width: number,
   height: number
 ): CustomBrush {
-  const bufferCanvas = document.createElement('canvas');
-
-  bufferCanvas.width = Math.abs(width);
-  bufferCanvas.height = Math.abs(height);
-
-  const bufferCanvasCtx = bufferCanvas.getContext('2d');
-  if (!bufferCanvasCtx) {
-    throw 'Error retrieving Context for buffer Canvas while extracting brush';
-  }
-
-  bufferCanvasCtx.drawImage(
-    sourceCanvas,
-    start.x,
-    start.y,
-    width,
-    height,
-    0,
-    0,
-    bufferCanvas.width,
-    bufferCanvas.height
-  );
-
-  const backgroundColor =
-    overmind.state.palette.backgroundColor.r * 0x00000001 +
-    overmind.state.palette.backgroundColor.g * 0x00000100 +
-    overmind.state.palette.backgroundColor.b * 0x00010000 +
-    255 * 0x01000000;
-
-  const imageData = bufferCanvasCtx.getImageData(0, 0, bufferCanvas.width, bufferCanvas.height);
-  const imageDataBufferTMP = new ArrayBuffer(imageData.data.length);
-  const imageDataClamped8TMP = new Uint8ClampedArray(imageDataBufferTMP);
-  const imageDataUint32TMP = new Uint32Array(imageDataBufferTMP);
-
-  imageDataClamped8TMP.set(imageData.data);
-
-  let n = imageDataUint32TMP.length;
-  while (n--) {
-    if (imageDataUint32TMP[n] === backgroundColor) {
-      imageDataUint32TMP[n] = 0x00000000; // make it transparent
-    }
-  }
-
-  imageData.data.set(imageDataClamped8TMP);
-  bufferCanvasCtx.putImageData(imageData, 0, 0);
-
   // Extract color index and add tansparency for background color
 
   const colorIndex = paintingCanvasController.getIndexForArea(start.x, start.y, width, height);
   if (!colorIndex) {
     throw 'Error retrieving color index for new brush';
   }
+
   const colorIndexWithTransparency = addTransparency(
     colorIndex,
     Number(overmind.state.palette.backgroundColorId)
   );
-
-  // invert y
-
-  /*   const colorIndexInverted = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
-  for (let y = 0; y < bufferCanvas.height; y++) {
-    for (let x = 0; x < bufferCanvas.width * 4; x++) {
-      const index = x + y * bufferCanvas.width * 4;
-      const indexOrig = x + (bufferCanvas.height - 1 - y) * (bufferCanvas.width * 4);
-      colorIndexInverted[index] = colorIndexWithTransparency[indexOrig];
-    }
-  } */
 
   return new CustomBrush(colorIndexWithTransparency, width, height);
 }

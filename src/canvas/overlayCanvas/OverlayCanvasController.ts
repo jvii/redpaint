@@ -64,6 +64,16 @@ class OverlayCanvasController implements CanvasController {
     this.mainCanvasRenderer?.drawImage(points, brush);
     this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
   }
+
+  selectionBox(start: Point, end: Point): void {
+    this.mainCanvasRenderer?.selectionBox(start, end);
+    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+  }
+
+  selectionCrosshair(point: Point): void {
+    this.mainCanvasRenderer?.selectionCrosshair(point);
+    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+  }
   /*
 
   render(): void {

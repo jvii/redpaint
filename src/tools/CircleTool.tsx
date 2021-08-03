@@ -2,7 +2,6 @@ import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, omit } from './util/util';
 import { distance } from '../algorithm/shape';
 import { overmind } from '../index';
-import { selection } from './util/SelectionIndicator';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
@@ -21,7 +20,6 @@ export class CircleTool implements Tool {
   }
 
   public onInit(): void {
-    //selection.prepare(canvas);
     overmind.actions.tool.circleToolOrigin(null);
     overmind.actions.tool.activeToolToFGFillStyle();
     overmind.actions.brush.toFGBrush();
@@ -77,7 +75,7 @@ export class CircleTool implements Tool {
         // For filled circles we only render the croshair.
         brushHistory.current.drawPoint(mousePos, overlayCanvasController);
       }
-      //selection.edgeToEdgeCrosshair(ctx, mousePos);
+      overlayCanvasController.selectionCrosshair(mousePos);
       return;
     }
 
