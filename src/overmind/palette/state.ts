@@ -4,7 +4,7 @@ import { derived } from 'overmind';
 
 export type State = {
   palette: {
-    [id: string]: Color; // the color index (integer as string), starting from "1"
+    [id: string]: Color; // id is the color index (integer as string), starting from "1"
   };
   readonly paletteArray: Color[];
   foregroundColorId: string;

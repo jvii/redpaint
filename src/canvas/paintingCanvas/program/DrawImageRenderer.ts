@@ -64,6 +64,26 @@ export class DrawImageRenderer {
     }
     `;
 
+    const fragmentShaderTrueColor = `
+    precision mediump float;
+
+    varying vec2 v_texcoord;
+    uniform sampler2D u_image;
+    uniform sampler2D u_palette;
+
+    void main() {
+      vec4 index_value = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
+      if (index_value.a == 0.0) {
+        //gl_FragColor = vec4(index_value.r, index_value.g ,index_value.b , 0.0);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
+      }
+      else {
+        float index = index_value.r * 255.0 - 1.0;
+        gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
+      }
+    }
+    `;
+
     const program = createProgram(this.gl, vertexShader, fragmentShader);
     console.log('Program ready (DrawImageRenderer)');
     return program;

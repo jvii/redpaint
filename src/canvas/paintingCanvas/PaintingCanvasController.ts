@@ -37,6 +37,7 @@ export class PaintingCanvasController implements CanvasController {
     const gl = mainCanvas.getContext('webgl', {
       preserveDrawingBuffer: true,
       antialias: false,
+      alpha: false,
     });
     if (!gl) {
       throw 'No webgl';
