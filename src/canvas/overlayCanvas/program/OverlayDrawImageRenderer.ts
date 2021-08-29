@@ -143,6 +143,29 @@ export class OverlayDrawImageRenderer {
     }
     `;
 
+    const fragmentShaderTrueColor = `
+    precision mediump float;
+
+    uniform sampler2D u_Sampler;
+    uniform sampler2D u_palette;
+    varying vec2 v_TexCoord;
+
+    void main () {
+      vec4 color = texture2D(u_Sampler, v_TexCoord);
+      if (color.r == 0.0) {
+        discard; // zero means this pixel of the brush is transparent
+      }
+
+      if (color.a == 1.0) {
+        //gl_FragColor = vec4(color.r, color.g , color.b , 0.0);
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+      else {
+        gl_FragColor = texture2D(u_palette, vec2((color.r) - 1.0/256.0, 0.5));
+      }
+    }
+    `;
+
     const program = createProgram(this.gl, vertexShader, fragmentShader);
     console.log('Program ready (OverlayDrawImageRenderer)');
 
