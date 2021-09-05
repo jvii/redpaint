@@ -7,7 +7,7 @@ import { floodFill } from '../algorithm/floodfill';
 export class FloodFillTool implements Tool {
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
-    const canvasColorIndex = paintingCanvasController.getIndex();
+    const canvasColorIndex = paintingCanvasController.getCanvasColorIndex();
     if (!canvasColorIndex) {
       return;
     }
@@ -22,7 +22,7 @@ export class FloodFillTool implements Tool {
     event.preventDefault();
 
     const mousePos = getMousePos(event);
-    const canvasColorIndex = paintingCanvasController.getIndex();
+    const canvasColorIndex = paintingCanvasController.getCanvasColorIndex();
     if (!canvasColorIndex) {
       return;
     }

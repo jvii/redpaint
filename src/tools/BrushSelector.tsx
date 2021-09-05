@@ -1,8 +1,9 @@
 import { Tool } from './Tool';
-import { getMousePos, extractBrush } from './util/util';
+import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { brushHistory } from '../brush/BrushHistory';
+import { CustomBrush } from '../brush/CustomBrush';
 
 export class BrushSelector implements Tool {
   public onInit(): void {
@@ -23,8 +24,8 @@ export class BrushSelector implements Tool {
     const width = mousePos.x - start.x;
     const height = mousePos.y - start.y;
 
-    const brush = extractBrush(event.currentTarget, start, width, height);
-    brushHistory.set(brush);
+    const customBrush = CustomBrush.fromCanvasArea(start, width, height);
+    brushHistory.set(customBrush);
     overmind.actions.brush.setMode('Matte');
 
     // exit brush selection tool

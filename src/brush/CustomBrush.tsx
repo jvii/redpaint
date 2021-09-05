@@ -15,6 +15,8 @@ import { overmind } from '../index';
 import { colorizeTexture } from '../canvas/util/util';
 import { CanvasController } from '../canvas/CanvasController';
 import { LineV } from '../domain/LineV';
+import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -26,20 +28,35 @@ interface CustomBrushFeatures {
 }
 
 export class CustomBrush implements BrushInterface, CustomBrushFeatures {
-  public brushColorIndex = new Uint8Array(); // TODO: acts like getter, so maybe make it one
-  public width = 0;
-  public heigth = 0;
-  public lastChanged = 0;
-  private brushColorIndexMatte = new Uint8Array();
-  private brushColorIndexColorFG = new Uint8Array();
-  private brushColorIndexColorBG = new Uint8Array();
+  public brushColorIndex: BrushColorIndex; // TODO: acts like getter, so maybe make it one
+  public width: number;
+  public heigth: number;
+  public lastChanged: number;
+  private brushColorIndexMatte: BrushColorIndex;
+  private brushColorIndexColorFG: BrushColorIndex;
+  private brushColorIndexColorBG: BrushColorIndex;
 
-  public constructor(colorIndex: Uint8Array, width: number, height: number) {
+  public constructor(colorIndex: BrushColorIndex, width: number, height: number) {
     this.width = width;
     this.heigth = height;
     this.brushColorIndex = colorIndex;
     this.brushColorIndexMatte = colorIndex;
+    this.brushColorIndexColorFG = colorIndex;
+    this.brushColorIndexColorBG = colorIndex;
     this.lastChanged = Date.now();
+  }
+
+  // Factory method for extracting a brush from canvas
+  public static fromCanvasArea(start: Point, width: number, height: number): CustomBrush {
+    const brushColorIndex = paintingCanvasController.getBrushColorIndexFromArea(
+      start,
+      width,
+      height
+    );
+    if (!brushColorIndex) {
+      throw 'what';
+    }
+    return new CustomBrush(brushColorIndex, width, height);
   }
 
   public drawPoint(point: Point, canvas: CanvasController): void {
@@ -141,9 +158,13 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // CustomBrushFeatures
 
   public setFGColor(): void {
-    this.brushColorIndexColorFG = colorizeTexture(
-      this.brushColorIndex,
-      Number(overmind.state.palette.foregroundColorId)
+    this.brushColorIndexColorFG = new BrushColorIndex(
+      this.width,
+      this.heigth,
+      colorizeTexture(
+        this.brushColorIndex.indexArray,
+        Number(overmind.state.palette.foregroundColorId)
+      )
     );
     if (overmind.state.brush.mode === 'Color') {
       this.toFGColor(); // must be set here for fg color, not ideal:(
@@ -151,9 +172,13 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public setBGColor(): void {
-    this.brushColorIndexColorBG = colorizeTexture(
-      this.brushColorIndex,
-      Number(overmind.state.palette.backgroundColorId)
+    this.brushColorIndexColorBG = new BrushColorIndex(
+      this.width,
+      this.heigth,
+      colorizeTexture(
+        this.brushColorIndex.indexArray,
+        Number(overmind.state.palette.backgroundColorId)
+      )
     );
   }
 

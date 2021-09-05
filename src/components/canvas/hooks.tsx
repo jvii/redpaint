@@ -32,7 +32,7 @@ export function useUndo(): void {
     if (!colorIndex) {
       throw 'No color index in undo buffer at index' + state.undo.currentIndex;
     }
-    paintingCanvasController.setIndex(colorIndex);
+    paintingCanvasController.setCanvasColorIndex(colorIndex);
     paintingCanvasController.render();
   }, [state.undo.lastUndoRedoTime]);
 }

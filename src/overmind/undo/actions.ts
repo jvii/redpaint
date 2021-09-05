@@ -3,7 +3,7 @@ import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCa
 import { undoBuffer } from './UndoBuffer';
 
 export const setUndoPoint: Action = ({ state }): void => {
-  const colorIndex = paintingCanvasController.getIndex();
+  const colorIndex = paintingCanvasController.getCanvasColorIndex();
   if (!colorIndex) {
     console.log('no index');
     return;

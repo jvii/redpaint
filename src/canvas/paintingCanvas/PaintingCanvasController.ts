@@ -7,6 +7,8 @@ import { MainCanvasRenderer } from './MainCanvasRenderer';
 import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
+import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+import { BrushColorIndex } from '../../domain/BrushColorIndex';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer | null;
@@ -110,11 +112,11 @@ export class PaintingCanvasController implements CanvasController {
     this.render();
   }
 
-  getIndex(): Uint8Array | undefined {
+  getCanvasColorIndex(): CanvasColorIndex | undefined {
     return this.colorIndexer?.getIndex();
   }
 
-  getIndexForPoint(point: Point): number | undefined {
+  getColorNumberForPoint(point: Point): number | undefined {
     const array = this.colorIndexer?.getAreaFromIndex(point.x, point.y, 1, 1);
     if (array?.length === 4) {
       return array[0];
@@ -122,16 +124,29 @@ export class PaintingCanvasController implements CanvasController {
     return undefined;
   }
 
-  getIndexForArea(
-    x: number, // canvas coord (origin upper left corner)
-    y: number, // canvas coord (origin upper left corner)
+  getBrushColorIndexFromArea(
+    start: Point, // canvas coord (origin upper left corner)
     width: number, // canvas coord, can be negative
     height: number // canvas coord, can be negative
-  ): Uint8Array | undefined {
-    return this.colorIndexer?.getAreaFromIndex(x, y, width, height);
+  ): BrushColorIndex | null {
+    const brushColorIndexArray = this.colorIndexer?.getAreaFromIndex(
+      start.x,
+      start.y,
+      width,
+      height
+    );
+    if (!brushColorIndexArray) {
+      return null;
+    }
+    return new BrushColorIndex(
+      width,
+      height,
+      brushColorIndexArray,
+      Number(overmind.state.palette.backgroundColorId)
+    );
   }
 
-  setIndex(colorIndex: Uint8Array): void {
+  setCanvasColorIndex(colorIndex: CanvasColorIndex): void {
     this.colorIndexer?.setIndex(colorIndex);
   }
 

@@ -183,7 +183,7 @@ export class DrawImageIndexer {
       border,
       srcFormat,
       srcType,
-      brush.brushColorIndex
+      brush.brushColorIndex.indexArray
     );
 
     // Set the parameters so we can render any size image.

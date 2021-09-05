@@ -11,7 +11,7 @@ export class ColorSelectorTool implements Tool {
 
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
-    const colorIndex = paintingCanvasController.getIndexForPoint(mousePos);
+    const colorIndex = paintingCanvasController.getColorNumberForPoint(mousePos);
     if (!colorIndex) {
       return;
     }

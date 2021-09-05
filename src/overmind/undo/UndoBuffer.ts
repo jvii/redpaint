@@ -1,19 +1,21 @@
+import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+
 class UndoBuffer {
   constructor() {
     this.undoBuffer = [];
   }
-  undoBuffer: Uint8Array[];
+  undoBuffer: CanvasColorIndex[];
 
-  getItem(index: number | null): Uint8Array | null {
+  getItem(index: number | null): CanvasColorIndex | null {
     if (index === null) {
       return null;
     }
     return this.undoBuffer[index];
   }
-  getBuffer(): Uint8Array[] {
+  getBuffer(): CanvasColorIndex[] {
     return this.undoBuffer;
   }
-  setBuffer(buffer: Uint8Array[]): void {
+  setBuffer(buffer: CanvasColorIndex[]): void {
     this.undoBuffer = buffer;
   }
 }
