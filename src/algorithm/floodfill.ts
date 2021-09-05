@@ -1,17 +1,18 @@
 import { overmind } from '..';
+import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 import { Point } from '../types';
 
 export function floodFill(
-  fillColorIndex: number,
+  fillColorNumber: number,
   originPoint: Point,
-  canvasColorIndex: Uint8Array
+  canvasColorIndex: CanvasColorIndex
 ): Point[] {
   const height = overmind.state.canvas.resolution.height;
   const width = overmind.state.canvas.resolution.width;
 
   // Base color is the original color in originPoint
-  const baseColorIndex = getColorIndexForPixel(canvasColorIndex, originPoint, height, width);
-  if (fillColorIndex === baseColorIndex) {
+  const baseColorNumber = canvasColorIndex.getColorNumberForPixel(originPoint, height, width);
+  if (fillColorNumber === baseColorNumber) {
     // nothing to do if base color === fill color
     return [];
   }
@@ -37,24 +38,23 @@ export function floodFill(
     while (contiguousUp && position.y >= 0) {
       position.y--;
       contiguousUp =
-        getColorIndexForPixel(canvasColorIndex, position, height, width) === baseColorIndex;
+        canvasColorIndex.getColorNumberForPixel(position, height, width) === baseColorNumber;
     }
     position.y++;
 
     // Move down
     while (contiguousDown && position.y < height) {
       pointsToFill.push({ x: position.x, y: position.y });
-      setColorIndexForPixel(canvasColorIndex, position, fillColorIndex, height, width);
+      canvasColorIndex.setColorNumberForPixel(position, fillColorNumber, height, width);
 
       // Check left
       if (
         position.x - 1 >= 0 &&
-        getColorIndexForPixel(
-          canvasColorIndex,
+        canvasColorIndex.getColorNumberForPixel(
           { x: position.x - 1, y: position.y },
           height,
           width
-        ) === baseColorIndex
+        ) === baseColorNumber
       ) {
         if (!contiguousLeft) {
           contiguousLeft = true;
@@ -67,12 +67,11 @@ export function floodFill(
       // Check right
       if (
         position.x + 1 < width &&
-        getColorIndexForPixel(
-          canvasColorIndex,
+        canvasColorIndex.getColorNumberForPixel(
           { x: position.x + 1, y: position.y },
           height,
           width
-        ) === baseColorIndex
+        ) === baseColorNumber
       ) {
         if (!contiguousRight) {
           stack.push({ x: position.x + 1, y: position.y });
@@ -84,30 +83,9 @@ export function floodFill(
 
       position.y++;
       contiguousDown =
-        getColorIndexForPixel(canvasColorIndex, position, height, width) === baseColorIndex;
+        canvasColorIndex.getColorNumberForPixel(position, height, width) === baseColorNumber;
     }
   }
 
   return pointsToFill;
-}
-
-function getColorIndexForPixel(
-  colorIndex: Uint8Array,
-  pixel: Point,
-  height: number,
-  width: number
-): number {
-  const arrayIndex = pixel.x * 4 + (height - pixel.y - 1) * width * 4;
-  return colorIndex[arrayIndex];
-}
-
-function setColorIndexForPixel(
-  colorIndex: Uint8Array,
-  pixel: Point,
-  colorIndexForPixel: number,
-  height: number,
-  width: number
-) {
-  const arrayIndex = pixel.x * 4 + (height - pixel.y - 1) * width * 4;
-  colorIndex[arrayIndex] = colorIndexForPixel;
 }

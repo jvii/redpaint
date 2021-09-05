@@ -1,8 +1,5 @@
 import { Point, Color } from '../../types';
 import { Tool } from '../Tool';
-import { CustomBrush } from '../../brush/CustomBrush';
-import { overmind } from '../../index';
-import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';
@@ -92,33 +89,6 @@ export function isLeftOrRightMouseButton(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
 ): boolean {
   return isLeftMouseButton(event) || isRightMouseButton(event);
-}
-
-// eslint-disable-next-line max-len
-// adapted from https://stackoverflow.com/questions/11472273/how-to-edit-pixels-and-remove-white-background-in-a-canvas-image-in-html5-and-ja
-export function extractBrush(
-  sourceCanvas: HTMLCanvasElement,
-  start: Point,
-  width: number,
-  height: number
-): CustomBrush {
-  // Extract color index and add tansparency for background color
-
-  const colorIndex = paintingCanvasController.getIndexForArea(start.x, start.y, width, height);
-  if (!colorIndex) {
-    throw 'Error retrieving color index for new brush';
-  }
-
-  const colorIndexWithTransparency = addTransparency(
-    colorIndex,
-    Number(overmind.state.palette.backgroundColorId)
-  );
-
-  return new CustomBrush(colorIndexWithTransparency, width, height);
-}
-
-export function addTransparency(texture: Uint8Array, transparentColorIndex: number): Uint8Array {
-  return texture.map((item) => (item === transparentColorIndex ? 0 : item));
 }
 
 interface Omit {

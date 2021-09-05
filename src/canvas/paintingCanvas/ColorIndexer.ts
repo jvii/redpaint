@@ -1,11 +1,12 @@
 import { GeometricIndexer } from './program/GeometricIndexer';
 import { DrawImageIndexer } from './program/DrawImageIndexer';
-import { Line, Point } from '../../types';
+import { Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
 import { overmind } from '../..';
+import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -45,22 +46,21 @@ export class ColorIndexer {
     this.drawImageIndexer.indexDrawImage(points, brush);
   }
 
-  getIndex(): Uint8Array {
+  getIndex(): CanvasColorIndex {
     const gl = this.gl;
 
     const width = overmind.state.canvas.resolution.width;
     const height = overmind.state.canvas.resolution.height;
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
-    this.colorIndexFramebuffer;
-    const pixels = new Uint8Array(width * height * 4);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-
+    const indexArray = new Uint8Array(width * height * 4);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, indexArray);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    return pixels;
+
+    return new CanvasColorIndex(width, height, indexArray);
   }
 
-  setIndex(colorIndex: Uint8Array): void {
+  setIndex(colorIndex: CanvasColorIndex): void {
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE0);
 
@@ -69,8 +69,8 @@ export class ColorIndexer {
 
     const level = 0;
     const internalFormat = gl.RGBA;
-    const targetTextureWidth = overmind.state.canvas.resolution.width;
-    const targetTextureHeight = overmind.state.canvas.resolution.height;
+    const targetTextureWidth = colorIndex.width;
+    const targetTextureHeight = colorIndex.height;
     const border = 0;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
@@ -83,7 +83,7 @@ export class ColorIndexer {
       border,
       format,
       type,
-      colorIndex
+      colorIndex.indexArray
     );
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -160,6 +160,6 @@ export class ColorIndexer {
 
     const index = this.getIndex();
     const width = gl.drawingBufferWidth;
-    visualiseTexture(index, width);
+    visualiseTexture(index.indexArray, width);
   }
 }
