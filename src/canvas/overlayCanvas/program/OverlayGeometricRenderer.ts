@@ -7,26 +7,26 @@ import { createProgram, useProgram } from '../../util/webglUtil';
 export class OverlayGeometricRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
-  private currentColorIndex = 0;
+  private currentColorNumber = 0;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
   }
 
-  public renderPoints(points: Point[], colorIndex: number): void {
+  public renderPoints(points: Point[], colorNumber: number): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
 
-    this.updateColorIndex(colorIndex);
+    this.updateColorNumber(colorNumber);
 
     const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
     gl.uniform1i(paletteLoc, 1);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_position);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -41,19 +41,19 @@ export class OverlayGeometricRenderer {
     this.gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  public renderLines(lines: Line[], colorIndex: number): void {
+  public renderLines(lines: Line[], colorNumber: number): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
 
-    this.updateColorIndex(colorIndex);
+    this.updateColorNumber(colorNumber);
 
     const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
     gl.uniform1i(paletteLoc, 1);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_position);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -70,19 +70,19 @@ export class OverlayGeometricRenderer {
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
   }
 
-  public renderQuad(start: Point, end: Point, colorIndex: number): void {
+  public renderQuad(start: Point, end: Point, colorNumber: number): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
 
-    this.updateColorIndex(colorIndex);
+    this.updateColorNumber(colorNumber);
 
     const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
     gl.uniform1i(paletteLoc, 1);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_position);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -110,8 +110,8 @@ export class OverlayGeometricRenderer {
     this.gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
-  private updateColorIndex(colorIndex: number) {
-    if (colorIndex == this.currentColorIndex) {
+  private updateColorNumber(colorNumber: number) {
+    if (colorNumber == this.currentColorNumber) {
       return;
     }
 
@@ -120,18 +120,18 @@ export class OverlayGeometricRenderer {
     }
     const gl = this.gl;
 
-    console.log('updating color index uniform');
-    this.currentColorIndex = colorIndex;
-    const u_color_index = gl.getUniformLocation(this.program, 'u_color_index');
-    gl.uniform1f(u_color_index, this.currentColorIndex - 1);
+    console.log('updating color number uniform');
+    this.currentColorNumber = colorNumber;
+    const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+    gl.uniform1f(u_colorNumber, this.currentColorNumber - 1);
   }
 
   private createProgram(): WebGLProgram {
     const vertexShader = `
-    attribute vec4 a_Position;
+    attribute vec4 a_position;
 
     void main () {
-      gl_Position = a_Position;
+      gl_Position = a_position;
       gl_PointSize = 1.0;
     }
     `;
@@ -139,18 +139,18 @@ export class OverlayGeometricRenderer {
     const fragmentShader = `
     precision mediump float;
 
-    uniform float u_color_index;
+    uniform float u_colorNumber;
     uniform sampler2D u_palette;
 
     void main() {
 
-      gl_FragColor = texture2D(u_palette, vec2((u_color_index + 0.5) / 256.0, 0.5));
+      gl_FragColor = texture2D(u_palette, vec2((u_colorNumber + 0.5) / 256.0, 0.5));
       //gl_FragColor = vec4(1,1,1,1);
     }
     `;
 
     const program = createProgram(this.gl, vertexShader, fragmentShader);
-    console.log('Program ready (DrawImageIndexer)');
+    console.log('Program ready (OverlayGeometricRenderer)');
 
     return program;
   }

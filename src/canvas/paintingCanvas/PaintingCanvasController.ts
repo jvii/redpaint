@@ -200,9 +200,13 @@ export class PaintingCanvasController implements CanvasController {
     const border = 0;
     const format = gl.RGBA;
     const type = gl.UNSIGNED_BYTE;
-    // initialize the color index matrix with the background color
+    // Create an empty color index with the background color
     const backgroundColor = Number(overmind.state.palette.backgroundColorId);
-    const data = new Uint8Array(targetTextureHeight * targetTextureWidth * 4).fill(backgroundColor);
+    const canvasColorIndex = CanvasColorIndex.createEmptyWithBackgroundColor(
+      targetTextureWidth,
+      targetTextureHeight,
+      backgroundColor
+    );
     gl.texImage2D(
       gl.TEXTURE_2D,
       level,
@@ -212,7 +216,7 @@ export class PaintingCanvasController implements CanvasController {
       border,
       format,
       type,
-      data
+      canvasColorIndex.indexArray
     );
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);

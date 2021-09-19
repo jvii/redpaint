@@ -34,8 +34,8 @@ export class OverlayDrawImageRenderer {
     const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
     gl.uniform1i(paletteLoc, 1);
 
-    const u_Sampler = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_Sampler');
-    gl.uniform1i(u_Sampler, 2); // texture unit 2
+    const u_image = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_image');
+    gl.uniform1i(u_image, 2); // texture unit 2
 
     const textureCoords = new Float32Array(12 * points.length);
     const vertices = new Float32Array(12 * points.length);
@@ -86,23 +86,23 @@ export class OverlayDrawImageRenderer {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
 
-    const a_TexCoord = gl.getAttribLocation(this.program, 'a_TexCoord');
-    gl.enableVertexAttribArray(a_TexCoord);
+    const a_texCoord = gl.getAttribLocation(this.program, 'a_texCoord');
+    gl.enableVertexAttribArray(a_texCoord);
 
-    gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.DYNAMIC_DRAW);
 
     // vertex coords
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 
@@ -111,34 +111,34 @@ export class OverlayDrawImageRenderer {
 
   private createProgram(): WebGLProgram {
     const vertexShader = `
-    attribute vec4 a_Position;
-    attribute vec2 a_TexCoord;
+    attribute vec4 a_position;
+    attribute vec2 a_texCoord;
 
-    varying vec2 v_TexCoord;
+    varying vec2 v_texCoord;
 
     void main () {
-      gl_Position = a_Position;
+      gl_Position = a_position;
 
-      // Pass the texcoord to the fragment shader.
-      v_TexCoord = a_TexCoord;
+      // Pass the texture coordinate to the fragment shader.
+      v_texCoord = a_texCoord;
     }
     `;
 
     const fragmentShader = `
     precision mediump float;
 
-    uniform sampler2D u_Sampler;
+    uniform sampler2D u_image;
     uniform sampler2D u_palette;
-    varying vec2 v_TexCoord;
+    varying vec2 v_texCoord;
 
     void main () {
-      vec4 color = texture2D(u_Sampler, v_TexCoord);
-      if (color.r == 0.0) {
-        discard; // zero means this pixel of the brush is transparent
+      vec4 colorIndexValue = texture2D(u_image, v_texCoord);
+      if (colorIndexValue.r == 0.0) {
+        discard; // zero means this pixel of the image (brush) is transparent
       }
 
-      //gl_FragColor = color;
-      gl_FragColor = texture2D(u_palette, vec2((color.r) - 1.0/256.0, 0.5));
+      //gl_FragColor = colorIndexValue;
+      gl_FragColor = texture2D(u_palette, vec2((colorIndexValue.r) - 1.0/256.0, 0.5));
       //gl_FragColor = vec4(1,1,1,1);
     }
     `;
@@ -146,22 +146,22 @@ export class OverlayDrawImageRenderer {
     const fragmentShaderTrueColor = `
     precision mediump float;
 
-    uniform sampler2D u_Sampler;
+    uniform sampler2D u_image;
     uniform sampler2D u_palette;
-    varying vec2 v_TexCoord;
+    varying vec2 v_texCoord;
 
     void main () {
-      vec4 color = texture2D(u_Sampler, v_TexCoord);
-      if (color.r == 0.0) {
+      vec4 colorIndexValue = texture2D(u_image, v_texCoord);
+      if (colorIndexValue.r == 0.0) {
         discard; // zero means this pixel of the brush is transparent
       }
 
-      if (color.a == 1.0) {
-        //gl_FragColor = vec4(color.r, color.g , color.b , 0.0);
+      if (colorIndexValue.a == 1.0) {
+        //gl_FragColor = vec4(colorIndexValue.r, colorIndexValue.g , colorIndexValue.b , 0.0);
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
       }
       else {
-        gl_FragColor = texture2D(u_palette, vec2((color.r) - 1.0/256.0, 0.5));
+        gl_FragColor = texture2D(u_palette, vec2((colorIndexValue.r) - 1.0/256.0, 0.5));
       }
     }
     `;

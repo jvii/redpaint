@@ -32,7 +32,7 @@ export function shiftLine(line: Line): Line {
 export function visualiseTexture(texture: Uint8Array, width: number): void {
   console.log('width: ' + width);
   const indexRedComponent = [];
-  for (let i = 0; i < texture.length; i = i + 4) {
+  for (let i = 0; i < texture.length; i = i + 1) {
     indexRedComponent.push(texture[i]);
   }
   let j = 0;

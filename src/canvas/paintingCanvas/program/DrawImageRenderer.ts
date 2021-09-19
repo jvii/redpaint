@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { createProgram, useProgram } from '../../util/webglUtil';
 
 export class DrawImageRenderer {
@@ -24,13 +25,13 @@ export class DrawImageRenderer {
     gl.uniform1i(imageLoc, 0);
     gl.uniform1i(paletteLoc, 1);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     const positions = [1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1];
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
@@ -59,8 +60,8 @@ export class DrawImageRenderer {
     uniform sampler2D u_palette;
 
     void main() {
-      float index = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).r * 255.0 - 1.0;
-      gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
+      float colorNumber = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).r * 255.0 - 1.0;
+      gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
     }
     `;
 
@@ -72,14 +73,14 @@ export class DrawImageRenderer {
     uniform sampler2D u_palette;
 
     void main() {
-      vec4 index_value = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
-      if (index_value.a == 0.0) {
-        //gl_FragColor = vec4(index_value.r, index_value.g ,index_value.b , 0.0);
+      vec4 colorIndexValue = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
+      if (colorIndexValue.a == 0.0) {
+        //gl_FragColor = vec4(colorIndexValue.r, colorIndexValue.g ,colorIndexValue.b , 0.0);
         gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
       }
       else {
-        float index = index_value.r * 255.0 - 1.0;
-        gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
+        float colorNumber = colorIndexValue.r * 255.0 - 1.0;
+        gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
       }
     }
     `;

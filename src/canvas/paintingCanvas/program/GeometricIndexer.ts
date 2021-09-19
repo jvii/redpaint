@@ -6,7 +6,7 @@ export class GeometricIndexer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
   private targetFrameBuffer: WebGLFramebuffer;
-  private currentColorIndex = 0;
+  private currentColorNumber = 0;
 
   public constructor(gl: WebGLRenderingContext, targetFrameBuffer: WebGLFramebuffer) {
     this.gl = gl;
@@ -14,7 +14,7 @@ export class GeometricIndexer {
     this.targetFrameBuffer = targetFrameBuffer;
   }
 
-  public indexPoints(points: Point[], colorIndex: number): void {
+  public indexPoints(points: Point[], colorNumber: number): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
@@ -22,20 +22,20 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorIndex !== this.currentColorIndex) {
-      console.log('updating color index uniform');
-      this.currentColorIndex = colorIndex;
-      const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
-      gl.uniform1f(u_colorIndex, colorIndex);
+    if (colorNumber !== this.currentColorNumber) {
+      console.log('updating color number uniform');
+      this.currentColorNumber = colorNumber;
+      const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+      gl.uniform1f(u_colorNumber, colorNumber);
     }
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {
@@ -56,20 +56,20 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorIndex !== this.currentColorIndex) {
+    if (colorIndex !== this.currentColorNumber) {
       console.log('updating color index uniform');
-      this.currentColorIndex = colorIndex;
-      const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
-      gl.uniform1f(u_colorIndex, colorIndex);
+      this.currentColorNumber = colorIndex;
+      const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+      gl.uniform1f(u_colorNumber, colorIndex);
     }
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     const vertices = new Float32Array(2 * 2 * lines.length);
     for (let i = 0; i < lines.length; i++) {
@@ -84,7 +84,7 @@ export class GeometricIndexer {
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
   }
 
-  public indexQuad(start: Point, end: Point, colorIndex: number): void {
+  public indexQuad(start: Point, end: Point, colorNumber: number): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
@@ -92,20 +92,20 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorIndex !== this.currentColorIndex) {
+    if (colorNumber !== this.currentColorNumber) {
       console.log('updating color index uniform');
-      this.currentColorIndex = colorIndex;
-      const u_colorIndex = gl.getUniformLocation(this.program, 'u_colorIndex');
-      gl.uniform1f(u_colorIndex, colorIndex);
+      this.currentColorNumber = colorNumber;
+      const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+      gl.uniform1f(u_colorNumber, colorNumber);
     }
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     const shiftedStart = shiftPoint(start);
     const shiftedEnd = shiftPoint(end);
@@ -133,10 +133,10 @@ export class GeometricIndexer {
 
   private createProgram(): WebGLProgram {
     const vertexShader = `
-    attribute vec4 a_Position;
+    attribute vec4 a_position;
 
     void main () {
-      gl_Position = a_Position;
+      gl_Position = a_position;
       gl_PointSize = 1.0;
     }
     `;
@@ -144,10 +144,10 @@ export class GeometricIndexer {
     const fragmentShader = `
     precision mediump float;
 
-    uniform float u_colorIndex;
+    uniform float u_colorNumber;
 
     void main () {
-      gl_FragColor = vec4(u_colorIndex/255.0, 0.0, 0.0, 1.0);
+      gl_FragColor = vec4(u_colorNumber/255.0, 0.0, 0.0, 1.0);
     }
     `;
 

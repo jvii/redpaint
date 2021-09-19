@@ -29,17 +29,17 @@ export class OverlaySelectionIndicatorRenderer {
       this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
     }
 
-    const u_CanvasTexture = gl.getUniformLocation(
+    const u_canvasTexture = gl.getUniformLocation(
       gl.getParameter(gl.CURRENT_PROGRAM),
-      'u_CanvasTexture'
+      'u_canvasTexture'
     );
-    gl.uniform1i(u_CanvasTexture, 3); // texture unit 3
+    gl.uniform1i(u_canvasTexture, 3); // texture unit 3
 
     // vertex coords
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_position);
 
     const boxLines = [
       new LineH(start, { x: end.x, y: start.y }),
@@ -75,17 +75,17 @@ export class OverlaySelectionIndicatorRenderer {
       this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
     }
 
-    const u_CanvasTexture = gl.getUniformLocation(
+    const u_canvasTexture = gl.getUniformLocation(
       gl.getParameter(gl.CURRENT_PROGRAM),
-      'u_CanvasTexture'
+      'u_canvasTexture'
     );
-    gl.uniform1i(u_CanvasTexture, 3); // texture unit 3
+    gl.uniform1i(u_canvasTexture, 3); // texture unit 3
 
     // vertex coords
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_Position);
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_position);
 
     const crosshairLines = [
       new LineH({ x: 0, y: point.y }, { x: overmind.state.canvas.resolution.width, y: point.y }),
@@ -108,28 +108,29 @@ export class OverlaySelectionIndicatorRenderer {
 
   private createProgram(): WebGLProgram {
     const vertexShader = `
-    attribute vec4 a_Position;
+    attribute vec4 a_position;
 
-    varying vec2 v_TexCoord;
+    varying vec2 v_texCoord;
 
     void main () {
-      gl_Position = a_Position;
+      gl_Position = a_position;
       gl_PointSize = 1.0;
 
       // Pass the texcoord to the fragment shader.
-      v_TexCoord = a_Position.xy * vec2(0.5, -0.5) + 0.5;
+      v_texCoord = a_position.xy * vec2(0.5, -0.5) + 0.5;
     }
     `;
 
     const fragmentShader = `
     precision mediump float;
 
-    uniform sampler2D u_CanvasTexture;
-    varying vec2 v_TexCoord;
+    uniform sampler2D u_canvasTexture;
+    varying vec2 v_texCoord;
 
     void main () {
-      vec4 textureColor = texture2D(u_CanvasTexture, v_TexCoord);
-      gl_FragColor = vec4(1.0 - textureColor.r, 1.0 - textureColor.g, 1.0 - textureColor.b, 1);
+      vec4 color = texture2D(u_canvasTexture, v_texCoord);
+      // Invert the original color
+      gl_FragColor = vec4(1.0 - color.r, 1.0 - color.g, 1.0 - color.b, 1);
     }
     `;
 
