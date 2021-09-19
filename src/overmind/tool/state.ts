@@ -34,7 +34,7 @@ export type State = {
     start: Point | null;
   };
   brushSelectorTool: { start: Point | null };
-  activeColorIndex: number;
+  activeColorNumber: number;
 };
 
 export const state: State = {
@@ -53,5 +53,5 @@ export const state: State = {
   polygonTool: { vertices: [] },
   textTool: { text: '', start: null },
   brushSelectorTool: { start: null },
-  activeColorIndex: 0,
+  activeColorNumber: 0,
 };

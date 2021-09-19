@@ -78,20 +78,20 @@ export class PaintingCanvasController implements CanvasController {
     overmind.actions.undo.setUndoPoint(); // initial undo point
   }
 
-  points(points: Point[], colorIndex: number): void {
-    this.colorIndexer?.points(points, colorIndex);
+  points(points: Point[], colorNumber: number): void {
+    this.colorIndexer?.points(points, colorNumber);
     this.mainCanvasRenderer?.points(points);
     this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
-  lines(lines: (LineH | LineV)[], colorIndex: number): void {
-    this.colorIndexer?.lines(lines, colorIndex);
+  lines(lines: (LineH | LineV)[], colorNumber: number): void {
+    this.colorIndexer?.lines(lines, colorNumber);
     this.mainCanvasRenderer?.lines(lines);
     this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
 
-  quad(start: Point, end: Point, colorIndex: number): void {
-    this.colorIndexer?.quad(start, end, colorIndex);
+  quad(start: Point, end: Point, colorNumber: number): void {
+    this.colorIndexer?.quad(start, end, colorNumber);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderQuad?
     this.zoomCanvasRenderer?.render(this.mainCanvas);
   }
