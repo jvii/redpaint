@@ -11,15 +11,15 @@ export class ColorSelectorTool implements Tool {
 
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
-    const colorIndex = paintingCanvasController.getColorNumberForPoint(mousePos);
-    if (!colorIndex) {
+    const colorNumber = paintingCanvasController.getColorNumberForPoint(mousePos);
+    if (!colorNumber) {
       return;
     }
     if (this.foregroundColor) {
-      overmind.actions.palette.setForegroundColor(colorIndex.toString());
+      overmind.actions.palette.setForegroundColor(colorNumber.toString());
       overmind.actions.toolbox.toggleForegroundColorSelectionMode();
     } else {
-      overmind.actions.palette.setBackgroundColor(colorIndex.toString());
+      overmind.actions.palette.setBackgroundColor(colorNumber.toString());
       overmind.actions.toolbox.toggleBackgroundColorSelectionMode();
     }
   }

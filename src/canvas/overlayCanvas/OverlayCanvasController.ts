@@ -45,18 +45,18 @@ class OverlayCanvasController implements CanvasController {
     this.zoomCanvasRenderer = new ZoomCanvasRenderer(zoomCanvasOverlay);
   }
 
-  points(points: Point[], colorIndex: number): void {
-    this.mainCanvasRenderer?.points(points, colorIndex);
+  points(points: Point[], colorNumber: number): void {
+    this.mainCanvasRenderer?.points(points, colorNumber);
     this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
   }
 
-  lines(lines: Line[], colorIndex: number): void {
-    this.mainCanvasRenderer?.lines(lines, colorIndex);
+  lines(lines: Line[], colorNumber: number): void {
+    this.mainCanvasRenderer?.lines(lines, colorNumber);
     this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
   }
 
-  quad(start: Point, end: Point, colorIndex: number): void {
-    this.mainCanvasRenderer?.quad(start, end, colorIndex);
+  quad(start: Point, end: Point, colorNumber: number): void {
+    this.mainCanvasRenderer?.quad(start, end, colorNumber);
     this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
   }
 

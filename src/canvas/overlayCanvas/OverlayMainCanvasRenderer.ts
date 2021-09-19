@@ -25,16 +25,16 @@ export class OverlayMainCanvasRenderer {
     this.selectionIndicatorRenderer = new OverlaySelectionIndicatorRenderer(gl);
   }
 
-  points(points: Point[], colorIndex: number): void {
-    this.geometricRenderer.renderPoints(points, colorIndex);
+  points(points: Point[], colorNumber: number): void {
+    this.geometricRenderer.renderPoints(points, colorNumber);
   }
 
-  lines(lines: Line[], colorIndex: number): void {
-    this.geometricRenderer.renderLines(lines, colorIndex);
+  lines(lines: Line[], colorNumber: number): void {
+    this.geometricRenderer.renderLines(lines, colorNumber);
   }
 
-  quad(start: Point, end: Point, colorIndex: number): void {
-    this.geometricRenderer.renderQuad(start, end, colorIndex);
+  quad(start: Point, end: Point, colorNumber: number): void {
+    this.geometricRenderer.renderQuad(start, end, colorNumber);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

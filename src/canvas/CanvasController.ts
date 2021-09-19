@@ -6,9 +6,9 @@ import { Point } from '../types';
 export interface CanvasController {
   attachMainCanvas(mainCanvas: HTMLCanvasElement): void;
   attachZoomCanvas(zoomCanvas: HTMLCanvasElement): void;
-  points(points: Point[], colorIndex: number): void;
-  lines(lines: (LineH | LineV)[], colorIndex: number): void;
-  quad(start: Point, end: Point, colorIndex: number): void;
+  points(points: Point[], colorNumber: number): void;
+  lines(lines: (LineH | LineV)[], colorNumber: number): void;
+  quad(start: Point, end: Point, colorNumber: number): void;
   drawImage(points: Point[], brush: CustomBrush): void;
   clear(): void;
 }

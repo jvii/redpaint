@@ -37,11 +37,11 @@ export class CanvasColorIndex {
 
   setColorNumberForPixel(
     pixel: Point,
-    colorIndexForPixel: number,
+    colorNumberForPixel: number,
     height: number,
     width: number
   ): void {
     const arrayIndex = pixel.x * 4 + (height - pixel.y - 1) * width * 4;
-    this.indexArray[arrayIndex] = colorIndexForPixel;
+    this.indexArray[arrayIndex] = colorNumberForPixel;
   }
 }

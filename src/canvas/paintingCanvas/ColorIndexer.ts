@@ -30,16 +30,16 @@ export class ColorIndexer {
     this.drawImageIndexer = new DrawImageIndexer(gl, buffers);
   }
 
-  points(points: Point[], colorIndex: number): void {
-    this.geometricIndexer.indexPoints(points, colorIndex);
+  points(points: Point[], colorNumber: number): void {
+    this.geometricIndexer.indexPoints(points, colorNumber);
   }
 
-  lines(lines: (LineH | LineV)[], colorIndex: number): void {
-    this.geometricIndexer.indexLines(lines, colorIndex);
+  lines(lines: (LineH | LineV)[], colorNumber: number): void {
+    this.geometricIndexer.indexLines(lines, colorNumber);
   }
 
-  quad(start: Point, end: Point, colorIndex: number): void {
-    this.geometricIndexer.indexQuad(start, end, colorIndex);
+  quad(start: Point, end: Point, colorNumber: number): void {
+    this.geometricIndexer.indexQuad(start, end, colorNumber);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

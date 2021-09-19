@@ -48,7 +48,7 @@ export class GeometricIndexer {
     gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  public indexLines(lines: Line[], colorIndex: number): void {
+  public indexLines(lines: Line[], colorNumber: number): void {
     const gl = this.gl;
 
     useProgram(gl, this.program);
@@ -56,11 +56,11 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorIndex !== this.currentColorNumber) {
+    if (colorNumber !== this.currentColorNumber) {
       console.log('updating color index uniform');
-      this.currentColorNumber = colorIndex;
+      this.currentColorNumber = colorNumber;
       const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
-      gl.uniform1f(u_colorNumber, colorIndex);
+      gl.uniform1f(u_colorNumber, colorNumber);
     }
 
     const a_position = gl.getAttribLocation(this.program, 'a_position');
@@ -93,7 +93,7 @@ export class GeometricIndexer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorNumber !== this.currentColorNumber) {
-      console.log('updating color index uniform');
+      console.log('updating color number uniform');
       this.currentColorNumber = colorNumber;
       const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
       gl.uniform1f(u_colorNumber, colorNumber);

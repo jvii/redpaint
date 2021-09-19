@@ -90,7 +90,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledRect(start: Point, end: Point, canvas: CanvasController): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    canvas.quad(start, end, overmind.state.tool.activeColorIndex);
+    canvas.quad(start, end, overmind.state.tool.activeColorNumber);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: CanvasController): void {
@@ -101,7 +101,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public drawFilledCircle(center: Point, radius: number, canvas: CanvasController): void {
     // DPaint just draws the filled shape as if using a pixel brush
     const filledCircleAsLines = filledCircle(center, radius);
-    canvas.lines(filledCircleAsLines, overmind.state.tool.activeColorIndex);
+    canvas.lines(filledCircleAsLines, overmind.state.tool.activeColorNumber);
   }
 
   public drawUnfilledEllipse(
@@ -134,7 +134,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   ): void {
     // DPaint just draws the filled shape as if using a pixel brush
     const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(filledEllipseAsLines, overmind.state.tool.activeColorIndex);
+    canvas.lines(filledEllipseAsLines, overmind.state.tool.activeColorNumber);
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: CanvasController): void {
@@ -148,7 +148,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public drawFilledPolygon(vertices: Point[], canvas: CanvasController): void {
     // DPaint just draws the filled shape as if using a pixel brush
     const filledPolygonAsLines = filledPolygon(vertices);
-    canvas.lines(filledPolygonAsLines, overmind.state.tool.activeColorIndex);
+    canvas.lines(filledPolygonAsLines, overmind.state.tool.activeColorNumber);
   }
 
   private adjustHandle(point: Point): Point {

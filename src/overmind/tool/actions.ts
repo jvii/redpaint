@@ -2,11 +2,11 @@ import { Action } from 'overmind';
 import { Point } from '../../types';
 
 export const activeToolToFGFillStyle: Action = ({ state }): void => {
-  state.tool.activeColorIndex = Number(state.palette.foregroundColorId);
+  state.tool.activeColorNumber = Number(state.palette.foregroundColorId);
 };
 
 export const activeToolToBGFillStyle: Action = ({ state }): void => {
-  state.tool.activeColorIndex = Number(state.palette.backgroundColorId);
+  state.tool.activeColorNumber = Number(state.palette.backgroundColorId);
 };
 
 // freehand
