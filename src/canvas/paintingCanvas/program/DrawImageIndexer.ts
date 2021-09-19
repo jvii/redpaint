@@ -37,8 +37,8 @@ export class DrawImageIndexer {
     }
     this.currentBrushId = brush.lastChanged;
 
-    const u_Sampler = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_Sampler');
-    gl.uniform1i(u_Sampler, 2); // texture unit 2
+    const u_image = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_image');
+    gl.uniform1i(u_image, 2); // texture unit 2
 
     console.log('points:' + points.length);
     console.log('point[0].y=' + points[0].y);
@@ -96,23 +96,23 @@ export class DrawImageIndexer {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
 
-    const a_TexCoord = gl.getAttribLocation(this.program, 'a_TexCoord');
-    gl.enableVertexAttribArray(a_TexCoord);
+    const a_texCoord = gl.getAttribLocation(this.program, 'a_texCoord');
+    gl.enableVertexAttribArray(a_texCoord);
 
-    gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.DYNAMIC_DRAW);
 
     // vertex coords
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 
@@ -121,27 +121,27 @@ export class DrawImageIndexer {
 
   private createProgram(): WebGLProgram {
     const vertexShader = `
-    attribute vec4 a_Position;
-    attribute vec2 a_TexCoord;
+    attribute vec4 a_position;
+    attribute vec2 a_texCoord;
 
-    varying vec2 v_TexCoord;
+    varying vec2 v_texCoord;
 
     void main () {
-      gl_Position = a_Position;
+      gl_Position = a_position;
 
       // Pass the texcoord to the fragment shader.
-      v_TexCoord = a_TexCoord;
+      v_texCoord = a_texCoord;
     }
     `;
 
     const fragmentShader = `
     precision mediump float;
 
-    uniform sampler2D u_Sampler;
-    varying vec2 v_TexCoord;
+    uniform sampler2D u_image;
+    varying vec2 v_texCoord;
 
     void main () {
-      vec4 color = texture2D(u_Sampler, v_TexCoord);
+      vec4 color = texture2D(u_image, v_texCoord);
 
       if (color.r == 0.0) {
         discard; // zero means this pixel of the brush is transparent

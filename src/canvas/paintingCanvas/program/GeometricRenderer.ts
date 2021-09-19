@@ -22,18 +22,18 @@ export class GeometricRenderer {
 
     // use texture units 0 and 1 for the image and palette
 
-    const imageLoc = gl.getUniformLocation(this.program, 'u_image');
+    const imageLoc = gl.getUniformLocation(this.program, 'u_colorIndexTexture');
     const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
     gl.uniform1i(imageLoc, 0);
     gl.uniform1i(paletteLoc, 1);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {
@@ -57,20 +57,20 @@ export class GeometricRenderer {
     // render to the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // use texture units 0 and 1 for the image and palette
+    // use texture units 0 and 1 for the color index and palette
 
-    const imageLoc = gl.getUniformLocation(this.program, 'u_image');
+    const imageLoc = gl.getUniformLocation(this.program, 'u_colorIndexTexture');
     const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
     gl.uniform1i(imageLoc, 0);
     gl.uniform1i(paletteLoc, 1);
 
-    const a_Position = gl.getAttribLocation(this.program, 'a_Position');
+    const a_position = gl.getAttribLocation(this.program, 'a_position');
 
-    // Assign the buffer object to a_Position variable
-    gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+    // Assign the buffer object to a_position variable
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
 
-    // Enable the assignment to a_Position variable
-    gl.enableVertexAttribArray(a_Position);
+    // Enable the assignment to a_position variable
+    gl.enableVertexAttribArray(a_position);
 
     const vertices = new Float32Array(2 * 2 * lines.length);
     for (let i = 0; i < lines.length; i++) {
@@ -90,10 +90,10 @@ export class GeometricRenderer {
 
   private createProgram(): WebGLProgram {
     const vertexShader = `
-    attribute vec4 a_Position;
+    attribute vec4 a_position;
 
     void main () {
-      gl_Position = a_Position;
+      gl_Position = a_position;
       gl_PointSize = 1.0;
     }
     `;
@@ -102,21 +102,21 @@ export class GeometricRenderer {
     precision mediump float;
 
     uniform vec2 resolution;
-    uniform sampler2D u_image;
+    uniform sampler2D u_colorIndexTexture;
     uniform sampler2D u_palette;
 
     void main() {
       vec2 position = vec2((gl_FragCoord.x) / (resolution.x), (gl_FragCoord.y / (resolution.y)));
-      float index = texture2D(u_image, position).r * 255.0 - 1.0;
+      float colorNumber = texture2D(u_colorIndexTexture, position).r * 255.0 - 1.0;
       /*
-      if (index < 0.1) {
+      if (colorNumber < 0.1) {
         gl_FragColor = vec4(1,1,1,1);
       }
       else {
-        gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
+        gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
       }
       */
-      gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
+      gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
       //gl_FragColor = vec4(1,1,1,1);
     }
     `;
