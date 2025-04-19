@@ -1,115 +1,115 @@
-import { Action } from 'overmind';
+import { Context } from '../../overmind'
 import { Point } from '../../types';
 
-export const activeToolToFGFillStyle: Action = ({ state }): void => {
-  state.tool.activeColorNumber = Number(state.palette.foregroundColorId);
+export const activeToolToFGFillStyle = (context: Context): void => {
+  context.state.tool.activeColorNumber = Number(context.state.palette.foregroundColorId);
 };
 
-export const activeToolToBGFillStyle: Action = ({ state }): void => {
-  state.tool.activeColorNumber = Number(state.palette.backgroundColorId);
+export const activeToolToBGFillStyle = (context: Context): void => {
+  context.state.tool.activeColorNumber = Number(context.state.palette.backgroundColorId);
 };
 
 // freehand
 
-export const freeHandToolPrevious: Action<Point | null> = ({ state }, point): void => {
-  state.tool.freehandTool.previous = point;
+export const freeHandToolPrevious = (context: Context, point: Point | null): void => {
+  context.state.tool.freehandTool.previous = point;
 };
 
 // line
 
-export const lineToolStart: Action<Point | null> = ({ state }, point): void => {
-  state.tool.lineTool.start = point;
+export const lineToolStart = (context: Context, point: Point | null): void => {
+  context.state.tool.lineTool.start = point;
 };
 
 // curve
 
-export const curveToolStart: Action<Point | null> = ({ state }, point): void => {
-  state.tool.curveTool.start = point;
+export const curveToolStart = (context: Context, point: Point | null): void => {
+  context.state.tool.curveTool.start = point;
 };
 
-export const curveToolEnd: Action<Point | null> = ({ state }, point): void => {
-  state.tool.curveTool.end = point;
+export const curveToolEnd = (context: Context, point: Point | null): void => {
+  context.state.tool.curveTool.end = point;
 };
 
-export const curveToolReset: Action = ({ state }): void => {
-  state.tool.curveTool.start = null;
-  state.tool.curveTool.end = null;
+export const curveToolReset = (context: Context): void => {
+  context.state.tool.curveTool.start = null;
+  context.state.tool.curveTool.end = null;
 };
 
 // airbrush
 
-export const airbrushToolPosition: Action<Point | null> = ({ state }, point): void => {
-  state.tool.airbrushTool.position = point;
+export const airbrushToolPosition = (context: Context, point: Point | null): void => {
+  context.state.tool.airbrushTool.position = point;
 };
 
 // rectangle
 
-export const rectangleToolStart: Action<Point | null> = ({ state }, point): void => {
-  state.tool.rectangleTool.start = point;
+export const rectangleToolStart = (context: Context, point: Point | null): void => {
+  context.state.tool.rectangleTool.start = point;
 };
 
 // circle
 
-export const circleToolOrigin: Action<Point | null> = ({ state }, point): void => {
-  state.tool.circleTool.origin = point;
+export const circleToolOrigin = (context: Context, point: Point | null): void => {
+  context.state.tool.circleTool.origin = point;
 };
 
 // ellipse
 
-export const ellipseToolOrigin: Action<Point | null> = ({ state }, point): void => {
-  state.tool.ellipseTool.origin = point;
+export const ellipseToolOrigin = (context: Context, point: Point | null): void => {
+  context.state.tool.ellipseTool.origin = point;
 };
 
-export const ellipseToolRadius: Action<{ x: number | null; y: number | null }> = (
-  { state },
-  radius
+export const ellipseToolRadius = (
+  context: Context,
+  radius: { x: number | null; y: number | null }
 ): void => {
-  state.tool.ellipseTool.radiusX = radius.x;
-  state.tool.ellipseTool.radiusY = radius.y;
+  context.state.tool.ellipseTool.radiusX = radius.x;
+  context.state.tool.ellipseTool.radiusY = radius.y;
 };
 
-export const ellipseToolAngle: Action<number> = ({ state }, angle): void => {
-  state.tool.ellipseTool.angle = angle;
+export const ellipseToolAngle = (context: Context, angle: number): void => {
+  context.state.tool.ellipseTool.angle = angle;
 };
 
-export const ellipseToolReset: Action = ({ state }): void => {
-  state.tool.ellipseTool.origin = null;
-  state.tool.ellipseTool.radiusX = null;
-  state.tool.ellipseTool.radiusY = null;
-  state.tool.ellipseTool.angle = 0;
+export const ellipseToolReset = (context: Context): void => {
+  context.state.tool.ellipseTool.origin = null;
+  context.state.tool.ellipseTool.radiusX = null;
+  context.state.tool.ellipseTool.radiusY = null;
+  context.state.tool.ellipseTool.angle = 0;
 };
 
 // polygon
 
-export const polygonToolAddVertice: Action<Point> = ({ state }, point): void => {
-  state.tool.polygonTool.vertices.push(point);
+export const polygonToolAddVertice = (context: Context, point: Point): void => {
+  context.state.tool.polygonTool.vertices.push(point);
 };
 
-export const polygonToolReset: Action = ({ state }): void => {
-  state.tool.polygonTool.vertices = [];
+export const polygonToolReset = (context: Context): void => {
+  context.state.tool.polygonTool.vertices = [];
 };
 
 // text
 
-export const textToolStart: Action<Point> = ({ state }, point): void => {
-  state.tool.textTool.start = point;
+export const textToolStart = (context: Context, point: Point): void => {
+  context.state.tool.textTool.start = point;
 };
 
-export const textToolKey: Action<string> = ({ state }, key): void => {
+export const textToolKey = (context: Context, key: string): void => {
   if (key.length === 1) {
-    state.tool.textTool.text = state.tool.textTool.text + key;
+    context.state.tool.textTool.text = context.state.tool.textTool.text + key;
   } else if (key === 'Backspace') {
-    state.tool.textTool.text = state.tool.textTool.text.slice(0, -1);
+    context.state.tool.textTool.text = context.state.tool.textTool.text.slice(0, -1);
   }
 };
 
-export const textToolReset: Action = ({ state }): void => {
-  state.tool.textTool.start = null;
-  state.tool.textTool.text = '';
+export const textToolReset = (context: Context): void => {
+  context.state.tool.textTool.start = null;
+  context.state.tool.textTool.text = '';
 };
 
 // brush selection
 
-export const brushSelectionStart: Action<Point | null> = ({ state }, point): void => {
-  state.tool.brushSelectorTool.start = point;
+export const brushSelectionStart = (context: Context, point: Point | null): void => {
+  context.state.tool.brushSelectorTool.start = point;
 };

@@ -1,15 +1,15 @@
-import React, { useRef, useState, useLayoutEffect } from 'react';
+import React, { useRef, useState, useLayoutEffect, JSX } from 'react';
 import { ColorButton } from './ColorButton';
-import { useOvermind } from '../../overmind';
-import { overmind } from '../..';
+import { useActions, useAppState } from '../../overmind';
 import { Debounce } from '../../tools/util/Debounce';
 import './Palette.css';
 
 function Palette(): JSX.Element {
-  const { state, actions } = useOvermind();
-  const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
+  const state = useAppState()
+  const actions = useActions()
 
-  const size = useCalcColorButtonSize(containerRef, overmind.state.palette.paletteArray.length);
+  const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
+  const size = useCalcColorButtonSize(containerRef, state.palette.paletteArray.length);
 
   const createColorButton = (index: number): JSX.Element => {
     return (

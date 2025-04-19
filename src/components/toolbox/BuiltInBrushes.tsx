@@ -1,5 +1,5 @@
-import React from 'react';
-import { useOvermind } from '../../overmind';
+import React, { JSX } from 'react';
+import { useActions, useAppState } from '../../overmind';
 import { BuiltInBrushId } from '../../overmind/brush/state';
 import './BuiltInBrushes.css';
 
@@ -32,7 +32,9 @@ interface ButtonProps {
 }
 
 function BrushButton({ svg, brushId }: ButtonProps): JSX.Element {
-  const { state, actions } = useOvermind();
+  const state = useAppState();
+  const actions = useActions();
+
   const onClick = (): void => {
     actions.brush.selectBuiltInBrush(brushId);
   };

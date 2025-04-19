@@ -1,7 +1,7 @@
-import React from 'react';
-import { Button, Divider, Slider } from '@material-ui/core';
+import React, { JSX } from 'react';
+import { Button, Divider, Slider } from '@mui/material';
 import './PaletteEditor.css';
-import { useOvermind } from '../../overmind';
+import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
@@ -9,7 +9,8 @@ import Palette from '../palette/Palette';
 import { Modal } from '../modal/Modal';
 
 export function PaletteEditor(): JSX.Element | null {
-  const { state, actions } = useOvermind();
+  const state = useAppState();
+  const actions = useActions();
 
   if (!state.paletteEditor.isOpen) {
     return null;

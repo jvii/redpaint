@@ -1,6 +1,11 @@
-import { IConfig } from 'overmind';
+import { IContext } from 'overmind'
 import { namespaced } from 'overmind/config';
-import { createHook } from 'overmind-react';
+import {
+  createStateHook,
+  createActionsHook,
+  createEffectsHook,
+  createReactionHook
+} from 'overmind-react'
 import * as app from './app';
 import * as canvas from './canvas';
 import * as dialog from './dialog';
@@ -23,19 +28,11 @@ export const config = namespaced({
   brush,
 });
 
-declare module 'overmind' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface Config
-    extends IConfig<{
-      state: typeof config.state;
-      actions: typeof config.actions;
-      effects: typeof config.effects;
-    }> {}
-  // Due to circular typing we have to define an
-  // explicit typing of state, actions and effects since
-  // TS 3.9
-}
+export type Context = IContext<typeof config>
 
-export const useOvermind = createHook<typeof config>();
+export const useAppState = createStateHook<Context>()
+export const useActions = createActionsHook<Context>()
+export const useEffects = createEffectsHook<Context>()
+export const useReaction = createReactionHook<Context>()
 
 export type OvermindState = typeof config.state;

@@ -1,19 +1,19 @@
-import { Action } from 'overmind';
+import { Context } from '../../overmind'
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
 import { brushHistory } from '../../brush/BrushHistory';
 
-export const setForegroundColor: Action<string> = ({ state, actions }, key): void => {
-  state.palette.foregroundColorId = key;
-  actions.tool.activeToolToFGFillStyle();
+export const setForegroundColor = (context: Context, key: string): void => {
+  context.state.palette.foregroundColorId = key;
+  context.actions.tool.activeToolToFGFillStyle();
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     brush.setFGColor();
   }
 };
 
-export const setBackgroundColor: Action<string> = ({ state }, key): void => {
-  state.palette.backgroundColorId = key;
+export const setBackgroundColor = (context: Context, key: string): void => {
+  context.state.palette.backgroundColorId = key;
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
     brush.setBGColor();
@@ -25,6 +25,6 @@ export interface EditColorParams {
   newColor: Color;
 }
 
-export const editColor: Action<EditColorParams> = ({ state }, editColorParams): void => {
-  state.palette.palette[editColorParams.colorId] = editColorParams.newColor;
+export const editColor = (context: Context, editColorParams: EditColorParams): void => {
+  context.state.palette.palette[editColorParams.colorId] = editColorParams.newColor;
 };

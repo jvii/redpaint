@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { useOvermind } from '../../overmind';
+import React, { JSX, useRef } from 'react';
+import { useActions, useAppState } from '../../overmind';
 import { MenuItem } from './MenuItem';
 import { MenuItemSave } from './MenuItemSave';
 import { MenuItemOpen } from './MenuItemOpen';
@@ -8,7 +8,6 @@ import './Menubar.css';
 import { brushHistory } from '../../brush/BrushHistory';
 
 export function Menubar(): JSX.Element {
-  const { state, actions } = useOvermind();
   const overlayRef = useRef<HTMLDivElement>(document.createElement('div'));
 
   const toggle = (): void => {
@@ -25,14 +24,14 @@ export function Menubar(): JSX.Element {
 
   const handleImageFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
-      actions.canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
+      useActions().canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
     }
   };
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
       //actions.brush.setBrush(new CustomBrush(URL.createObjectURL(input.files[0])));
-      actions.brush.setMode('Matte');
+      useActions().brush.setMode('Matte');
     } else {
       alert('Failed to open file!');
     }
@@ -48,12 +47,12 @@ export function Menubar(): JSX.Element {
     return brush instanceof CustomBrush ? brush.getObjectURL() : '#';
   };
 
-  const mode = state.brush.mode;
+  const mode = useAppState().brush.mode;
 
   return (
     <>
       <div className="menubar" onClick={toggle}>
-        <p className="menubar__title">ReDPaint</p>
+        <p className="menubar__title">Redpaint</p>
         <p className="menubar__mode-indicator">{mode}</p>
       </div>
       <div className="menu" ref={overlayRef} onMouseLeave={close} onContextMenu={close}>
@@ -78,13 +77,13 @@ export function Menubar(): JSX.Element {
             <div className="menu__header">Mode</div>
             <MenuItem
               label="Matte"
-              isSelected={state.brush.mode === 'Matte'}
-              onClick={(): void => actions.brush.setMode('Matte')}
+              isSelected={useAppState().brush.mode === 'Matte'}
+              onClick={(): void => useActions().brush.setMode('Matte')}
             ></MenuItem>
             <MenuItem
               label="Color"
-              isSelected={state.brush.mode === 'Color'}
-              onClick={(): void => actions.brush.setMode('Color')}
+              isSelected={useAppState().brush.mode === 'Color'}
+              onClick={(): void => useActions().brush.setMode('Color')}
             ></MenuItem>
           </div>
         </div>

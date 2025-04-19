@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { JSX, useEffect, useRef } from 'react';
 import { useInitTool, useUndo } from './hooks';
-import { useOvermind } from '../../overmind';
+import { useAppState } from '../../overmind';
 import { getEventHandler } from '../../tools/util/util';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
@@ -12,6 +12,8 @@ interface Props {
 }
 
 export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | null {
+  const state = useAppState();
+
   console.log('render ' + (isZoomCanvas ? 'ZoomCanvas' : 'MainCanvas'));
   const paintingCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
@@ -27,9 +29,9 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
   }, []);
 
   useUndo();
+
   useInitTool(isZoomCanvas);
 
-  const { state } = useOvermind();
   const tool = state.toolbox.activeTool;
 
   const CSSZoom = {

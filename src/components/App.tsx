@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import MainCanvas from './canvas/MainCanvas';
 import ZoomCanvas from './canvas/ZoomCanvas';
 import { Menubar } from './menubar/Menubar';
@@ -13,6 +13,14 @@ import './App.css';
 
 function App(): JSX.Element {
   console.log('render App');
+
+  // Add this in your component file
+
+  require('react-dom');
+  // @ts-ignore
+  window.React2 = require('react');
+  // @ts-ignore
+  console.log(window.React1! === window.React2!);
 
   return (
     <div className="app">

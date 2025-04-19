@@ -1,5 +1,5 @@
-import React from 'react';
-import { useOvermind } from '../../overmind';
+import React, { JSX } from 'react';
+import { useAppState } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
 
 interface Props {
@@ -17,10 +17,9 @@ export function ColorButton({
   onClick,
   onRightClick,
 }: Props): JSX.Element {
-  const { state } = useOvermind();
 
   const buttonStyle = {
-    backgroundColor: colorToRGBString(state.palette.palette[colorId]),
+    backgroundColor: colorToRGBString(useAppState().palette.palette[colorId]),
     border: isSelected ? '2px solid white' : '2px solid transparent',
     width: size + 'px',
     heigth: size + 'px',

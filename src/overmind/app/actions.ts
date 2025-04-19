@@ -1,5 +1,5 @@
-import { Action } from 'overmind';
+import { Context } from '../../overmind'
 
-export const imageFileToPasteBuffer: Action<File> = ({ state }, imageFile): void => {
-  state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
+export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
+  context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
 };

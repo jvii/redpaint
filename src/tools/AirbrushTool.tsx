@@ -7,7 +7,6 @@ import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasCo
 
 export class AirbrushTool implements Tool {
   // TODO fix
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private timeout: any = 0;
 
   private prepareToPaint(withBGColor: boolean): void {
@@ -32,7 +31,6 @@ export class AirbrushTool implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    // eslint-disable-next-line @typescript-eslint/ban-types
     const draw = (): void => {
       //TODO: draw in bigger batches, maybe drawDot should accept an array? Or new method
       // drawDots

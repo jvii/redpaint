@@ -9,7 +9,6 @@ export class Throttle {
     this.lastRan = null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   public call(func: Function): void {
     if (!this.lastRan) {
       func();
