@@ -64,14 +64,12 @@ export function getEventHandler(
 ): (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => void {
   if (hasKey(tool, eventHandlerName)) {
     return (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void =>
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      tool[eventHandlerName]!(event);
+      tool[eventHandlerName]?.(event);
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   return (): void => {};
 }
 
-function hasKey<O>(obj: O, key: keyof any): key is keyof O {
+function hasKey<T extends object>(obj: T, key: PropertyKey): key is keyof T {
   return key in obj;
 }
 
@@ -91,22 +89,12 @@ export function isLeftOrRightMouseButton(
   return isLeftMouseButton(event) || isRightMouseButton(event);
 }
 
-interface Omit {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  <T extends object, K extends [...(keyof T)[]]>(obj: T, ...keys: K): {
-    [K2 in Exclude<keyof T, K[number]>]: T[K2];
-  };
-}
+export function omit<T extends object, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
+  const result = { ...obj };
 
-export const omit: Omit = (obj, ...keys) => {
-  const ret = {} as {
-    [K in keyof typeof obj]: typeof obj[K];
-  };
-  let key: keyof typeof obj;
-  for (key in obj) {
-    if (!keys.includes(key)) {
-      ret[key] = obj[key];
-    }
+  for (const key of keys) {
+    delete result[key];
   }
-  return ret;
-};
+
+  return result;
+}

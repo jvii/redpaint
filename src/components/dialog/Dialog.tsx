@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import './Dialog.css';
 import '../modal/Modal.css';
 import { Modal } from '../modal/Modal';

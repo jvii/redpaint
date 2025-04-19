@@ -1,9 +1,9 @@
-import { Action } from 'overmind';
+import { Context } from '../../overmind'
 
-export const close: Action = ({ state }): void => {
-  state.paletteEditor.isOpen = false;
+export const close = (context: Context): void => {
+  context.state.paletteEditor.isOpen = false;
 };
 
-export const open: Action = ({ state }): void => {
-  state.paletteEditor.isOpen = true;
+export const open = (context: Context): void => {
+  context.state.paletteEditor.isOpen = true;
 };

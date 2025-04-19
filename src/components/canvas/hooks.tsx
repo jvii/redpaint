@@ -1,11 +1,11 @@
 import { Point } from '../../types';
 import { useEffect } from 'react';
-import { useOvermind } from '../../overmind';
+import { useActions, useAppState } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function useInitTool(isZoomCanvas: boolean): void {
-  const { state } = useOvermind();
+  const state = useAppState()
   useEffect((): void => {
     if (!isZoomCanvas) {
       state.toolbox.previousTool?.onExit?.();
@@ -23,7 +23,7 @@ export function useInitTool(isZoomCanvas: boolean): void {
 }
 
 export function useUndo(): void {
-  const { state } = useOvermind();
+  const state = useAppState()
   useEffect((): void => {
     if (state.undo.currentIndex === null) {
       return;
@@ -40,7 +40,8 @@ export function useUndo(): void {
 // Load image to canvas when loadedImageURL changes
 // Changes canvas height and width to match image
 export function useLoadedImage(canvas: HTMLCanvasElement): void {
-  const { state, actions } = useOvermind();
+  const state = useAppState()
+  const actions = useActions()
   useEffect((): void => {
     const ctx = canvas.getContext('2d');
     if (!ctx) {

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import { ToolboxToggleButton } from './buttons/ToolboxToggleButton';
 import { ToolboxDualToggleButton } from './buttons/ToolboxDualToggleButton';
 import { ToolboxActionButton } from './buttons/ToolboxActionButton';
-import { useOvermind } from '../../overmind';
+import { useActions, useAppState } from '../../overmind';
 import './Toolbox.css';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function Toolbox(): JSX.Element {
-  const { state, actions } = useOvermind();
+  const state = useAppState()
+  const actions = useActions()
   return (
     <div className="toolbox">
       <ToolboxToggleButton

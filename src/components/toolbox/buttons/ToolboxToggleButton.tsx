@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { JSX } from 'react';
 import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
 
 interface Props {

@@ -1,9 +1,9 @@
-import { Action } from 'overmind';
+import { Context } from '../../overmind'
 
-export const open: Action<string> = ({ state }, dialogId): void => {
-  state.dialog.activeDialog = dialogId;
+export const open = (context: Context, dialogId: string): void => {
+  context.state.dialog.activeDialog = dialogId;
 };
 
-export const close: Action = ({ state }): void => {
-  state.dialog.activeDialog = '';
+export const close = (context: Context): void => {
+  context.state.dialog.activeDialog = '';
 };

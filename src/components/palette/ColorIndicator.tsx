@@ -1,12 +1,13 @@
-import React from 'react';
-import { useOvermind } from '../../overmind';
+import React, { JSX } from 'react';
+import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
 
 export function ColorIndicator(): JSX.Element {
-  const { state, actions } = useOvermind();
+  const state = useAppState()
+  const actions = useActions()
 
   const background = {
-    backgroundColor: colorToRGBString(state.palette.backgroundColor),
+    backgroundColor: colorToRGBString(useAppState().palette.backgroundColor),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
