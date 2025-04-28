@@ -18,6 +18,20 @@ export class MainCanvasRenderer {
     this.drawImageRenderer = new DrawImageRenderer(gl);
   }
 
+  /**
+   * Cleans up WebGL resources when the renderer is no longer needed
+   */
+  public dispose(): void {
+    if (this.geometricRenderer) {
+      this.geometricRenderer.dispose();
+      this.geometricRenderer = null;
+    }
+    if (this.drawImageRenderer) {
+      this.drawImageRenderer.dispose();
+      this.drawImageRenderer = null;
+    }
+  }
+
   renderCanvas(): void {
     this.drawImageRenderer.renderCanvas();
   }

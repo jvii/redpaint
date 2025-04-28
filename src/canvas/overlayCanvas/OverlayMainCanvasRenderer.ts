@@ -25,6 +25,25 @@ export class OverlayMainCanvasRenderer {
     this.selectionIndicatorRenderer = new OverlaySelectionIndicatorRenderer(gl);
   }
 
+  /**
+   * Cleans up WebGL resources when the renderer is no longer needed
+   */
+  public dispose(): void {
+    console.log('Disposing OverlayMainCanvasRenderer');
+    if (this.geometricRenderer) {
+      this.geometricRenderer.dispose();
+      this.geometricRenderer = null;
+    }
+    if (this.drawImageRenderer) {
+      this.drawImageRenderer.dispose();
+      this.drawImageRenderer = null;
+    }
+    if (this.selectionIndicatorRenderer) {
+      this.selectionIndicatorRenderer.dispose();
+      this.selectionIndicatorRenderer = null;
+    }
+  }
+
   points(points: Point[], colorNumber: number): void {
     this.geometricRenderer.renderPoints(points, colorNumber);
   }

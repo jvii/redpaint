@@ -14,6 +14,16 @@ export class OverlayGeometricRenderer {
     this.program = this.createProgram();
   }
 
+  /**
+   * Cleans up WebGL resources when the renderer is no longer needed
+   */
+  public dispose(): void {
+    if (this.program) {
+      this.gl.deleteProgram(this.program);
+      this.program = null;
+    }
+  }
+
   public renderPoints(points: Point[], colorNumber: number): void {
     const gl = this.gl;
 
