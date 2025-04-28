@@ -1,13 +1,15 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { Dialog } from './Dialog';
-import { CustomBrush } from '../../brush/CustomBrush';
+//import { CustomBrush } from '../../brush/CustomBrush';
 import './Dialog.css';
 import { Button } from '@mui/material';
 
 export function DialogManager(): JSX.Element | null {
+  const actions = useActions();
+  const state = useAppState();
 
-  switch (useAppState().dialog.activeDialog) {
+  switch (state.dialog.activeDialog) {
     case 'PASTE_SELECT':
       // TODO: create components i.e. PasteDialog
       return (
@@ -15,16 +17,16 @@ export function DialogManager(): JSX.Element | null {
           <button
             onClick={(): void => {
               //actions.brush.setBrush(new CustomBrush(state.app.pasteBufferImageObjectURL));
-              useActions().brush.setMode('Matte');
-              useActions().dialog.close();
+              actions.brush.setMode('Matte');
+              actions.dialog.close();
             }}
           >
             Paste as brush
           </button>
           <button
             onClick={(): void => {
-              useActions().canvas.setLoadedImage(useAppState().app.pasteBufferImageObjectURL);
-              useActions().dialog.close();
+              actions.canvas.setLoadedImage(state.app.pasteBufferImageObjectURL);
+              actions.dialog.close();
             }}
           >
             Paste as new image
@@ -35,7 +37,7 @@ export function DialogManager(): JSX.Element | null {
     case 'PASTE_ERROR':
       return (
         <Dialog header="Image from clipboard" prompt="Clipboard item not recognized as an image.">
-          <Button variant="contained" color="primary" onClick={useActions().dialog.close}>
+          <Button variant="contained" color="primary" onClick={actions.dialog.close}>
             OK
           </Button>
         </Dialog>

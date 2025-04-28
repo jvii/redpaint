@@ -8,6 +8,9 @@ import './Menubar.css';
 import { brushHistory } from '../../brush/BrushHistory';
 
 export function Menubar(): JSX.Element {
+  const actions = useActions();
+  const state = useAppState();
+
   const overlayRef = useRef<HTMLDivElement>(document.createElement('div'));
 
   const toggle = (): void => {
@@ -24,14 +27,14 @@ export function Menubar(): JSX.Element {
 
   const handleImageFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
-      useActions().canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
+      actions.canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
     }
   };
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
       //actions.brush.setBrush(new CustomBrush(URL.createObjectURL(input.files[0])));
-      useActions().brush.setMode('Matte');
+      actions.brush.setMode('Matte');
     } else {
       alert('Failed to open file!');
     }
@@ -47,7 +50,7 @@ export function Menubar(): JSX.Element {
     return brush instanceof CustomBrush ? brush.getObjectURL() : '#';
   };
 
-  const mode = useAppState().brush.mode;
+  const mode = state.brush.mode;
 
   return (
     <>
@@ -77,20 +80,20 @@ export function Menubar(): JSX.Element {
             <div className="menu__header">Mode</div>
             <MenuItem
               label="Matte"
-              isSelected={useAppState().brush.mode === 'Matte'}
-              onClick={(): void => useActions().brush.setMode('Matte')}
+              isSelected={state.brush.mode === 'Matte'}
+              onClick={(): void => actions.brush.setMode('Matte')}
             ></MenuItem>
             <MenuItem
               label="Color"
-              isSelected={useAppState().brush.mode === 'Color'}
-              onClick={(): void => useActions().brush.setMode('Color')}
+              isSelected={state.brush.mode === 'Color'}
+              onClick={(): void => actions.brush.setMode('Color')}
             ></MenuItem>
           </div>
         </div>
         <div className="closeButtonDiv">
-          <a href="javascript:void(0)" className="menu__closebtn" onClick={close}>
+          <button className="menu__closebtn" onClick={close} type="button" aria-label="Close menu">
             &times;
-          </a>
+          </button>
         </div>
       </div>
     </>

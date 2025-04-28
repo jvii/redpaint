@@ -1,6 +1,6 @@
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftLine } from '../../util/util';
 import { Point } from '../../../types';
-import { createProgram, useProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram } from '../../util/webglUtil';
 import { overmind } from '../../..';
 import { LineH } from '../../../domain/LineH';
 import { LineV } from '../../../domain/LineV';
@@ -19,7 +19,7 @@ export class OverlaySelectionIndicatorRenderer {
   public renderSelectionBox(start: Point, end: Point): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // update canvas texture if necessary
 
@@ -65,7 +65,7 @@ export class OverlaySelectionIndicatorRenderer {
   public renderSelectionCrosshair(point: Point): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // update canvas texture if necessary
 

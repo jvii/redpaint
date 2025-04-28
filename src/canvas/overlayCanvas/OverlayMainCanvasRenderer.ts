@@ -58,7 +58,7 @@ export class OverlayMainCanvasRenderer {
   }
 
   clear(): void {
-    console.log('clearing');
+    console.log('clearing overlay canvas');
     this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
   }

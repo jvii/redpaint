@@ -54,7 +54,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       height
     );
     if (!brushColorIndex) {
-      throw 'what';
+      throw new Error('Failed to get brush color index from area');
     }
     return new CustomBrush(brushColorIndex, width, height);
   }

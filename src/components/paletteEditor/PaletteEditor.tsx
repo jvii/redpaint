@@ -1,4 +1,4 @@
-import React, { JSX } from 'react';
+import { JSX } from 'react';
 import { Button, Divider, Slider } from '@mui/material';
 import './PaletteEditor.css';
 import { useActions, useAppState } from '../../overmind';

@@ -1,7 +1,7 @@
 import { CustomBrush } from '../../../brush/CustomBrush';
 import { Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util/util';
-import { createProgram, useProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram } from '../../util/webglUtil';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -24,7 +24,7 @@ export class DrawImageIndexer {
   public indexDrawImage(points: Point[], brush: CustomBrush): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);

@@ -1,4 +1,4 @@
-import React, { JSX } from 'react';
+import React, { JSX, useRef } from 'react';
 import './Menubar.css';
 
 interface Props {
@@ -7,21 +7,28 @@ interface Props {
 }
 
 export function MenuItemOpen({ label, handleFile }: Props): JSX.Element {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = (): void => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="menu__item">
       <div className="menu__item-is-selected"></div>
-      <label className="menu__item-label">
-        <input
-          type="file"
-          onChange={(event): void => {
-            handleFile(event.target);
-            // must reset or onChange won't fire if user opens the same file again
-            event.target.value = '';
-          }}
-          style={{ display: 'none' }}
-        ></input>
-        <a>{label}</a>
-      </label>
+      <button className="menu__item-label" onClick={handleClick} type="button" aria-label={label}>
+        {label}
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={(event): void => {
+          handleFile(event.target);
+          // must reset or onChange won't fire if user opens the same file again
+          event.target.value = '';
+        }}
+        style={{ display: 'none' }}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { LineH } from '../../domain/LineH';
 import { LineV } from '../../domain/LineV';
-import { Line, Point } from '../../types';
+import { Point } from '../../types';
 import { DrawImageRenderer } from './program/DrawImageRenderer';
 import { GeometricRenderer } from './program/GeometricRenderer';
 
