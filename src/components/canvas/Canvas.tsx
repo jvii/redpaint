@@ -18,7 +18,8 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
   const paintingCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
+    console.log('Canvas component mounted', isZoomCanvas ? 'zoom' : 'main');
     if (isZoomCanvas) {
       paintingCanvasController.attachZoomCanvas(paintingCanvasRef.current);
       overlayCanvasController.attachZoomCanvas(overlayCanvasRef.current);
@@ -26,6 +27,20 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
       paintingCanvasController.attachMainCanvas(paintingCanvasRef.current);
       overlayCanvasController.attachMainCanvas(overlayCanvasRef.current);
     }
+
+    // Cleanup function to dispose of WebGL resources when component unmounts
+    return () => {
+      console.log('Canvas component unmounting', isZoomCanvas ? 'zoom' : 'main');
+      if (isZoomCanvas) {
+        // Clean up zoom canvas resources
+        paintingCanvasController.disposeZoomCanvas();
+        overlayCanvasController.disposeZoomCanvas();
+      } else {
+        // Clean up main canvas resources
+        paintingCanvasController.disposeMainCanvas();
+        overlayCanvasController.disposeMainCanvas();
+      }
+    };
   }, []);
 
   useUndo();

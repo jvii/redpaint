@@ -30,6 +30,20 @@ export class ColorIndexer {
     this.drawImageIndexer = new DrawImageIndexer(gl, buffers);
   }
 
+  /**
+   * Cleans up WebGL resources when the indexer is no longer needed
+   */
+  public dispose(): void {
+    if (this.geometricIndexer) {
+      this.geometricIndexer.dispose();
+      this.geometricIndexer = null;
+    }
+    if (this.drawImageIndexer) {
+      this.drawImageIndexer.dispose();
+      this.drawImageIndexer = null;
+    }
+  }
+
   points(points: Point[], colorNumber: number): void {
     this.geometricIndexer.indexPoints(points, colorNumber);
   }

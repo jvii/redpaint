@@ -20,6 +20,17 @@ export class OverlayDrawImageRenderer {
     this.buffers = buffers;
   }
 
+  /**
+   * Cleans up WebGL resources when the renderer is no longer needed
+   */
+  public dispose(): void {
+    console.log('Disposing OverlayDrawImageRenderer');
+    if (this.program) {
+      this.gl.deleteProgram(this.program);
+      this.program = null;
+    }
+  }
+
   public renderDrawImage(points: Point[], brush: CustomBrush): void {
     const gl = this.gl;
 

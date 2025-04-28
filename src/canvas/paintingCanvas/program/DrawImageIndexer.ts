@@ -21,6 +21,16 @@ export class DrawImageIndexer {
     this.buffers = buffers;
   }
 
+  /**
+   * Cleans up WebGL resources when the indexer is no longer needed
+   */
+  public dispose(): void {
+    if (this.program) {
+      this.gl.deleteProgram(this.program);
+      this.program = null;
+    }
+  }
+
   public indexDrawImage(points: Point[], brush: CustomBrush): void {
     const gl = this.gl;
 

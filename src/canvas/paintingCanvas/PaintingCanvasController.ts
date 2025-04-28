@@ -306,6 +306,43 @@ export class PaintingCanvasController implements CanvasController {
 
     return textureCoordBuffer;
   }
+
+  /**
+   * Cleans up WebGL resources for the main canvas
+   */
+  public disposeMainCanvas(): void {
+    if (this.mainCanvasRenderer) {
+      this.mainCanvasRenderer.dispose();
+      this.mainCanvasRenderer = null;
+    }
+    if (this.colorIndexer) {
+      this.colorIndexer.dispose();
+      this.colorIndexer = null;
+    }
+    // Clean up buffers
+    if (this.gl) {
+      if (this.buffers.vertexBuffer) {
+        this.gl.deleteBuffer(this.buffers.vertexBuffer);
+        this.buffers.vertexBuffer = null;
+      }
+      if (this.buffers.textureCoordBuffer) {
+        this.gl.deleteBuffer(this.buffers.textureCoordBuffer);
+        this.buffers.textureCoordBuffer = null;
+      }
+      if (this.buffers.colorIndexFramebuffer) {
+        this.gl.deleteFramebuffer(this.buffers.colorIndexFramebuffer);
+        this.buffers.colorIndexFramebuffer = null;
+      }
+    }
+  }
+
+  /**
+   * Cleans up WebGL resources for the zoom canvas
+   */
+  public disposeZoomCanvas(): void {
+    // Currently no WebGL resources to clean up for zoom canvas
+    // as it uses 2D context instead of WebGL
+  }
 }
 
 export const paintingCanvasController = new PaintingCanvasController();

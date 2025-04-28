@@ -155,4 +155,14 @@ export class GeometricIndexer {
     console.log('Program ready (GeometricIndexer)');
     return program;
   }
+
+  /**
+   * Cleans up WebGL resources when the indexer is no longer needed
+   */
+  public dispose(): void {
+    if (this.program) {
+      this.gl.deleteProgram(this.program);
+      this.program = null;
+    }
+  }
 }

@@ -16,6 +16,17 @@ export class OverlaySelectionIndicatorRenderer {
     this.program = this.createProgram();
   }
 
+  /**
+   * Cleans up WebGL resources when the renderer is no longer needed
+   */
+  public dispose(): void {
+    console.log('Disposing OverlaySelectionIndicatorRenderer');
+    if (this.program) {
+      this.gl.deleteProgram(this.program);
+      this.program = null;
+    }
+  }
+
   public renderSelectionBox(start: Point, end: Point): void {
     const gl = this.gl;
 
