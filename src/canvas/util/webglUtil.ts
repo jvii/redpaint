@@ -1,4 +1,4 @@
-export function useProgram(gl: WebGLRenderingContext, program: WebGLProgram): void {
+export function activateProgram(gl: WebGLRenderingContext, program: WebGLProgram): void {
   if (gl.getParameter(gl.CURRENT_PROGRAM) !== program) {
     console.log('switching webgl program');
     gl.useProgram(program);
@@ -14,7 +14,7 @@ export function createProgram(
 
   const vs = gl.createShader(gl.VERTEX_SHADER);
   if (!vs) {
-    throw 'Failed to create vertex shader';
+    throw new Error('Failed to create vertex shader');
   }
   gl.shaderSource(vs, vertexShaderSource);
   gl.compileShader(vs);
@@ -23,14 +23,14 @@ export function createProgram(
 
   if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
     console.error(gl.getShaderInfoLog(vs));
-    throw 'Errors compiling vertex shader';
+    throw new Error('Errors compiling vertex shader');
   }
 
   // Compile fragment shader
 
   const fs = gl.createShader(gl.FRAGMENT_SHADER);
   if (!fs) {
-    throw 'Errors compiling fragment shader';
+    throw new Error('Errors compiling fragment shader');
   }
   gl.shaderSource(fs, fragmentShaderSource);
   gl.compileShader(fs);
@@ -45,7 +45,7 @@ export function createProgram(
 
   const program = gl.createProgram();
   if (!program) {
-    throw 'Failed to create program';
+    throw new Error('Failed to create program');
   }
   gl.attachShader(program, vs);
   gl.attachShader(program, fs);
@@ -56,7 +56,7 @@ export function createProgram(
 
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     console.error(gl.getProgramInfoLog(program));
-    throw 'Errors linking program';
+    throw new Error('Errors linking program');
   }
 
   return program;

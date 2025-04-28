@@ -65,7 +65,7 @@ export class TextTool implements Tool {
     const start = overmind.state.tool.textTool.start;
     if (!start) {
       //clearOverlayCanvas(canvas);
-      const mousePos = getMousePos(event);
+      //const mousePos = getMousePos(event);
       //selection.box(ctx, mousePos, { x: mousePos.x + 20, y: mousePos.y - 50 });
     }
   }

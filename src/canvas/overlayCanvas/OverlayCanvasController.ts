@@ -27,7 +27,7 @@ class OverlayCanvasController implements CanvasController {
       antialias: false,
     });
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
     this.gl = gl;
 
@@ -89,7 +89,7 @@ class OverlayCanvasController implements CanvasController {
   updatePalette(): void {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No webgl');
     }
 
     const paletteTexture = new Uint8Array(256 * 4);
@@ -107,7 +107,7 @@ class OverlayCanvasController implements CanvasController {
   private initPaletteTexture(): void {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No webgl');
     }
 
     const paletteTexture = new Uint8Array(256 * 4);
@@ -137,14 +137,14 @@ class OverlayCanvasController implements CanvasController {
   private initVertexBuffer(): WebGLBuffer {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No webgl');
     }
 
     // Create a common buffer object for vertex coordinates.
     // This will be used by all shaders.
     const vertexBuffer = gl.createBuffer();
     if (!vertexBuffer) {
-      throw 'Failed to create a buffer object for vertex coordinates';
+      throw new Error('Failed to create a buffer object for vertex coordinates');
     }
 
     // Bind the buffer object to target (this is the default)
@@ -156,13 +156,13 @@ class OverlayCanvasController implements CanvasController {
   private initTextureCoordBuffer(): WebGLBuffer {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No webgl');
     }
 
     // Create a buffer object for texture coordinates
     const textureCoordBuffer = gl.createBuffer();
     if (!textureCoordBuffer) {
-      throw 'Failed to create the buffer object (textureCoordBuffer)';
+      throw new Error('Failed to create the buffer object (textureCoordBuffer)');
     }
 
     return textureCoordBuffer;

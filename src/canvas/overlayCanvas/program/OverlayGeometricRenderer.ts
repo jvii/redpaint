@@ -2,7 +2,7 @@
 
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftLine, shiftPoint } from '../../util/util';
 import { Line, Point } from '../../../types';
-import { createProgram, useProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram } from '../../util/webglUtil';
 
 export class OverlayGeometricRenderer {
   private gl: WebGLRenderingContext;
@@ -17,7 +17,7 @@ export class OverlayGeometricRenderer {
   public renderPoints(points: Point[], colorNumber: number): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     this.updateColorNumber(colorNumber);
 
@@ -44,7 +44,7 @@ export class OverlayGeometricRenderer {
   public renderLines(lines: Line[], colorNumber: number): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     this.updateColorNumber(colorNumber);
 
@@ -73,7 +73,7 @@ export class OverlayGeometricRenderer {
   public renderQuad(start: Point, end: Point, colorNumber: number): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     this.updateColorNumber(colorNumber);
 
@@ -111,7 +111,7 @@ export class OverlayGeometricRenderer {
   }
 
   private updateColorNumber(colorNumber: number) {
-    if (colorNumber == this.currentColorNumber) {
+    if (colorNumber === this.currentColorNumber) {
       return;
     }
 

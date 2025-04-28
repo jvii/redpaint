@@ -1,5 +1,5 @@
 import { Tool } from './Tool';
-import { getMousePos, isRightMouseButton, omit, isLeftOrRightMouseButton } from './util/util';
+import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';

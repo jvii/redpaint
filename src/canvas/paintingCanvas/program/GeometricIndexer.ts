@@ -1,6 +1,6 @@
 import { Line, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
-import { createProgram, useProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram } from '../../util/webglUtil';
 
 export class GeometricIndexer {
   private gl: WebGLRenderingContext;
@@ -17,7 +17,7 @@ export class GeometricIndexer {
   public indexPoints(points: Point[], colorNumber: number): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
@@ -51,7 +51,7 @@ export class GeometricIndexer {
   public indexLines(lines: Line[], colorNumber: number): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
@@ -87,7 +87,7 @@ export class GeometricIndexer {
   public indexQuad(start: Point, end: Point, colorNumber: number): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);

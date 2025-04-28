@@ -1,6 +1,6 @@
 import { Line, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
-import { createProgram, useProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram } from '../../util/webglUtil';
 
 /* eslint-disable max-len */
 export class GeometricRenderer {
@@ -15,7 +15,7 @@ export class GeometricRenderer {
   public renderPoints(points: Point[]): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // render to the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -52,7 +52,7 @@ export class GeometricRenderer {
   public renderLines(lines: Line[]): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     // render to the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

@@ -4,7 +4,7 @@ import { Line } from './Line';
 export class LineV extends Line {
   constructor(p1: Point, p2: Point) {
     if (p1.x !== p2.x) {
-      throw 'Line is not vertical';
+      throw new Error('Line is not vertical');
     }
     super(p1, p2);
   }

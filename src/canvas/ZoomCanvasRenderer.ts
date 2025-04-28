@@ -15,7 +15,7 @@ export class ZoomCanvasRenderer {
       desynchronized: false,
     });
     if (!ctx) {
-      throw 'Could not get 2d context for ZoomCanvas';
+      throw new Error('Could not get 2d context for ZoomCanvas');
     }
     this.zoomCanvasCtx = ctx;
   }

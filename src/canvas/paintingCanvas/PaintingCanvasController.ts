@@ -42,7 +42,7 @@ export class PaintingCanvasController implements CanvasController {
       alpha: false,
     });
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
     this.gl = gl;
 
@@ -65,7 +65,7 @@ export class PaintingCanvasController implements CanvasController {
   init(): void {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl, call attachMainCanvas() first.';
+      throw new Error('No WebGL context available, call attachMainCanvas() first');
     }
 
     // color index texture always in texture unit 0
@@ -155,7 +155,7 @@ export class PaintingCanvasController implements CanvasController {
   updatePalette(): void {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
 
     const paletteTexture = new Uint8Array(256 * 4);
@@ -175,7 +175,7 @@ export class PaintingCanvasController implements CanvasController {
   private initColorIndexTexture(): void {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
 
     // Initialize the color index texture.
@@ -232,7 +232,7 @@ export class PaintingCanvasController implements CanvasController {
   private initPaletteTexture(): void {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
 
     const paletteTexture = new Uint8Array(256 * 4);
@@ -262,13 +262,13 @@ export class PaintingCanvasController implements CanvasController {
   private initColorIndexFramebuffer(): WebGLFramebuffer {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
     // Create a framebuffer for rendering to this texture and store the reference.
 
     const fb = gl.createFramebuffer();
     if (!fb) {
-      throw 'Failed to create framebuffer for color index';
+      throw new Error('Failed to create framebuffer for color index');
     }
     return fb;
   }
@@ -276,14 +276,14 @@ export class PaintingCanvasController implements CanvasController {
   private initVertexBuffer(): WebGLBuffer {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
 
     // Create a common buffer object for vertex coordinates.
     // This will be used by all shaders.
     const vertexBuffer = gl.createBuffer();
     if (!vertexBuffer) {
-      throw 'Failed to create a buffer object for vertex coordinates';
+      throw new Error('Failed to create a buffer object for vertex coordinates');
     }
 
     // Bind the buffer object to target (this is the default)
@@ -295,13 +295,13 @@ export class PaintingCanvasController implements CanvasController {
   private initTextureCoordBuffer(): WebGLBuffer {
     const gl = this.gl;
     if (!gl) {
-      throw 'No webgl';
+      throw new Error('No WebGL context available');
     }
 
     // Create a buffer object for texture coordinates
     const textureCoordBuffer = gl.createBuffer();
     if (!textureCoordBuffer) {
-      throw 'Failed to create the buffer object (textureCoordBuffer)';
+      throw new Error('Failed to create the buffer object (textureCoordBuffer)');
     }
 
     return textureCoordBuffer;

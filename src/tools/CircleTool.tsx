@@ -1,5 +1,5 @@
 import { Tool } from './Tool';
-import { getMousePos, isRightMouseButton, omit } from './util/util';
+import { getMousePos, isRightMouseButton } from './util/util';
 import { distance } from '../algorithm/shape';
 import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';

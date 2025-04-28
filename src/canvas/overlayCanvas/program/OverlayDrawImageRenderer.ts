@@ -1,7 +1,7 @@
 import { CustomBrush } from '../../../brush/CustomBrush';
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftPoint } from '../../util/util';
 import { Point } from '../../../types';
-import { createProgram, useProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram } from '../../util/webglUtil';
 
 type GLBuffers = {
   vertexBuffer: WebGLBuffer;
@@ -23,7 +23,7 @@ export class OverlayDrawImageRenderer {
   public renderDrawImage(points: Point[], brush: CustomBrush): void {
     const gl = this.gl;
 
-    useProgram(gl, this.program);
+    activateProgram(gl, this.program);
 
     if (this.currentBrushId !== brush.lastChanged) {
       console.log('loading texture for brush');

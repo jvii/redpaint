@@ -5,7 +5,7 @@ import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function useInitTool(isZoomCanvas: boolean): void {
-  const state = useAppState()
+  const state = useAppState();
   useEffect((): void => {
     if (!isZoomCanvas) {
       state.toolbox.previousTool?.onExit?.();
@@ -23,14 +23,14 @@ export function useInitTool(isZoomCanvas: boolean): void {
 }
 
 export function useUndo(): void {
-  const state = useAppState()
+  const state = useAppState();
   useEffect((): void => {
     if (state.undo.currentIndex === null) {
       return;
     }
     const colorIndex = undoBuffer.getItem(state.undo.currentIndex);
-    if (!colorIndex) {
-      throw 'No color index in undo buffer at index' + state.undo.currentIndex;
+    if (state.undo.currentIndex === -1) {
+      throw new Error('No color index in undo buffer at index' + state.undo.currentIndex);
     }
     paintingCanvasController.setCanvasColorIndex(colorIndex);
     paintingCanvasController.render();
@@ -40,8 +40,8 @@ export function useUndo(): void {
 // Load image to canvas when loadedImageURL changes
 // Changes canvas height and width to match image
 export function useLoadedImage(canvas: HTMLCanvasElement): void {
-  const state = useAppState()
-  const actions = useActions()
+  const state = useAppState();
+  const actions = useActions();
   useEffect((): void => {
     const ctx = canvas.getContext('2d');
     if (!ctx) {

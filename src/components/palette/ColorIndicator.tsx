@@ -1,4 +1,4 @@
-import React, { JSX } from 'react';
+import { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
 

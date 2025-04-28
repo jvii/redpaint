@@ -77,6 +77,11 @@
   margin-right: 20px;
   margin-bottom: 10px;
   transition: 0.1s; /* Transition effects on hover (color) */
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Press Start 2P';
 }
 
 .menu__item-label:hover {
@@ -108,6 +113,11 @@
   font-size: 60px;
   margin-right: 10px;
   margin-top: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Press Start 2P';
 }
 
 .menu__closebtn:hover {
