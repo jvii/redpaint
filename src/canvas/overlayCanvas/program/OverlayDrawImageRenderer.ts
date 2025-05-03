@@ -19,6 +19,8 @@ export class OverlayDrawImageRenderer {
   private readonly POINTS_PER_VERTEX = 6; // 2 triangles per point
   private readonly VERTICES_PER_POINT = 12; // 6 vertices * 2 coordinates per vertex
   private readonly TEX_COORDS_PER_POINT = 12; // 6 vertices * 2 texture coordinates per vertex
+  private texture: WebGLTexture | null = null;
+  private uniformLocations: { [key: string]: WebGLUniformLocation } = {};
 
   public constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -26,6 +28,15 @@ export class OverlayDrawImageRenderer {
     this.buffers = buffers;
     this.vertexData = new Float32Array(this.maxPoints * this.VERTICES_PER_POINT);
     this.textureCoordData = new Float32Array(this.maxPoints * this.TEX_COORDS_PER_POINT);
+    this.cacheUniformLocations();
+  }
+
+  private cacheUniformLocations(): void {
+    const gl = this.gl;
+    this.uniformLocations = {
+      u_image: gl.getUniformLocation(this.program, 'u_image')!,
+      u_palette: gl.getUniformLocation(this.program, 'u_palette')!,
+    };
   }
 
   /**
@@ -36,6 +47,10 @@ export class OverlayDrawImageRenderer {
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;
+    }
+    if (this.texture) {
+      this.gl.deleteTexture(this.texture);
+      this.texture = null;
     }
   }
 
@@ -66,19 +81,15 @@ export class OverlayDrawImageRenderer {
 
     activateProgram(gl, this.program);
 
-    console.log('rendering draw image');
-
+    // Only update texture if brush has changed
     if (this.currentBrushId !== brush.lastChanged) {
-      console.log('loading texture for brush');
       this.loadBrushAsTexture(brush);
+      this.currentBrushId = brush.lastChanged;
     }
-    this.currentBrushId = brush.lastChanged;
 
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(paletteLoc, 1);
-
-    const u_image = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_image');
-    gl.uniform1i(u_image, 2); // texture unit 2
+    // Set uniforms using cached locations
+    gl.uniform1i(this.uniformLocations.u_palette, 1);
+    gl.uniform1i(this.uniformLocations.u_image, 2);
 
     // Ensure we have enough capacity
     this.ensureCapacity(pointsCount);
@@ -219,13 +230,13 @@ export class OverlayDrawImageRenderer {
   private loadBrushAsTexture(brush: CustomBrush): void {
     const gl = this.gl;
 
-    // We store the brush as a source texture in texture unit 2 so we
-    // call gl.activeTexture before gl.bindTexture
+    // Create texture if it doesn't exist
+    if (!this.texture) {
+      this.texture = gl.createTexture();
+    }
 
     gl.activeTexture(gl.TEXTURE2);
-
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
     const level = 0;
     const internalFormat = gl.RGBA;
