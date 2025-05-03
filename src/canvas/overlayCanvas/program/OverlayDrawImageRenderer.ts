@@ -13,11 +13,19 @@ export class OverlayDrawImageRenderer {
   private program: WebGLProgram;
   private currentBrushId = 0;
   private buffers: GLBuffers;
+  private vertexData: Float32Array;
+  private textureCoordData: Float32Array;
+  private maxPoints = 1000; // Initial capacity, will grow as needed
+  private readonly POINTS_PER_VERTEX = 6; // 2 triangles per point
+  private readonly VERTICES_PER_POINT = 12; // 6 vertices * 2 coordinates per vertex
+  private readonly TEX_COORDS_PER_POINT = 12; // 6 vertices * 2 texture coordinates per vertex
 
   public constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
     this.program = this.createProgram();
     this.buffers = buffers;
+    this.vertexData = new Float32Array(this.maxPoints * this.VERTICES_PER_POINT);
+    this.textureCoordData = new Float32Array(this.maxPoints * this.TEX_COORDS_PER_POINT);
   }
 
   /**
@@ -31,10 +39,34 @@ export class OverlayDrawImageRenderer {
     }
   }
 
+  private ensureCapacity(pointsCount: number): void {
+    if (pointsCount > this.maxPoints) {
+      // Double the capacity until it's enough
+      while (this.maxPoints < pointsCount) {
+        this.maxPoints *= 2;
+      }
+
+      const newVertexData = new Float32Array(this.maxPoints * this.VERTICES_PER_POINT);
+      const newTexCoordData = new Float32Array(this.maxPoints * this.TEX_COORDS_PER_POINT);
+
+      // Copy existing data
+      newVertexData.set(this.vertexData);
+      newTexCoordData.set(this.textureCoordData);
+
+      this.vertexData = newVertexData;
+      this.textureCoordData = newTexCoordData;
+    }
+  }
+
   public renderDrawImage(points: Point[], brush: CustomBrush): void {
     const gl = this.gl;
+    const pointsCount = points.length;
+
+    if (pointsCount === 0) return;
 
     activateProgram(gl, this.program);
+
+    console.log('rendering draw image');
 
     if (this.currentBrushId !== brush.lastChanged) {
       console.log('loading texture for brush');
@@ -48,76 +80,77 @@ export class OverlayDrawImageRenderer {
     const u_image = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_image');
     gl.uniform1i(u_image, 2); // texture unit 2
 
-    const textureCoords = new Float32Array(12 * points.length);
-    const vertices = new Float32Array(12 * points.length);
-    for (let i = 0; i < points.length; i++) {
+    // Ensure we have enough capacity
+    this.ensureCapacity(pointsCount);
+
+    // Process all points in a single pass
+    for (let i = 0; i < pointsCount; i++) {
       const shiftedPoint = shiftPoint(points[i]);
       const xLeft = canvasToWebGLCoordX(gl, shiftedPoint.x);
       const xRight = canvasToWebGLCoordX(gl, shiftedPoint.x + brush.width);
       const yTop = canvasToWebGLCoordY(gl, shiftedPoint.y);
       const yBottom = canvasToWebGLCoordY(gl, shiftedPoint.y + brush.heigth);
 
-      const offset = i * 12;
+      const offset = i * this.VERTICES_PER_POINT;
+      const texOffset = i * this.TEX_COORDS_PER_POINT;
 
       // 1st triangle
+      this.vertexData[offset] = xLeft;
+      this.vertexData[offset + 1] = yTop;
+      this.textureCoordData[texOffset] = 0.0;
+      this.textureCoordData[texOffset + 1] = 1.0;
 
-      vertices[0 + offset] = xLeft;
-      vertices[1 + offset] = yTop;
-      textureCoords[0 + offset] = 0.0;
-      textureCoords[1 + offset] = 1.0;
+      this.vertexData[offset + 2] = xLeft;
+      this.vertexData[offset + 3] = yBottom;
+      this.textureCoordData[texOffset + 2] = 0.0;
+      this.textureCoordData[texOffset + 3] = 0.0;
 
-      vertices[2 + offset] = xLeft;
-      vertices[3 + offset] = yBottom;
-      textureCoords[2 + offset] = 0.0;
-      textureCoords[3 + offset] = 0.0;
-
-      vertices[4 + offset] = xRight;
-      vertices[5 + offset] = yTop;
-      textureCoords[4 + offset] = 1.0;
-      textureCoords[5 + offset] = 1.0;
+      this.vertexData[offset + 4] = xRight;
+      this.vertexData[offset + 5] = yTop;
+      this.textureCoordData[texOffset + 4] = 1.0;
+      this.textureCoordData[texOffset + 5] = 1.0;
 
       // 2nd triangle
+      this.vertexData[offset + 6] = xLeft;
+      this.vertexData[offset + 7] = yBottom;
+      this.textureCoordData[texOffset + 6] = 0.0;
+      this.textureCoordData[texOffset + 7] = 0.0;
 
-      vertices[6 + offset] = xLeft;
-      vertices[7 + offset] = yBottom;
-      textureCoords[6 + offset] = 0.0;
-      textureCoords[7 + offset] = 0.0;
+      this.vertexData[offset + 8] = xRight;
+      this.vertexData[offset + 9] = yTop;
+      this.textureCoordData[texOffset + 8] = 1.0;
+      this.textureCoordData[texOffset + 9] = 1.0;
 
-      vertices[8 + offset] = xRight;
-      vertices[9 + offset] = yTop;
-      textureCoords[8 + offset] = 1.0;
-      textureCoords[9 + offset] = 1.0;
-
-      vertices[10 + offset] = xRight;
-      vertices[11 + offset] = yBottom;
-      textureCoords[10 + offset] = 1.0;
-      textureCoords[11 + offset] = 0.0;
+      this.vertexData[offset + 10] = xRight;
+      this.vertexData[offset + 11] = yBottom;
+      this.textureCoordData[texOffset + 10] = 1.0;
+      this.textureCoordData[texOffset + 11] = 0.0;
     }
-    // texture coords
 
+    // Update texture coordinates buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
-
     const a_texCoord = gl.getAttribLocation(this.program, 'a_texCoord');
     gl.enableVertexAttribArray(a_texCoord);
-
     gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
-    gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.DYNAMIC_DRAW);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      this.textureCoordData.subarray(0, pointsCount * this.TEX_COORDS_PER_POINT),
+      gl.DYNAMIC_DRAW
+    );
 
-    // vertex coords
-
+    // Update vertex buffer
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
-
     const a_position = gl.getAttribLocation(this.program, 'a_position');
-
-    // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
-
-    // Enable the assignment to a_position variable
     gl.enableVertexAttribArray(a_position);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      this.vertexData.subarray(0, pointsCount * this.VERTICES_PER_POINT),
+      gl.DYNAMIC_DRAW
+    );
 
-    this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-
-    this.gl.drawArrays(gl.TRIANGLES, 0, points.length * 6);
+    // Draw all points in a single call
+    gl.drawArrays(gl.TRIANGLES, 0, pointsCount * this.POINTS_PER_VERTEX);
   }
 
   private createProgram(): WebGLProgram {
