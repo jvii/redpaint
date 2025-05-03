@@ -95,7 +95,7 @@ export class DrawImageRenderer {
     // Fragment shader: samples the color index texture and converts to RGB using palette
     const fragmentShader = `
     // This fragment shader converts indexed colors to actual RGB colors using a palette texture
-    precision mediump float;  // Set floating point precision
+    precision lowp float;  // Use low precision for better performance since we're dealing with 8-bit colors
 
     varying vec2 v_texcoord;
     uniform sampler2D u_image;    // Color index texture
@@ -107,7 +107,7 @@ export class DrawImageRenderer {
       // texture2D().r gets the red channel which contains our index
       // Multiply by 255 to convert from 0-1 range to 0-255 range
       // Subtract 1 since indices are stored as index+1 to avoid transparency issues
-      float colorNumber = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).r * 255.0 - 1.0;
+      lowp float colorNumber = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).r * 255.0 - 1.0;
 
       // Look up the actual color from the palette texture
       // We add 0.5 and divide by 256 to get the correct texel center
