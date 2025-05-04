@@ -180,7 +180,7 @@ export class OverlayDrawImageRenderer {
     `;
 
     const fragmentShader = `
-    precision mediump float;
+    precision lowp float;
 
     uniform sampler2D u_image;
     uniform sampler2D u_palette;
@@ -199,7 +199,7 @@ export class OverlayDrawImageRenderer {
     `;
 
     const fragmentShaderTrueColor = `
-    precision mediump float;
+    precision lowp float;
 
     uniform sampler2D u_image;
     uniform sampler2D u_palette;
