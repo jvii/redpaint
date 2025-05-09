@@ -55,8 +55,13 @@ export function Menubar(): JSX.Element {
   return (
     <>
       <div className="menubar" onClick={toggle}>
-        <p className="menubar__title">Redpaint</p>
-        <p className="menubar__mode-indicator">{mode}</p>
+        <div className="menubar__title">
+          Redpaint
+          <div className={`menubar__loading-indicator ${state.app.isLoading ? 'visible' : ''}`}>
+            ...
+          </div>
+        </div>
+        <div className="menubar__mode-indicator">{mode}</div>
       </div>
       <div className="menu" ref={overlayRef} onMouseLeave={close} onContextMenu={close}>
         <div className="menu__content">
