@@ -54,6 +54,11 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
     height: state.canvas.resolution.height * zoomFactor,
   };
 
+  const canvasStyle = {
+    ...CSSZoom,
+    ...(state.app.isLoading ? { cursor: 'wait' } : {}),
+  };
+
   return (
     <>
       <canvas
@@ -61,7 +66,7 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
         ref={paintingCanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}
-        style={CSSZoom}
+        style={canvasStyle}
         onClick={(event): void => {
           getEventHandler(tool, 'onClick')(event);
           getEventHandler(tool, 'onClickOverlay')(event);
@@ -86,14 +91,16 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
           getEventHandler(tool, 'onMouseMove')(event);
           getEventHandler(tool, 'onMouseMoveOverlay')(event);
         }}
-        onContextMenu={getEventHandler(tool, 'onContextMenu')}
+        onContextMenu={(event): void => {
+          getEventHandler(tool, 'onContextMenu')(event);
+        }}
       />
       <canvas
         className="canvas canvas--overlay"
         ref={overlayCanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}
-        style={CSSZoom}
+        style={canvasStyle}
       />
     </>
   );

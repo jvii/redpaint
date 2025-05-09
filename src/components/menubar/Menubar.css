@@ -7,7 +7,7 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   display: grid;
-  grid-template-areas: 'title modeIndicator .';
+  grid-template-areas: 'title modeIndicator';
   font-size: 16px;
   user-select: none;
   height: 50px; /* helps with Firefox pointer hotspot issues */
@@ -18,11 +18,39 @@
 .menubar__title {
   grid-area: title;
   margin: 10px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .menubar__mode-indicator {
   grid-area: modeIndicator;
   margin: 10px;
+}
+
+.menubar__loading-indicator {
+  font-size: 24px;
+  animation: pulse 0.5s infinite;
+  opacity: 0;
+  transition: opacity 0.1s;
+  line-height: 1;
+  margin-top: -12px;
+}
+
+.menubar__loading-indicator.visible {
+  opacity: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .menu {
