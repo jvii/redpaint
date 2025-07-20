@@ -4,6 +4,7 @@ import { overmind } from '../index';
 import { brushHistory } from '../brush/BrushHistory';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+import { Point } from 'src/types';
 
 export class AirbrushTool implements Tool {
   // TODO fix
@@ -32,21 +33,19 @@ export class AirbrushTool implements Tool {
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const draw = (): void => {
-      //TODO: draw in bigger batches, maybe drawDot should accept an array? Or new method
-      // drawDots
-      for (let i = 50; i--; ) {
+      let points: Point[] = [];
+      for (let i = 50; i--;) {
         const angle = getRandomFloat(0, Math.PI * 2);
-        const radius = getRandomFloat(0, 20);
+        const radius = getRandomFloat(0, 30);
         if (overmind.state.tool.airbrushTool.position) {
-          brushHistory.current.drawPoint(
-            {
-              x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
-              y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
-            },
-            paintingCanvasController
-          );
+
+          points.push({
+            x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
+            y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
+          });
         }
       }
+      brushHistory.current.drawPoints(points, paintingCanvasController);
       this.timeout = setTimeout(draw, 20);
     };
 
@@ -75,7 +74,7 @@ export class AirbrushTool implements Tool {
       return;
     }
     const mousePos = getMousePos(event);
-    brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+    brushHistory.current.drawPoints([mousePos], overlayCanvasController);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {

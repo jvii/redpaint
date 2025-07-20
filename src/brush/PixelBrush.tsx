@@ -15,8 +15,8 @@ import { overmind } from '..';
 import { CanvasController } from '../canvas/CanvasController';
 
 export class PixelBrush implements BrushInterface {
-  public drawPoint(point: Point, canvas: CanvasController): void {
-    canvas.points([point], overmind.state.tool.activeColorNumber);
+  public drawPoints(points: Point[], canvas: CanvasController): void {
+    canvas.points(points, overmind.state.tool.activeColorNumber);
   }
 
   public drawLine(start: Point, end: Point, canvas: CanvasController): void {

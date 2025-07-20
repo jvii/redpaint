@@ -56,7 +56,7 @@ export class LineTool implements Tool {
       const end = mousePos;
       brushHistory.current.drawLine(start, end, overlayCanvasController);
     } else {
-      brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+      brushHistory.current.drawPoints([mousePos], overlayCanvasController);
     }
   }
 
