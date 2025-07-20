@@ -67,7 +67,7 @@ export class RectangleTool implements Tool {
     if (!startPoint) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+        brushHistory.current.drawPoints([mousePos], overlayCanvasController);
       }
       overlayCanvasController.selectionCrosshair(mousePos);
       return;

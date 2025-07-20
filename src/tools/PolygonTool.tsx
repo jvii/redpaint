@@ -90,7 +90,7 @@ export class PolygonTool implements Tool {
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();
-      brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+      brushHistory.current.drawPoints([mousePos], overlayCanvasController);
       return;
     }
 

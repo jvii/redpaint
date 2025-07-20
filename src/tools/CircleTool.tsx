@@ -73,7 +73,7 @@ export class CircleTool implements Tool {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush.
         // For filled circles we only render the croshair.
-        brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+        brushHistory.current.drawPoints([mousePos], overlayCanvasController);
       }
       overlayCanvasController.selectionCrosshair(mousePos);
       return;

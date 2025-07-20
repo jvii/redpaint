@@ -56,7 +56,7 @@ export class CurveTool implements Tool {
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
-      brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+      brushHistory.current.drawPoints([mousePos], overlayCanvasController);
       return;
     }
 

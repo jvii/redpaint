@@ -59,8 +59,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     return new CustomBrush(brushColorIndex, width, height);
   }
 
-  public drawPoint(point: Point, canvas: CanvasController): void {
-    canvas.drawImage([this.adjustHandle(point)], this);
+  public drawPoints(points: Point[], canvas: CanvasController): void {
+    canvas.drawImage(
+      points.map((point) => this.adjustHandle(point)),
+      this
+    );
   }
 
   public drawLine(start: Point, end: Point, canvas: CanvasController): void {

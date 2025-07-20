@@ -2,7 +2,7 @@ import { CanvasController } from '../canvas/CanvasController';
 import { Point } from '../types';
 
 export interface BrushInterface {
-  drawPoint(point: Point, canvas: CanvasController): void;
+  drawPoints(points: Point[], canvas: CanvasController): void;
   drawLine(start: Point, end: Point, canvas: CanvasController): void;
   drawCurve(start: Point, end: Point, middlePoint: Point, canvas: CanvasController): void;
   drawUnfilledRect(start: Point, end: Point, canvas: CanvasController): void;

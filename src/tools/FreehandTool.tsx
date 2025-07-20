@@ -38,7 +38,7 @@ export class FreehandTool implements Tool {
         return; // this point has already been drawn to canvas
       }
       if (points8Connected(start, end)) {
-        brushHistory.current.drawPoint(end, paintingCanvasController);
+        brushHistory.current.drawPoints([end], paintingCanvasController);
       } else {
         brushHistory.current.drawLine(start, end, paintingCanvasController);
       }
@@ -49,7 +49,7 @@ export class FreehandTool implements Tool {
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawPoint(mousePos, paintingCanvasController);
+    brushHistory.current.drawPoints([mousePos], paintingCanvasController);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
   }
 
@@ -77,7 +77,7 @@ export class FreehandTool implements Tool {
       return;
     }
     const mousePos = getMousePos(event);
-    brushHistory.current.drawPoint(mousePos, overlayCanvasController);
+    brushHistory.current.drawPoints([mousePos], overlayCanvasController);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
