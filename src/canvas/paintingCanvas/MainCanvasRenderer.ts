@@ -36,10 +36,6 @@ export class MainCanvasRenderer {
     this.drawImageRenderer.renderCanvas();
   }
 
-  /*   fillRect(x: number, y: number, width: number, heigth: number): void {
-    this.fillRectIndexer.indexFillRect(x, y, width, heigth, colorIndex);
-  }*/
-
   points(points: Point[]): void {
     this.geometricRenderer.renderPoints(points);
   }
@@ -48,7 +44,4 @@ export class MainCanvasRenderer {
     this.geometricRenderer.renderLines(lines);
   }
 
-  /*   drawImage(x: number, y: number, brush: CustomBrush): void {
-    this.drawImageIndexer.indexDrawImage(x, y, brush);
-  } */
 }

@@ -56,7 +56,7 @@ export function Menubar(): JSX.Element {
     <>
       <div className="menubar" onClick={toggle}>
         <div className="menubar__title">
-          Redpaint
+          redpaint
           <div className={`menubar__loading-indicator ${state.app.isLoading ? 'visible' : ''}`}>
             ...
           </div>
