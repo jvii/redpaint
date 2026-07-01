@@ -45,7 +45,6 @@
     "cross-env": "^7.0.2",
     "eslint-config-prettier": "^10.1.2",
     "eslint-config-react": "^1.1.7",
-    "prettier": "^3.5.3",
-    "react": "file:/Users/jani/Code/Web/dxpaint/node_modules/react"
+    "prettier": "^3.5.3"
   }
 }
