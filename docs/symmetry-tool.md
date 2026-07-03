@@ -139,10 +139,18 @@ applies symmetry, so the controller must be raw to avoid double-applying).
   so the indicator never covers the pixel color being targeted (DPaint instead
   switched to a dedicated fill pointer, `FILLCURSOR`, whose hotspot leaves the
   target pixel visible — that pointer switch is not implemented here yet).
-- [ ] **Phase 3 — center + preview.** `SymmetryCenterSelectorTool`, center
-  crosshair.
-- [ ] **Phase 4 — settings panel.** Order / mirror / set-center UI (DPaint's
-  `SymRequest` equivalent), opened via right-click on the symmetry button.
+- [x] **Phase 3 — center selection.** `SymmetryCenterSelectorTool`
+  (`src/tools/SymmetryCenterSelectorTool.tsx`), DPaint's `IMSymCent` equivalent:
+  an inverted crosshair follows the cursor, left click sets `symmetry.center`
+  and exits back to the previous tool, right click on the canvas cancels.
+  Entering selection also turns symmetry on. Activated from the settings panel
+  (DPaint instead used a Picture ▸ Symmetry Center menu item — `MENU.C:133`).
+- [x] **Phase 4 — settings panel.** `SymmetrySettings`
+  (`src/components/symmetry/SymmetrySettings.tsx`), DPaint's `SymRequest`
+  equivalent: order slider (1–40), Cyclic/Mirror choice, center display with
+  Select/Reset. Opened by **right-clicking the symmetry toolbox button** —
+  faithful to DPaint's control panel (`CTRPAN.C:245`:
+  `if (but==1) TogSymSt(); else DoSymReq();`).
 
 ### Notes / future work
 

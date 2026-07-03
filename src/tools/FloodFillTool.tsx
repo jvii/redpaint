@@ -88,7 +88,11 @@ export class FloodFillTool implements Tool {
       if (s.x < 0 || s.x >= width || s.y < 0 || s.y >= height) {
         continue; // seed rotated off-canvas
       }
-      pointsToFill.push(...floodFill(fillColorIndex, s, canvasColorIndex));
+      // no spread here: a fill can span the whole canvas, and spreading that
+      // many arguments into push() overflows the call stack
+      for (const point of floodFill(fillColorIndex, s, canvasColorIndex)) {
+        pointsToFill.push(point);
+      }
     }
     return pointsToFill;
   }

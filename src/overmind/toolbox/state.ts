@@ -4,6 +4,7 @@ import { LineTool } from '../../tools/LineTool';
 import { RectangleTool } from '../../tools/RectangleTool';
 import { FloodFillTool } from '../../tools/FloodFillTool';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
+import { SymmetryCenterSelectorTool } from '../../tools/SymmetryCenterSelectorTool';
 import { BrushSelector } from '../../tools/BrushSelector';
 import { CircleTool } from '../../tools/CircleTool';
 import { CurveTool } from '../../tools/CurveTool';
@@ -41,6 +42,7 @@ const backgroundColor = false;
 
 const selectorTools = {
   zoomInitialPointSelectorTool: new ZoomInitialPointSelectorTool(),
+  symmetryCenterSelectorTool: new SymmetryCenterSelectorTool(),
   brushSelectorTool: new BrushSelector(),
   foregroundColorSelectorTool: new ColorSelectorTool(foregroundColor),
   backgroundColorSelectorTool: new ColorSelectorTool(backgroundColor),
@@ -79,6 +81,7 @@ export const state: State = {
     }
     if (
       this.previousToolId === 'zoomInitialPointSelectorTool' ||
+      this.previousToolId === 'symmetryCenterSelectorTool' ||
       this.previousToolId === 'brushSelectorTool' ||
       this.previousToolId === 'foregroundColorSelectorTool' ||
       this.previousToolId === 'backgroundColorSelectorTool'

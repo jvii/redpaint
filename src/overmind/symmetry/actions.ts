@@ -16,3 +16,29 @@ export const setMirror = (context: Context, mirror: boolean): void => {
 export const resetCenter = (context: Context): void => {
   context.state.symmetry.center = null;
 };
+
+export const openSettings = (context: Context): void => {
+  const { center, order, mirror } = context.state.symmetry;
+  context.state.symmetry.settingsSnapshot = {
+    center: center ? { ...center } : null,
+    order,
+    mirror,
+  };
+  context.state.symmetry.settingsOpen = true;
+};
+
+export const closeSettings = (context: Context): void => {
+  context.state.symmetry.settingsOpen = false;
+  context.state.symmetry.settingsSnapshot = null;
+};
+
+// Restore the values from when the panel was opened, then close.
+export const cancelSettings = (context: Context): void => {
+  const snapshot = context.state.symmetry.settingsSnapshot;
+  if (snapshot) {
+    context.state.symmetry.center = snapshot.center;
+    context.state.symmetry.order = snapshot.order;
+    context.state.symmetry.mirror = snapshot.mirror;
+  }
+  context.actions.symmetry.closeSettings();
+};
