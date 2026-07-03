@@ -3,10 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@mui/material": "^7.0.2",
-    "@mui/styles": "^6.4.8",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.14.1",
     "@types/react-dom": "^19.1.2",
@@ -19,8 +15,8 @@
     "typescript": "^5.8.3"
   },
   "overrides": {
-  "typescript": "^5.8.3"
-},
+    "typescript": "^5.8.3"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "CI= react-scripts build",

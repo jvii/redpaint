@@ -1,5 +1,4 @@
 import { JSX } from 'react';
-import { Button, Divider, Slider } from '@mui/material';
 import './PaletteEditor.css';
 import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
@@ -7,6 +6,8 @@ import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCa
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import Palette from '../palette/Palette';
 import { Modal } from '../modal/Modal';
+import { RetroButton } from '../ui/RetroButton';
+import { RetroSlider } from '../ui/RetroSlider';
 
 export function PaletteEditor(): JSX.Element | null {
   const state = useAppState();
@@ -49,63 +50,52 @@ export function PaletteEditor(): JSX.Element | null {
     overlayCanvasController.updatePalette();
   }
 
-  const colorMarks = [
-    {
-      value: 0,
-      label: '0',
-    },
-    {
-      value: 255,
-      label: '255',
-    },
-  ];
-
   return (
-    <>
-      <Modal header="Color palette">
-        <div className="palette-editor__container">
-          <div className="palette-editor__sliders">
-            <Slider
+    <Modal header="Color palette">
+      <div className="palette-editor__container">
+        <div className="palette-editor__sliders">
+          <div className="palette-editor__slider">
+            <RetroSlider
+              vertical
               value={state.palette.foregroundColor.r}
-              step={1}
               min={0}
               max={255}
-              valueLabelDisplay="auto"
-              orientation="vertical"
-              onChange={(event, value) => setR(Number(value))}
+              onChange={setR}
             />
-            <Slider
-              value={state.palette.foregroundColor.g}
-              step={1}
-              min={0}
-              max={255}
-              valueLabelDisplay="auto"
-              orientation="vertical"
-              onChange={(event, value) => setG(Number(value))}
-            />
-            <Slider
-              value={state.palette.foregroundColor.b}
-              step={1}
-              min={0}
-              max={255}
-              valueLabelDisplay="auto"
-              orientation="vertical"
-              onChange={(event, value) => setB(Number(value))}
-              marks={colorMarks}
-            />
+            <span className="palette-editor__slider-label">R</span>
           </div>
-          <div className="palette-editor__palette-container">
-            <Palette></Palette>
+          <div className="palette-editor__slider">
+            <RetroSlider
+              vertical
+              value={state.palette.foregroundColor.g}
+              min={0}
+              max={255}
+              onChange={setG}
+            />
+            <span className="palette-editor__slider-label">G</span>
+          </div>
+          <div className="palette-editor__slider">
+            <RetroSlider
+              vertical
+              value={state.palette.foregroundColor.b}
+              min={0}
+              max={255}
+              onChange={setB}
+            />
+            <span className="palette-editor__slider-label">B</span>
           </div>
         </div>
-        <Divider variant="middle" />
-        <Button variant="outlined" onClick={actions.paletteEditor.close}>
-          Cancel
-        </Button>
-        <Button variant="contained" color="primary" onClick={actions.paletteEditor.close}>
-          OK
-        </Button>
-      </Modal>
-    </>
+        <div className="palette-editor__palette-container">
+          <Palette></Palette>
+        </div>
+      </div>
+      <hr className="retro-divider" />
+      <RetroButton variant="secondary" onClick={actions.paletteEditor.close}>
+        Cancel
+      </RetroButton>
+      <RetroButton variant="primary" onClick={actions.paletteEditor.close}>
+        OK
+      </RetroButton>
+    </Modal>
   );
 }
