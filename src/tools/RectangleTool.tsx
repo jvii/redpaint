@@ -1,9 +1,10 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+import { drawSymmetryIndicator } from './util/symmetryIndicator';
 
 export class RectangleTool implements Tool {
   public constructor(filled: boolean) {
@@ -38,9 +39,9 @@ export class RectangleTool implements Tool {
     const endPoint = getMousePos(event);
 
     if (this.filled) {
-      brushHistory.current.drawFilledRect(startPoint, endPoint, paintingCanvasController);
+      symmetryBrush.drawFilledRect(startPoint, endPoint, paintingCanvasController);
     } else {
-      brushHistory.current.drawUnfilledRect(startPoint, endPoint, paintingCanvasController);
+      symmetryBrush.drawUnfilledRect(startPoint, endPoint, paintingCanvasController);
     }
     overmind.actions.undo.setUndoPoint();
     this.onInit();
@@ -67,16 +68,20 @@ export class RectangleTool implements Tool {
     if (!startPoint) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+        symmetryBrush.drawPoints([mousePos], overlayCanvasController);
+      } else {
+        // For filled shapes the brush is not drawn, so show a foreground-color
+        // point at each symmetry position instead.
+        drawSymmetryIndicator(mousePos);
       }
       overlayCanvasController.selectionCrosshair(mousePos);
       return;
     }
 
     if (this.filled) {
-      brushHistory.current.drawFilledRect(startPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawFilledRect(startPoint, mousePos, overlayCanvasController);
     } else {
-      brushHistory.current.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
     }
   }
 

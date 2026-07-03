@@ -1,7 +1,7 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -33,7 +33,7 @@ export class CurveTool implements Tool {
     const endPoint = overmind.state.tool.curveTool.end;
 
     if (endPoint) {
-      brushHistory.current.drawCurve(startPoint, endPoint, mousePos, paintingCanvasController);
+      symmetryBrush.drawCurve(startPoint, endPoint, mousePos, paintingCanvasController);
       overmind.actions.undo.setUndoPoint();
       this.onInit();
     } else {
@@ -56,15 +56,15 @@ export class CurveTool implements Tool {
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
-      brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+      symmetryBrush.drawPoints([mousePos], overlayCanvasController);
       return;
     }
 
     const endPoint = overmind.state.tool.curveTool.end;
     if (endPoint) {
-      brushHistory.current.drawCurve(startPoint, endPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawCurve(startPoint, endPoint, mousePos, overlayCanvasController);
     } else if (isLeftOrRightMouseButton(event)) {
-      brushHistory.current.drawLine(startPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawLine(startPoint, mousePos, overlayCanvasController);
     }
   }
 

@@ -1,7 +1,7 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from 'src/types';
@@ -45,7 +45,7 @@ export class AirbrushTool implements Tool {
           });
         }
       }
-      brushHistory.current.drawPoints(points, paintingCanvasController);
+      symmetryBrush.drawPoints(points, paintingCanvasController);
       this.timeout = setTimeout(draw, 20);
     };
 
@@ -74,7 +74,7 @@ export class AirbrushTool implements Tool {
       return;
     }
     const mousePos = getMousePos(event);
-    brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+    symmetryBrush.drawPoints([mousePos], overlayCanvasController);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
