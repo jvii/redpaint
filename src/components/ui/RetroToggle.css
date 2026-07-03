@@ -11,7 +11,7 @@
   -webkit-font-smoothing: none;
   font-size: 16px;
   text-transform: none;
-  color: black;
+  color: rgb(130, 130, 130);
   background-color: white;
   border: 2px solid black;
   border-radius: 0;
@@ -38,7 +38,9 @@
   box-shadow: inset 3px 3px 0 0 rgb(10, 28, 130);
 }
 
+/* clicking the selected segment is a no-op, so no hover feedback */
 .retro-toggle__segment--selected:hover {
-  background-color: rgb(13, 40, 160);
+  background-color: rgb(17, 51, 202);
   color: white;
+  cursor: default;
 }
