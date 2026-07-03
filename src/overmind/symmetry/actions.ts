@@ -25,6 +25,8 @@ export const openSettings = (context: Context): void => {
     mirror,
   };
   context.state.symmetry.settingsOpen = true;
+  // adjusting the settings implies wanting symmetry on
+  context.state.toolbox.symmetryModeOn = true;
 };
 
 export const closeSettings = (context: Context): void => {

@@ -870,7 +870,7 @@
       </marker>
     </defs>
     <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" />
+      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" stroke="white" fill="transparent" />
       <g fill="#fff" stroke="#fff">
         <path
           d="m16.87 6.7079v19.719"
