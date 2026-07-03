@@ -19,7 +19,12 @@ export function SymmetrySettings(): JSX.Element | null {
     return null;
   }
 
-  const center = state.symmetry.center;
+  const customCenter = state.symmetry.center;
+  // show the effective coordinates even for the default (canvas center)
+  const center = customCenter ?? {
+    x: Math.floor(state.canvas.resolution.width / 2),
+    y: Math.floor(state.canvas.resolution.height / 2),
+  };
 
   const selectCenter = (): void => {
     actions.symmetry.closeSettings();
@@ -51,17 +56,18 @@ export function SymmetrySettings(): JSX.Element | null {
             onChange={(value): void => actions.symmetry.setMirror(value === 'mirror')}
           />
         </div>
-        <div className="symmetry-settings__row">
+        <fieldset className="symmetry-settings__center">
+          <legend>Center</legend>
           <span className="symmetry-settings__label">
-            Center: {center ? `${center.x}, ${center.y}` : 'canvas'}
+            X: {center.x} Y: {center.y}
           </span>
           <span className="symmetry-settings__row-buttons">
             <RetroButton onClick={selectCenter}>Select</RetroButton>
-            <RetroButton disabled={!center} onClick={actions.symmetry.resetCenter}>
+            <RetroButton disabled={!customCenter} onClick={actions.symmetry.resetCenter}>
               Reset
             </RetroButton>
           </span>
-        </div>
+        </fieldset>
       </div>
       <hr className="retro-divider" />
       <RetroButton variant="secondary" onClick={actions.symmetry.cancelSettings}>
