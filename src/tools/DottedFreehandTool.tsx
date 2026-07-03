@@ -1,7 +1,7 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -25,14 +25,14 @@ export class DottedFreehandTool implements Tool {
   public onMouseMove(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (event.buttons) {
       const mousePos = getMousePos(event);
-      brushHistory.current.drawPoints([mousePos], paintingCanvasController);
+      symmetryBrush.drawPoints([mousePos], paintingCanvasController);
     }
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawPoints([mousePos], paintingCanvasController);
+    symmetryBrush.drawPoints([mousePos], paintingCanvasController);
   }
 
   public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -59,7 +59,7 @@ export class DottedFreehandTool implements Tool {
       return;
     }
     const mousePos = getMousePos(event);
-    brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+    symmetryBrush.drawPoints([mousePos], overlayCanvasController);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {

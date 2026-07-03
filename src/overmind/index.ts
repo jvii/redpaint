@@ -15,6 +15,7 @@ import * as undo from './undo';
 import * as toolbox from './toolbox';
 import * as brush from './brush';
 import * as tool from './tool';
+import * as symmetry from './symmetry';
 
 export const config = namespaced({
   app,
@@ -26,6 +27,7 @@ export const config = namespaced({
   toolbox,
   tool,
   brush,
+  symmetry,
 });
 
 export type Context = IContext<typeof config>

@@ -4,10 +4,9 @@ import {
   isRightMouseButton,
   isLeftOrRightMouseButton,
   pointEquals,
-  points8Connected,
 } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -37,11 +36,10 @@ export class FreehandTool implements Tool {
       if (pointEquals(start, end)) {
         return; // this point has already been drawn to canvas
       }
-      if (points8Connected(start, end)) {
-        brushHistory.current.drawPoints([end], paintingCanvasController);
-      } else {
-        brushHistory.current.drawLine(start, end, paintingCanvasController);
-      }
+      // Always draw a segment from the previous point (like DPaint's "incline"),
+      // so that under symmetry the rotated copies are re-rasterized as connected
+      // lines instead of gapping.
+      symmetryBrush.drawLine(start, end, paintingCanvasController);
       overmind.actions.tool.freeHandToolPrevious(end);
     }
   }
@@ -49,7 +47,7 @@ export class FreehandTool implements Tool {
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
     this.prepareToPaint(isRightMouseButton(event));
-    brushHistory.current.drawPoints([mousePos], paintingCanvasController);
+    symmetryBrush.drawPoints([mousePos], paintingCanvasController);
     overmind.actions.tool.freeHandToolPrevious(mousePos);
   }
 
@@ -77,7 +75,7 @@ export class FreehandTool implements Tool {
       return;
     }
     const mousePos = getMousePos(event);
-    brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+    symmetryBrush.drawPoints([mousePos], overlayCanvasController);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {

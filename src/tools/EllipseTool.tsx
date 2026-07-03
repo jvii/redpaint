@@ -1,9 +1,10 @@
 import { Tool } from './Tool';
 import { getMousePos, isLeftMouseButton, isRightMouseButton } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+import { drawSymmetryIndicator } from './util/symmetryIndicator';
 
 export class EllipseTool implements Tool {
   public constructor(filled: boolean) {
@@ -77,7 +78,7 @@ export class EllipseTool implements Tool {
 
     const angle = overmind.state.tool.ellipseTool.angle;
     if (this.filled) {
-      brushHistory.current.drawFilledEllipse(
+      symmetryBrush.drawFilledEllipse(
         origin,
         radiusX,
         radiusY,
@@ -85,7 +86,7 @@ export class EllipseTool implements Tool {
         paintingCanvasController
       );
     } else {
-      brushHistory.current.drawUnfilledEllipse(
+      symmetryBrush.drawUnfilledEllipse(
         origin,
         radiusX,
         radiusY,
@@ -121,7 +122,11 @@ export class EllipseTool implements Tool {
       overlayCanvasController.clear();
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush
-        brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+        symmetryBrush.drawPoints([mousePos], overlayCanvasController);
+      } else {
+        // For filled shapes the brush is not drawn, so show a foreground-color
+        // point at each symmetry position instead.
+        drawSymmetryIndicator(mousePos);
       }
       overlayCanvasController.selectionCrosshair(mousePos);
       return;
@@ -135,7 +140,7 @@ export class EllipseTool implements Tool {
 
     if (this.filled) {
       overlayCanvasController.clear();
-      brushHistory.current.drawFilledEllipse(
+      symmetryBrush.drawFilledEllipse(
         origin,
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,
@@ -144,7 +149,7 @@ export class EllipseTool implements Tool {
       );
     } else {
       overlayCanvasController.clear();
-      brushHistory.current.drawUnfilledEllipse(
+      symmetryBrush.drawUnfilledEllipse(
         origin,
         radiusX ? radiusX : newRadiusX,
         radiusY ? radiusY : newRadiusY,

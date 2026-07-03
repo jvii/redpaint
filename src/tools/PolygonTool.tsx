@@ -2,9 +2,13 @@ import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, pointEquals } from './util/util';
 import { overmind } from '../index';
 import { PixelBrush } from '../brush/PixelBrush';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush, SymmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+
+// The polygon outline preview always uses a pixel outline (not the current
+// custom brush), wrapped so it is mirrored under symmetry.
+const pixelSymmetryBrush = new SymmetryBrush((): PixelBrush => new PixelBrush());
 
 export class PolygonTool implements Tool {
   public constructor(filled: boolean) {
@@ -45,12 +49,12 @@ export class PolygonTool implements Tool {
       pointEquals(overmind.state.tool.polygonTool.vertices[0], mousePos)
     ) {
       if (this.filled) {
-        brushHistory.current.drawFilledPolygon(
+        symmetryBrush.drawFilledPolygon(
           overmind.state.tool.polygonTool.vertices,
           paintingCanvasController
         );
       } else {
-        brushHistory.current.drawUnfilledPolygon(
+        symmetryBrush.drawUnfilledPolygon(
           overmind.state.tool.polygonTool.vertices,
           true,
           paintingCanvasController
@@ -70,13 +74,13 @@ export class PolygonTool implements Tool {
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     if (overmind.state.tool.polygonTool.vertices.length > 1) {
       if (this.filled) {
-        new PixelBrush().drawUnfilledPolygon(
+        pixelSymmetryBrush.drawUnfilledPolygon(
           overmind.state.tool.polygonTool.vertices,
           false,
           overlayCanvasController
         );
       } else {
-        brushHistory.current.drawUnfilledPolygon(
+        symmetryBrush.drawUnfilledPolygon(
           overmind.state.tool.polygonTool.vertices,
           false,
           overlayCanvasController
@@ -90,19 +94,19 @@ export class PolygonTool implements Tool {
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();
-      brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+      symmetryBrush.drawPoints([mousePos], overlayCanvasController);
       return;
     }
 
     if (this.filled) {
-      new PixelBrush().drawUnfilledPolygon(
+      pixelSymmetryBrush.drawUnfilledPolygon(
         overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
         false,
         overlayCanvasController
       );
     } else {
       overlayCanvasController.clear();
-      brushHistory.current.drawUnfilledPolygon(
+      symmetryBrush.drawUnfilledPolygon(
         overmind.state.tool.polygonTool.vertices.slice().concat(mousePos),
         false,
         overlayCanvasController
@@ -115,13 +119,13 @@ export class PolygonTool implements Tool {
 
     if (overmind.state.tool.polygonTool.vertices.length > 0) {
       if (this.filled) {
-        new PixelBrush().drawUnfilledPolygon(
+        pixelSymmetryBrush.drawUnfilledPolygon(
           overmind.state.tool.polygonTool.vertices,
           false,
           overlayCanvasController
         );
       } else {
-        brushHistory.current.drawUnfilledPolygon(
+        symmetryBrush.drawUnfilledPolygon(
           overmind.state.tool.polygonTool.vertices,
           false,
           overlayCanvasController

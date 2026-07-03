@@ -2,7 +2,7 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftMouseButton } from './util/util';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -32,7 +32,7 @@ export class LineTool implements Tool {
     const mousePos = getMousePos(event);
     const start = overmind.state.tool.lineTool.start;
     const end = mousePos;
-    brushHistory.current.drawLine(start, end, paintingCanvasController);
+    symmetryBrush.drawLine(start, end, paintingCanvasController);
     overmind.actions.undo.setUndoPoint();
     this.onInit();
   }
@@ -54,9 +54,9 @@ export class LineTool implements Tool {
     ) {
       const start = overmind.state.tool.lineTool.start;
       const end = mousePos;
-      brushHistory.current.drawLine(start, end, overlayCanvasController);
+      symmetryBrush.drawLine(start, end, overlayCanvasController);
     } else {
-      brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+      symmetryBrush.drawPoints([mousePos], overlayCanvasController);
     }
   }
 

@@ -2,9 +2,10 @@ import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton } from './util/util';
 import { distance } from '../algorithm/shape';
 import { overmind } from '../index';
-import { brushHistory } from '../brush/BrushHistory';
+import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+import { drawSymmetryIndicator } from './util/symmetryIndicator';
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -39,9 +40,9 @@ export class CircleTool implements Tool {
     const radius = Math.round(distance(origin, mousePos));
 
     if (this.filled) {
-      brushHistory.current.drawFilledCircle(origin, radius, paintingCanvasController);
+      symmetryBrush.drawFilledCircle(origin, radius, paintingCanvasController);
     } else {
-      brushHistory.current.drawUnfilledCircle(origin, radius, paintingCanvasController);
+      symmetryBrush.drawUnfilledCircle(origin, radius, paintingCanvasController);
     }
     overmind.actions.undo.setUndoPoint();
     this.onInit();
@@ -72,8 +73,11 @@ export class CircleTool implements Tool {
     if (!origin) {
       if (!this.filled) {
         // DPaint only draws unfilled shapes with the current brush.
-        // For filled circles we only render the croshair.
-        brushHistory.current.drawPoints([mousePos], overlayCanvasController);
+        symmetryBrush.drawPoints([mousePos], overlayCanvasController);
+      } else {
+        // For filled shapes the brush is not drawn, so show a foreground-color
+        // point at each symmetry position instead.
+        drawSymmetryIndicator(mousePos);
       }
       overlayCanvasController.selectionCrosshair(mousePos);
       return;
@@ -83,9 +87,9 @@ export class CircleTool implements Tool {
 
     const radius = Math.round(distance(origin, mousePos));
     if (this.filled) {
-      brushHistory.current.drawFilledCircle(origin, radius, overlayCanvasController);
+      symmetryBrush.drawFilledCircle(origin, radius, overlayCanvasController);
     } else {
-      brushHistory.current.drawUnfilledCircle(origin, radius, overlayCanvasController);
+      symmetryBrush.drawUnfilledCircle(origin, radius, overlayCanvasController);
     }
   }
 
