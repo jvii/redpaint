@@ -23,14 +23,19 @@
   text-align: right;
 }
 
+/* footer buttons and divider align with the 30px body inset */
 .modal__window > button {
-  margin: 10px;
+  margin: 16px 10px 20px;
+}
+
+.modal__window > button:last-child {
+  margin-right: 30px;
 }
 
 .retro-divider {
   border: 0;
   border-top: 1px solid rgb(209, 209, 209);
-  margin: 0 20px;
+  margin: 0 30px;
 }
 
 .modal__header {
@@ -40,6 +45,9 @@
   color: white;
   border-radius: 5px 5px 0 0;
   border-bottom: 1px rgb(209, 209, 209) solid;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
 }
 
 .modal__header > p {
