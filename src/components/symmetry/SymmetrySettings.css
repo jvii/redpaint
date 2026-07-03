@@ -30,3 +30,21 @@
   gap: 10px;
   margin-left: auto;
 }
+
+/* group box making it clear the buttons act on the center point */
+.symmetry-settings__center {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  border: 2px solid black;
+  border-radius: 0;
+  padding: 14px 20px 18px;
+  margin: 0;
+}
+
+.symmetry-settings__center > legend {
+  font-size: 16px;
+  padding: 0 8px;
+  text-align: left;
+}
