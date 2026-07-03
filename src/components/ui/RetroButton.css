@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
 
-/* Raised gadget with a hard drop shadow: hover sinks it halfway, press sinks
-   it fully into the shadow. No easing - pixels don't ease.
+/* Raised gadget with a hard drop shadow: hover sinks it halfway (with a
+   slight fill shift), press sinks it fully into the shadow. Movement and
+   colors ease over 200ms, retroui style.
    Press Start 2P is an 8px-grid bitmap font: use multiples of 8 or it gets
    jagged. */
 .retro-button {
@@ -14,7 +15,7 @@
   border: 2px solid black;
   border-radius: 0;
   box-shadow: 4px 4px 0 0 var(--retro-shadow-color);
-  transition: none;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
   cursor: pointer;
 }
 
@@ -36,6 +37,11 @@
 .retro-button--primary {
   color: black;
   background-color: #ff9900;
+}
+
+/* only the primary shifts color on hover */
+.retro-button--primary:hover:not(:disabled) {
+  background-color: #f28c00;
 }
 
 .retro-button--secondary {
