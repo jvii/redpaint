@@ -97,8 +97,12 @@ export function Toolbox(): JSX.Element {
       <div className="toolbox-button-divider"></div>
       <ToolboxToggleButton
         buttonClass="symmetry"
-        isSelected={state.toolbox.symmetryModeOn}
+        isSelected={
+          state.toolbox.symmetryModeOn ||
+          state.toolbox.activeToolId === 'symmetryCenterSelectorTool'
+        }
         onClick={(): void => actions.toolbox.toggleSymmetryMode()}
+        onRightClick={(): void => actions.symmetry.openSettings()}
       />
       <ToolboxActionButton
         buttonClass="undo"

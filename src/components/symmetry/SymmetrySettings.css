@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
+
+.symmetry-settings__container {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 28px 30px;
+  text-align: left;
+}
+
+.symmetry-settings__row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.symmetry-settings__label {
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: nowrap;
+  min-width: 9ch;
+}
+
+.symmetry-settings__row-buttons {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+/* DPaint workbench blue for the slider (same hue as the menu overlay) */
+.symmetry-settings__container .MuiSlider-root {
+  color: rgb(17, 51, 202);
+}
+
+/* Cyclic / Mirror as a chunky segmented toggle, workbench blue chrome */
+.symmetry-settings__container .MuiToggleButton-root {
+  /* Press Start 2P is an 8px-grid bitmap font: use multiples of 8 or it gets jagged */
+  font-family: 'Press Start 2P';
+  font-size: 16px;
+  color: rgb(17, 51, 202);
+  background-color: white;
+  border: 2px solid rgb(17, 51, 202);
+  border-radius: 0;
+  padding: 12px 18px;
+  text-transform: none;
+}
+
+/* single 2px divider between the segments */
+.symmetry-settings__container .MuiToggleButtonGroup-grouped:not(:first-of-type) {
+  border-left: 0;
+  margin-left: 0;
+}
+
+.symmetry-settings__container .MuiToggleButton-root.Mui-selected {
+  background-color: rgb(17, 51, 202);
+  color: white;
+}
+
+/* Workbench 1.3 orange (same accent as the menubar text hover) */
+.symmetry-settings__container .MuiToggleButton-root:hover {
+  background-color: #ff9900;
+  color: white;
+}
+
+.symmetry-settings__container .MuiToggleButton-root.Mui-selected:hover {
+  background-color: rgb(13, 40, 160);
+  color: white;
+}
+
+.symmetry-settings__container .MuiButton-root {
+  font-family: 'Press Start 2P';
+  font-size: 16px;
+  color: rgb(17, 51, 202);
+  background-color: white;
+  border: 2px solid rgb(17, 51, 202);
+  border-radius: 0;
+  padding: 10px 16px;
+}
+
+.symmetry-settings__container .MuiButton-root:hover {
+  background-color: #ff9900;
+  border-color: rgb(17, 51, 202);
+  color: white;
+}
+
+.symmetry-settings__container .MuiButton-root.Mui-disabled {
+  color: rgb(160, 160, 160);
+  border-color: rgb(160, 160, 160);
+  background-color: white;
+}

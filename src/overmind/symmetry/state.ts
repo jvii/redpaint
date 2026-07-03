@@ -7,6 +7,9 @@ export type State = {
   center: Point | null; // null => default to canvas center
   order: number; // number of rotational copies, 1..40
   mirror: boolean;
+  settingsOpen: boolean; // the symmetry settings panel (DPaint's SymRequest)
+  // Values at the time the panel was opened, restored on Cancel
+  settingsSnapshot: { center: Point | null; order: number; mirror: boolean } | null;
   // The effective settings for drawing: null when symmetry mode is off or the
   // canvas is not yet sized. Center falls back to the canvas center.
   readonly activeSettings: SymmetrySettings | null;
@@ -17,6 +20,8 @@ export const state: State = {
   center: null,
   order: 6,
   mirror: true,
+  settingsOpen: false,
+  settingsSnapshot: null,
   activeSettings: derived((state: State, rootState: OvermindState): SymmetrySettings | null => {
     if (!rootState.toolbox.symmetryModeOn) {
       return null;

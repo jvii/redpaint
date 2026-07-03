@@ -48,6 +48,16 @@ export const toggleSymmetryMode = (context: Context): void => {
   context.state.toolbox.selectedSelectorToolId = null;
 };
 
+export const toggleSymmetryCenterSelectionMode = (context: Context): void => {
+  context.actions.toolbox.setActiveToPreviousTool();
+  const isSelected = context.state.toolbox.selectedSelectorToolId === 'symmetryCenterSelectorTool';
+  context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'symmetryCenterSelectorTool';
+  if (!isSelected) {
+    // Picking a center only makes sense with symmetry visible
+    context.state.toolbox.symmetryModeOn = true;
+  }
+};
+
 export const setActiveToPreviousTool = (context: Context): void => {
   context.state.toolbox.previousToolId = context.state.toolbox.activeToolId;
 };

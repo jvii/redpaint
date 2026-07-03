@@ -99,7 +99,7 @@ export function PaletteEditor(): JSX.Element | null {
           </div>
         </div>
         <Divider variant="middle" />
-        <Button variant="outlined" color="secondary" onClick={actions.paletteEditor.close}>
+        <Button variant="outlined" onClick={actions.paletteEditor.close}>
           Cancel
         </Button>
         <Button variant="contained" color="primary" onClick={actions.paletteEditor.close}>
