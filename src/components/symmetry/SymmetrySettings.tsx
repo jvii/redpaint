@@ -1,8 +1,10 @@
 import { JSX } from 'react';
-import { Button, Divider, Slider, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import './SymmetrySettings.css';
 import { useActions, useAppState } from '../../overmind';
 import { Modal } from '../modal/Modal';
+import { RetroButton } from '../ui/RetroButton';
+import { RetroSlider } from '../ui/RetroSlider';
+import { RetroToggle } from '../ui/RetroToggle';
 
 // The symmetry settings panel — redpaint's equivalent of DPaint's SymRequest
 // requester (SYMREQ.C: Cyclic / Mirror / Order / Cancel / Ok), opened by
@@ -31,51 +33,43 @@ export function SymmetrySettings(): JSX.Element | null {
       <div className="symmetry-settings__container">
         <div className="symmetry-settings__row">
           <span className="symmetry-settings__label">Order: {state.symmetry.order}</span>
-          <Slider
+          <RetroSlider
             value={state.symmetry.order}
-            step={1}
             min={1}
             max={40}
-            valueLabelDisplay="auto"
-            onChange={(event, value): void => actions.symmetry.setOrder(Number(value))}
+            onChange={(value): void => actions.symmetry.setOrder(value)}
           />
         </div>
         <div className="symmetry-settings__row">
           <span className="symmetry-settings__label">Type</span>
-          <ToggleButtonGroup
-            exclusive
+          <RetroToggle
+            options={[
+              { value: 'cyclic', label: 'Cyclic' },
+              { value: 'mirror', label: 'Mirror' },
+            ]}
             value={state.symmetry.mirror ? 'mirror' : 'cyclic'}
-            onChange={(event, value): void => {
-              if (value) {
-                actions.symmetry.setMirror(value === 'mirror');
-              }
-            }}
-          >
-            <ToggleButton value="cyclic">Cyclic</ToggleButton>
-            <ToggleButton value="mirror">Mirror</ToggleButton>
-          </ToggleButtonGroup>
+            onChange={(value): void => actions.symmetry.setMirror(value === 'mirror')}
+          />
         </div>
         <div className="symmetry-settings__row">
           <span className="symmetry-settings__label">
             Center: {center ? `${center.x}, ${center.y}` : 'canvas'}
           </span>
           <span className="symmetry-settings__row-buttons">
-            <Button variant="outlined" onClick={selectCenter}>
-              Select
-            </Button>
-            <Button variant="outlined" disabled={!center} onClick={actions.symmetry.resetCenter}>
+            <RetroButton onClick={selectCenter}>Select</RetroButton>
+            <RetroButton disabled={!center} onClick={actions.symmetry.resetCenter}>
               Reset
-            </Button>
+            </RetroButton>
           </span>
         </div>
       </div>
-      <Divider variant="middle" />
-      <Button variant="outlined" onClick={actions.symmetry.cancelSettings}>
+      <hr className="retro-divider" />
+      <RetroButton variant="secondary" onClick={actions.symmetry.cancelSettings}>
         Cancel
-      </Button>
-      <Button variant="contained" color="primary" onClick={actions.symmetry.closeSettings}>
+      </RetroButton>
+      <RetroButton variant="primary" onClick={actions.symmetry.closeSettings}>
         OK
-      </Button>
+      </RetroButton>
     </Modal>
   );
 }

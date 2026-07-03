@@ -4,7 +4,6 @@
   display: flex;
   align-items: stretch;
   justify-content: space-around;
-  -webkit-font-smoothing: ;
 }
 
 .palette-editor__palette-container {
@@ -18,4 +17,19 @@
   padding: 35px;
   height: 200px;
   display: flex;
+  gap: 30px;
+}
+
+.palette-editor__slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.palette-editor__slider-label {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  color: black;
 }
