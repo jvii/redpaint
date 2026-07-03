@@ -16,8 +16,7 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   color: white;
-  background-color: rgba(255, 255, 255, 0.863);
-  backdrop-filter: blur(5px);
+  background-color: white;
   margin: 0 auto;
   border-radius: 5px;
   width: 500px;
@@ -34,37 +33,55 @@
    with orange + blue boxes): orange gadget for Cancel-type actions, workbench
    blue for the primary action. On hover the fill "hollows out", leaving the
    outline in the gadget's color. */
-.modal__window > button.MuiButton-outlined {
-  color: #ff9900;
-  background-color: transparent;
-  border: 2px solid #ff9900;
-  border-radius: 0;
+
+/* Raised gadget with a hard drop shadow: hover sinks it halfway, press sinks
+   it fully into the shadow. No easing - pixels don't ease. */
+.modal__window > button.MuiButton-root {
+  box-shadow: 4px 4px 0 0 black;
+  transition: none;
+  text-transform: none;
 }
 
-.modal__window > button.MuiButton-outlined:hover {
-  color: white;
-  background-color: #ff9900;
-  border-color: #ff9900;
+.modal__window > button.MuiButton-root:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 0 black;
 }
 
+.modal__window > button.MuiButton-root:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+/* primary: orange fill, black outline; secondary: inverted (black fill, white
+   text, orange shadow) */
 .modal__window > button.MuiButton-contained {
-  color: white;
-  background-color: rgb(17, 51, 202);
-  border: 2px solid rgb(17, 51, 202);
+  color: black;
+  background-color: #ff9900;
+  border: 2px solid black;
   border-radius: 0;
 }
 
 .modal__window > button.MuiButton-contained:hover {
-  background-color: transparent;
-  color: rgb(17, 51, 202);
-  border-color: rgb(17, 51, 202);
+  background-color: #ff9900;
+}
+
+.modal__window > button.MuiButton-outlined {
+  color: white;
+  background-color: black;
+  border: 2px solid black;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 0 #ff9900;
+}
+
+.modal__window > button.MuiButton-outlined:hover {
+  background-color: black;
+  box-shadow: 2px 2px 0 0 #ff9900;
 }
 
 .modal__header {
   padding: 17px 20px 12px 20px;
   font-size: 16px;
-  background-color: white;
-  color: black;
+  background-color: rgb(17, 51, 202);
+  color: white;
   border-radius: 5px 5px 0 0;
   border-bottom: 1px rgb(209, 209, 209) solid;
 }
