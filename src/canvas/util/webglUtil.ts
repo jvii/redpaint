@@ -1,6 +1,11 @@
+// Tracks the program bound on each context so activateProgram can skip
+// redundant useProgram calls without querying the driver (gl.getParameter is
+// a synchronous round-trip and far too slow for per-draw-call use).
+const currentProgram = new WeakMap<WebGLRenderingContext, WebGLProgram>();
+
 export function activateProgram(gl: WebGLRenderingContext, program: WebGLProgram): void {
-  if (gl.getParameter(gl.CURRENT_PROGRAM) !== program) {
-    console.log('switching webgl program');
+  if (currentProgram.get(gl) !== program) {
+    currentProgram.set(gl, program);
     gl.useProgram(program);
   }
 }
@@ -51,6 +56,7 @@ export function createProgram(
   gl.attachShader(program, fs);
   gl.linkProgram(program);
   gl.useProgram(program);
+  currentProgram.set(gl, program);
 
   // Catch some possible errors on program
 

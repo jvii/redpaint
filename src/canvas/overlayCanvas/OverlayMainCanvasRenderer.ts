@@ -57,27 +57,22 @@ export class OverlayMainCanvasRenderer {
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
-    console.log('overlay drawimage');
     this.drawImageRenderer.renderDrawImage(points, brush);
   }
 
   selectionBox(start: Point, end: Point): void {
-    console.log('overlay selection box');
     this.selectionIndicatorRenderer.renderSelectionBox(start, end);
   }
 
   selectionCrosshair(point: Point): void {
-    console.log('overlay selection crosshair');
     this.selectionIndicatorRenderer.renderSelectionCrosshair(point);
   }
 
   renderCanvas(): void {
-    console.log('rendering canvas');
     //this.drawImageRenderer.renderCanvas();
   }
 
   clear(): void {
-    console.log('clearing overlay canvas');
     this.gl.clearColor(0.0, 0.0, 0.0, 0.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
   }

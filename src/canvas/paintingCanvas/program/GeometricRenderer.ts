@@ -6,10 +6,20 @@ import { createProgram, activateProgram } from '../../util/webglUtil';
 export class GeometricRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
+  // locations looked up once: getUniformLocation/getAttribLocation are driver
+  // round-trips, too slow for per-draw-call use
+  private a_position: number;
+  private u_resolution: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
+    this.a_position = gl.getAttribLocation(this.program, 'a_position');
+    this.u_resolution = gl.getUniformLocation(this.program, 'resolution');
+    // createProgram leaves the program bound; the texture units never change
+    // (0 = color indices, 1 = palette), so the samplers can be set once
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_colorIndexTexture'), 0);
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
   }
 
   /**
@@ -30,20 +40,11 @@ export class GeometricRenderer {
     // render to the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // use texture units 0 and 1 for the image and palette
-
-    const imageLoc = gl.getUniformLocation(this.program, 'u_colorIndexTexture');
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(imageLoc, 0);
-    gl.uniform1i(paletteLoc, 1);
-
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {
@@ -52,8 +53,7 @@ export class GeometricRenderer {
       vertices[i * 2 + 1] = canvasToWebGLCoordY(gl, shiftedPoint.y);
     }
 
-    const resolution = gl.getUniformLocation(this.program, 'resolution');
-    this.gl.uniform2f(resolution, gl.canvas.width, gl.canvas.height);
+    this.gl.uniform2f(this.u_resolution, gl.canvas.width, gl.canvas.height);
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.POINTS, 0, points.length);
@@ -67,20 +67,11 @@ export class GeometricRenderer {
     // render to the canvas
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // use texture units 0 and 1 for the color index and palette
-
-    const imageLoc = gl.getUniformLocation(this.program, 'u_colorIndexTexture');
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(imageLoc, 0);
-    gl.uniform1i(paletteLoc, 1);
-
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     const vertices = new Float32Array(2 * 2 * lines.length);
     for (let i = 0; i < lines.length; i++) {
@@ -91,8 +82,7 @@ export class GeometricRenderer {
       vertices[i * 4 + 3] = canvasToWebGLCoordY(gl, shiftedLine.p2.y);
     }
 
-    const resolution = gl.getUniformLocation(this.program, 'resolution');
-    this.gl.uniform2f(resolution, gl.canvas.width, gl.canvas.height);
+    this.gl.uniform2f(this.u_resolution, gl.canvas.width, gl.canvas.height);
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
