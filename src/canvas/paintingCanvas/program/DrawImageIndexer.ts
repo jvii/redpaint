@@ -153,10 +153,16 @@ export class DrawImageIndexer {
     void main () {
       vec4 color = texture2D(u_image, v_texCoord);
 
-      if (color.r == 0.0) {
-        discard; // zero means this pixel of the brush is transparent
+      if (color.a > 0.9) {
+        // true-color brush pixel: write the literal color, keep the tag
+        gl_FragColor = vec4(color.rgb, 1.0);
+        return;
       }
-      gl_FragColor = color;
+      if (color.r == 0.0) {
+        discard; // index zero means this pixel of the brush is transparent
+      }
+      // indexed brush pixel: write a normalized indexed pixel
+      gl_FragColor = vec4(color.r, 0.0, 0.0, 127.0/255.0);
     }
     `;
 

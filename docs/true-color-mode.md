@@ -97,6 +97,13 @@ loaded photo), a paint-color type must thread through all of it.
 
 ## Phased plan
 
+**Status:** Phase A implemented 2026-07-04, including the previously dead
+image load path (decode → `CanvasColorIndex.fromImageData`, true-color
+tagged, uploaded after the canvas resize commits) and PNG save
+(`canvas.toBlob` from the preserved drawing buffer). Flood fill now compares
+whole 32-bit pixels (`getPixel32`/`packIndexed`); the color picker no-ops on
+true-color pixels; `colorizeTexture`/`addTransparency` are stride-aware.
+
 - **Phase A — hybrid storage, indexed tools.** Normalize alpha writes to the
   tag encoding; add the tag branch to the display shaders; widen
   flood-fill/picker pixel comparisons; image loading writes RGB + true-color

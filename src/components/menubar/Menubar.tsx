@@ -3,9 +3,8 @@ import { useActions, useAppState } from '../../overmind';
 import { MenuItem } from './MenuItem';
 import { MenuItemSave } from './MenuItemSave';
 import { MenuItemOpen } from './MenuItemOpen';
-import { CustomBrush } from '../../brush/CustomBrush';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import './Menubar.css';
-import { brushHistory } from '../../brush/BrushHistory';
 
 export function Menubar(): JSX.Element {
   const actions = useActions();
@@ -40,14 +39,59 @@ export function Menubar(): JSX.Element {
     }
   };
 
-  const getImageObjectURLToSave = (): string => {
-    //return state.undo.currentBufferItem ? URL.createObjectURL(state.undo.currentBufferItem) : '#';
-    return 'todo';
+  const handleImageSave = async (): Promise<void> => {
+    // Ask for the save location first, while the user gesture is still fresh
+    // (transient activation can expire across async work). Chromium only —
+    // other browsers fall back to a regular download.
+    type SaveFilePicker = (options?: {
+      suggestedName?: string;
+      types?: { description: string; accept: Record<string, string[]> }[];
+    }) => Promise<{ createWritable: () => Promise<WritableStream> }>;
+    const showSaveFilePicker = (window as { showSaveFilePicker?: SaveFilePicker })
+      .showSaveFilePicker;
+
+    let fileHandle = null;
+    if (showSaveFilePicker) {
+      try {
+        fileHandle = await showSaveFilePicker({
+          suggestedName: 'redpaint.png',
+          types: [{ description: 'PNG image', accept: { 'image/png': ['.png'] } }],
+        });
+      } catch {
+        return; // user cancelled the picker
+      }
+    }
+
+    // preserveDrawingBuffer is on, but render once to be sure the buffer is current
+    paintingCanvasController.render();
+    const blob: Blob | null = await new Promise((resolve): void =>
+      paintingCanvasController.mainCanvas.toBlob(resolve, 'image/png')
+    );
+    if (!blob) {
+      return;
+    }
+
+    if (fileHandle) {
+      const writable = await fileHandle.createWritable();
+      const writer = writable.getWriter();
+      await writer.write(blob);
+      await writer.close();
+      return;
+    }
+
+    // fallback: regular browser download
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'redpaint.png';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout((): void => URL.revokeObjectURL(url), 1000);
   };
 
-  const getBrushObjectURLToSave = (): string => {
-    const brush = brushHistory.current;
-    return brush instanceof CustomBrush ? brush.getObjectURL() : '#';
+  const handleBrushSave = (): void => {
+    // not implemented yet
   };
 
   const mode = state.brush.mode;
@@ -68,18 +112,12 @@ export function Menubar(): JSX.Element {
           <div className="menu__image">
             <div className="menu__header">Image</div>
             <MenuItemOpen label="Open..." handleFile={handleImageFileOpen}></MenuItemOpen>
-            <MenuItemSave
-              label="Save..."
-              objectURLToSave={getImageObjectURLToSave()}
-            ></MenuItemSave>
+            <MenuItemSave label="Save..." onSave={handleImageSave}></MenuItemSave>
           </div>
           <div className="menu__brush">
             <div className="menu__header">Brush</div>
             <MenuItemOpen label="Open..." handleFile={handleBrushFileOpen}></MenuItemOpen>
-            <MenuItemSave
-              label="Save..."
-              objectURLToSave={getBrushObjectURLToSave()}
-            ></MenuItemSave>
+            <MenuItemSave label="Save..." onSave={handleBrushSave}></MenuItemSave>
           </div>
           <div className="menu__mode">
             <div className="menu__header">Mode</div>

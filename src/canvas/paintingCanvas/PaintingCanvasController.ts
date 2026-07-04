@@ -118,7 +118,11 @@ export class PaintingCanvasController implements CanvasController {
 
   getColorNumberForPoint(point: Point): number | undefined {
     const colorIndex = this.colorIndexer?.getIndex();
-    return colorIndex?.getColorNumberForPixel(point);
+    if (!colorIndex || colorIndex.isTrueColorPixel(point)) {
+      // a true-color pixel has no palette color number to pick
+      return undefined;
+    }
+    return colorIndex.getColorNumberForPixel(point);
   }
 
   getBrushColorIndexFromArea(

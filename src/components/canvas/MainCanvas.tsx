@@ -1,14 +1,15 @@
 import React, { JSX, useEffect, useRef } from 'react';
 import { Canvas } from './Canvas';
-import { useScrollToFocusPoint } from './hooks';
+import { useLoadedImage, useScrollToFocusPoint } from './hooks';
 import { useActions, useAppState } from '../../overmind';
 import './Canvas.css';
 
 export function MainCanvas(): JSX.Element {
   const actions = useActions()
-  
+
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   useScrollToFocusPoint(canvasDivRef.current, useAppState().canvas.scrollFocusPoint);
+  useLoadedImage();
 
   // set initial canvas size according to initial window size
 
