@@ -117,17 +117,16 @@ export class GeometricRenderer {
 
     void main() {
       vec2 position = vec2((gl_FragCoord.x) / (resolution.x), (gl_FragCoord.y / (resolution.y)));
-      float colorNumber = texture2D(u_colorIndexTexture, position).r * 255.0 - 1.0;
-      /*
-      if (colorNumber < 0.1) {
-        gl_FragColor = vec4(1,1,1,1);
+      vec4 pixel = texture2D(u_colorIndexTexture, position);
+
+      if (pixel.a > 0.9) {
+        // true-color pixel: the literal RGB color
+        gl_FragColor = vec4(pixel.rgb, 1.0);
+        return;
       }
-      else {
-        gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
-      }
-      */
+
+      float colorNumber = pixel.r * 255.0 - 1.0;
       gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
-      //gl_FragColor = vec4(1,1,1,1);
     }
     `;
 

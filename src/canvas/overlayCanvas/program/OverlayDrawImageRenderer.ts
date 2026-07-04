@@ -180,44 +180,25 @@ export class OverlayDrawImageRenderer {
     `;
 
     const fragmentShader = `
-    precision lowp float;
+    precision mediump float;
 
     uniform sampler2D u_image;
     uniform sampler2D u_palette;
     varying vec2 v_texCoord;
 
     void main () {
-      vec4 colorIndexValue = texture2D(u_image, v_texCoord);
-      if (colorIndexValue.r == 0.0) {
-        discard; // zero means this pixel of the image (brush) is transparent
+      vec4 pixel = texture2D(u_image, v_texCoord);
+
+      if (pixel.a > 0.9) {
+        // true-color brush pixel: the literal RGB color
+        gl_FragColor = vec4(pixel.rgb, 1.0);
+        return;
+      }
+      if (pixel.r == 0.0) {
+        discard; // index zero means this pixel of the brush is transparent
       }
 
-      //gl_FragColor = colorIndexValue;
-      gl_FragColor = texture2D(u_palette, vec2((colorIndexValue.r) - 1.0/256.0, 0.5));
-      //gl_FragColor = vec4(1,1,1,1);
-    }
-    `;
-
-    const fragmentShaderTrueColor = `
-    precision lowp float;
-
-    uniform sampler2D u_image;
-    uniform sampler2D u_palette;
-    varying vec2 v_texCoord;
-
-    void main () {
-      vec4 colorIndexValue = texture2D(u_image, v_texCoord);
-      if (colorIndexValue.r == 0.0) {
-        discard; // zero means this pixel of the brush is transparent
-      }
-
-      if (colorIndexValue.a == 1.0) {
-        //gl_FragColor = vec4(colorIndexValue.r, colorIndexValue.g , colorIndexValue.b , 0.0);
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-      }
-      else {
-        gl_FragColor = texture2D(u_palette, vec2((colorIndexValue.r) - 1.0/256.0, 0.5));
-      }
+      gl_FragColor = texture2D(u_palette, vec2((pixel.r) - 1.0/256.0, 0.5));
     }
     `;
 

@@ -147,7 +147,8 @@ export class GeometricIndexer {
     uniform float u_colorNumber;
 
     void main () {
-      gl_FragColor = vec4(u_colorNumber/255.0, 0.0, 0.0, 1.0);
+      // alpha 127/255 tags the pixel as indexed (see docs/true-color-mode.md)
+      gl_FragColor = vec4(u_colorNumber/255.0, 0.0, 0.0, 127.0/255.0);
     }
     `;
 

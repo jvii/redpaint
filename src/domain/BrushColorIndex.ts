@@ -1,3 +1,5 @@
+import { ALPHA_TRUECOLOR } from './CanvasColorIndex';
+
 export class BrushColorIndex {
   width: number;
   height: number;
@@ -38,7 +40,18 @@ export class BrushColorIndex {
     return new BrushColorIndex(width, height, brushColorIndex);
   }
 
+  // Marks the pixels whose indexed color equals the transparent color as
+  // transparent (all-zero pixel). True-color pixels are never transparent.
   private addTransparency(indexArray: Uint8Array, transparentColorIndex: number): Uint8Array {
-    return indexArray.map((item) => (item === transparentColorIndex ? 0 : item));
+    const result = new Uint8Array(indexArray);
+    for (let i = 0; i < result.length; i += 4) {
+      if (result[i + 3] !== ALPHA_TRUECOLOR && result[i] === transparentColorIndex) {
+        result[i] = 0;
+        result[i + 1] = 0;
+        result[i + 2] = 0;
+        result[i + 3] = 0;
+      }
+    }
+    return result;
   }
 }

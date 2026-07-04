@@ -3,16 +3,16 @@ import './Menubar.css';
 
 interface Props {
   label: string;
-  objectURLToSave: string;
+  onSave: () => void;
 }
 
-export function MenuItemSave({ label, objectURLToSave: href }: Props): JSX.Element {
+export function MenuItemSave({ label, onSave }: Props): JSX.Element {
   return (
     <div className="menu__item">
       <div className="menu__item-is-selected"></div>
-      <a href={href} download="testfile.png" className="menu__item-label">
+      <button className="menu__item-label" onClick={onSave} type="button" aria-label={label}>
         {label}
-      </a>
+      </button>
     </div>
   );
 }

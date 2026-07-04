@@ -1,4 +1,5 @@
 import { Line, Point } from '../../types';
+import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../../domain/CanvasColorIndex';
 
 export function canvasToWebGLCoordX(gl: WebGLRenderingContext, x: number): number {
   return (x / gl.canvas.width) * 2 - 1;
@@ -8,8 +9,23 @@ export function canvasToWebGLCoordY(gl: WebGLRenderingContext, y: number): numbe
   return (y / gl.drawingBufferHeight) * -2 + 1; // because GL is 0 at bottom
 }
 
+// Recolors the indexed, non-transparent pixels of a brush texture to the given
+// color number. True-color pixels keep their literal color and transparent
+// pixels (index 0) stay transparent.
 export function colorizeTexture(texture: Uint8Array, colornumber: number): Uint8Array {
-  return texture.map((item) => (item !== 0 ? colornumber : item));
+  const result = new Uint8Array(texture);
+  for (let i = 0; i < result.length; i += 4) {
+    if (result[i + 3] === ALPHA_TRUECOLOR) {
+      continue;
+    }
+    if (result[i] !== 0) {
+      result[i] = colornumber;
+      result[i + 1] = 0;
+      result[i + 2] = 0;
+      result[i + 3] = ALPHA_INDEXED;
+    }
+  }
+  return result;
 }
 
 export function shiftPoint(point: Point): Point {

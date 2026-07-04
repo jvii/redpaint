@@ -92,49 +92,35 @@ export class DrawImageRenderer {
     }
     `;
 
-    // Fragment shader: samples the color index texture and converts to RGB using palette
+    // Fragment shader: samples the color index texture; the alpha byte tags
+    // each pixel as indexed (palette lookup) or true color (literal RGB), see
+    // docs/true-color-mode.md
     const fragmentShader = `
-    // This fragment shader converts indexed colors to actual RGB colors using a palette texture
-    precision lowp float;  // Use low precision for better performance since we're dealing with 8-bit colors
+    precision mediump float;
 
     varying vec2 v_texcoord;
     uniform sampler2D u_image;    // Color index texture
     uniform sampler2D u_palette;  // Palette texture
 
     void main() {
-      // Get the color index from the image texture
       // We flip Y coordinate (1.0 - v_texcoord.y) since WebGL texture coordinates are flipped
-      // texture2D().r gets the red channel which contains our index
-      // Multiply by 255 to convert from 0-1 range to 0-255 range
-      // Subtract 1 since indices are stored as index+1 to avoid transparency issues
-      lowp float colorNumber = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y)).r * 255.0 - 1.0;
+      vec4 pixel = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
+
+      if (pixel.a > 0.9) {
+        // true-color pixel: the literal RGB color
+        gl_FragColor = vec4(pixel.rgb, 1.0);
+        return;
+      }
+
+      // Indexed pixel: the red channel contains the index.
+      // Multiply by 255 to convert from 0-1 range to 0-255 range.
+      // Subtract 1 since indices are stored as index+1 to avoid transparency issues.
+      float colorNumber = pixel.r * 255.0 - 1.0;
 
       // Look up the actual color from the palette texture
       // We add 0.5 and divide by 256 to get the correct texel center
       // The 0.5 Y coordinate accesses the middle of the 1-pixel high palette texture
       gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
-    }
-    `;
-
-    // Alternative fragment shader for true color images with alpha channel
-    // This is currently not used but kept for reference
-    const fragmentShaderTrueColor = `
-    precision mediump float;
-
-    varying vec2 v_texcoord;
-    uniform sampler2D u_image;
-    uniform sampler2D u_palette;
-
-    void main() {
-      vec4 colorIndexValue = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
-      if (colorIndexValue.a == 0.0) {
-        //gl_FragColor = vec4(colorIndexValue.r, colorIndexValue.g ,colorIndexValue.b , 0.0);
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0);
-      }
-      else {
-        float colorNumber = colorIndexValue.r * 255.0 - 1.0;
-        gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
-      }
     }
     `;
 

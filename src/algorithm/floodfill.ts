@@ -10,9 +10,12 @@ export function floodFill(
   const height = overmind.state.canvas.resolution.height;
   const width = overmind.state.canvas.resolution.width;
 
-  // Base color is the original color in originPoint
-  const baseColorNumber = canvasColorIndex.getColorNumberForPixel(originPoint);
-  if (fillColorNumber === baseColorNumber) {
+  // Base value is the original pixel at originPoint. Pixels are compared as
+  // whole 32-bit RGBA values so that true-color pixels compare by their full
+  // color, not just the R byte.
+  const baseValue = canvasColorIndex.getPixel32(originPoint);
+  const fillValue = CanvasColorIndex.packIndexed(fillColorNumber);
+  if (fillValue === baseValue) {
     // nothing to do if base color === fill color
     return [];
   }
@@ -37,20 +40,19 @@ export function floodFill(
     // Move to top most contiguousUp pixel
     while (contiguousUp && position.y >= 0) {
       position.y--;
-      contiguousUp = canvasColorIndex.getColorNumberForPixel(position) === baseColorNumber;
+      contiguousUp = canvasColorIndex.getPixel32(position) === baseValue;
     }
     position.y++;
 
     // Move down
     while (contiguousDown && position.y < height) {
       pointsToFill.push({ x: position.x, y: position.y });
-      canvasColorIndex.setColorNumberForPixel(position, fillColorNumber);
+      canvasColorIndex.setPixel32(position, fillValue);
 
       // Check left
       if (
         position.x - 1 >= 0 &&
-        canvasColorIndex.getColorNumberForPixel({ x: position.x - 1, y: position.y }) ===
-          baseColorNumber
+        canvasColorIndex.getPixel32({ x: position.x - 1, y: position.y }) === baseValue
       ) {
         if (!contiguousLeft) {
           contiguousLeft = true;
@@ -63,8 +65,7 @@ export function floodFill(
       // Check right
       if (
         position.x + 1 < width &&
-        canvasColorIndex.getColorNumberForPixel({ x: position.x + 1, y: position.y }) ===
-          baseColorNumber
+        canvasColorIndex.getPixel32({ x: position.x + 1, y: position.y }) === baseValue
       ) {
         if (!contiguousRight) {
           stack.push({ x: position.x + 1, y: position.y });
@@ -75,7 +76,7 @@ export function floodFill(
       }
 
       position.y++;
-      contiguousDown = canvasColorIndex.getColorNumberForPixel(position) === baseColorNumber;
+      contiguousDown = canvasColorIndex.getPixel32(position) === baseValue;
     }
   }
 
