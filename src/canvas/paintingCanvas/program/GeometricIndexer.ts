@@ -7,11 +7,17 @@ export class GeometricIndexer {
   private program: WebGLProgram;
   private targetFrameBuffer: WebGLFramebuffer;
   private currentColorNumber = 0;
+  // locations looked up once: getUniformLocation/getAttribLocation are driver
+  // round-trips, too slow for per-draw-call use
+  private u_colorNumber: WebGLUniformLocation | null;
+  private a_position: number;
 
   public constructor(gl: WebGLRenderingContext, targetFrameBuffer: WebGLFramebuffer) {
     this.gl = gl;
     this.program = this.createProgram();
     this.targetFrameBuffer = targetFrameBuffer;
+    this.u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+    this.a_position = gl.getAttribLocation(this.program, 'a_position');
   }
 
   public indexPoints(points: Point[], colorNumber: number): void {
@@ -23,19 +29,15 @@ export class GeometricIndexer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorNumber !== this.currentColorNumber) {
-      console.log('updating color number uniform');
       this.currentColorNumber = colorNumber;
-      const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
-      gl.uniform1f(u_colorNumber, colorNumber);
+      gl.uniform1f(this.u_colorNumber, colorNumber);
     }
 
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {
@@ -57,19 +59,15 @@ export class GeometricIndexer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorNumber !== this.currentColorNumber) {
-      console.log('updating color index uniform');
       this.currentColorNumber = colorNumber;
-      const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
-      gl.uniform1f(u_colorNumber, colorNumber);
+      gl.uniform1f(this.u_colorNumber, colorNumber);
     }
 
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     const vertices = new Float32Array(2 * 2 * lines.length);
     for (let i = 0; i < lines.length; i++) {
@@ -93,19 +91,15 @@ export class GeometricIndexer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
     if (colorNumber !== this.currentColorNumber) {
-      console.log('updating color number uniform');
       this.currentColorNumber = colorNumber;
-      const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
-      gl.uniform1f(u_colorNumber, colorNumber);
+      gl.uniform1f(this.u_colorNumber, colorNumber);
     }
 
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     const shiftedStart = shiftPoint(start);
     const shiftedEnd = shiftPoint(end);

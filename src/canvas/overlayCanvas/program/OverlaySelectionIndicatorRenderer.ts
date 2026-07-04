@@ -35,7 +35,6 @@ export class OverlaySelectionIndicatorRenderer {
     // update canvas texture if necessary
 
     if (this.lastCanvasUpdate !== overmind.state.undo.lastUndoPointTime) {
-      console.log('loading canvas to texture');
       this.loadMainCanvasAsTexture();
       this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
     }
@@ -81,7 +80,6 @@ export class OverlaySelectionIndicatorRenderer {
     // update canvas texture if necessary
 
     if (this.lastCanvasUpdate !== overmind.state.undo.lastUndoPointTime) {
-      console.log('loading canvas to texture');
       this.loadMainCanvasAsTexture();
       this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
     }
@@ -175,7 +173,5 @@ export class OverlaySelectionIndicatorRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    console.log('Loaded canvas as texture');
   }
 }

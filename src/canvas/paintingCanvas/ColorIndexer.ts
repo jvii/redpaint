@@ -142,17 +142,6 @@ export class ColorIndexer {
     }
 
     const pixels = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
-    console.log('canvas: x:' + x + ' y: ' + y + ' w: ' + width + ' h: ' + height);
-    console.log(
-      'texture: x:' +
-        rectLowerLeftX +
-        ' y: ' +
-        rectLowerLeftY +
-        ' w: ' +
-        Math.abs(width) +
-        ' h: ' +
-        Math.abs(height)
-    );
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
     gl.readPixels(
       rectLowerLeftX,

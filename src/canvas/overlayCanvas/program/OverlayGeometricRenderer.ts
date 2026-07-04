@@ -8,10 +8,19 @@ export class OverlayGeometricRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
   private currentColorNumber = 0;
+  // locations looked up once: getUniformLocation/getAttribLocation are driver
+  // round-trips, too slow for per-draw-call use
+  private a_position: number;
+  private u_colorNumber: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
+    this.a_position = gl.getAttribLocation(this.program, 'a_position');
+    this.u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+    // createProgram leaves the program bound; the palette is always in
+    // texture unit 1, so the sampler uniform can be set once
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
   }
 
   /**
@@ -31,12 +40,8 @@ export class OverlayGeometricRenderer {
 
     this.updateColorNumber(colorNumber);
 
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(paletteLoc, 1);
-
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -58,12 +63,8 @@ export class OverlayGeometricRenderer {
 
     this.updateColorNumber(colorNumber);
 
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(paletteLoc, 1);
-
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -87,12 +88,8 @@ export class OverlayGeometricRenderer {
 
     this.updateColorNumber(colorNumber);
 
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(paletteLoc, 1);
-
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -129,11 +126,8 @@ export class OverlayGeometricRenderer {
       return;
     }
     const gl = this.gl;
-
-    console.log('updating color number uniform');
     this.currentColorNumber = colorNumber;
-    const u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
-    gl.uniform1f(u_colorNumber, this.currentColorNumber - 1);
+    gl.uniform1f(this.u_colorNumber, this.currentColorNumber - 1);
   }
 
   private createProgram(): WebGLProgram {

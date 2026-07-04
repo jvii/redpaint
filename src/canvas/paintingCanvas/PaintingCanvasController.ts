@@ -81,30 +81,39 @@ export class PaintingCanvasController implements CanvasController {
   points(points: Point[], colorNumber: number): void {
     this.colorIndexer?.points(points, colorNumber);
     this.mainCanvasRenderer?.points(points);
-    this.zoomCanvasRenderer?.render(this.mainCanvas);
+    this.renderZoomCanvas();
   }
 
   lines(lines: (LineH | LineV)[], colorNumber: number): void {
     this.colorIndexer?.lines(lines, colorNumber);
     this.mainCanvasRenderer?.lines(lines);
-    this.zoomCanvasRenderer?.render(this.mainCanvas);
+    this.renderZoomCanvas();
   }
 
   quad(start: Point, end: Point, colorNumber: number): void {
     this.colorIndexer?.quad(start, end, colorNumber);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderQuad?
-    this.zoomCanvasRenderer?.render(this.mainCanvas);
+    this.renderZoomCanvas();
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
     this.colorIndexer?.drawImage(points, brush);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderDrawImage?
-    this.zoomCanvasRenderer?.render(this.mainCanvas);
+    this.renderZoomCanvas();
   }
 
   render(): void {
     this.mainCanvasRenderer?.renderCanvas();
-    this.zoomCanvasRenderer?.render(this.mainCanvas);
+    this.renderZoomCanvas();
+  }
+
+  // Copying the canvas into the zoom view costs a full-canvas blit per draw
+  // call, so skip it while the zoom view is hidden. useRefreshZoomCanvas
+  // re-renders when zoom mode is turned on.
+  private renderZoomCanvas(): void {
+    if (overmind.state.toolbox.zoomModeOn) {
+      this.zoomCanvasRenderer?.render(this.mainCanvas);
+    }
   }
 
   clear(): void {

@@ -31,9 +31,18 @@ export class DrawImageRenderer {
    * Creates a new DrawImageRenderer.
    * @param gl The WebGL rendering context
    */
+  // location looked up once: getAttribLocation is a driver round-trip, too
+  // slow for per-draw-call use
+  private a_position: number;
+
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
+    this.a_position = gl.getAttribLocation(this.program, 'a_position');
+    // createProgram leaves the program bound; the texture units never change
+    // (0 = color indices, 1 = palette), so the samplers can be set once
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_image'), 0);
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
   }
 
   /**
@@ -48,22 +57,11 @@ export class DrawImageRenderer {
     // Render directly to the canvas (not to a framebuffer)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-    // Set up texture uniforms
-    // u_image: texture unit 0 contains the color indices
-    // u_palette: texture unit 1 contains the palette colors
-    const imageLoc = gl.getUniformLocation(this.program, 'u_image');
-    const paletteLoc = gl.getUniformLocation(this.program, 'u_palette');
-    gl.uniform1i(imageLoc, 0); // Use texture unit 0 for color indices
-    gl.uniform1i(paletteLoc, 1); // Use texture unit 1 for palette
-
-    // Set up vertex position attribute
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     // Define vertices for a full-screen quad (two triangles)
     // The quad is defined in normalized device coordinates (-1 to 1)

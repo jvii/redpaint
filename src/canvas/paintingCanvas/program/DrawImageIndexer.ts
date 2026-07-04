@@ -14,11 +14,20 @@ export class DrawImageIndexer {
   private program: WebGLProgram;
   private currentBrushId = 0;
   private buffers: GLBuffers;
+  // attribute/uniform locations are looked up once here: getUniformLocation /
+  // getAttribLocation are driver round-trips, too slow for per-draw-call use
+  private a_position: number;
+  private a_texCoord: number;
 
   public constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
     this.program = this.createProgram();
     this.buffers = buffers;
+    this.a_position = gl.getAttribLocation(this.program, 'a_position');
+    this.a_texCoord = gl.getAttribLocation(this.program, 'a_texCoord');
+    // createProgram leaves the program bound; the brush texture is always in
+    // texture unit 2, so the sampler uniform can be set once
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_image'), 2);
   }
 
   /**
@@ -40,19 +49,10 @@ export class DrawImageIndexer {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
 
     if (this.currentBrushId !== brush.lastChanged) {
-      console.log('loading texture for brush');
       this.loadBrushAsTexture(brush);
-      console.log(this.currentBrushId);
-      console.log(brush.lastChanged);
     }
     this.currentBrushId = brush.lastChanged;
 
-    const u_image = gl.getUniformLocation(gl.getParameter(gl.CURRENT_PROGRAM), 'u_image');
-    gl.uniform1i(u_image, 2); // texture unit 2
-
-    console.log('points:' + points.length);
-    console.log('point[0].y=' + points[0].y);
-    console.log('brush.heigth=' + brush.heigth);
     // ei toimi oikein jos brush.height on parillinen???
 
     const textureCoords = new Float32Array(12 * points.length);
@@ -106,23 +106,20 @@ export class DrawImageIndexer {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
 
-    const a_texCoord = gl.getAttribLocation(this.program, 'a_texCoord');
-    gl.enableVertexAttribArray(a_texCoord);
+    gl.enableVertexAttribArray(this.a_texCoord);
 
-    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_texCoord, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, textureCoords, gl.DYNAMIC_DRAW);
 
     // vertex coords
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
 
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-
     // Assign the buffer object to a_position variable
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
 
     // Enable the assignment to a_position variable
-    gl.enableVertexAttribArray(a_position);
+    gl.enableVertexAttribArray(this.a_position);
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 

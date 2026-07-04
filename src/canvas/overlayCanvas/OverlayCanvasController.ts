@@ -47,32 +47,40 @@ class OverlayCanvasController implements CanvasController {
 
   points(points: Point[], colorNumber: number): void {
     this.mainCanvasRenderer?.points(points, colorNumber);
-    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    this.renderZoomCanvas();
   }
 
   lines(lines: Line[], colorNumber: number): void {
     this.mainCanvasRenderer?.lines(lines, colorNumber);
-    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    this.renderZoomCanvas();
   }
 
   quad(start: Point, end: Point, colorNumber: number): void {
     this.mainCanvasRenderer?.quad(start, end, colorNumber);
-    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    this.renderZoomCanvas();
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
     this.mainCanvasRenderer?.drawImage(points, brush);
-    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    this.renderZoomCanvas();
   }
 
   selectionBox(start: Point, end: Point): void {
     this.mainCanvasRenderer?.selectionBox(start, end);
-    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    this.renderZoomCanvas();
   }
 
   selectionCrosshair(point: Point): void {
     this.mainCanvasRenderer?.selectionCrosshair(point);
-    this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    this.renderZoomCanvas();
+  }
+
+  // Copying the overlay into the zoom view costs a full-canvas blit per draw
+  // call, so skip it while the zoom view is hidden.
+  private renderZoomCanvas(): void {
+    if (overmind.state.toolbox.zoomModeOn) {
+      this.zoomCanvasRenderer?.render(this.mainCanvasOverlay);
+    }
   }
   /*
 
