@@ -5,6 +5,7 @@ import { createOvermind } from 'overmind';
 import { Provider } from 'overmind-react';
 import { config } from './overmind/';
 import * as serviceWorker from './serviceWorker';
+import './canvas/util/benchmark';
 import './index.css';
 
 export const overmind = createOvermind(config, {
