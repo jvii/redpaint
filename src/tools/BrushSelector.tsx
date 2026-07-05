@@ -21,11 +21,19 @@ export class BrushSelector implements Tool {
     }
 
     const mousePos = getMousePos(event);
-    const width = mousePos.x - start.x;
-    const height = mousePos.y - start.y;
 
-    const customBrush = CustomBrush.fromCanvasArea(start, width, height);
+    // normalize to a top-left anchor with inclusive dimensions: the selection
+    // covers both corner pixels regardless of drag direction
+    const topLeft = {
+      x: Math.min(start.x, mousePos.x),
+      y: Math.min(start.y, mousePos.y),
+    };
+    const width = Math.abs(mousePos.x - start.x) + 1;
+    const height = Math.abs(mousePos.y - start.y) + 1;
+
+    const customBrush = CustomBrush.fromCanvasArea(topLeft, width, height);
     brushHistory.set(customBrush);
+    overmind.actions.brush.clearBuiltInBrushSelection();
     overmind.actions.brush.setMode('Matte');
 
     // exit brush selection tool

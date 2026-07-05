@@ -1,4 +1,4 @@
-import { ALPHA_INDEXED, ALPHA_TRANSPARENT } from './CanvasColorIndex';
+import { ALPHA_INDEXED, ALPHA_TRANSPARENT, ALPHA_TRUECOLOR } from './CanvasColorIndex';
 
 export class BrushColorIndex {
   width: number;
@@ -39,6 +39,29 @@ export class BrushColorIndex {
       }
     }
     return new BrushColorIndex(width, height, brushColorIndex);
+  }
+
+  // Builds a brush from decoded image pixels: opaque pixels become true-color
+  // pixels, (semi-)transparent image pixels become transparent brush pixels.
+  // ImageData rows are top-down while texture rows are bottom-up, so rows are
+  // flipped here.
+  static fromImageData(imageData: ImageData): BrushColorIndex {
+    const { width, height, data } = imageData;
+    const indexArray = new Uint8Array(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      const sourceRow = y * width * 4;
+      const targetRow = (height - y - 1) * width * 4;
+      for (let x = 0; x < width; x++) {
+        if (data[sourceRow + x * 4 + 3] < 128) {
+          continue; // transparent (alpha tag stays 0)
+        }
+        indexArray[targetRow + x * 4] = data[sourceRow + x * 4];
+        indexArray[targetRow + x * 4 + 1] = data[sourceRow + x * 4 + 1];
+        indexArray[targetRow + x * 4 + 2] = data[sourceRow + x * 4 + 2];
+        indexArray[targetRow + x * 4 + 3] = ALPHA_TRUECOLOR;
+      }
+    }
+    return new BrushColorIndex(width, height, indexArray);
   }
 
   // Marks the pixels whose indexed color equals the transparent color number
