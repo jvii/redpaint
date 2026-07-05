@@ -1,6 +1,6 @@
 import { overmind } from '../..';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { Line, Point } from '../../types';
+import { Line, PaintColor, Point } from '../../types';
 import { CanvasController } from '../CanvasController';
 import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { OverlayMainCanvasRenderer } from './OverlayMainCanvasRenderer';
@@ -45,18 +45,18 @@ class OverlayCanvasController implements CanvasController {
     this.zoomCanvasRenderer = new ZoomCanvasRenderer(zoomCanvasOverlay);
   }
 
-  points(points: Point[], colorNumber: number): void {
-    this.mainCanvasRenderer?.points(points, colorNumber);
+  points(points: Point[], color: PaintColor): void {
+    this.mainCanvasRenderer?.points(points, color);
     this.renderZoomCanvas();
   }
 
-  lines(lines: Line[], colorNumber: number): void {
-    this.mainCanvasRenderer?.lines(lines, colorNumber);
+  lines(lines: Line[], color: PaintColor): void {
+    this.mainCanvasRenderer?.lines(lines, color);
     this.renderZoomCanvas();
   }
 
-  quad(start: Point, end: Point, colorNumber: number): void {
-    this.mainCanvasRenderer?.quad(start, end, colorNumber);
+  quad(start: Point, end: Point, color: PaintColor): void {
+    this.mainCanvasRenderer?.quad(start, end, color);
     this.renderZoomCanvas();
   }
 

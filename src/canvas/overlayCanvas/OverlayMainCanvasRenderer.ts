@@ -1,5 +1,5 @@
 import { CustomBrush } from '../../brush/CustomBrush';
-import { Line, Point } from '../../types';
+import { Line, PaintColor, Point } from '../../types';
 import { OverlayDrawImageRenderer } from './program/OverlayDrawImageRenderer';
 import { OverlayGeometricRenderer } from './program/OverlayGeometricRenderer';
 import { OverlaySelectionIndicatorRenderer } from './program/OverlaySelectionIndicatorRenderer';
@@ -44,16 +44,16 @@ export class OverlayMainCanvasRenderer {
     }
   }
 
-  points(points: Point[], colorNumber: number): void {
-    this.geometricRenderer.renderPoints(points, colorNumber);
+  points(points: Point[], color: PaintColor): void {
+    this.geometricRenderer.renderPoints(points, color);
   }
 
-  lines(lines: Line[], colorNumber: number): void {
-    this.geometricRenderer.renderLines(lines, colorNumber);
+  lines(lines: Line[], color: PaintColor): void {
+    this.geometricRenderer.renderLines(lines, color);
   }
 
-  quad(start: Point, end: Point, colorNumber: number): void {
-    this.geometricRenderer.renderQuad(start, end, colorNumber);
+  quad(start: Point, end: Point, color: PaintColor): void {
+    this.geometricRenderer.renderQuad(start, end, color);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

@@ -1,9 +1,9 @@
 import { overmind } from '..';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
-import { Point } from '../types';
+import { PaintColor, Point } from '../types';
 
 export function floodFill(
-  fillColorNumber: number,
+  fillColor: PaintColor,
   originPoint: Point,
   canvasColorIndex: CanvasColorIndex
 ): Point[] {
@@ -14,7 +14,7 @@ export function floodFill(
   // whole 32-bit RGBA values so that true-color pixels compare by their full
   // color, not just the R byte.
   const baseValue = canvasColorIndex.getPixel32(originPoint);
-  const fillValue = CanvasColorIndex.packIndexed(fillColorNumber);
+  const fillValue = CanvasColorIndex.packPaintColor(fillColor);
   if (fillValue === baseValue) {
     // nothing to do if base color === fill color
     return [];

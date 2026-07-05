@@ -12,6 +12,9 @@ export const overmind = createOvermind(config, {
   devtools: false, // defaults to 'localhost:3031'
 });
 
+// debug access from the devtools console
+(window as unknown as { __redpaint: typeof overmind }).__redpaint = overmind;
+
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
   <React.StrictMode>

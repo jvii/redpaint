@@ -1,5 +1,5 @@
 import { DrawTarget } from '../canvas/CanvasController';
-import { Point } from '../types';
+import { PaintColor, Point } from '../types';
 import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
 import { CustomBrush } from './CustomBrush';
@@ -21,24 +21,24 @@ export class DrawCallBuffer implements DrawTarget {
   private quadBuffer: { start: Point; end: Point }[] = [];
   private imagePointBuffer: Point[] = [];
   private imageBrush: CustomBrush | null = null;
-  private colorNumber = 0;
+  private color: PaintColor = { kind: 'index', colorNumber: 1 };
 
-  public points(points: Point[], colorNumber: number): void {
-    this.colorNumber = colorNumber;
+  public points(points: Point[], color: PaintColor): void {
+    this.color = color;
     for (const point of points) {
       this.pointBuffer.push(point);
     }
   }
 
-  public lines(lines: (LineH | LineV)[], colorNumber: number): void {
-    this.colorNumber = colorNumber;
+  public lines(lines: (LineH | LineV)[], color: PaintColor): void {
+    this.color = color;
     for (const line of lines) {
       this.lineBuffer.push(line);
     }
   }
 
-  public quad(start: Point, end: Point, colorNumber: number): void {
-    this.colorNumber = colorNumber;
+  public quad(start: Point, end: Point, color: PaintColor): void {
+    this.color = color;
     this.quadBuffer.push({ start, end });
   }
 
@@ -51,13 +51,13 @@ export class DrawCallBuffer implements DrawTarget {
 
   public replayTo(target: DrawTarget): void {
     if (this.pointBuffer.length > 0) {
-      target.points(this.pointBuffer, this.colorNumber);
+      target.points(this.pointBuffer, this.color);
     }
     if (this.lineBuffer.length > 0) {
-      target.lines(this.lineBuffer, this.colorNumber);
+      target.lines(this.lineBuffer, this.color);
     }
     for (const q of this.quadBuffer) {
-      target.quad(q.start, q.end, this.colorNumber);
+      target.quad(q.start, q.end, this.color);
     }
     if (this.imagePointBuffer.length > 0 && this.imageBrush) {
       target.drawImage(this.imagePointBuffer, this.imageBrush);

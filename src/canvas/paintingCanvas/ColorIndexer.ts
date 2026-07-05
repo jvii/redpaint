@@ -1,6 +1,6 @@
 import { GeometricIndexer } from './program/GeometricIndexer';
 import { DrawImageIndexer } from './program/DrawImageIndexer';
-import { Point } from '../../types';
+import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
 import { LineV } from '../../domain/LineV';
@@ -44,16 +44,16 @@ export class ColorIndexer {
     }
   }
 
-  points(points: Point[], colorNumber: number): void {
-    this.geometricIndexer.indexPoints(points, colorNumber);
+  points(points: Point[], color: PaintColor): void {
+    this.geometricIndexer.indexPoints(points, color);
   }
 
-  lines(lines: (LineH | LineV)[], colorNumber: number): void {
-    this.geometricIndexer.indexLines(lines, colorNumber);
+  lines(lines: (LineH | LineV)[], color: PaintColor): void {
+    this.geometricIndexer.indexLines(lines, color);
   }
 
-  quad(start: Point, end: Point, colorNumber: number): void {
-    this.geometricIndexer.indexQuad(start, end, colorNumber);
+  quad(start: Point, end: Point, color: PaintColor): void {
+    this.geometricIndexer.indexQuad(start, end, color);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

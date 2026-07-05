@@ -1,4 +1,4 @@
-import { Point } from '../types';
+import { PaintColor, Point } from '../types';
 
 // Per-pixel tag stored in the alpha byte of the color index texture (see
 // docs/true-color-mode.md). Indexed pixels store a 1-based palette index in R;
@@ -77,6 +77,15 @@ export class CanvasColorIndex {
     return (colorNumber | (ALPHA_INDEXED << 24)) >>> 0;
   }
 
+  // Packs the pixel value a PaintColor paints (tagged indexed or true color).
+  static packPaintColor(paintColor: PaintColor): number {
+    if (paintColor.kind === 'rgb') {
+      const { r, g, b } = paintColor.color;
+      return ((r | (g << 8) | (b << 16) | (ALPHA_TRUECOLOR << 24)) >>> 0) as number;
+    }
+    return CanvasColorIndex.packIndexed(paintColor.colorNumber);
+  }
+
   getColorNumberForPixel(pixel: Point): number {
     const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;
     return this.indexArray[arrayIndex];
@@ -85,6 +94,22 @@ export class CanvasColorIndex {
   isTrueColorPixel(pixel: Point): boolean {
     const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;
     return this.indexArray[arrayIndex + 3] === ALPHA_TRUECOLOR;
+  }
+
+  // The PaintColor that would reproduce this pixel (used by the color picker).
+  getPaintColorForPixel(pixel: Point): PaintColor {
+    const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;
+    if (this.indexArray[arrayIndex + 3] === ALPHA_TRUECOLOR) {
+      return {
+        kind: 'rgb',
+        color: {
+          r: this.indexArray[arrayIndex],
+          g: this.indexArray[arrayIndex + 1],
+          b: this.indexArray[arrayIndex + 2],
+        },
+      };
+    }
+    return { kind: 'index', colorNumber: this.indexArray[arrayIndex] };
   }
 
   // Whole-pixel (RGBA as one 32-bit value) access, used by flood fill so that

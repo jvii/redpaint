@@ -5,6 +5,18 @@ import { brushHistory } from '../../brush/BrushHistory';
 
 export const setForegroundColor = (context: Context, key: string): void => {
   context.state.palette.foregroundColorId = key;
+  context.state.palette.foregroundRgb = null;
+  context.actions.tool.activeToolToFGFillStyle();
+  const brush = brushHistory.current;
+  if (brush instanceof CustomBrush) {
+    brush.setFGColor();
+  }
+};
+
+// Sets a literal RGB foreground (e.g. picked from a true-color pixel of a
+// loaded image). Cleared again by selecting any palette color.
+export const setForegroundRgb = (context: Context, color: Color): void => {
+  context.state.palette.foregroundRgb = { ...color };
   context.actions.tool.activeToolToFGFillStyle();
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {

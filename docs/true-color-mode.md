@@ -101,8 +101,24 @@ loaded photo), a paint-color type must thread through all of it.
 image load path (decode → `CanvasColorIndex.fromImageData`, true-color
 tagged, uploaded after the canvas resize commits) and PNG save
 (`canvas.toBlob` from the preserved drawing buffer). Flood fill now compares
-whole 32-bit pixels (`getPixel32`/`packIndexed`); the color picker no-ops on
-true-color pixels; `colorizeTexture`/`addTransparency` are stride-aware.
+whole 32-bit pixels (`getPixel32`/`packIndexed`); `colorizeTexture`/
+`addTransparency` are stride-aware.
+
+**Status:** Phase B implemented 2026-07-04. `PaintColor` (`types.ts`:
+`index | rgb`) is the app-wide paint-color currency: `DrawTarget`
+signatures, the tool state (`tool.activePaintColor`), `GeometricIndexer`
+(vec4 pixel uniform, JS-packed), the overlay preview (display color resolved
+on the JS side), `colorizeTexture`, and flood fill all carry it. The color
+picker sets a literal RGB foreground from true-color pixels
+(`palette.foregroundRgb` override, cleared by selecting any palette color; no
+palette slot is highlighted while it is active); brushes recolor to RGB in
+Color mode (always colorized from the pristine matte bitmap, since
+`colorizeTexture` must not recolor a captured brush's inherent true-color
+pixels). The palette editor edits the selected slot directly and is not
+concerned with the active painting color. The
+**background stays palette-indexed** — it doubles as the clear color and the
+brush transparency marker — so the BG picker still ignores true-color
+pixels.
 
 - **Phase A — hybrid storage, indexed tools.** Normalize alpha writes to the
   tag encoding; add the tag branch to the display shaders; widen

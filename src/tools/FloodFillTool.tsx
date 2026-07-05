@@ -6,7 +6,7 @@ import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasCo
 import { floodFill } from '../algorithm/floodfill';
 import { symmetryTransforms } from '../algorithm/symmetry';
 import { drawSymmetryIndicator } from './util/symmetryIndicator';
-import { Point } from '../types';
+import { PaintColor, Point } from '../types';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 
 export class FloodFillTool implements Tool {
@@ -22,10 +22,10 @@ export class FloodFillTool implements Tool {
       return;
     }
 
-    const fillColorIndex = Number(overmind.state.palette.foregroundColorId);
+    const fillColor = overmind.state.palette.foregroundPaintColor;
 
-    const pointsToFill = this.floodFillWithSymmetry(fillColorIndex, mousePos, canvasColorIndex);
-    paintingCanvasController.points(pointsToFill, fillColorIndex);
+    const pointsToFill = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
+    paintingCanvasController.points(pointsToFill, fillColor);
     overmind.actions.undo.setUndoPoint();
     overmind.actions.app.setLoading(false);
   }
@@ -39,12 +39,12 @@ export class FloodFillTool implements Tool {
       return;
     }
 
-    const fillColorIndex = Number(overmind.state.palette.backgroundColorId);
+    const fillColor = overmind.state.palette.backgroundPaintColor;
 
     // This is a hack to ensure the loading state is visible. Something to do with browser rendering timing.
     setTimeout(() => {
-      const pointsToFill = this.floodFillWithSymmetry(fillColorIndex, mousePos, canvasColorIndex);
-      paintingCanvasController.points(pointsToFill, fillColorIndex);
+      const pointsToFill = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
+      paintingCanvasController.points(pointsToFill, fillColor);
       overmind.actions.undo.setUndoPoint();
       overmind.actions.app.setLoading(false);
     }, 50);
@@ -75,7 +75,7 @@ export class FloodFillTool implements Tool {
   // fill from each symmetry-transformed seed point. The fills run sequentially on the
   // same (mutating) color index, so overlapping regions are handled like DPaint.
   private floodFillWithSymmetry(
-    fillColorIndex: number,
+    fillColor: PaintColor,
     seed: Point,
     canvasColorIndex: CanvasColorIndex
   ): Point[] {
@@ -90,7 +90,7 @@ export class FloodFillTool implements Tool {
       }
       // no spread here: a fill can span the whole canvas, and spreading that
       // many arguments into push() overflows the call stack
-      for (const point of floodFill(fillColorIndex, s, canvasColorIndex)) {
+      for (const point of floodFill(fillColor, s, canvasColorIndex)) {
         pointsToFill.push(point);
       }
     }
