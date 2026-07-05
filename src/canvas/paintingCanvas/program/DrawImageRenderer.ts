@@ -110,15 +110,14 @@ export class DrawImageRenderer {
         return;
       }
 
-      // Indexed pixel: the red channel contains the index.
+      // Indexed pixel: the red channel contains the 0-based palette position.
       // Multiply by 255 to convert from 0-1 range to 0-255 range.
-      // Subtract 1 since indices are stored as index+1 to avoid transparency issues.
-      float colorNumber = pixel.r * 255.0 - 1.0;
+      float paletteIndex = pixel.r * 255.0;
 
       // Look up the actual color from the palette texture
       // We add 0.5 and divide by 256 to get the correct texel center
       // The 0.5 Y coordinate accesses the middle of the 1-pixel high palette texture
-      gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
+      gl_FragColor = texture2D(u_palette, vec2((paletteIndex + 0.5) / 256.0, 0.5));
     }
     `;
 

@@ -1,5 +1,5 @@
 import { Line, PaintColor, Point } from '../../types';
-import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../../domain/CanvasColorIndex';
+import { ALPHA_INDEXED, ALPHA_TRANSPARENT, ALPHA_TRUECOLOR } from '../../domain/CanvasColorIndex';
 
 export function canvasToWebGLCoordX(gl: WebGLRenderingContext, x: number): number {
   return (x / gl.canvas.width) * 2 - 1;
@@ -9,27 +9,25 @@ export function canvasToWebGLCoordY(gl: WebGLRenderingContext, y: number): numbe
   return (y / gl.drawingBufferHeight) * -2 + 1; // because GL is 0 at bottom
 }
 
-// Recolors the indexed, non-transparent pixels of a brush texture to the given
-// paint color. True-color pixels keep their literal color and transparent
-// pixels (index 0) stay transparent.
+// Recolors the indexed pixels of a brush texture to the given paint color.
+// True-color pixels keep their literal color and transparent pixels (alpha
+// tag 0) stay transparent.
 export function colorizeTexture(texture: Uint8Array, paintColor: PaintColor): Uint8Array {
   const result = new Uint8Array(texture);
   for (let i = 0; i < result.length; i += 4) {
-    if (result[i + 3] === ALPHA_TRUECOLOR) {
+    if (result[i + 3] === ALPHA_TRUECOLOR || result[i + 3] === ALPHA_TRANSPARENT) {
       continue;
     }
-    if (result[i] !== 0) {
-      if (paintColor.kind === 'rgb') {
-        result[i] = paintColor.color.r;
-        result[i + 1] = paintColor.color.g;
-        result[i + 2] = paintColor.color.b;
-        result[i + 3] = ALPHA_TRUECOLOR;
-      } else {
-        result[i] = paintColor.colorNumber;
-        result[i + 1] = 0;
-        result[i + 2] = 0;
-        result[i + 3] = ALPHA_INDEXED;
-      }
+    if (paintColor.kind === 'rgb') {
+      result[i] = paintColor.color.r;
+      result[i + 1] = paintColor.color.g;
+      result[i + 2] = paintColor.color.b;
+      result[i + 3] = ALPHA_TRUECOLOR;
+    } else {
+      result[i] = paintColor.colorNumber - 1; // stored 0-based
+      result[i + 1] = 0;
+      result[i + 2] = 0;
+      result[i + 3] = ALPHA_INDEXED;
     }
   }
   return result;
