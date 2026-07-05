@@ -1,10 +1,9 @@
-import React, { JSX, useRef } from 'react';
+import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { MenuItem } from './MenuItem';
 import { MenuItemSave } from './MenuItemSave';
 import { MenuItemOpen } from './MenuItemOpen';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
-import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
 import { builtInBrushes } from '../../overmind/brush/state';
@@ -73,18 +72,12 @@ export function Menubar(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
 
-  const overlayRef = useRef<HTMLDivElement>(document.createElement('div'));
-
   const toggle = (): void => {
-    if (overlayRef.current.clientHeight === 0) {
-      overlayRef.current.style.height = '25%';
-    } else {
-      overlayRef.current.style.height = '0%';
-    }
+    actions.app.toggleMenu();
   };
 
   const close = (): void => {
-    overlayRef.current.style.height = '0%';
+    actions.app.closeMenu();
   };
 
   const handleImageFileOpen = (input: HTMLInputElement): void => {
@@ -100,29 +93,14 @@ export function Menubar(): JSX.Element {
       return;
     }
     const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = (): void => {
-      const decodeCanvas = document.createElement('canvas');
-      decodeCanvas.width = image.width;
-      decodeCanvas.height = image.height;
-      const ctx = decodeCanvas.getContext('2d');
-      if (!ctx) {
-        return;
-      }
-      ctx.drawImage(image, 0, 0);
-      const brushColorIndex = BrushColorIndex.fromImageData(
-        ctx.getImageData(0, 0, image.width, image.height)
-      );
-      brushHistory.set(new CustomBrush(brushColorIndex, image.width, image.height));
-      actions.brush.clearBuiltInBrushSelection();
-      actions.brush.setMode('Matte');
-      URL.revokeObjectURL(url);
-    };
-    image.onerror = (): void => {
-      URL.revokeObjectURL(url);
-      alert('Failed to open file!');
-    };
-    image.src = url;
+    CustomBrush.fromImageUrl(url)
+      .then((brush): void => {
+        brushHistory.set(brush);
+        actions.brush.clearBuiltInBrushSelection();
+        actions.brush.setMode('Matte');
+      })
+      .catch((): void => alert('Failed to open file!'))
+      .finally((): void => URL.revokeObjectURL(url));
   };
 
   const handleImageSave = (): void => {
@@ -157,7 +135,12 @@ export function Menubar(): JSX.Element {
         </div>
         <div className="menubar__mode-indicator">{mode}</div>
       </div>
-      <div className="menu" ref={overlayRef} onMouseLeave={close} onContextMenu={close}>
+      <div
+        className="menu"
+        style={{ height: state.app.menuOpen ? '25%' : '0%' }}
+        onMouseLeave={close}
+        onContextMenu={close}
+      >
         <div className="menu__content">
           <div className="menu__image">
             <div className="menu__header">Image</div>

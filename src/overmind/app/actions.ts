@@ -7,3 +7,11 @@ export const imageFileToPasteBuffer = (context: Context, imageFile: File): void 
 export const setLoading = (context: Context, isLoading: boolean): void => {
   context.state.app.isLoading = isLoading;
 };
+
+export const toggleMenu = (context: Context): void => {
+  context.state.app.menuOpen = !context.state.app.menuOpen;
+};
+
+export const closeMenu = (context: Context): void => {
+  context.state.app.menuOpen = false;
+};

@@ -14,7 +14,7 @@ export function Dialog({ header, prompt, children }: Props): JSX.Element | null 
     <>
       <Modal header={header}>
         <p className="dialog-text">{prompt}</p>
-        {children}
+        <div className="dialog__buttons">{children}</div>
       </Modal>
     </>
   );
