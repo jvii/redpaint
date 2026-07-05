@@ -18,7 +18,8 @@ export const builtInBrushes = {
 };
 
 export type State = {
-  selectedBuiltInBrushId: BuiltInBrushId;
+  // null when a custom (captured or loaded) brush is active
+  selectedBuiltInBrushId: BuiltInBrushId | null;
   mode: Mode;
 };
 

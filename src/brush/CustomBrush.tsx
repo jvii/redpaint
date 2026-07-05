@@ -17,6 +17,7 @@ import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { LineV } from '../domain/LineV';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 
 interface CustomBrushFeatures {
@@ -25,7 +26,6 @@ interface CustomBrushFeatures {
   toFGColor(): void;
   toBGColor(): void;
   toMatte(): void;
-  getObjectURL(): string;
 }
 
 export class CustomBrush implements BrushInterface, CustomBrushFeatures {
@@ -203,8 +203,37 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.lastChanged = Date.now();
   }
 
-  public getObjectURL(): string {
-    //return this.brushImage.src;
-    return '';
+  // Resolves the brush's original (matte) bitmap into displayable pixels for
+  // saving: indexed pixels through the palette, true-color pixels directly,
+  // transparent pixels as alpha 0. Texture rows are bottom-up, ImageData rows
+  // top-down, so rows are flipped back here.
+  public toImageData(): ImageData {
+    const source = this.brushColorIndexMatte.indexArray;
+    const data = new Uint8ClampedArray(this.width * this.heigth * 4);
+    for (let y = 0; y < this.heigth; y++) {
+      const sourceRow = (this.heigth - y - 1) * this.width * 4;
+      const targetRow = y * this.width * 4;
+      for (let x = 0; x < this.width; x++) {
+        const s = sourceRow + x * 4;
+        const t = targetRow + x * 4;
+        const tag = source[s + 3];
+        if (tag === ALPHA_TRUECOLOR) {
+          data[t] = source[s];
+          data[t + 1] = source[s + 1];
+          data[t + 2] = source[s + 2];
+          data[t + 3] = 255;
+        } else if (tag === ALPHA_INDEXED) {
+          const color = overmind.state.palette.palette[String(source[s] + 1)];
+          if (color) {
+            data[t] = color.r;
+            data[t + 1] = color.g;
+            data[t + 2] = color.b;
+            data[t + 3] = 255;
+          }
+        }
+        // transparent pixels stay all-zero (alpha 0)
+      }
+    }
+    return new ImageData(data, this.width, this.heigth);
   }
 }

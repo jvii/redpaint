@@ -9,6 +9,11 @@ export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId
   context.actions.brush.setMode('Color');
 };
 
+// Called when a custom (captured or loaded) brush becomes the current brush
+export const clearBuiltInBrushSelection = (context: Context): void => {
+  context.state.brush.selectedBuiltInBrushId = null;
+};
+
 export const setMode = (context: Context, mode: Mode): void => {
   context.state.brush.mode = mode;
   const brush = brushHistory.current;

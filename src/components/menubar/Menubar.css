@@ -134,6 +134,15 @@
   color: #ff9900;
 }
 
+.menu__item-label:disabled {
+  color: #8888aa;
+  cursor: default;
+}
+
+.menu__item-label:disabled:hover {
+  color: #8888aa;
+}
+
 .menu__image {
   grid-area: 'image-header';
 }
