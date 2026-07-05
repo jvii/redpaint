@@ -81,7 +81,6 @@ export function PaletteEditor(): JSX.Element | null {
           <Palette></Palette>
         </div>
       </div>
-      <hr className="retro-divider" />
       <RetroButton variant="secondary" onClick={actions.paletteEditor.close}>
         Cancel
       </RetroButton>

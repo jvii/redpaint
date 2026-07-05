@@ -69,7 +69,6 @@ export function SymmetrySettings(): JSX.Element | null {
           </span>
         </fieldset>
       </div>
-      <hr className="retro-divider" />
       <RetroButton variant="secondary" onClick={actions.symmetry.cancelSettings}>
         Cancel
       </RetroButton>
