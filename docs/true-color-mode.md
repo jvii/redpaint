@@ -111,10 +111,11 @@ signatures, the tool state (`tool.activePaintColor`), `GeometricIndexer`
 on the JS side), `colorizeTexture`, and flood fill all carry it. The color
 picker sets a literal RGB foreground from true-color pixels
 (`palette.foregroundRgb` override, cleared by selecting any palette color; no
-palette slot is highlighted while it is active); brushes recolor to RGB in
-Color mode (always colorized from the pristine matte bitmap, since
-`colorizeTexture` must not recolor a captured brush's inherent true-color
-pixels). The palette editor edits the selected slot directly and is not
+palette slot is highlighted while it is active). In Color mode the whole
+brush shape is colorized to the paint color — including a captured brush's
+true-color pixels, like DPaint — while Matte mode keeps the original colors
+(colorizing always starts from the pristine matte bitmap so it never
+compounds). The palette editor edits the selected slot directly and is not
 concerned with the active painting color. The
 **background stays palette-indexed** — it doubles as the clear color and the
 brush transparency marker — so the BG picker still ignores true-color

@@ -162,9 +162,8 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // CustomBrushFeatures
 
   public setFGColor(): void {
-    // always colorize from the pristine matte bitmap: a previously colorized
-    // array may carry true-color tags, which colorizeTexture must not recolor
-    // (they mark a captured brush's inherent photo pixels)
+    // always colorize from the pristine matte bitmap so recoloring never
+    // compounds on a previously colorized array
     this.brushColorIndexColorFG = new BrushColorIndex(
       this.width,
       this.heigth,
