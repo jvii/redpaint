@@ -44,27 +44,40 @@ export class OverlayMainCanvasRenderer {
     }
   }
 
+  // The canvas element is resized when an image is loaded, which resets the
+  // drawing buffer but not the GL viewport — so the viewport is refreshed
+  // before every draw.
+  private updateViewport(): void {
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+  }
+
   points(points: Point[], color: PaintColor): void {
+    this.updateViewport();
     this.geometricRenderer.renderPoints(points, color);
   }
 
   lines(lines: Line[], color: PaintColor): void {
+    this.updateViewport();
     this.geometricRenderer.renderLines(lines, color);
   }
 
   quad(start: Point, end: Point, color: PaintColor): void {
+    this.updateViewport();
     this.geometricRenderer.renderQuad(start, end, color);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
+    this.updateViewport();
     this.drawImageRenderer.renderDrawImage(points, brush);
   }
 
   selectionBox(start: Point, end: Point): void {
+    this.updateViewport();
     this.selectionIndicatorRenderer.renderSelectionBox(start, end);
   }
 
   selectionCrosshair(point: Point): void {
+    this.updateViewport();
     this.selectionIndicatorRenderer.renderSelectionCrosshair(point);
   }
 
