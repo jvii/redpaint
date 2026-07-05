@@ -60,6 +60,29 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     return new CustomBrush(brushColorIndex, width, height);
   }
 
+  // Factory method for decoding a brush from an image URL (opened file or
+  // clipboard paste buffer)
+  public static async fromImageUrl(url: string): Promise<CustomBrush> {
+    const image = new Image();
+    await new Promise<void>((resolve, reject): void => {
+      image.onload = (): void => resolve();
+      image.onerror = (): void => reject(new Error('Failed to decode image'));
+      image.src = url;
+    });
+    const decodeCanvas = document.createElement('canvas');
+    decodeCanvas.width = image.width;
+    decodeCanvas.height = image.height;
+    const ctx = decodeCanvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Failed to decode image');
+    }
+    ctx.drawImage(image, 0, 0);
+    const brushColorIndex = BrushColorIndex.fromImageData(
+      ctx.getImageData(0, 0, image.width, image.height)
+    );
+    return new CustomBrush(brushColorIndex, image.width, image.height);
+  }
+
   public drawPoints(points: Point[], canvas: DrawTarget): void {
     canvas.drawImage(
       points.map((point) => this.adjustHandle(point)),
