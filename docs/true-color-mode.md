@@ -132,6 +132,32 @@ pixels.
 - **Phase C — effects.** Blend/smear/shade etc. synthesizing colors directly
   (set the true-color tag in the indexer). Cheap once B exists.
 
+## Future: effects and a strict indexed mode
+
+Sketched 2026-07-05, to be designed properly with the effects feature:
+
+- **Effects compute RGB; a write policy resolves it.** DPaint's Smooth/Blend
+  did RGB math then snapped to the nearest palette color; Shade did pure index
+  arithmetic within palette *ranges* (the same ranges color cycling uses). Our
+  shape: effect core produces RGB → a resolution policy returns a `PaintColor`
+  (`hybrid` → rgb pixel, `indexed` → nearest palette index). Shade wants the
+  range-based index path for indexed source pixels — introduce palette ranges
+  (also the prerequisite for color cycling).
+- **"Strict indexed mode" is a constraint, not a storage mode.** Per-pixel
+  tagging means a strictly indexed image is just one with no true-color
+  pixels. The mode is a project setting constraining the writers (picker
+  quantizes instead of setting an RGB foreground; image open remaps; effects
+  resolve to palette). Storage, shaders, undo and save stay single-path.
+- **Image open with remap** = palette quantization (median cut / octree) +
+  optional dithering (ordered dithering is the period-correct look) → fully
+  indexed image whose palette can be recolored/cycled. Note the encoding cap:
+  indices are 1-based with 0 reserved for brush transparency, so max **255**
+  palette colors, not 256.
+- **GPU notes:** nearest-palette matching can run in the fragment shader
+  (loop over the 256×1 palette texture). Effects that read the canvas around
+  the stroke need ping-pong framebuffers (WebGL cannot sample the texture
+  being rendered into) — that is the real infrastructure cost of effects.
+
 ## Original planning notes (Finnish)
 
 > Miten yhdistetään indexed palette ja true color kuva?
