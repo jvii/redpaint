@@ -50,8 +50,6 @@ export class OverlayGeometricRenderer {
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
 
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
     const vertices = new Float32Array(2 * points.length);
     for (let i = 0; i < points.length; i++) {
       const shiftedPoint = shiftPoint(points[i]);
@@ -72,8 +70,6 @@ export class OverlayGeometricRenderer {
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
-
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     const vertices = new Float32Array(2 * 2 * lines.length);
     for (let i = 0; i < lines.length; i++) {
@@ -97,8 +93,6 @@ export class OverlayGeometricRenderer {
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
-
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     const shiftedStart = shiftPoint(start);
     const shiftedEnd = shiftPoint(end);
