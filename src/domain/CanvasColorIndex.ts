@@ -1,8 +1,10 @@
 import { PaintColor, Point } from '../types';
 
 // Per-pixel tag stored in the alpha byte of the color index texture (see
-// docs/true-color-mode.md). Indexed pixels store a 1-based palette index in R;
-// true-color pixels store a literal RGB color. ALPHA_TRANSPARENT is only
+// docs/true-color-mode.md). Indexed pixels store a 0-based palette position in
+// R (the app-level color number / palette id is 1-based; the conversion happens
+// only here at the storage boundary, so all 256 palette slots are usable).
+// True-color pixels store a literal RGB color. ALPHA_TRANSPARENT is only
 // meaningful in brush textures (the canvas itself is never transparent).
 export const ALPHA_TRANSPARENT = 0;
 export const ALPHA_INDEXED = 127;
@@ -44,7 +46,7 @@ export class CanvasColorIndex {
     // as indexed in the A component
 
     for (let i = 0; i < arrayLength; i = i + stride) {
-      indexArray[i] = backgroundColorNumber;
+      indexArray[i] = backgroundColorNumber - 1; // stored 0-based
       indexArray[i + 3] = ALPHA_INDEXED;
     }
 
@@ -74,7 +76,7 @@ export class CanvasColorIndex {
   // Typed arrays are little-endian in practice, so RGBA bytes read as
   // R | G<<8 | B<<16 | A<<24.
   static packIndexed(colorNumber: number): number {
-    return (colorNumber | (ALPHA_INDEXED << 24)) >>> 0;
+    return ((colorNumber - 1) | (ALPHA_INDEXED << 24)) >>> 0; // stored 0-based
   }
 
   // Packs the pixel value a PaintColor paints (tagged indexed or true color).
@@ -84,11 +86,6 @@ export class CanvasColorIndex {
       return ((r | (g << 8) | (b << 16) | (ALPHA_TRUECOLOR << 24)) >>> 0) as number;
     }
     return CanvasColorIndex.packIndexed(paintColor.colorNumber);
-  }
-
-  getColorNumberForPixel(pixel: Point): number {
-    const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;
-    return this.indexArray[arrayIndex];
   }
 
   isTrueColorPixel(pixel: Point): boolean {
@@ -109,7 +106,7 @@ export class CanvasColorIndex {
         },
       };
     }
-    return { kind: 'index', colorNumber: this.indexArray[arrayIndex] };
+    return { kind: 'index', colorNumber: this.indexArray[arrayIndex] + 1 };
   }
 
   // Whole-pixel (RGBA as one 32-bit value) access, used by flood fill so that

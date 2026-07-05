@@ -33,7 +33,8 @@ export class GeometricIndexer {
       const { r, g, b } = color.color;
       this.gl.uniform4f(this.u_pixel, r / 255, g / 255, b / 255, ALPHA_TRUECOLOR / 255);
     } else {
-      this.gl.uniform4f(this.u_pixel, color.colorNumber / 255, 0, 0, ALPHA_INDEXED / 255);
+      // stored 0-based: color number 1 is palette texel 0
+      this.gl.uniform4f(this.u_pixel, (color.colorNumber - 1) / 255, 0, 0, ALPHA_INDEXED / 255);
     }
   }
 

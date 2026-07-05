@@ -189,16 +189,16 @@ export class OverlayDrawImageRenderer {
     void main () {
       vec4 pixel = texture2D(u_image, v_texCoord);
 
+      if (pixel.a < 0.1) {
+        discard; // alpha tag 0 means this pixel of the brush is transparent
+      }
       if (pixel.a > 0.9) {
         // true-color brush pixel: the literal RGB color
         gl_FragColor = vec4(pixel.rgb, 1.0);
         return;
       }
-      if (pixel.r == 0.0) {
-        discard; // index zero means this pixel of the brush is transparent
-      }
-
-      gl_FragColor = texture2D(u_palette, vec2((pixel.r) - 1.0/256.0, 0.5));
+      // indexed (stored 0-based): look up the palette texel center
+      gl_FragColor = texture2D(u_palette, vec2((pixel.r * 255.0 + 0.5) / 256.0, 0.5));
     }
     `;
 

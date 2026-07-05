@@ -115,8 +115,9 @@ export class GeometricRenderer {
         return;
       }
 
-      float colorNumber = pixel.r * 255.0 - 1.0;
-      gl_FragColor = texture2D(u_palette, vec2((colorNumber + 0.5) / 256.0, 0.5));
+      // indexed pixel: R holds the 0-based palette position
+      float paletteIndex = pixel.r * 255.0;
+      gl_FragColor = texture2D(u_palette, vec2((paletteIndex + 0.5) / 256.0, 0.5));
     }
     `;
 
