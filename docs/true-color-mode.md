@@ -158,6 +158,29 @@ Sketched 2026-07-05, to be designed properly with the effects feature:
   the stroke need ping-pong framebuffers (WebGL cannot sample the texture
   being rendered into) — that is the real infrastructure cost of effects.
 
+### Reclaiming the 256th color (AGA fidelity)
+
+255 comes from 1-based index storage ("index 0 = brush transparency"). The
+alpha tag already provides `ALPHA_TRANSPARENT = 0`, so the fix is: tag
+built-in brush bitmaps' opaque pixels at construction, switch the two brush
+shaders' `r == 0` discards to `a == 0`, and go 0-based in storage (drop the
+`±1` in shaders/`packIndexed`/picker/flood fill; UI keeps 1-based id strings,
+texel mapping unchanged). ~A day including retest; do it together with
+quantized import.
+
+### Larger palettes (extension path, not a commitment)
+
+Indexed pixels leave G and B unused: R+G as a 16-bit index gives 65,535
+colors with a 256×256 palette texture (two-coordinate lookup, small shader
+change). The true ceiling is the palette subsystem — Overmind's id-keyed
+object, `Object.values` derived, render-every-swatch UI — which would need a
+typed-array palette for the bulk plus a small hand-editable working palette.
+Unique-color reality check: a 1080p camera photo has ~200k–700k unique
+colors (noise), small/clean images often < 65k, 12MP photos approach
+millions. So "index everything" works losslessly only for modest images;
+import should count uniques (a Set over u32 pixels) and offer: index
+losslessly if it fits, else quantize-to-N or stay true-color.
+
 ## Original planning notes (Finnish)
 
 > Miten yhdistetään indexed palette ja true color kuva?
