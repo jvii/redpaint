@@ -15,7 +15,11 @@ function Palette(): JSX.Element {
     return (
       <ColorButton
         colorId={index.toString()}
-        isSelected={index.toString() === state.palette.foregroundColorId}
+        // no slot is highlighted while an RGB foreground (picked from a
+        // true-color pixel) is active
+        isSelected={
+          !state.palette.foregroundRgb && index.toString() === state.palette.foregroundColorId
+        }
         size={size}
         onClick={(): void => actions.palette.setForegroundColor(index.toString())}
         onRightClick={(): void => actions.palette.setBackgroundColor(index.toString())}

@@ -16,36 +16,36 @@ import { DrawTarget } from '../canvas/CanvasController';
 
 export class PixelBrush implements BrushInterface {
   public drawPoints(points: Point[], canvas: DrawTarget): void {
-    canvas.points(points, overmind.state.tool.activeColorNumber);
+    canvas.points(points, overmind.state.tool.activePaintColor);
   }
 
   public drawLine(start: Point, end: Point, canvas: DrawTarget): void {
     const lineAsPoints = line(start, end);
-    canvas.points(lineAsPoints, overmind.state.tool.activeColorNumber);
+    canvas.points(lineAsPoints, overmind.state.tool.activePaintColor);
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: DrawTarget): void {
     const curveAsPoints = curve(start, end, middlePoint);
-    canvas.points(curveAsPoints, overmind.state.tool.activeColorNumber);
+    canvas.points(curveAsPoints, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: DrawTarget): void {
     const unfilledRectAsLines = unfilledRect(start, end);
-    canvas.lines(unfilledRectAsLines, overmind.state.tool.activeColorNumber);
+    canvas.lines(unfilledRectAsLines, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
-    canvas.quad(start, end, overmind.state.tool.activeColorNumber);
+    canvas.quad(start, end, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     const unfilledCircleAsPoints = unfilledCircle(center, radius);
-    canvas.points(unfilledCircleAsPoints, overmind.state.tool.activeColorNumber);
+    canvas.points(unfilledCircleAsPoints, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     const filledCircleAsLines = filledCircle(center, radius);
-    canvas.lines(filledCircleAsLines, overmind.state.tool.activeColorNumber);
+    canvas.lines(filledCircleAsLines, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledEllipse(
@@ -56,7 +56,7 @@ export class PixelBrush implements BrushInterface {
     canvas: DrawTarget
   ): void {
     const unfilledEllipseAsLines = unfilledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(unfilledEllipseAsLines, overmind.state.tool.activeColorNumber);
+    canvas.lines(unfilledEllipseAsLines, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledEllipse(
@@ -67,16 +67,16 @@ export class PixelBrush implements BrushInterface {
     canvas: DrawTarget
   ): void {
     const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(filledEllipseAsLines, overmind.state.tool.activeColorNumber);
+    canvas.lines(filledEllipseAsLines, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: DrawTarget): void {
     const unfilledPolygonAsPoints = unfilledPolygon(vertices, complete);
-    canvas.points(unfilledPolygonAsPoints, overmind.state.tool.activeColorNumber);
+    canvas.points(unfilledPolygonAsPoints, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     const filledPolygonAsLines = filledPolygon(vertices);
-    canvas.lines(filledPolygonAsLines, overmind.state.tool.activeColorNumber);
+    canvas.lines(filledPolygonAsLines, overmind.state.tool.activePaintColor);
   }
 }

@@ -1,12 +1,14 @@
 import { Context } from '../../overmind'
 import { Point } from '../../types';
+import { foregroundPaintColorOf, backgroundPaintColorOf } from '../palette/state';
 
 export const activeToolToFGFillStyle = (context: Context): void => {
-  context.state.tool.activeColorNumber = Number(context.state.palette.foregroundColorId);
+  // computed from raw fields: derived state is not readable inside actions
+  context.state.tool.activePaintColor = foregroundPaintColorOf(context.state.palette);
 };
 
 export const activeToolToBGFillStyle = (context: Context): void => {
-  context.state.tool.activeColorNumber = Number(context.state.palette.backgroundColorId);
+  context.state.tool.activePaintColor = backgroundPaintColorOf(context.state.palette);
 };
 
 // freehand

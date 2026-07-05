@@ -1,6 +1,6 @@
 import { overmind } from '../..';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { Point } from '../../types';
+import { PaintColor, Point } from '../../types';
 import { CanvasController } from '../CanvasController';
 import { ColorIndexer } from './ColorIndexer';
 import { MainCanvasRenderer } from './MainCanvasRenderer';
@@ -78,20 +78,20 @@ export class PaintingCanvasController implements CanvasController {
     overmind.actions.undo.setUndoPoint(); // initial undo point
   }
 
-  points(points: Point[], colorNumber: number): void {
-    this.colorIndexer?.points(points, colorNumber);
+  points(points: Point[], color: PaintColor): void {
+    this.colorIndexer?.points(points, color);
     this.mainCanvasRenderer?.points(points);
     this.renderZoomCanvas();
   }
 
-  lines(lines: (LineH | LineV)[], colorNumber: number): void {
-    this.colorIndexer?.lines(lines, colorNumber);
+  lines(lines: (LineH | LineV)[], color: PaintColor): void {
+    this.colorIndexer?.lines(lines, color);
     this.mainCanvasRenderer?.lines(lines);
     this.renderZoomCanvas();
   }
 
-  quad(start: Point, end: Point, colorNumber: number): void {
-    this.colorIndexer?.quad(start, end, colorNumber);
+  quad(start: Point, end: Point, color: PaintColor): void {
+    this.colorIndexer?.quad(start, end, color);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderQuad?
     this.renderZoomCanvas();
   }
@@ -125,13 +125,9 @@ export class PaintingCanvasController implements CanvasController {
     return this.colorIndexer?.getIndex();
   }
 
-  getColorNumberForPoint(point: Point): number | undefined {
+  getPaintColorForPoint(point: Point): PaintColor | undefined {
     const colorIndex = this.colorIndexer?.getIndex();
-    if (!colorIndex || colorIndex.isTrueColorPixel(point)) {
-      // a true-color pixel has no palette color number to pick
-      return undefined;
-    }
-    return colorIndex.getColorNumberForPixel(point);
+    return colorIndex?.getPaintColorForPixel(point);
   }
 
   getBrushColorIndexFromArea(

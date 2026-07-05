@@ -11,15 +11,26 @@ export class ColorSelectorTool implements Tool {
 
   public onClick(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const mousePos = getMousePos(event);
-    const colorNumber = paintingCanvasController.getColorNumberForPoint(mousePos);
-    if (!colorNumber) {
+    const paintColor = paintingCanvasController.getPaintColorForPoint(mousePos);
+    if (!paintColor) {
       return;
     }
     if (this.foregroundColor) {
-      overmind.actions.palette.setForegroundColor(colorNumber.toString());
+      // picking a true-color pixel sets a literal RGB foreground
+      if (paintColor.kind === 'rgb') {
+        overmind.actions.palette.setForegroundRgb(paintColor.color);
+      } else {
+        overmind.actions.palette.setForegroundColor(paintColor.colorNumber.toString());
+      }
       overmind.actions.toolbox.toggleForegroundColorSelectionMode();
     } else {
-      overmind.actions.palette.setBackgroundColor(colorNumber.toString());
+      // the background stays palette-indexed (it doubles as the clear color
+      // and the brush transparency marker), so true-color pixels can't be
+      // picked as background
+      if (paintColor.kind === 'rgb') {
+        return;
+      }
+      overmind.actions.palette.setBackgroundColor(paintColor.colorNumber.toString());
       overmind.actions.toolbox.toggleBackgroundColorSelectionMode();
     }
   }

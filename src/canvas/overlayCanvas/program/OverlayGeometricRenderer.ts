@@ -1,26 +1,33 @@
 /* eslint-disable max-len */
 
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftLine, shiftPoint } from '../../util/util';
-import { Line, Point } from '../../../types';
+import { Line, PaintColor, Point } from '../../../types';
 import { createProgram, activateProgram } from '../../util/webglUtil';
+import { overmind } from '../../..';
 
 export class OverlayGeometricRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
-  private currentColorNumber = 0;
   // locations looked up once: getUniformLocation/getAttribLocation are driver
   // round-trips, too slow for per-draw-call use
   private a_position: number;
-  private u_colorNumber: WebGLUniformLocation | null;
+  private u_color: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
-    this.u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
-    // createProgram leaves the program bound; the palette is always in
-    // texture unit 1, so the sampler uniform can be set once
-    gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
+    this.u_color = gl.getUniformLocation(this.program, 'u_color');
+  }
+
+  // The preview draws in the final display color, resolved on the JS side
+  // (palette lookup for indexed colors, literal RGB for true colors).
+  private updateColor(paintColor: PaintColor): void {
+    const rgb =
+      paintColor.kind === 'rgb'
+        ? paintColor.color
+        : overmind.state.palette.palette[String(paintColor.colorNumber)] ?? { r: 0, g: 0, b: 0 };
+    this.gl.uniform4f(this.u_color, rgb.r / 255, rgb.g / 255, rgb.b / 255, 1);
   }
 
   /**
@@ -33,12 +40,12 @@ export class OverlayGeometricRenderer {
     }
   }
 
-  public renderPoints(points: Point[], colorNumber: number): void {
+  public renderPoints(points: Point[], color: PaintColor): void {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
 
-    this.updateColorNumber(colorNumber);
+    this.updateColor(color);
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
@@ -56,12 +63,12 @@ export class OverlayGeometricRenderer {
     this.gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  public renderLines(lines: Line[], colorNumber: number): void {
+  public renderLines(lines: Line[], color: PaintColor): void {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
 
-    this.updateColorNumber(colorNumber);
+    this.updateColor(color);
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
@@ -81,12 +88,12 @@ export class OverlayGeometricRenderer {
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
   }
 
-  public renderQuad(start: Point, end: Point, colorNumber: number): void {
+  public renderQuad(start: Point, end: Point, color: PaintColor): void {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
 
-    this.updateColorNumber(colorNumber);
+    this.updateColor(color);
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
@@ -117,19 +124,6 @@ export class OverlayGeometricRenderer {
     this.gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
-  private updateColorNumber(colorNumber: number) {
-    if (colorNumber === this.currentColorNumber) {
-      return;
-    }
-
-    if (!this.program) {
-      return;
-    }
-    const gl = this.gl;
-    this.currentColorNumber = colorNumber;
-    gl.uniform1f(this.u_colorNumber, this.currentColorNumber - 1);
-  }
-
   private createProgram(): WebGLProgram {
     const vertexShader = `
     attribute vec4 a_position;
@@ -143,13 +137,11 @@ export class OverlayGeometricRenderer {
     const fragmentShader = `
     precision mediump float;
 
-    uniform float u_colorNumber;
-    uniform sampler2D u_palette;
+    // Final display color, resolved on the JS side
+    uniform vec4 u_color;
 
     void main() {
-
-      gl_FragColor = texture2D(u_palette, vec2((u_colorNumber + 0.5) / 256.0, 0.5));
-      //gl_FragColor = vec4(1,1,1,1);
+      gl_FragColor = u_color;
     }
     `;
 

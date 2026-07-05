@@ -1,26 +1,43 @@
-import { Line, Point } from '../../../types';
+import { Line, PaintColor, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
+import { ALPHA_INDEXED, ALPHA_TRUECOLOR, CanvasColorIndex } from '../../../domain/CanvasColorIndex';
 
 export class GeometricIndexer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
   private targetFrameBuffer: WebGLFramebuffer;
-  private currentColorNumber = 0;
+  private currentPackedPixel = 0; // 0 is never a valid packed pixel
   // locations looked up once: getUniformLocation/getAttribLocation are driver
   // round-trips, too slow for per-draw-call use
-  private u_colorNumber: WebGLUniformLocation | null;
+  private u_pixel: WebGLUniformLocation | null;
   private a_position: number;
 
   public constructor(gl: WebGLRenderingContext, targetFrameBuffer: WebGLFramebuffer) {
     this.gl = gl;
     this.program = this.createProgram();
     this.targetFrameBuffer = targetFrameBuffer;
-    this.u_colorNumber = gl.getUniformLocation(this.program, 'u_colorNumber');
+    this.u_pixel = gl.getUniformLocation(this.program, 'u_pixel');
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
   }
 
-  public indexPoints(points: Point[], colorNumber: number): void {
+  // Sets the pixel value to write: an indexed pixel for palette colors, a
+  // true-color pixel for RGB colors (see docs/true-color-mode.md).
+  private updatePixelUniform(color: PaintColor): void {
+    const packed = CanvasColorIndex.packPaintColor(color);
+    if (packed === this.currentPackedPixel) {
+      return;
+    }
+    this.currentPackedPixel = packed;
+    if (color.kind === 'rgb') {
+      const { r, g, b } = color.color;
+      this.gl.uniform4f(this.u_pixel, r / 255, g / 255, b / 255, ALPHA_TRUECOLOR / 255);
+    } else {
+      this.gl.uniform4f(this.u_pixel, color.colorNumber / 255, 0, 0, ALPHA_INDEXED / 255);
+    }
+  }
+
+  public indexPoints(points: Point[], color: PaintColor): void {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
@@ -28,10 +45,7 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorNumber !== this.currentColorNumber) {
-      this.currentColorNumber = colorNumber;
-      gl.uniform1f(this.u_colorNumber, colorNumber);
-    }
+    this.updatePixelUniform(color);
 
     // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
@@ -50,7 +64,7 @@ export class GeometricIndexer {
     gl.drawArrays(gl.POINTS, 0, points.length);
   }
 
-  public indexLines(lines: Line[], colorNumber: number): void {
+  public indexLines(lines: Line[], color: PaintColor): void {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
@@ -58,10 +72,7 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorNumber !== this.currentColorNumber) {
-      this.currentColorNumber = colorNumber;
-      gl.uniform1f(this.u_colorNumber, colorNumber);
-    }
+    this.updatePixelUniform(color);
 
     // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
@@ -82,7 +93,7 @@ export class GeometricIndexer {
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
   }
 
-  public indexQuad(start: Point, end: Point, colorNumber: number): void {
+  public indexQuad(start: Point, end: Point, color: PaintColor): void {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
@@ -90,10 +101,7 @@ export class GeometricIndexer {
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    if (colorNumber !== this.currentColorNumber) {
-      this.currentColorNumber = colorNumber;
-      gl.uniform1f(this.u_colorNumber, colorNumber);
-    }
+    this.updatePixelUniform(color);
 
     // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
@@ -138,11 +146,12 @@ export class GeometricIndexer {
     const fragmentShader = `
     precision mediump float;
 
-    uniform float u_colorNumber;
+    // The complete tagged pixel value to write (indexed or true color),
+    // prepared on the JS side. See docs/true-color-mode.md.
+    uniform vec4 u_pixel;
 
     void main () {
-      // alpha 127/255 tags the pixel as indexed (see docs/true-color-mode.md)
-      gl_FragColor = vec4(u_colorNumber/255.0, 0.0, 0.0, 127.0/255.0);
+      gl_FragColor = u_pixel;
     }
     `;
 

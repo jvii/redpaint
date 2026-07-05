@@ -24,5 +24,5 @@ export function drawSymmetryIndicator(point: Point, includePrimary = true): void
   const points = (includePrimary ? transforms : transforms.slice(1)).map(
     (transform): Point => transform(point)
   );
-  overlayCanvasController.points(points, Number(overmind.state.palette.foregroundColorId));
+  overlayCanvasController.points(points, overmind.state.palette.foregroundPaintColor);
 }

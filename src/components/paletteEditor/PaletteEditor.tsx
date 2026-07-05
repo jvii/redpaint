@@ -17,30 +17,22 @@ export function PaletteEditor(): JSX.Element | null {
     return null;
   }
 
+  // The editor edits the selected palette slot directly; it is not concerned
+  // with the active painting color (which may be a free RGB override).
+  const editedColor = state.palette.palette[state.palette.foregroundColorId];
+
   function setR(value: number) {
-    const newColor: Color = {
-      r: value,
-      g: state.palette.foregroundColor.g,
-      b: state.palette.foregroundColor.b,
-    };
+    const newColor: Color = { r: value, g: editedColor.g, b: editedColor.b };
     setColor(newColor);
   }
 
   function setG(value: number) {
-    const newColor: Color = {
-      r: state.palette.foregroundColor.r,
-      g: value,
-      b: state.palette.foregroundColor.b,
-    };
+    const newColor: Color = { r: editedColor.r, g: value, b: editedColor.b };
     setColor(newColor);
   }
 
   function setB(value: number) {
-    const newColor: Color = {
-      r: state.palette.foregroundColor.r,
-      g: state.palette.foregroundColor.g,
-      b: value,
-    };
+    const newColor: Color = { r: editedColor.r, g: editedColor.g, b: value };
     setColor(newColor);
   }
 
@@ -57,7 +49,7 @@ export function PaletteEditor(): JSX.Element | null {
           <div className="palette-editor__slider">
             <RetroSlider
               vertical
-              value={state.palette.foregroundColor.r}
+              value={editedColor.r}
               min={0}
               max={255}
               onChange={setR}
@@ -67,7 +59,7 @@ export function PaletteEditor(): JSX.Element | null {
           <div className="palette-editor__slider">
             <RetroSlider
               vertical
-              value={state.palette.foregroundColor.g}
+              value={editedColor.g}
               min={0}
               max={255}
               onChange={setG}
@@ -77,7 +69,7 @@ export function PaletteEditor(): JSX.Element | null {
           <div className="palette-editor__slider">
             <RetroSlider
               vertical
-              value={state.palette.foregroundColor.b}
+              value={editedColor.b}
               min={0}
               max={255}
               onChange={setB}
