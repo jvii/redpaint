@@ -9,13 +9,13 @@ export function canvasToWebGLCoordY(gl: WebGLRenderingContext, y: number): numbe
   return (y / gl.drawingBufferHeight) * -2 + 1; // because GL is 0 at bottom
 }
 
-// Recolors the indexed pixels of a brush texture to the given paint color.
-// True-color pixels keep their literal color and transparent pixels (alpha
-// tag 0) stay transparent.
+// Recolors the whole brush shape (indexed and true-color pixels alike) to the
+// given paint color, like DPaint's Color mode. Only transparent pixels (alpha
+// tag 0) are left alone.
 export function colorizeTexture(texture: Uint8Array, paintColor: PaintColor): Uint8Array {
   const result = new Uint8Array(texture);
   for (let i = 0; i < result.length; i += 4) {
-    if (result[i + 3] === ALPHA_TRUECOLOR || result[i + 3] === ALPHA_TRANSPARENT) {
+    if (result[i + 3] === ALPHA_TRANSPARENT) {
       continue;
     }
     if (paintColor.kind === 'rgb') {
