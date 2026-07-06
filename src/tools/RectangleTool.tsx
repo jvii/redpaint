@@ -82,6 +82,7 @@ export class RectangleTool implements Tool {
       symmetryBrush.drawFilledRect(startPoint, mousePos, overlayCanvasController);
     } else {
       symmetryBrush.drawUnfilledRect(startPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     }
   }
 

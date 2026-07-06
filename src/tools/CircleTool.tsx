@@ -90,6 +90,7 @@ export class CircleTool implements Tool {
       symmetryBrush.drawFilledCircle(origin, radius, overlayCanvasController);
     } else {
       symmetryBrush.drawUnfilledCircle(origin, radius, overlayCanvasController);
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     }
   }
 

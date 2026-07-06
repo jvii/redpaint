@@ -63,8 +63,10 @@ export class CurveTool implements Tool {
     const endPoint = overmind.state.tool.curveTool.end;
     if (endPoint) {
       symmetryBrush.drawCurve(startPoint, endPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     } else if (isLeftOrRightMouseButton(event)) {
       symmetryBrush.drawLine(startPoint, mousePos, overlayCanvasController);
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     }
   }
 

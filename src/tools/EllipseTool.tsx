@@ -156,6 +156,7 @@ export class EllipseTool implements Tool {
         angle,
         overlayCanvasController
       );
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     }
   }
 

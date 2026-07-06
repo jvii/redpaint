@@ -128,9 +128,20 @@ applies symmetry, so the controller must be raw to avoid double-applying).
 - [x] **Phase 1 & 2 — all drawing tools.** Freehand, DottedFreehand, Airbrush,
   Line, Curve, Rectangle, Circle, Ellipse, Polygon route through
   `symmetryBrush`; FloodFill does independent seeded fills. Text and all selector
-  tools stay raw (`NOSYM`). Real paint and overlay previews both mirrored; shape
-  tools keep a single origin crosshair (raw overlay). Undo reverts a whole
-  symmetric stroke in one step.
+  tools stay raw (`NOSYM`). Real paint and overlay previews both mirrored —
+  except the **outline-shape previews with a captured/loaded custom brush**
+  (line, curve, unfilled rect/circle/ellipse/polygon), which show only the
+  primary copy of the shape while dragging, with the full symmetric set
+  appearing on release (DPaint's `SYMUP` behavior; re-stamping a whole
+  shape's worth of brush copies times 2N per mouse move is the app's
+  heaviest preview path). While dragging, the brush is still stamped at the
+  pointer's mirrored positions (`symmetryBrush.drawPointerCopies`) — the
+  same feedback as hovering, so the copy positions stay visible without the
+  full shape cost. Everything else keeps fully mirrored previews: the hover
+  brush cursor (stamps at every symmetry position), filled shapes (cheap
+  fills, not brush stamps), the built-in brushes (small fixed bitmaps), and
+  the pixel brush. Shape tools keep a single origin crosshair (raw overlay).
+  Undo reverts a whole symmetric stroke in one step.
 - [x] **Symmetry position indicator.** For tools whose overlay preview cannot
   show the brush (filled rect/circle/ellipse pre-origin, flood fill hover),
   `drawSymmetryIndicator` (`src/tools/util/symmetryIndicator.ts`) draws a

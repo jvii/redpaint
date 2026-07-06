@@ -55,6 +55,7 @@ export class LineTool implements Tool {
       const start = overmind.state.tool.lineTool.start;
       const end = mousePos;
       symmetryBrush.drawLine(start, end, overlayCanvasController);
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     } else {
       symmetryBrush.drawPoints([mousePos], overlayCanvasController);
     }

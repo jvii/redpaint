@@ -111,6 +111,7 @@ export class PolygonTool implements Tool {
         false,
         overlayCanvasController
       );
+      symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     }
   }
 
