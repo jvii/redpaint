@@ -15,6 +15,7 @@
 /* Same 4-column grid as the toolbox palette (Palette.css) — only the width
    changes, so a color's position never shifts between the two views. */
 .palette-editor__palette-container {
+  position: relative; /* anchors the armed action's callout */
   display: flex;
   flex: none;
   align-self: flex-start; /* keep intrinsic height; don't stretch the frame */
@@ -93,6 +94,92 @@
   outline-offset: 2px;
   box-shadow: 1px 1px 0 0 black;
   transform: translate(1px, 1px);
+}
+
+/* two-color actions (Spread/Swap/Copy): the armed button morphs into its
+   own cancel, with the instruction line above the buttons */
+.palette-editor__edit-colors {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  border: 2px solid black;
+  border-radius: 0;
+  padding: 14px 20px 18px;
+  margin: 0 30px 12px;
+  text-align: left;
+}
+
+.palette-editor__edit-colors > legend {
+  font-size: 16px;
+  padding: 0 8px;
+}
+
+.palette-editor__actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Copy/Swap tight together, apart from Spread */
+.palette-editor__action-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* the armed action's instruction: a speech-bubble callout to the right of
+   the palette grid with an arrow pointing at it (that's where the next
+   click belongs), floating over/past the requester's edge. Monospace
+   readout font, requester-blue like the modal header. */
+.palette-editor__callout {
+  position: absolute;
+  left: calc(100% + 16px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: max-content;
+  max-width: 190px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.4;
+  color: black;
+  background-color: #ff9900;
+  border: 2px solid black;
+  padding: 8px 12px;
+  /* blue, not black: the bubble floats over the black canvas where a
+     black shadow vanishes */
+  box-shadow: 2px 2px 0 0 rgb(17, 51, 202);
+  pointer-events: none;
+}
+
+/* left-pointing arrow: black outline triangle with a smaller orange one on
+   top, the orange overlapping the box border so bubble and tip read as one */
+.palette-editor__callout::before {
+  content: '';
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 10px solid transparent;
+  border-left: none;
+  border-right: 12px solid black;
+}
+
+.palette-editor__callout::after {
+  content: '';
+  position: absolute;
+  right: calc(100% - 2px);
+  top: 50%;
+  transform: translateY(-50%);
+  border: 7px solid transparent;
+  border-left: none;
+  border-right: 9px solid #ff9900;
 }
 
 /* two fixed rows: the range slot toggle, then Set start/end + Clear */

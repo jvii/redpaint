@@ -105,11 +105,22 @@ export function PaletteEditor(): JSX.Element | null {
     overlayCanvasController.updatePalette();
   }
 
+  function handleSelectColor(colorId: string): void {
+    const armed = state.paletteEditor.armedAction;
+    actions.paletteEditor.selectEditedColor(colorId);
+    // a completed copy/swap/spread recolored palette slots: refresh the GL
+    // palettes (range endpoint picks don't change colors)
+    if (armed === 'copy' || armed === 'swap' || armed === 'spread') {
+      paintingCanvasController.updatePalette();
+      overlayCanvasController.updatePalette();
+    }
+  }
+
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
 
   return (
-    <Modal header="Color palette" width={680}>
+    <Modal header="Color palette" width={640}>
       <div className="palette-editor__container">
         {/* DPaint's Palette Window layout: sliders on the left, swatch grid
             on the right */}
@@ -165,12 +176,53 @@ export function PaletteEditor(): JSX.Element | null {
         <div className="palette-editor__palette-container">
           <Palette
             selectedColorId={state.paletteEditor.editedColorId}
-            onSelectColor={(colorId): void => actions.paletteEditor.selectEditedColor(colorId)}
+            onSelectColor={handleSelectColor}
             activeRange={activeRange}
             columnDividers
           />
+          {/* armed action's instruction: a callout pointing at the palette
+              grid, where the next click belongs; overflows the requester */}
+          {state.paletteEditor.armedAction && (
+            <span className="palette-editor__callout">
+              {state.paletteEditor.armedAction === 'copy' && 'Select the color to copy to'}
+              {state.paletteEditor.armedAction === 'swap' && 'Select the color to swap with'}
+              {state.paletteEditor.armedAction === 'spread' && 'Select the last color of the spread'}
+              {state.paletteEditor.armedAction === 'rangeStart' && 'Select the first color of the range'}
+              {state.paletteEditor.armedAction === 'rangeEnd' && 'Select the last color of the range'}
+            </span>
+          )}
         </div>
       </div>
+
+      {/* DPaint's Spread, Ex(change) and Copy: two-color actions — arm,
+          then click the second color. The armed button becomes its own
+          cancel. */}
+      <fieldset className="palette-editor__edit-colors">
+        <legend>Edit colors</legend>
+        <div className="palette-editor__actions">
+          {/* DPaint's order: Spread first, then the slot-surgery pair */}
+          <RetroButton
+            variant={state.paletteEditor.armedAction === 'spread' ? 'secondary' : 'basic'}
+            onClick={(): void => actions.paletteEditor.armAction('spread')}
+          >
+            {state.paletteEditor.armedAction === 'spread' ? 'Cancel spread' : 'Spread'}
+          </RetroButton>
+          <span className="palette-editor__action-group">
+            <RetroButton
+              variant={state.paletteEditor.armedAction === 'swap' ? 'secondary' : 'basic'}
+              onClick={(): void => actions.paletteEditor.armAction('swap')}
+            >
+              {state.paletteEditor.armedAction === 'swap' ? 'Cancel swap' : 'Swap'}
+            </RetroButton>
+            <RetroButton
+              variant={state.paletteEditor.armedAction === 'copy' ? 'secondary' : 'basic'}
+              onClick={(): void => actions.paletteEditor.armAction('copy')}
+            >
+              {state.paletteEditor.armedAction === 'copy' ? 'Cancel copy' : 'Copy'}
+            </RetroButton>
+          </span>
+        </div>
+      </fieldset>
 
       <fieldset className="palette-editor__ranges">
         <legend>Range</legend>
@@ -180,15 +232,16 @@ export function PaletteEditor(): JSX.Element | null {
           onChange={(value): void => actions.paletteEditor.selectRange(Number(value))}
         />
 
-        {/* Set start/end assign the currently selected color as that
-            endpoint of the active range */}
+        {/* Set start/end arm an endpoint pick: the next palette click
+            becomes that endpoint of the active range */}
         <div className="palette-editor__range-row">
           <span className="palette-editor__range-endpoints">
             <RetroButton
+              variant={state.paletteEditor.armedAction === 'rangeStart' ? 'secondary' : 'basic'}
               disabled={activeRangeIndex === null}
-              onClick={actions.paletteEditor.setRangeStart}
+              onClick={(): void => actions.paletteEditor.armAction('rangeStart')}
             >
-              Set start
+              {state.paletteEditor.armedAction === 'rangeStart' ? 'Cancel set' : 'Set start'}
             </RetroButton>
             {activeRange && (
               <span
@@ -197,10 +250,11 @@ export function PaletteEditor(): JSX.Element | null {
               ></span>
             )}
             <RetroButton
+              variant={state.paletteEditor.armedAction === 'rangeEnd' ? 'secondary' : 'basic'}
               disabled={activeRangeIndex === null}
-              onClick={actions.paletteEditor.setRangeEnd}
+              onClick={(): void => actions.paletteEditor.armAction('rangeEnd')}
             >
-              Set end
+              {state.paletteEditor.armedAction === 'rangeEnd' ? 'Cancel set' : 'Set end'}
             </RetroButton>
             {activeRange && (
               <span
