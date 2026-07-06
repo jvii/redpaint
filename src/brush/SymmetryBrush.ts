@@ -1,9 +1,12 @@
 import { BrushInterface } from './Brush';
+import { CustomBrush } from './CustomBrush';
 import { Point } from '../types';
 import { DrawTarget } from '../canvas/CanvasController';
+import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { DrawCallBuffer } from './DrawCallBuffer';
 import { symmetryCopies, SymmetryCopy } from '../algorithm/symmetry';
 import { brushHistory } from './BrushHistory';
+import { isBuiltInBrush } from '../overmind/brush/state';
 import { overmind } from '../index';
 
 // A BrushInterface decorator that applies Deluxe Paint style symmetry by
@@ -25,7 +28,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawPoints(points: Point[], canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas);
     if (!copies) {
       this.inner.drawPoints(points, canvas);
       return;
@@ -36,7 +39,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawLine(start: Point, end: Point, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas, true);
     if (!copies) {
       this.inner.drawLine(start, end, canvas);
       return;
@@ -47,7 +50,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas, true);
     if (!copies) {
       this.inner.drawCurve(start, end, middlePoint, canvas);
       return;
@@ -58,7 +61,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas, true);
     if (!copies) {
       this.inner.drawUnfilledRect(start, end, canvas);
       return;
@@ -70,7 +73,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas);
     if (!copies) {
       this.inner.drawFilledRect(start, end, canvas);
       return;
@@ -82,7 +85,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas, true);
     if (!copies) {
       this.inner.drawUnfilledCircle(center, radius, canvas);
       return;
@@ -93,7 +96,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas);
     if (!copies) {
       this.inner.drawFilledCircle(center, radius, canvas);
       return;
@@ -110,7 +113,7 @@ export class SymmetryBrush implements BrushInterface {
     rotationAngle: number,
     canvas: DrawTarget
   ): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas, true);
     if (!copies) {
       this.inner.drawUnfilledEllipse(center, radiusX, radiusY, rotationAngle, canvas);
       return;
@@ -129,7 +132,7 @@ export class SymmetryBrush implements BrushInterface {
     rotationAngle: number,
     canvas: DrawTarget
   ): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas);
     if (!copies) {
       this.inner.drawFilledEllipse(center, radiusX, radiusY, rotationAngle, canvas);
       return;
@@ -140,7 +143,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas, true);
     if (!copies) {
       this.inner.drawUnfilledPolygon(vertices, complete, canvas);
       return;
@@ -151,7 +154,7 @@ export class SymmetryBrush implements BrushInterface {
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
-    const copies = this.copies();
+    const copies = this.copies(canvas);
     if (!copies) {
       this.inner.drawFilledPolygon(vertices, canvas);
       return;
@@ -161,9 +164,61 @@ export class SymmetryBrush implements BrushInterface {
     );
   }
 
-  private copies(): SymmetryCopy[] | null {
+  // DPaint kept the hover feedback alive while dragging a shape: the brush
+  // is stamped at the pointer's mirrored positions even though the shape
+  // copies themselves only appear on release (SYMUP). Only does anything
+  // when this brush is currently suppressing the shape copies — with full
+  // mirrored previews the copies are already visible. The shape tools call
+  // this from their overlay drag branches, which are the only place the
+  // pointer position is known.
+  public drawPointerCopies(point: Point, canvas: DrawTarget): void {
+    if (!this.suppressShapeCopies(canvas)) {
+      return;
+    }
     const settings = overmind.state.symmetry.activeSettings;
     if (!settings) {
+      return;
+    }
+    const copies = symmetryCopies(settings);
+    if (copies.length <= 1) {
+      return;
+    }
+    const buffer = new DrawCallBuffer();
+    // skip the primary copy: the shape preview's own brush stamps are there
+    for (const copy of copies.slice(1)) {
+      this.inner.drawPoints([copy.point(point)], buffer);
+    }
+    buffer.replayTo(canvas);
+  }
+
+  // DPaint's SYMUP behavior (PAINTW.C): with a captured/loaded custom
+  // (stamp) brush, the overlay SHAPE preview shows only the primary copy —
+  // the full symmetric set appears when the stroke commits on release.
+  // Stamping a whole shape's worth of brush copies times 2N on every mouse
+  // move (each with the full-canvas re-render a draw call costs) is the
+  // heaviest preview path in the app, slow enough to invite a GPU context
+  // loss in Safari. Everything else stays fully mirrored: the hover cursor
+  // (drawPoints, one stamp per copy — the symmetry-position feedback),
+  // filled shapes (they don't stamp the brush, just cheap quads/fill
+  // lines), the built-in brushes (small fixed bitmaps, cheap to stamp),
+  // and all pixel-brush previews.
+  private suppressShapeCopies(canvas: DrawTarget): boolean {
+    return (
+      canvas === overlayCanvasController &&
+      this.inner instanceof CustomBrush &&
+      !isBuiltInBrush(this.inner)
+    );
+  }
+
+  // shapePreview marks the outline-shape draw calls (line, curve, unfilled
+  // rect/circle/ellipse/polygon) whose overlay preview re-stamps the brush
+  // along the whole shape on every mouse move.
+  private copies(canvas: DrawTarget, shapePreview = false): SymmetryCopy[] | null {
+    const settings = overmind.state.symmetry.activeSettings;
+    if (!settings) {
+      return null;
+    }
+    if (shapePreview && this.suppressShapeCopies(canvas)) {
       return null;
     }
     const copies = symmetryCopies(settings);

@@ -17,6 +17,13 @@ export const builtInBrushes = {
   10: createBuiltInBrush('dither7x6'),
 };
 
+// Built-in brushes are CustomBrush instances too (except the pixel brush),
+// so "is this one of the built-ins" is an identity check against the
+// registry above.
+export function isBuiltInBrush(brush: unknown): boolean {
+  return Object.values(builtInBrushes).includes(brush as never);
+}
+
 export type State = {
   // null when a custom (captured or loaded) brush is active
   selectedBuiltInBrushId: BuiltInBrushId | null;

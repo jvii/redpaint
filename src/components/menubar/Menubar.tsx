@@ -6,16 +6,13 @@ import { MenuItemOpen } from './MenuItemOpen';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
-import { builtInBrushes } from '../../overmind/brush/state';
+import { isBuiltInBrush } from '../../overmind/brush/state';
 import './Menubar.css';
 
 // Only captured or loaded brushes can be saved — the pixel brush has no
 // bitmap and the built-in brushes are not the user's work.
 function isSaveableBrush(brush: unknown): boolean {
-  return (
-    brush instanceof CustomBrush &&
-    !Object.values(builtInBrushes).includes(brush)
-  );
+  return brush instanceof CustomBrush && !isBuiltInBrush(brush);
 }
 
 // Saves a canvas as PNG. Asks for the save location first, while the user
