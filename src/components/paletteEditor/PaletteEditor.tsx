@@ -107,19 +107,12 @@ export function PaletteEditor(): JSX.Element | null {
 
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
-  const armedEndpoint = state.paletteEditor.armedEndpoint;
 
   return (
     <Modal header="Color palette" width={680}>
       <div className="palette-editor__container">
-        <div className="palette-editor__palette-container">
-          <Palette
-            selectedColorId={state.paletteEditor.editedColorId}
-            onSelectColor={(colorId): void => actions.paletteEditor.selectEditedColor(colorId)}
-            activeRange={activeRange}
-            columnDividers
-          />
-        </div>
+        {/* DPaint's Palette Window layout: sliders on the left, swatch grid
+            on the right */}
         <div className="palette-editor__sliders">
           <div className="palette-editor__slider-group">
             <SliderField
@@ -169,6 +162,14 @@ export function PaletteEditor(): JSX.Element | null {
             />
           </div>
         </div>
+        <div className="palette-editor__palette-container">
+          <Palette
+            selectedColorId={state.paletteEditor.editedColorId}
+            onSelectColor={(colorId): void => actions.paletteEditor.selectEditedColor(colorId)}
+            activeRange={activeRange}
+            columnDividers
+          />
+        </div>
       </div>
 
       <fieldset className="palette-editor__ranges">
@@ -179,40 +180,46 @@ export function PaletteEditor(): JSX.Element | null {
           onChange={(value): void => actions.paletteEditor.selectRange(Number(value))}
         />
 
-        <span className="palette-editor__range-endpoints">
-          <RetroButton
-            variant={armedEndpoint === 'start' ? 'primary' : 'basic'}
-            disabled={activeRangeIndex === null}
-            onClick={(): void => actions.paletteEditor.armEndpoint('start')}
-          >
-            Set start
-          </RetroButton>
-          {activeRange && (
-            <span
-              className="palette-editor__range-swatch"
-              style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]) }}
-            ></span>
-          )}
-          <RetroButton
-            variant={armedEndpoint === 'end' ? 'primary' : 'basic'}
-            disabled={activeRangeIndex === null}
-            onClick={(): void => actions.paletteEditor.armEndpoint('end')}
-          >
-            Set end
-          </RetroButton>
-          {activeRange && (
-            <span
-              className="palette-editor__range-swatch"
-              style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]) }}
-            ></span>
-          )}
-          <RetroButton disabled={activeRangeIndex === null} onClick={actions.paletteEditor.clearActiveRange}>
-            Clear
-          </RetroButton>
-        </span>
-        {armedEndpoint && (
-          <span className="palette-editor__range-hint">Click a palette color to set it</span>
-        )}
+        {/* Set start/end assign the currently selected color as that
+            endpoint of the active range */}
+        <div className="palette-editor__range-row">
+          <span className="palette-editor__range-endpoints">
+            <RetroButton
+              disabled={activeRangeIndex === null}
+              onClick={actions.paletteEditor.setRangeStart}
+            >
+              Set start
+            </RetroButton>
+            {activeRange && (
+              <span
+                className="palette-editor__range-swatch"
+                style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]) }}
+              ></span>
+            )}
+            <RetroButton
+              disabled={activeRangeIndex === null}
+              onClick={actions.paletteEditor.setRangeEnd}
+            >
+              Set end
+            </RetroButton>
+            {activeRange && (
+              <span
+                className="palette-editor__range-swatch"
+                style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]) }}
+              ></span>
+            )}
+          </span>
+          <span className="palette-editor__range-clear">
+            <RetroButton
+              variant="secondary"
+              // nothing to clear until the active range has endpoints set
+              disabled={!activeRange}
+              onClick={actions.paletteEditor.clearActiveRange}
+            >
+              Clear
+            </RetroButton>
+          </span>
+        </div>
       </fieldset>
 
       <RetroButton variant="secondary" onClick={handleCancel}>

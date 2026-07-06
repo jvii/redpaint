@@ -63,7 +63,11 @@ export function SymmetrySettings(): JSX.Element | null {
           </span>
           <span className="symmetry-settings__row-buttons">
             <RetroButton onClick={selectCenter}>Select</RetroButton>
-            <RetroButton disabled={!customCenter} onClick={actions.symmetry.resetCenter}>
+            <RetroButton
+              variant="secondary"
+              disabled={!customCenter}
+              onClick={actions.symmetry.resetCenter}
+            >
               Reset
             </RetroButton>
           </span>

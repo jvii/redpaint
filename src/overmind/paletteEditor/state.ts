@@ -10,11 +10,9 @@ export type State = {
   // Snapshots taken on open, restored by Cancel; null while closed.
   paletteSnapshot: { [id: string]: Color } | null;
   rangesSnapshot: (PaletteRange | null)[] | null;
-  // Which of the 4 range slots is selected for editing, and which endpoint
-  // the next palette-grid click will set (DPaint's drag-the-bracket
-  // interaction, done as two explicit clicks instead).
+  // Which of the 4 range slots is selected for editing; Set start/Set end
+  // assign the currently edited color as that endpoint.
   activeRangeIndex: number | null;
-  armedEndpoint: 'start' | 'end' | null;
 };
 
 export const state: State = {
@@ -23,5 +21,4 @@ export const state: State = {
   paletteSnapshot: null,
   rangesSnapshot: null,
   activeRangeIndex: null,
-  armedEndpoint: null,
 };

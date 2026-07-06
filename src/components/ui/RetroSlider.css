@@ -1,47 +1,127 @@
+/* Composed slider (see RetroSlider.tsx): the .retro-slider shell holds an
+   invisible native input (interaction only) plus three drawn parts — the
+   orange fill, the transparent remainder, and the transparent thumb. The
+   fill/remainder segments stop 2px INSIDE the thumb's span, so the thumb's
+   own black border covers their raw ends; the 16px between its borders is
+   a true hole in the track showing the page background.
+
+   Geometry: the thumb is 20px long (16px + 2px borders) along the slider
+   axis, so its travel range is (length - 20px); --retro-slider-fill is a
+   unitless 0..1 value fraction set inline by RetroSlider.tsx. */
 .retro-slider {
-  -webkit-appearance: none;
-  appearance: none;
+  position: relative;
   flex: 1;
-  height: 12px;
-  background-color: white;
-  border: 2px solid black;
-  border-radius: 0;
-  margin: 0;
+  height: 28px;
   cursor: pointer;
 }
 
-.retro-slider::-webkit-slider-thumb {
+.retro-slider input {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 28px;
-  background-color: rgb(17, 51, 202);
-  border: 2px solid black;
-  border-radius: 0;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
-.retro-slider::-moz-range-thumb {
-  width: 16px;
-  height: 28px;
-  background-color: rgb(17, 51, 202);
+.retro-slider__fill,
+.retro-slider__remainder,
+.retro-slider__thumb {
+  position: absolute;
+  box-sizing: border-box;
   border: 2px solid black;
-  border-radius: 0;
+  pointer-events: none;
 }
 
+/* horizontal: fill grows from the left, remainder shrinks to the right */
+.retro-slider__fill {
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  height: 12px;
+  width: calc((100% - 20px) * var(--retro-slider-fill, 0) + 2px);
+  border-right: none; /* raw end, hidden under the thumb's border */
+  background: #ff9900;
+}
+
+.retro-slider__remainder {
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  height: 12px;
+  width: calc((100% - 20px) * (1 - var(--retro-slider-fill, 0)) + 2px);
+  border-left: none; /* raw end, hidden under the thumb's border */
+  background: transparent;
+}
+
+.retro-slider__thumb {
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc((100% - 20px) * var(--retro-slider-fill, 0));
+  width: 20px;
+  height: 28px;
+  background: transparent;
+  /* the same hard offset shadow as the small inputs (RetroButton's look at
+     gadget scale); outer box-shadow is clipped at the border box, so it
+     doesn't bleed into the thumb's transparent interior */
+  box-shadow: 2px 2px 0 0 black;
+}
+
+/* the native focus ring is invisible along with the input; give the drawn
+   thumb one instead */
+.retro-slider input:focus-visible ~ .retro-slider__thumb {
+  outline: 2px solid rgb(17, 51, 202);
+  outline-offset: 2px;
+}
+
+/* vertical: min at the bottom, fill grows upward */
 .retro-slider--vertical {
+  flex: none;
+  width: 28px;
+  /* height comes from the flex parent's cross-axis stretch, NOT a
+     percentage: height:100% against a parent whose own height is being
+     resolved from its content (e.g. a flex:1 track) is circular and blows
+     the layout up to the viewport */
+  height: auto;
+  align-self: stretch;
+  min-height: 0;
+}
+
+.retro-slider--vertical input {
   writing-mode: vertical-lr;
   direction: rtl;
-  flex: none;
+}
+
+.retro-slider--vertical .retro-slider__fill {
+  top: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
   width: 12px;
-  height: 100%;
+  height: calc((100% - 20px) * var(--retro-slider-fill, 0) + 2px);
+  border: 2px solid black;
+  border-top: none; /* raw end, hidden under the thumb's border */
 }
 
-.retro-slider--vertical::-webkit-slider-thumb {
-  width: 28px;
-  height: 16px;
+.retro-slider--vertical .retro-slider__remainder {
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  width: 12px;
+  height: calc((100% - 20px) * (1 - var(--retro-slider-fill, 0)) + 2px);
+  border: 2px solid black;
+  border-bottom: none; /* raw end, hidden under the thumb's border */
 }
 
-.retro-slider--vertical::-moz-range-thumb {
+.retro-slider--vertical .retro-slider__thumb {
+  top: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc((100% - 20px) * var(--retro-slider-fill, 0));
   width: 28px;
-  height: 16px;
+  height: 20px;
 }
