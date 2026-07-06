@@ -24,3 +24,7 @@ yarn-error.log*
 
 # claude code local settings
 .claude/settings.local.json
+
+# local-only reference material (vendored DPaint source, manual text/scans) —
+# not part of the app, kept off the remote
+/docs/reference/
