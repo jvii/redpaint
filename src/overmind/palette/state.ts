@@ -19,6 +19,16 @@ export function backgroundPaintColorOf(state: { backgroundColorId: string }): Pa
   return { kind: 'index', colorNumber: Number(state.backgroundColorId) };
 }
 
+// A contiguous span of palette slots (inclusive, by color id). DPaint's
+// Palette Window defines up to four of these; Color Cycling, Gradient Fill
+// and the Blend/Shade painting modes all key off "the range containing
+// color X". Cycling and gradient fill are future features — this is just
+// the shared data model, editable from the palette editor.
+export type PaletteRange = {
+  start: string;
+  end: string;
+};
+
 export type State = {
   palette: {
     [id: string]: Color; // id is the color index (integer as string), starting from "1"
@@ -31,6 +41,8 @@ export type State = {
   // clears it. The background stays palette-indexed (it doubles as the clear
   // color and the brush transparency marker).
   foregroundRgb: Color | null;
+  // Fixed 4 slots (DPaint's Range 1..4), unset slots are null.
+  ranges: (PaletteRange | null)[];
   readonly foregroundColor: Color;
   readonly backgroundColor: Color;
   readonly foregroundPaintColor: PaintColor;
@@ -43,6 +55,7 @@ export const state: State = {
   foregroundColorId: '20',
   backgroundColorId: '1',
   foregroundRgb: null,
+  ranges: [null, null, null, null],
   foregroundColor: derived(
     (state: State) => state.foregroundRgb ?? state.palette[state.foregroundColorId]
   ),

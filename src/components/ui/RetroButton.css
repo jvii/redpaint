@@ -29,9 +29,11 @@
   box-shadow: none;
 }
 
+/* transparent, not white — so a bordered gadget reads as a button (outline
+   only) and stays visually distinct from a solid-white editable field */
 .retro-button--basic {
   color: black;
-  background-color: white;
+  background-color: transparent;
 }
 
 .retro-button--primary {
@@ -53,7 +55,7 @@
 .retro-button:disabled {
   color: rgb(160, 160, 160);
   border-color: rgb(160, 160, 160);
-  background-color: white;
+  background-color: transparent;
   box-shadow: none;
   cursor: default;
 }

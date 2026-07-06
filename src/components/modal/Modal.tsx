@@ -4,9 +4,10 @@ import './Modal.css';
 interface Props {
   header: string;
   children: React.ReactNode;
+  width?: number;
 }
 
-export function Modal({ header, children }: Props): JSX.Element | null {
+export function Modal({ header, children, width }: Props): JSX.Element | null {
   // Offset from the centered position, driven by dragging the header
   // (Amiga requesters move by their title bar).
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -42,7 +43,10 @@ export function Modal({ header, children }: Props): JSX.Element | null {
     <div className="modal__overlay-invisible">
       <div
         className="modal__window"
-        style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
+        style={{
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
+          ...(width ? { width: `${width}px` } : {}),
+        }}
       >
         <div
           className="modal__header"

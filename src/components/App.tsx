@@ -35,7 +35,7 @@ function App(): JSX.Element {
           <BuiltInBrushes />
           <Toolbox />
           <ColorIndicator />
-          <Palette />
+          <Palette fillHeight />
         </div>
       </div>
       <PaletteEditor></PaletteEditor>
