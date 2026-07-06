@@ -29,6 +29,12 @@ is scheduled. Design details live in the linked docs where they exist.
   the same session.
 - [ ] **Memoize `symmetryCopies()` transform closures** on settings if it ever
   shows up in profiling (noted in docs/symmetry-tool.md).
+- [ ] **Safari performance pass.** Safari is noticeably slower than Chrome,
+  and drawing with symmetry + a large custom brush was slow enough to
+  trigger a GPU context loss there (recovery is now handled, but the load
+  should come down). Dirty-rect is the main fix; also revisit
+  `preserveDrawingBuffer: true` on the painting canvas — it forces a
+  framebuffer copy per composite, disproportionately expensive in Safari.
 
 ## Effects (own feature, enabled by true-color mode)
 

@@ -1,5 +1,5 @@
 import React, { JSX, useEffect, useRef } from 'react';
-import { useInitTool, useUndo } from './hooks';
+import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
 import { getEventHandler } from '../../tools/util/util';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
@@ -46,6 +46,8 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
   useUndo();
 
   useInitTool(isZoomCanvas);
+
+  useContextLossRecovery(paintingCanvasRef, overlayCanvasRef, isZoomCanvas);
 
   const tool = state.toolbox.activeTool;
 

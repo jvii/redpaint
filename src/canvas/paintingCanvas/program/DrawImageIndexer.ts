@@ -13,6 +13,7 @@ export class DrawImageIndexer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
   private currentBrushId = 0;
+  private texture: WebGLTexture | null = null;
   private buffers: GLBuffers;
   // attribute/uniform locations are looked up once here: getUniformLocation /
   // getAttribLocation are driver round-trips, too slow for per-draw-call use
@@ -34,6 +35,10 @@ export class DrawImageIndexer {
    * Cleans up WebGL resources when the indexer is no longer needed
    */
   public dispose(): void {
+    if (this.texture) {
+      this.gl.deleteTexture(this.texture);
+      this.texture = null;
+    }
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;
@@ -177,8 +182,12 @@ export class DrawImageIndexer {
 
     gl.activeTexture(gl.TEXTURE2);
 
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // one texture, created once and re-uploaded into — creating a new
+    // texture per brush change without deleting the old one leaks
+    if (!this.texture) {
+      this.texture = gl.createTexture();
+    }
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
     const level = 0;
     const internalFormat = gl.RGBA;
