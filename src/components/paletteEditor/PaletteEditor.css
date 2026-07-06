@@ -2,29 +2,52 @@
 
 .palette-editor__container {
   display: flex;
-  align-items: stretch;
-  justify-content: space-around;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px 10px;
 }
 
+/* Same 4-column grid as the toolbox palette (Palette.css) — only the width
+   changes, so a color's position never shifts between the two views. Height
+   is intrinsic to the grid (4 cols x rows-of-8 for a 32-color palette). */
 .palette-editor__palette-container {
   display: flex;
-  width: 50px;
+  flex: none;
+  width: 180px;
   flex-direction: column;
-  margin: 10%;
+  border: 2px solid black;
 }
 
 .palette-editor__sliders {
-  padding: 35px;
-  height: 200px;
   display: flex;
-  gap: 30px;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.palette-editor__slider-group {
+  display: flex;
+  gap: 14px;
+}
+
+.palette-editor__slider-divider {
+  flex: none;
+  width: 2px;
+  align-self: stretch;
+  background-color: black;
 }
 
 .palette-editor__slider {
   display: flex;
+  flex: none;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+}
+
+.palette-editor__slider-track {
+  display: flex;
+  height: 150px;
 }
 
 .palette-editor__slider-label {
@@ -32,4 +55,76 @@
   -webkit-font-smoothing: none;
   font-size: 16px;
   color: black;
+}
+
+/* Styled after retroui.dev's Input (border-2, rounded, shadow-sm, focus
+   ring) — the softer/rounded sibling of RetroButton's sharp-cornered,
+   hard-shadowed gadget look, appropriate for a field you type into. */
+/* A regular monospace face here, not Press Start 2P: the bitmap font only
+   looks crisp at multiples of 8px, and 16px reads fine but is wider than
+   this small a field wants. A proportional monospace isn't grid-locked, so
+   it can sit compact at any size — same treatment the design docs use for
+   numeric readouts alongside pixel-font headings. */
+.palette-editor__slider-input {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  color: black;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  width: 3ch;
+  padding: 7px 5px;
+  border: 2px solid black;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 2px 2px 0 0 black;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.palette-editor__slider-input:focus {
+  outline: 2px solid rgb(17, 51, 202);
+  outline-offset: 2px;
+  box-shadow: 1px 1px 0 0 black;
+  transform: translate(1px, 1px);
+}
+
+.palette-editor__ranges {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  border: 2px solid black;
+  border-radius: 0;
+  padding: 14px 20px 18px;
+  margin: 0 30px 20px;
+  text-align: left;
+}
+
+.palette-editor__ranges > legend {
+  font-size: 16px;
+  padding: 0 8px;
+}
+
+.palette-editor__range-endpoints {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.palette-editor__range-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid black;
+}
+
+.palette-editor__range-hint {
+  font-size: 12px;
+  color: rgb(17, 51, 202);
+  flex-basis: 100%;
 }

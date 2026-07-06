@@ -1,82 +1,99 @@
-import React, { useRef, useState, useLayoutEffect, JSX } from 'react';
+import { JSX } from 'react';
 import { ColorButton } from './ColorButton';
 import { useActions, useAppState } from '../../overmind';
-import { Debounce } from '../../tools/util/Debounce';
 import './Palette.css';
 
-function Palette(): JSX.Element {
+type Props = {
+  // Overrides for embedding the grid somewhere that isn't about painting
+  // colors (e.g. the palette editor): clicking a swatch calls onSelectColor
+  // instead of setting the FG/BG paint color, and isSelected is driven by
+  // selectedColorId instead of the foreground color.
+  selectedColorId?: string;
+  onSelectColor?: (colorId: string) => void;
+  // The currently active color-cycling/gradient range (palette editor only):
+  // draws DPaint's bracket marker over its member swatches.
+  activeRange?: { start: string; end: string } | null;
+  // Toolbox usage: stretch to fill the sidebar's remaining height, rows
+  // sized to divide that height evenly (not necessarily square). Omitted in
+  // the palette editor, where cells stay square and sized off the width.
+  fillHeight?: boolean;
+  // Palette editor only: a persistent black rule between each of the 4
+  // columns, like DPaint's requester (the toolbox palette stays undivided).
+  columnDividers?: boolean;
+};
+
+// DPaint always laid its 32-color palette out as 4 columns of 8 — the same
+// grid renders here and in the palette editor, so a swatch's position never
+// shifts between the two.
+const COLUMNS = 4;
+
+function Palette({
+  selectedColorId,
+  onSelectColor,
+  activeRange,
+  fillHeight,
+  columnDividers,
+}: Props = {}): JSX.Element {
   const state = useAppState()
   const actions = useActions()
 
-  const containerRef = useRef<HTMLDivElement>(document.createElement('div'));
-  const size = useCalcColorButtonSize(containerRef, state.palette.paletteArray.length);
+  const rows = Math.ceil(state.palette.paletteArray.length / COLUMNS);
+
+  const isSelected = (id: string): boolean =>
+    onSelectColor
+      ? id === selectedColorId
+      // no slot is highlighted while an RGB foreground (picked from a
+      // true-color pixel) is active
+      : !state.palette.foregroundRgb && id === state.palette.foregroundColorId;
 
   const createColorButton = (index: number): JSX.Element => {
+    const colorId = index.toString();
+    const isRangeMember =
+      !!activeRange && index >= Number(activeRange.start) && index <= Number(activeRange.end);
+    // grid-auto-flow is column, so ids run down a column before wrapping —
+    // column 0 is ids 1..rows, column 1 is rows+1..2*rows, and so on.
+    const column = Math.floor((index - 1) / rows);
+    // This swatch's divider/range mark belongs to its own left edge, at the
+    // same seam its left neighbor's selection ring would expand into —
+    // relying on paint order (z-index) to sort out who wins there isn't
+    // reliable, so suppress it outright whenever that neighbor is selected.
+    const leftNeighborIndex = index - rows;
+    const leftNeighborSelected =
+      leftNeighborIndex >= 1 && isSelected(leftNeighborIndex.toString());
     return (
       <ColorButton
-        colorId={index.toString()}
-        // no slot is highlighted while an RGB foreground (picked from a
-        // true-color pixel) is active
-        isSelected={
-          !state.palette.foregroundRgb && index.toString() === state.palette.foregroundColorId
+        colorId={colorId}
+        isSelected={isSelected(colorId)}
+        onClick={(): void =>
+          onSelectColor ? onSelectColor(colorId) : actions.palette.setForegroundColor(colorId)
         }
-        size={size}
-        onClick={(): void => actions.palette.setForegroundColor(index.toString())}
-        onRightClick={(): void => actions.palette.setBackgroundColor(index.toString())}
+        onRightClick={(): void =>
+          onSelectColor ? onSelectColor(colorId) : actions.palette.setBackgroundColor(colorId)
+        }
+        isRangeMember={isRangeMember}
+        isRangeStart={isRangeMember && colorId === activeRange?.start}
+        isRangeEnd={isRangeMember && colorId === activeRange?.end}
+        fillCell={fillHeight}
+        showColumnDivider={!!columnDividers && column > 0 && !leftNeighborSelected}
+        columnDividersEnabled={!!columnDividers}
+        isLastColumn={column === COLUMNS - 1}
         key={index}
       />
     );
   };
 
   return (
-    <div className="palette" ref={containerRef}>
+    <div
+      className={'palette' + (fillHeight ? ' palette--fill' : '')}
+      style={{
+        gridAutoFlow: 'column',
+        gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, ${fillHeight ? '1fr' : 'auto'})`,
+      }}
+    >
       {state.palette.paletteArray.map((color, index): JSX.Element => createColorButton(index + 1))}
     </div>
   );
-}
-
-// Custom hook to calculate an optimal size for a color button,
-// according to palette container size.
-function useCalcColorButtonSize(
-  ref: React.MutableRefObject<HTMLDivElement>,
-  colors: number
-): number {
-  // useState to update component on window resize
-  const [, setSize] = useState([0, 0]);
-  useLayoutEffect(() => {
-    const debounce = new Debounce(50);
-    function updateSize(): void {
-      debounce.call(() => setSize([window.innerWidth, window.innerHeight]));
-    }
-    window.addEventListener('resize', updateSize);
-    setSize([window.innerWidth, window.innerHeight]);
-    return (): void => window.removeEventListener('resize', updateSize);
-  }, []);
-  if (ref.current === null) {
-    return 0;
-  }
-  return calcButtonSize(ref.current.clientHeight, ref.current.clientWidth, colors);
-}
-
-// eslint-disable-next-line max-len
-// adapted from https://math.stackexchange.com/questions/466198/algorithm-to-get-the-maximum-size-of-n-squares-that-fit-into-a-rectangle-with-a
-function calcButtonSize(height: number, width: number, colors: number): number {
-  const px = Math.ceil(Math.sqrt((colors * width) / height));
-  let sx: number;
-  if (Math.floor((px * height) / width) * px < colors) {
-    sx = height / Math.ceil((px * height) / width); // does not fit, y/(x/px)=px*y/x
-  } else {
-    sx = width / px;
-  }
-  sx = width / px;
-  const py = Math.ceil(Math.sqrt((colors * height) / width));
-  let sy: number;
-  if (Math.floor((py * width) / height) * py < colors) {
-    sy = width / Math.ceil((width * py) / height); // does not fit
-  } else {
-    sy = height / py;
-  }
-  return Math.max(sx, sy);
 }
 
 export default Palette;

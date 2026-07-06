@@ -1,5 +1,22 @@
 import { Color } from '../../types';
 
+// DPaint's actual default 32-color palette (PRISM.C: default5), loaded at
+// startup for 32-color/HAM depth. Values are 12-bit Amiga RGB (0xRGB, 4 bits
+// per channel); amigaRgbToColor below scales each nibble to 8 bits.
+const DPAINT_DEFAULT_32: number[] = [
+  0x000, 0xfff, 0xe00, 0xa00, 0xd80, 0xfe0, 0x8f0, 0x080,
+  0x0b6, 0x0dd, 0x0af, 0x07c, 0x00f, 0x70f, 0xc0e, 0xc08,
+  0x620, 0xe52, 0xa52, 0xfca, 0x333, 0x444, 0x555, 0x666,
+  0x777, 0x888, 0x999, 0xaaa, 0xbbb, 0xccc, 0xddd, 0xeee,
+];
+
+function amigaRgbToColor(rgb12: number): Color {
+  const r = (rgb12 >> 8) & 0xf;
+  const g = (rgb12 >> 4) & 0xf;
+  const b = rgb12 & 0xf;
+  return { r: r * 17, g: g * 17, b: b * 17 };
+}
+
 export function createPalette(
   colors: number
 ): {
@@ -9,6 +26,16 @@ export function createPalette(
     [id: string]: Color;
   } = {};
 
+  if (colors === DPAINT_DEFAULT_32.length) {
+    DPAINT_DEFAULT_32.forEach((rgb12, i) => {
+      palette[i + 1] = amigaRgbToColor(rgb12);
+    });
+    return palette;
+  }
+
+  // Fallback for any other palette size (e.g. a future larger cap): a
+  // grayscale ramp followed by a hue sweep, since there's no DPaint original
+  // to draw from beyond 32 colors.
   const grayscales = 10;
 
   for (let i = 0; i < grayscales; i++) {

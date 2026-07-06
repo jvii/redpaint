@@ -40,3 +40,20 @@ export interface EditColorParams {
 export const editColor = (context: Context, editColorParams: EditColorParams): void => {
   context.state.palette.palette[editColorParams.colorId] = editColorParams.newColor;
 };
+
+export interface SetRangeParams {
+  rangeIndex: number;
+  start: string;
+  end: string;
+}
+
+// Range endpoints are normalized to id order so the range always reads
+// low..high regardless of which endpoint was set first.
+export const setRange = (context: Context, { rangeIndex, start, end }: SetRangeParams): void => {
+  const [lo, hi] = Number(start) <= Number(end) ? [start, end] : [end, start];
+  context.state.palette.ranges[rangeIndex] = { start: lo, end: hi };
+};
+
+export const clearRange = (context: Context, rangeIndex: number): void => {
+  context.state.palette.ranges[rangeIndex] = null;
+};

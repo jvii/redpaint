@@ -1,7 +1,62 @@
+/* Fixed 4-column grid (DPaint always laid out 32 colors as 4x8) — column
+   count comes from Palette.tsx, rows follow automatically from color count.
+   Each cell is forced square via aspect-ratio, sized purely by CSS so there
+   is no JS-computed size to drift out of sync with the actual layout.
+   Swatches sit flush with no gutter, same as the original palette strip. */
 .palette {
-  display: flex;
-  flex-flow: row wrap;
+  display: grid;
   background-color: black;
+  /* not hidden: the selected swatch's outline expands past its own box
+     edge (see ColorButton.tsx) and needs to be able to paint past the
+     grid's own edge too, rather than getting clipped there */
+  overflow: visible;
+}
+
+/* Toolbox usage: stretch to fill the sidebar's remaining height instead of
+   sizing off the width (rows divide the available height evenly). A black
+   frame gives a bordering swatch's selection ring somewhere to expand onto
+   on its outer side, instead of bleeding into neighboring sidebar controls
+   (top row into the color indicator, etc.) or getting clipped by the
+   sidebar's own overflow:hidden. */
+.palette--fill {
   flex-grow: 1;
-  overflow: hidden;
+  box-sizing: border-box;
+  border: 2px solid black;
+}
+
+.ColorButton {
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.ColorButton--fill {
+  height: 100%;
+  aspect-ratio: unset;
+}
+
+/* DPaint's Range bracket: every member's left border (see ColorButton.tsx)
+   is white instead of black, replacing the column divider outright at that
+   seam. The range's first/last color additionally gets a short cap closing
+   off that end of the bracket. */
+.ColorButton__range-start-cap,
+.ColorButton__range-end-cap {
+  position: absolute;
+  left: 0;
+  width: 50%;
+  height: 3px; /* MARK_WIDTH in ColorButton.tsx */
+  background-color: white;
+  pointer-events: none;
+}
+
+.ColorButton__range-start-cap {
+  top: 0;
+}
+
+.ColorButton__range-end-cap {
+  bottom: 0;
 }
