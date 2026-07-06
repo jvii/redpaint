@@ -1,8 +1,9 @@
-/* Fixed 4-column grid (DPaint always laid out 32 colors as 4x8) — column
-   count comes from Palette.tsx, rows follow automatically from color count.
-   Each cell is forced square via aspect-ratio, sized purely by CSS so there
-   is no JS-computed size to drift out of sync with the actual layout.
-   Swatches sit flush with no gutter, same as the original palette strip. */
+/* Fixed 4-column grid (DPaint always laid out 32 colors as 4x8), sized
+   purely by CSS so there is no JS-computed size to drift out of sync with
+   the actual layout. In the palette editor the columns are separated by a
+   grid gap with this black background showing through — those gaps ARE the
+   column dividers; the toolbox palette has no gaps and its swatches sit
+   flush. --mark-width is set from Palette.tsx (MARK_WIDTH). */
 .palette {
   display: grid;
   background-color: black;
@@ -39,16 +40,16 @@
   aspect-ratio: unset;
 }
 
-/* DPaint's Range bracket: every member's left border (see ColorButton.tsx)
-   is white instead of black, replacing the column divider outright at that
-   seam. The range's first/last color additionally gets a short cap closing
-   off that end of the bracket. */
+/* DPaint's Range bracket: every member fills the column gap on its left
+   with white (see ColorButton.tsx), replacing the divider there. The
+   range's first/last color additionally gets a short cap closing off that
+   end of the bracket. */
 .ColorButton__range-start-cap,
 .ColorButton__range-end-cap {
   position: absolute;
   left: 0;
   width: 50%;
-  height: 3px; /* MARK_WIDTH in ColorButton.tsx */
+  height: var(--mark-width);
   background-color: white;
   pointer-events: none;
 }
