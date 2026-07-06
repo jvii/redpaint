@@ -13,6 +13,11 @@ export type State = {
   // Which of the 4 range slots is selected for editing; Set start/Set end
   // assign the currently edited color as that endpoint.
   activeRangeIndex: number | null;
+  // An action awaiting a color pick: the next palette click completes it
+  // (DPaint's sticky Copy/Ex/Spread/Range modes). The two-color actions
+  // (copy/swap/spread) apply against the currently edited color; the range
+  // endpoint setters assign the clicked color to the active range.
+  armedAction: 'copy' | 'swap' | 'spread' | 'rangeStart' | 'rangeEnd' | null;
 };
 
 export const state: State = {
@@ -21,4 +26,5 @@ export const state: State = {
   paletteSnapshot: null,
   rangesSnapshot: null,
   activeRangeIndex: null,
+  armedAction: null,
 };

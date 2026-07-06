@@ -22,6 +22,7 @@ export const open = (context: Context): void => {
   context.state.paletteEditor.paletteSnapshot = copyPalette(context.state.palette.palette);
   context.state.paletteEditor.rangesSnapshot = copyRanges(context.state.palette.ranges);
   context.state.paletteEditor.activeRangeIndex = null;
+  context.state.paletteEditor.armedAction = null;
   context.state.paletteEditor.isOpen = true;
 };
 
@@ -45,41 +46,59 @@ export const cancel = (context: Context): void => {
 };
 
 export const selectEditedColor = (context: Context, colorId: string): void => {
+  // an armed two-color action completes on this click, applied between the
+  // currently edited color and the clicked one; the clicked color becomes
+  // the selection either way (like DPaint)
+  const armed = context.state.paletteEditor.armedAction;
+  if (armed === 'copy') {
+    context.actions.palette.copyColor({
+      fromId: context.state.paletteEditor.editedColorId,
+      toId: colorId,
+    });
+  } else if (armed === 'swap') {
+    context.actions.palette.swapColors({
+      aId: context.state.paletteEditor.editedColorId,
+      bId: colorId,
+    });
+  } else if (armed === 'spread') {
+    context.actions.palette.spread({
+      fromId: context.state.paletteEditor.editedColorId,
+      toId: colorId,
+    });
+  } else if (armed === 'rangeStart' || armed === 'rangeEnd') {
+    const rangeIndex = context.state.paletteEditor.activeRangeIndex;
+    if (rangeIndex !== null) {
+      const existing = context.state.palette.ranges[rangeIndex];
+      context.actions.palette.setRange({
+        rangeIndex,
+        start: armed === 'rangeStart' ? colorId : (existing?.start ?? colorId),
+        end: armed === 'rangeEnd' ? colorId : (existing?.end ?? colorId),
+      });
+    }
+  }
+  context.state.paletteEditor.armedAction = null;
   context.state.paletteEditor.editedColorId = colorId;
+};
+
+// Arms a two-color action (or disarms it when it's already armed — the
+// button doubles as its own cancel). Arming one action replaces the other.
+export const armAction = (
+  context: Context,
+  action: 'copy' | 'swap' | 'spread' | 'rangeStart' | 'rangeEnd'
+): void => {
+  context.state.paletteEditor.armedAction =
+    context.state.paletteEditor.armedAction === action ? null : action;
 };
 
 export const selectRange = (context: Context, rangeIndex: number): void => {
   context.state.paletteEditor.activeRangeIndex = rangeIndex;
-};
-
-// Set start/end assign the currently selected (edited) color as that
-// endpoint of the active range. A missing other endpoint defaults to the
-// same color, so setting both is two clicks with a color selection in
-// between; palette.setRange normalizes the endpoints to numeric order.
-export const setRangeStart = (context: Context): void => {
-  const { activeRangeIndex, editedColorId } = context.state.paletteEditor;
-  if (activeRangeIndex === null) {
-    return;
+  // a pending endpoint pick was for the previously selected slot
+  if (
+    context.state.paletteEditor.armedAction === 'rangeStart' ||
+    context.state.paletteEditor.armedAction === 'rangeEnd'
+  ) {
+    context.state.paletteEditor.armedAction = null;
   }
-  const existing = context.state.palette.ranges[activeRangeIndex];
-  context.actions.palette.setRange({
-    rangeIndex: activeRangeIndex,
-    start: editedColorId,
-    end: existing?.end ?? editedColorId,
-  });
-};
-
-export const setRangeEnd = (context: Context): void => {
-  const { activeRangeIndex, editedColorId } = context.state.paletteEditor;
-  if (activeRangeIndex === null) {
-    return;
-  }
-  const existing = context.state.palette.ranges[activeRangeIndex];
-  context.actions.palette.setRange({
-    rangeIndex: activeRangeIndex,
-    start: existing?.start ?? editedColorId,
-    end: editedColorId,
-  });
 };
 
 export const clearActiveRange = (context: Context): void => {
