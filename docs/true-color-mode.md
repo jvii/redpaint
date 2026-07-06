@@ -121,6 +121,16 @@ concerned with the active painting color. The
 brush transparency marker — so the BG picker still ignores true-color
 pixels.
 
+**Brush files (2026-07-05):** brushes round-trip through ordinary PNGs using
+the tag encoding. Save resolves the pristine matte bitmap to displayable
+pixels (indexed through the palette, true color directly, `ALPHA_TRANSPARENT`
+→ PNG alpha 0). Load — Brush ▸ Open and the clipboard "Paste as brush" share
+`CustomBrush.fromImageUrl` — maps PNG alpha < 128 to brush transparency and
+every opaque pixel to a **true-color** pixel. So a saved indexed brush comes
+back with its palette colors baked in (deliberate simplification: PNG carries
+no palette identity); Matte mode stamps those colors verbatim and Color mode
+recolors the whole shape either way.
+
 - **Phase A — hybrid storage, indexed tools.** Normalize alpha writes to the
   tag encoding; add the tag branch to the display shaders; widen
   flood-fill/picker pixel comparisons; image loading writes RGB + true-color
