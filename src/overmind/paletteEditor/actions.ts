@@ -22,7 +22,6 @@ export const open = (context: Context): void => {
   context.state.paletteEditor.paletteSnapshot = copyPalette(context.state.palette.palette);
   context.state.paletteEditor.rangesSnapshot = copyRanges(context.state.palette.ranges);
   context.state.paletteEditor.activeRangeIndex = null;
-  context.state.paletteEditor.armedEndpoint = null;
   context.state.paletteEditor.isOpen = true;
 };
 
@@ -46,27 +45,41 @@ export const cancel = (context: Context): void => {
 };
 
 export const selectEditedColor = (context: Context, colorId: string): void => {
-  const { activeRangeIndex, armedEndpoint } = context.state.paletteEditor;
-  if (activeRangeIndex !== null && armedEndpoint !== null) {
-    const existing = context.state.palette.ranges[activeRangeIndex];
-    context.actions.palette.setRange({
-      rangeIndex: activeRangeIndex,
-      start: armedEndpoint === 'start' ? colorId : (existing?.start ?? colorId),
-      end: armedEndpoint === 'end' ? colorId : (existing?.end ?? colorId),
-    });
-    context.state.paletteEditor.armedEndpoint = null;
-    return;
-  }
   context.state.paletteEditor.editedColorId = colorId;
 };
 
 export const selectRange = (context: Context, rangeIndex: number): void => {
   context.state.paletteEditor.activeRangeIndex = rangeIndex;
-  context.state.paletteEditor.armedEndpoint = null;
 };
 
-export const armEndpoint = (context: Context, endpoint: 'start' | 'end'): void => {
-  context.state.paletteEditor.armedEndpoint = endpoint;
+// Set start/end assign the currently selected (edited) color as that
+// endpoint of the active range. A missing other endpoint defaults to the
+// same color, so setting both is two clicks with a color selection in
+// between; palette.setRange normalizes the endpoints to numeric order.
+export const setRangeStart = (context: Context): void => {
+  const { activeRangeIndex, editedColorId } = context.state.paletteEditor;
+  if (activeRangeIndex === null) {
+    return;
+  }
+  const existing = context.state.palette.ranges[activeRangeIndex];
+  context.actions.palette.setRange({
+    rangeIndex: activeRangeIndex,
+    start: editedColorId,
+    end: existing?.end ?? editedColorId,
+  });
+};
+
+export const setRangeEnd = (context: Context): void => {
+  const { activeRangeIndex, editedColorId } = context.state.paletteEditor;
+  if (activeRangeIndex === null) {
+    return;
+  }
+  const existing = context.state.palette.ranges[activeRangeIndex];
+  context.actions.palette.setRange({
+    rangeIndex: activeRangeIndex,
+    start: existing?.start ?? editedColorId,
+    end: editedColorId,
+  });
 };
 
 export const clearActiveRange = (context: Context): void => {
@@ -75,5 +88,4 @@ export const clearActiveRange = (context: Context): void => {
     return;
   }
   context.actions.palette.clearRange(activeRangeIndex);
-  context.state.paletteEditor.armedEndpoint = null;
 };
