@@ -1,9 +1,62 @@
+import React, { useEffect, useRef } from 'react';
 import { Point } from '../../types';
-import { useEffect, useRef } from 'react';
+import { overmind } from '../..';
 import { useActions, useAppState } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+
+// Recover from WebGL context loss (Safari in particular kills contexts
+// under GPU memory pressure). Without preventDefault on webglcontextlost
+// the browser never fires webglcontextrestored; on restore, all GL objects
+// are invalid, so both controllers rebuild their programs/buffers/textures,
+// and the committed pixels are repainted from the undo buffer's current
+// snapshot (the GPU-side color index is gone).
+export function useContextLossRecovery(
+  paintingCanvasRef: React.RefObject<HTMLCanvasElement>,
+  overlayCanvasRef: React.RefObject<HTMLCanvasElement>,
+  isZoomCanvas: boolean
+): void {
+  useEffect((): (() => void) | void => {
+    if (isZoomCanvas) {
+      return; // the zoom canvases are 2D mirrors, no WebGL context to lose
+    }
+    // read the refs inside the effect: at render time they still hold the
+    // placeholder canvas, the real elements are only assigned on commit
+    const paintingCanvas = paintingCanvasRef.current;
+    const overlayCanvas = overlayCanvasRef.current;
+    const allowRestore = (event: Event): void => {
+      console.warn('WebGL context lost', event.target);
+      event.preventDefault();
+    };
+    const restorePaintingCanvas = (): void => {
+      console.warn('WebGL context restored (painting canvas)');
+      paintingCanvasController.restoreContext();
+      const colorIndex = undoBuffer.getItem(overmind.state.undo.currentIndex);
+      if (colorIndex) {
+        paintingCanvasController.setCanvasColorIndex(colorIndex);
+      }
+      paintingCanvasController.render();
+    };
+    const restoreOverlayCanvas = (): void => {
+      console.warn('WebGL context restored (overlay canvas)');
+      // the overlay holds only ephemeral previews: rebuilding the GL state
+      // is enough, the next mouse move repaints it
+      overlayCanvasController.attachMainCanvas(overlayCanvas);
+    };
+    paintingCanvas.addEventListener('webglcontextlost', allowRestore);
+    overlayCanvas.addEventListener('webglcontextlost', allowRestore);
+    paintingCanvas.addEventListener('webglcontextrestored', restorePaintingCanvas);
+    overlayCanvas.addEventListener('webglcontextrestored', restoreOverlayCanvas);
+    return (): void => {
+      paintingCanvas.removeEventListener('webglcontextlost', allowRestore);
+      overlayCanvas.removeEventListener('webglcontextlost', allowRestore);
+      paintingCanvas.removeEventListener('webglcontextrestored', restorePaintingCanvas);
+      overlayCanvas.removeEventListener('webglcontextrestored', restoreOverlayCanvas);
+    };
+  }, []);
+}
 
 export function useInitTool(isZoomCanvas: boolean): void {
   const state = useAppState();

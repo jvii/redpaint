@@ -9,11 +9,22 @@ import { paintingCanvasController } from '../../paintingCanvas/PaintingCanvasCon
 export class OverlaySelectionIndicatorRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
+  private canvasTexture: WebGLTexture | null = null;
   private lastCanvasUpdate = 1;
+  // attribute/uniform locations are looked up once here: getUniformLocation /
+  // getAttribLocation are driver round-trips, too slow for per-draw-call use.
+  // (This renderer used to query gl.getParameter(CURRENT_PROGRAM) per draw,
+  // which returns null after a WebGL context loss — Safari's strict bindings
+  // then throw a TypeError on the getUniformLocation call.)
+  private a_position: number;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
+    this.a_position = gl.getAttribLocation(this.program, 'a_position');
+    // createProgram leaves the program bound; the canvas texture is always in
+    // texture unit 3, so the sampler uniform can be set once
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_canvasTexture'), 3);
   }
 
   /**
@@ -21,6 +32,10 @@ export class OverlaySelectionIndicatorRenderer {
    */
   public dispose(): void {
     console.log('Disposing OverlaySelectionIndicatorRenderer');
+    if (this.canvasTexture) {
+      this.gl.deleteTexture(this.canvasTexture);
+      this.canvasTexture = null;
+    }
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;
@@ -31,25 +46,12 @@ export class OverlaySelectionIndicatorRenderer {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
-
-    // update canvas texture if necessary
-
-    if (this.lastCanvasUpdate !== overmind.state.undo.lastUndoPointTime) {
-      this.loadMainCanvasAsTexture();
-      this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
-    }
-
-    const u_canvasTexture = gl.getUniformLocation(
-      gl.getParameter(gl.CURRENT_PROGRAM),
-      'u_canvasTexture'
-    );
-    gl.uniform1i(u_canvasTexture, 3); // texture unit 3
+    this.updateCanvasTexture();
 
     // vertex coords
 
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position);
 
     const boxLines = [
       new LineH(start, { x: end.x, y: start.y }),
@@ -76,25 +78,12 @@ export class OverlaySelectionIndicatorRenderer {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
-
-    // update canvas texture if necessary
-
-    if (this.lastCanvasUpdate !== overmind.state.undo.lastUndoPointTime) {
-      this.loadMainCanvasAsTexture();
-      this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
-    }
-
-    const u_canvasTexture = gl.getUniformLocation(
-      gl.getParameter(gl.CURRENT_PROGRAM),
-      'u_canvasTexture'
-    );
-    gl.uniform1i(u_canvasTexture, 3); // texture unit 3
+    this.updateCanvasTexture();
 
     // vertex coords
 
-    const a_position = gl.getAttribLocation(this.program, 'a_position');
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position);
 
     const crosshairLines = [
       new LineH({ x: 0, y: point.y }, { x: overmind.state.canvas.resolution.width, y: point.y }),
@@ -113,6 +102,14 @@ export class OverlaySelectionIndicatorRenderer {
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 
     this.gl.drawArrays(gl.LINES, 0, 2 * crosshairLines.length);
+  }
+
+  // re-upload the main canvas into the texture if it changed
+  private updateCanvasTexture(): void {
+    if (this.lastCanvasUpdate !== overmind.state.undo.lastUndoPointTime) {
+      this.loadMainCanvasAsTexture();
+      this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
+    }
   }
 
   private createProgram(): WebGLProgram {
@@ -152,13 +149,27 @@ export class OverlaySelectionIndicatorRenderer {
   private loadMainCanvasAsTexture(): void {
     const gl = this.gl;
 
-    // We store the canvas as a source texture in texture unit  so we
+    // We store the canvas as a source texture in texture unit 3 so we
     // call gl.activeTexture(gl.TEXTURE3) before gl.bindTexture
 
     gl.activeTexture(gl.TEXTURE3);
 
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    // one texture, created once and re-uploaded into — creating a new
+    // texture per update without deleting the old one leaks a full
+    // canvas-sized texture per undo point
+    if (!this.canvasTexture) {
+      this.canvasTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.canvasTexture);
+
+      // Set the parameters so we can render any size image.
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    } else {
+      gl.bindTexture(gl.TEXTURE_2D, this.canvasTexture);
+    }
+
     gl.texImage2D(
       gl.TEXTURE_2D,
       0,
@@ -167,11 +178,5 @@ export class OverlaySelectionIndicatorRenderer {
       gl.UNSIGNED_BYTE,
       paintingCanvasController.mainCanvas
     );
-
-    // Set the parameters so we can render any size image.
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   }
 }
