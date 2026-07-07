@@ -141,18 +141,20 @@ export function useLoadedImage(): void {
   }, [state.canvas.resolution]);
 }
 
+// scale converts page pixels to CSS pixels — per axis, because a screen
+// format's pixel aspect can stretch the two axes differently.
 export function useScrollToFocusPoint(
   canvasDiv: HTMLDivElement,
   focusPoint: Point | null,
-  zoomFactor = 1
+  scale: Point = { x: 1, y: 1 }
 ): void {
   useEffect((): void => {
     if (focusPoint === null) {
       return;
     }
     const scrollOptions = {
-      left: focusPoint.x * zoomFactor - canvasDiv.clientWidth / 2,
-      top: focusPoint.y * zoomFactor - canvasDiv.clientHeight / 2,
+      left: focusPoint.x * scale.x - canvasDiv.clientWidth / 2,
+      top: focusPoint.y * scale.y - canvasDiv.clientHeight / 2,
     };
     canvasDiv.scrollTo(scrollOptions);
   }, [focusPoint]);

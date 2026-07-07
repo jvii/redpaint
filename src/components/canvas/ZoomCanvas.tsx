@@ -12,14 +12,21 @@ export function ZoomCanvas(): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(20);
 
-  useScrollToFocusPoint(canvasDivRef.current, state.canvas.zoomFocusPoint, zoomFactor);
+  // page-pixel to CSS-pixel scale, per axis: the zoom magnification times
+  // the active screen format's pixel aspect
+  const scale: Point = {
+    x: zoomFactor * state.canvas.pixelAspect.x,
+    y: zoomFactor * state.canvas.pixelAspect.y,
+  };
+
+  useScrollToFocusPoint(canvasDivRef.current, state.canvas.zoomFocusPoint, scale);
   useRefreshZoomCanvas(state.toolbox.zoomModeOn);
 
   const updateZoomFocusPoint = (): void => {
-    actions.canvas.setZoomFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));
+    actions.canvas.setZoomFocusPoint(getDivFocusPoint(canvasDivRef.current, scale));
   };
   const updateScrollFocusPoint = (): void => {
-    actions.canvas.setScrollFocusPoint(getDivFocusPoint(canvasDivRef.current, zoomFactor));
+    actions.canvas.setScrollFocusPoint(getDivFocusPoint(canvasDivRef.current, scale));
   };
 
   const zoomIn = (): void => {
@@ -56,16 +63,16 @@ export function ZoomCanvas(): JSX.Element {
         onScroll={updateScrollFocusPoint}
         style={{ display: visible ? 'initial' : 'none' }}
       >
-        <Canvas isZoomCanvas={true} zoomFactor={zoomFactor} />
+        <Canvas isZoomCanvas={true} displayScale={scale} />
       </div>
     </>
   );
 }
 
-function getDivFocusPoint(div: HTMLDivElement, zoomFactor: number): Point {
+function getDivFocusPoint(div: HTMLDivElement, scale: Point): Point {
   return {
-    x: (div.scrollLeft + div.clientWidth / 2) / zoomFactor,
-    y: (div.scrollTop + div.clientHeight / 2) / zoomFactor,
+    x: (div.scrollLeft + div.clientWidth / 2) / scale.x,
+    y: (div.scrollTop + div.clientHeight / 2) / scale.y,
   };
 }
 

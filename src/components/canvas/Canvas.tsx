@@ -4,14 +4,21 @@ import { useAppState } from '../../overmind';
 import { getEventHandler } from '../../tools/util/util';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
+import { Point } from '../../types';
 import './Canvas.css';
 
 interface Props {
   isZoomCanvas: boolean;
-  zoomFactor?: number;
+  // CSS pixels per buffer pixel, per axis. The zoom view passes a uniform
+  // magnification; the main view passes the screen-format display scale,
+  // which can differ per axis (non-square pixels).
+  displayScale?: Point;
 }
 
-export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | null {
+export function Canvas({
+  isZoomCanvas,
+  displayScale = { x: 1, y: 1 },
+}: Props): JSX.Element | null {
   const state = useAppState();
 
   console.log('render ' + (isZoomCanvas ? 'ZoomCanvas' : 'MainCanvas'));
@@ -51,9 +58,12 @@ export function Canvas({ isZoomCanvas, zoomFactor = 1 }: Props): JSX.Element | n
 
   const tool = state.toolbox.activeTool;
 
+  // Displayed size vs drawing-buffer size: WebGL always renders at the page
+  // resolution (the width/height attributes below); the browser stretches
+  // that buffer to this CSS size with image-rendering: pixelated.
   const CSSZoom = {
-    width: state.canvas.resolution.width * zoomFactor,
-    height: state.canvas.resolution.height * zoomFactor,
+    width: state.canvas.resolution.width * displayScale.x,
+    height: state.canvas.resolution.height * displayScale.y,
   };
 
   const canvasStyle = {

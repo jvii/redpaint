@@ -25,10 +25,13 @@ type Props = {
   columnDividers?: boolean;
 };
 
-// DPaint always laid its 32-color palette out as 4 columns of 8 — the same
-// grid renders here and in the palette editor, so a swatch's position never
-// shifts between the two.
-const COLUMNS = 4;
+// DPaint laid its 32-color palette out as 4 columns of 8; Personal Paint
+// grew that shape downward for deeper screens (256 colors = 8 columns of
+// 32). Same rule here: fill columns of 8 up to 8 columns (64 colors), then
+// let the columns get taller. The same grid renders in the toolbox and the
+// palette editor so a swatch's position never shifts between the two.
+const BASE_ROWS = 8;
+const MAX_COLUMNS = 8;
 
 function Palette({
   selectedColorId,
@@ -40,7 +43,9 @@ function Palette({
   const state = useAppState()
   const actions = useActions()
 
-  const rows = Math.ceil(state.palette.paletteArray.length / COLUMNS);
+  const colorCount = state.palette.paletteArray.length;
+  const columns = Math.min(MAX_COLUMNS, Math.max(1, Math.ceil(colorCount / BASE_ROWS)));
+  const rows = Math.ceil(colorCount / columns);
 
   const isSelected = (id: string): boolean =>
     onSelectColor
@@ -76,7 +81,7 @@ function Palette({
   // matching DPaint's numbering (ids 1..rows are column 1, and so on)
   const gridStyle = {
     gridAutoFlow: 'column',
-    gridTemplateColumns: `repeat(${COLUMNS}, 1fr)`,
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
     gridTemplateRows: `repeat(${rows}, ${fillHeight ? '1fr' : 'auto'})`,
     columnGap: columnDividers ? MARK_WIDTH : 0,
     '--mark-width': `${MARK_WIDTH}px`,
