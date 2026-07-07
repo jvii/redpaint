@@ -6,6 +6,10 @@ import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+import {
+  setPendingCanvasContent,
+  takePendingCanvasContent,
+} from '../../canvas/pendingCanvasContent';
 
 // Recover from WebGL context loss (Safari in particular kills contexts
 // under GPU memory pressure). Without preventDefault on webglcontextlost
@@ -91,15 +95,14 @@ export function useUndo(): void {
   }, [state.undo.lastUndoRedoTime]);
 }
 
-// Load image to canvas when loadedImageURL changes.
-// The image is decoded via an offscreen 2d canvas and written into the color
-// index as true-color pixels (see docs/true-color-mode.md). Resizing the
-// canvas element resets the GL drawing buffer, so the decoded pixels are
-// uploaded in a second effect that runs after React has committed the resize.
+// Load image to canvas when loadedImageURL changes. The image is decoded via an
+// offscreen 2d canvas at its own size and written into the color index as
+// true-color pixels (see docs/true-color-mode.md). The canvas is resized to the
+// image, which re-inits the GL drawing buffer, so the decoded pixels are queued
+// and uploaded by the second effect once React has committed the resize.
 export function useLoadedImage(): void {
   const state = useAppState();
   const actions = useActions();
-  const pendingColorIndex = useRef<CanvasColorIndex | null>(null);
 
   useEffect((): void => {
     if (!state.canvas.loadedImageURL) {
@@ -117,10 +120,10 @@ export function useLoadedImage(): void {
         return;
       }
       ctx.drawImage(image, 0, 0);
-      const imageData = ctx.getImageData(0, 0, image.width, image.height);
-      pendingColorIndex.current = CanvasColorIndex.fromImageData(imageData);
-      // resizes the canvas element and re-inits the painting canvas controller;
-      // the effect below uploads the pixels once the resize has been committed
+      const colorIndex = CanvasColorIndex.fromImageData(
+        ctx.getImageData(0, 0, image.width, image.height)
+      );
+      setPendingCanvasContent(colorIndex);
       actions.canvas.setResolution({ width: image.width, height: image.height });
     };
     image.onerror = (): void => {
@@ -129,13 +132,16 @@ export function useLoadedImage(): void {
     image.src = state.canvas.loadedImageURL;
   }, [state.canvas.loadedImageURL]);
 
+  // Uploads content queued for after a resolution change — an image load or a
+  // content-preserving canvas resize — once React has committed the canvas
+  // element resize (which re-inits the GL drawing buffer).
   useEffect((): void => {
-    if (!pendingColorIndex.current) {
+    const pending = takePendingCanvasContent();
+    if (!pending) {
       return;
     }
-    paintingCanvasController.setCanvasColorIndex(pendingColorIndex.current);
+    paintingCanvasController.setCanvasColorIndex(pending);
     paintingCanvasController.render();
-    pendingColorIndex.current = null;
     actions.undo.setUndoPoint();
     actions.app.setLoading(false);
   }, [state.canvas.resolution]);

@@ -109,6 +109,53 @@ export class CanvasColorIndex {
     return { kind: 'index', colorNumber: this.indexArray[arrayIndex] + 1 };
   }
 
+  // Nearest-neighbor resize to a new size. Each destination pixel copies a
+  // whole source pixel verbatim, so indices, true colors and tags are all
+  // preserved and no new colors are introduced — the right scaling for pixel
+  // art and for keeping an indexed image indexed. Used to rescale the current
+  // canvas when the screen/canvas size changes instead of clearing it. Works
+  // directly on the stored (bottom-up) rows; proportional row mapping keeps
+  // the orientation, so no flip is needed here.
+  resizedTo(width: number, height: number): CanvasColorIndex {
+    const destArray = new Uint8Array(width * height * 4);
+    const dest32 = new Uint32Array(destArray.buffer);
+    const source32 = this.pixel32Array;
+    for (let destY = 0; destY < height; destY++) {
+      const sourceY = Math.min(this.height - 1, Math.floor((destY * this.height) / height));
+      const destRow = destY * width;
+      const sourceRow = sourceY * this.width;
+      for (let destX = 0; destX < width; destX++) {
+        const sourceX = Math.min(this.width - 1, Math.floor((destX * this.width) / width));
+        dest32[destRow + destX] = source32[sourceRow + sourceX];
+      }
+    }
+    return new CanvasColorIndex(width, height, destArray);
+  }
+
+  // Places this content, unscaled, into the top-left of a new canvas of the
+  // given size (canvas-coordinate top-left, i.e. the top rows align). The rest
+  // is filled with the background color; content that overflows the new size is
+  // cropped. Used to grow/crop the canvas when the screen size changes without
+  // scaling the pixels. Rows are stored bottom-up, so top-left alignment maps
+  // canvas row y to array row (height - 1 - y) in both.
+  placedInto(width: number, height: number, backgroundColorNumber: number): CanvasColorIndex {
+    const dest = CanvasColorIndex.createEmptyWithBackgroundColor(
+      width,
+      height,
+      backgroundColorNumber
+    );
+    const copyWidth = Math.min(width, this.width);
+    const copyHeight = Math.min(height, this.height);
+    for (let y = 0; y < copyHeight; y++) {
+      const sourceRow = (this.height - 1 - y) * this.width;
+      const destRow = (height - 1 - y) * width;
+      for (let x = 0; x < copyWidth; x++) {
+        dest.pixel32Array[destRow + x] = this.pixel32Array[sourceRow + x];
+      }
+    }
+    return dest;
+  }
+
   // Whole-pixel (RGBA as one 32-bit value) access, used by flood fill so that
   // true-color pixels compare by their full color, not just the R byte.
   getPixel32(pixel: Point): number {

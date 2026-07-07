@@ -57,6 +57,9 @@ export type State = {
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
   loadedImageURL: string;
+  // target size for a pending screen resize that would shrink the canvas (and
+  // so lose pixels): held while the Resize/Crop/Keep question is up.
+  pendingScreenResize: { width: number; height: number } | null;
 };
 
 export const state: State = {
@@ -74,4 +77,5 @@ export const state: State = {
   scrollFocusPoint: null,
   zoomFocusPoint: null,
   loadedImageURL: '',
+  pendingScreenResize: null,
 };
