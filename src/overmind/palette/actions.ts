@@ -2,7 +2,40 @@ import { Context } from '../../overmind'
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
 import { brushHistory } from '../../brush/BrushHistory';
+import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
+
+// Resizes the palette to exactly `colors` entries (the screen format's
+// Number of Colors). Existing colors are kept up to the new count; growing
+// fills the tail from the default palette for that depth. Everything that
+// references a color id is clamped into the new bounds. No remapping of
+// pixels already painted with dropped indices (yet) — they keep their
+// stored index and will show whatever that slot holds if the palette grows
+// back over them.
+export const setNumberOfColors = (context: Context, colors: number): void => {
+  const oldPalette = context.state.palette.palette;
+  const defaults = createPalette(colors);
+  const palette: { [id: string]: Color } = {};
+  for (let i = 1; i <= colors; i++) {
+    const id = String(i);
+    palette[id] = oldPalette[id] ? { ...oldPalette[id] } : defaults[id];
+  }
+  context.state.palette.palette = palette;
+
+  const clampId = (id: string): string => (Number(id) > colors ? String(colors) : id);
+  context.state.palette.foregroundColorId = clampId(context.state.palette.foregroundColorId);
+  context.state.palette.backgroundColorId = clampId(context.state.palette.backgroundColorId);
+  context.state.paletteEditor.editedColorId = clampId(context.state.paletteEditor.editedColorId);
+  context.state.palette.ranges = context.state.palette.ranges.map((range) => {
+    if (!range) {
+      return null;
+    }
+    if (Number(range.start) > colors) {
+      return null; // entirely outside the new palette
+    }
+    return { start: range.start, end: clampId(range.end) };
+  });
+};
 
 export const setForegroundColor = (context: Context, key: string): void => {
   context.state.palette.foregroundColorId = key;

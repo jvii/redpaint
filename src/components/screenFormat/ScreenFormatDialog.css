@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
+
+.screen-format__body {
+  display: flex;
+  gap: 30px;
+  padding: 24px 30px 6px 30px;
+  text-align: left;
+}
+
+.screen-format__right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.screen-format__body fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.screen-format__body legend {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  font-size: 12px;
+  padding: 0 0 12px 0;
+}
+
+/* The Format list stacks vertically (DPaint's column of screen formats);
+   the segmented toggle's shared shadow/borders still read as one gadget. */
+.screen-format__formats .retro-toggle {
+  flex-direction: column;
+}
+
+.screen-format__formats .retro-toggle__segment {
+  text-align: left;
+}
+
+.screen-format__formats .retro-toggle__segment:not(:first-child) {
+  border-left: 2px solid black;
+  border-top: 0;
+}
+
+/* eight color depths wrap to two rows so the requester stays compact */
+.screen-format__colors .retro-toggle {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.screen-format__colors .retro-toggle__segment {
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* borders collapse cleanly inside the grid: drop the default left-only rule
+   and paint a full box, so wrapped rows keep their top edge */
+.screen-format__colors .retro-toggle__segment:not(:first-child) {
+  border-left: 2px solid black;
+}
+
+.screen-format__colors .retro-toggle__segment:nth-child(n + 5) {
+  border-top: 0;
+}
+
+.screen-format__page .retro-toggle {
+  flex-direction: column;
+}
+
+.screen-format__page .retro-toggle__segment:not(:first-child) {
+  border-left: 2px solid black;
+  border-top: 0;
+}
+
+/* two equal-width segments spanning the same width as the page toggle above */
+.screen-format__scaling .retro-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.screen-format__scaling .retro-toggle__segment {
+  text-align: center;
+}

@@ -143,6 +143,13 @@ export function Menubar(): JSX.Element {
             <div className="menu__header">Image</div>
             <MenuItemOpen label="Open..." handleFile={handleImageFileOpen}></MenuItemOpen>
             <MenuItemSave label="Save..." onSave={handleImageSave}></MenuItemSave>
+            <MenuItem
+              label="Screen format..."
+              onClick={(): void => {
+                actions.dialog.open('SCREEN_FORMAT');
+                close();
+              }}
+            ></MenuItem>
           </div>
           <div className="menu__brush">
             <div className="menu__header">Brush</div>

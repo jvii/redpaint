@@ -9,6 +9,7 @@ import { BuiltInBrushes } from './toolbox/BuiltInBrushes';
 import { GlobalHotKeyManager } from './GlobalHotkeyManager';
 import { DialogManager } from './dialog/DialogManager';
 import { PaletteEditor } from './paletteEditor/PaletteEditor';
+import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
 import './App.css';
 
@@ -39,6 +40,7 @@ function App(): JSX.Element {
         </div>
       </div>
       <PaletteEditor></PaletteEditor>
+      <ScreenFormatDialog></ScreenFormatDialog>
       <SymmetrySettings></SymmetrySettings>
       <DialogManager></DialogManager>
       <GlobalHotKeyManager />
