@@ -10,6 +10,10 @@
   justify-content: space-between;
   gap: 24px;
   padding: 28px 30px 26px;
+  /* the 32-color grid height (8 rows of ~35px capped swatches) is the optimal
+     slider height; palettes with fewer rows keep it as a floor rather than
+     shrinking the sliders, taller ones (128/256) grow past it */
+  min-height: 282px;
 }
 
 /* Same 4-column grid as the toolbox palette (Palette.css) — only the width
@@ -19,7 +23,10 @@
   display: flex;
   flex: none;
   align-self: flex-start; /* keep intrinsic height; don't stretch the frame */
-  width: 148px;
+  /* up to 148px (4 capped columns); narrower palettes (1-2 columns) shrink to
+     their capped grid width instead of stretching each swatch to fill 148px */
+  width: fit-content;
+  max-width: 148px;
   flex-direction: column;
   border: 2px solid black;
 }
