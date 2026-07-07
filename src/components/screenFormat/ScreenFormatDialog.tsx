@@ -60,10 +60,6 @@ function ScreenFormatDialogOpen(): JSX.Element {
       ? state.palette.paletteArray.length
       : 32
   );
-  // What happens to the canvas (the pixel bitmap): resize it to one screenful,
-  // or leave it as it is under the new screen. TODO: resizing currently clears
-  // the canvas — a proper resize/remap of existing pixels is still to come.
-  const [canvasMode, setCanvasMode] = useState<'screen' | 'keep'>('screen');
   // How the screen is scaled to the window: uniform whole pixels with margin,
   // or a fractional stretch that fills the window (see ScaleMode).
   const [scaleMode, setScaleMode] = useState<ScaleMode>(state.canvas.scaleMode);
@@ -71,24 +67,33 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
     actions.palette.setNumberOfColors(colors);
-    actions.canvas.setScreenFormat({
-      formatId: resolvedFormatId,
-      scaleMode,
-      resizeCanvasToScreen: canvasMode === 'screen',
-    });
-    // Native has no fixed screen size, so "Resize to screen" means fill the
-    // window at 1:1 (the startup default). setScreenFormat skips its own resize
-    // for a null format, so size the canvas to the live viewport here instead.
-    if (resolvedFormatId === null && canvasMode === 'screen') {
-      const div = document.querySelector('.main-canvas-div');
-      if (div instanceof HTMLElement) {
-        actions.canvas.setResolution({ width: div.offsetWidth, height: div.offsetHeight });
-      }
-    }
+    actions.canvas.setScreenFormat({ formatId: resolvedFormatId, scaleMode });
     // the GL palette textures don't watch Overmind — push the resized palette
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
-    actions.dialog.close();
+
+    // Native has no page size, so it keeps the current canvas as-is (shown 1:1).
+    // An Amiga format fits the canvas to its dimensions: growing (or an equal
+    // size) anchors the existing pixels top-left at 1:1 — nothing lost —
+    // whereas shrinking in either dimension would crop, so ask how to handle it.
+    if (isNative) {
+      actions.dialog.close();
+      return;
+    }
+    const format = screenFormats[formatId as ScreenFormatId];
+    const target = { width: format.width, height: format.height };
+    const current = state.canvas.resolution;
+    const sameSize = target.width === current.width && target.height === current.height;
+    const wouldShrink = target.width < current.width || target.height < current.height;
+    if (sameSize) {
+      actions.dialog.close();
+    } else if (wouldShrink) {
+      actions.canvas.setPendingScreenResize(target);
+      actions.dialog.open('SCREEN_RESIZE');
+    } else {
+      actions.canvas.resizeCanvasPlacingContent(target);
+      actions.dialog.close();
+    }
   };
 
   return (
@@ -114,21 +119,9 @@ function ScreenFormatDialogOpen(): JSX.Element {
               onChange={(value): void => setColors(Number(value))}
             />
           </fieldset>
-          <fieldset className="screen-format__canvas">
-            <legend>Canvas</legend>
-            <RetroToggle
-              variant="column"
-              options={[
-                { value: 'screen', label: 'Resize to screen' },
-                { value: 'keep', label: 'Keep canvas' },
-              ]}
-              value={canvasMode}
-              onChange={(value): void => setCanvasMode(value as 'screen' | 'keep')}
-            />
-          </fieldset>
           <fieldset className="screen-format__scaling">
-            <legend>Scaling</legend>
-            {/* scaling only affects a simulated screen; native pixels are 1:1 */}
+            <legend>View scaling</legend>
+            {/* view scaling only applies to a simulated screen; native is 1:1 */}
             <RetroToggle
               variant="grid"
               columns={2}

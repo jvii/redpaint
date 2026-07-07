@@ -35,6 +35,30 @@ export function DialogManager(): JSX.Element | null {
     actions.dialog.close();
   };
 
+  // The chosen screen is smaller than the current canvas, so fitting it would
+  // lose pixels. Scale the canvas down to fit, crop it to the top-left, or keep
+  // the canvas at its size (it just scrolls within the smaller screen).
+  const resizeScreenScale = (): void => {
+    const target = state.canvas.pendingScreenResize;
+    if (target) {
+      actions.canvas.resizeCanvasScalingContent(target);
+    }
+    actions.canvas.setPendingScreenResize(null);
+    actions.dialog.close();
+  };
+  const resizeScreenCrop = (): void => {
+    const target = state.canvas.pendingScreenResize;
+    if (target) {
+      actions.canvas.resizeCanvasPlacingContent(target);
+    }
+    actions.canvas.setPendingScreenResize(null);
+    actions.dialog.close();
+  };
+  const resizeScreenKeep = (): void => {
+    actions.canvas.setPendingScreenResize(null);
+    actions.dialog.close();
+  };
+
   switch (state.dialog.activeDialog) {
     case 'PASTE_SELECT':
       return (
@@ -52,6 +76,20 @@ export function DialogManager(): JSX.Element | null {
         <Dialog header="Image from clipboard" prompt="Clipboard item not recognized as an image.">
           <RetroButton variant="primary" onClick={actions.dialog.close}>
             OK
+          </RetroButton>
+        </Dialog>
+      );
+
+    case 'SCREEN_RESIZE':
+      return (
+        <Dialog
+          header="Screen Format"
+          prompt="The image is larger than the new screen. Resize it to fit, crop it, or keep the canvas at its current size?"
+        >
+          <RetroButton onClick={resizeScreenScale}>Resize</RetroButton>
+          <RetroButton onClick={resizeScreenCrop}>Crop</RetroButton>
+          <RetroButton variant="primary" onClick={resizeScreenKeep}>
+            Keep original canvas size
           </RetroButton>
         </Dialog>
       );
