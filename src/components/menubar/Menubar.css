@@ -80,7 +80,7 @@
   top: 50px; /* aligned to the bottom of the menubar */
   font-family: 'Press Start 2P';
   background-color: rgb(201, 201, 201); /* fallback color */
-  background-color: rgba(17, 51, 202, 0.9);
+  background-color: rgba(0, 85, 170, 0.9);
   overflow-y: hidden; /* Disable vertical scroll */
   transition: height 0.12s ease-out;
   display: flex;
@@ -130,7 +130,7 @@
 }
 
 .menu__item-label:hover {
-  color: #ff9900;
+  color: #ff8800;
 }
 
 .menu__item-label:disabled {
@@ -162,5 +162,5 @@
 }
 
 .menu__closebtn:hover {
-  color: #ff9900;
+  color: #ff8800;
 }

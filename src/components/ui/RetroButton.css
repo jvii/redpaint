@@ -39,7 +39,7 @@
 
 .retro-button--primary {
   color: black;
-  background-color: #ff9900;
+  background-color: #ff8800;
 }
 
 /* only the primary shifts color on hover */
@@ -50,7 +50,7 @@
 .retro-button--secondary {
   color: white;
   background-color: black;
-  --retro-shadow-color: #ff9900;
+  --retro-shadow-color: #ff8800;
 }
 
 .retro-button:disabled {

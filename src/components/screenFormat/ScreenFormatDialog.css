@@ -6,7 +6,9 @@
      right edge lines up with the OK button below */
   justify-content: space-between;
   gap: 30px;
-  padding: 24px 30px 6px 30px;
+  /* generous bottom padding sets the groups apart from the footer buttons
+     (the requester has no divider between them) */
+  padding: 24px 30px 28px 30px;
   text-align: left;
 }
 

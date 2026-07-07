@@ -90,7 +90,7 @@
 }
 
 .palette-editor__slider-input:focus {
-  outline: 2px solid rgb(17, 51, 202);
+  outline: 2px solid rgb(0, 85, 170);
   outline-offset: 2px;
   box-shadow: 1px 1px 0 0 black;
   transform: translate(1px, 1px);
@@ -149,12 +149,12 @@
   font-size: 16px;
   line-height: 1.4;
   color: black;
-  background-color: #ff9900;
+  background-color: #ff8800;
   border: 2px solid black;
   padding: 8px 12px;
   /* blue, not black: the bubble floats over the black canvas where a
      black shadow vanishes */
-  box-shadow: 2px 2px 0 0 rgb(17, 51, 202);
+  box-shadow: 2px 2px 0 0 rgb(0, 85, 170);
   pointer-events: none;
 }
 
@@ -179,7 +179,7 @@
   transform: translateY(-50%);
   border: 7px solid transparent;
   border-left: none;
-  border-right: 9px solid #ff9900;
+  border-right: 9px solid #ff8800;
 }
 
 /* two fixed rows: the range slot toggle, then Set start/end + Clear */
