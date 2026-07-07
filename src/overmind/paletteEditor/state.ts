@@ -14,10 +14,9 @@ export type State = {
   // assign the currently edited color as that endpoint.
   activeRangeIndex: number | null;
   // An action awaiting a color pick: the next palette click completes it
-  // (DPaint's sticky Copy/Ex/Spread/Range modes). The two-color actions
-  // (copy/swap/spread) apply against the currently edited color; the range
-  // endpoint setters assign the clicked color to the active range.
-  armedAction: 'copy' | 'swap' | 'spread' | 'rangeStart' | 'rangeEnd' | null;
+  // against the currently edited color (DPaint's sticky Copy/Ex/Spread/
+  // Range modes) — for 'range', selected color = start, clicked = end.
+  armedAction: 'copy' | 'swap' | 'spread' | 'range' | null;
 };
 
 export const state: State = {

@@ -120,7 +120,7 @@ export function PaletteEditor(): JSX.Element | null {
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
 
   return (
-    <Modal header="Color palette" width={640}>
+    <Modal header="Color palette" width={600}>
       <div className="palette-editor__container">
         {/* DPaint's Palette Window layout: sliders on the left, swatch grid
             on the right */}
@@ -187,8 +187,7 @@ export function PaletteEditor(): JSX.Element | null {
               {state.paletteEditor.armedAction === 'copy' && 'Select the color to copy to'}
               {state.paletteEditor.armedAction === 'swap' && 'Select the color to swap with'}
               {state.paletteEditor.armedAction === 'spread' && 'Select the last color of the spread'}
-              {state.paletteEditor.armedAction === 'rangeStart' && 'Select the first color of the range'}
-              {state.paletteEditor.armedAction === 'rangeEnd' && 'Select the last color of the range'}
+              {state.paletteEditor.armedAction === 'range' && 'Select the last color of the range'}
             </span>
           )}
         </div>
@@ -232,35 +231,29 @@ export function PaletteEditor(): JSX.Element | null {
           onChange={(value): void => actions.paletteEditor.selectRange(Number(value))}
         />
 
-        {/* Set start/end arm an endpoint pick: the next palette click
-            becomes that endpoint of the active range */}
+        {/* DPaint's RANGE flow: the selected color is the range's first
+            color, the next palette click its last */}
         <div className="palette-editor__range-row">
           <span className="palette-editor__range-endpoints">
             <RetroButton
-              variant={state.paletteEditor.armedAction === 'rangeStart' ? 'secondary' : 'basic'}
+              variant={state.paletteEditor.armedAction === 'range' ? 'secondary' : 'basic'}
               disabled={activeRangeIndex === null}
-              onClick={(): void => actions.paletteEditor.armAction('rangeStart')}
+              onClick={(): void => actions.paletteEditor.armAction('range')}
             >
-              {state.paletteEditor.armedAction === 'rangeStart' ? 'Cancel set' : 'Set start'}
+              {state.paletteEditor.armedAction === 'range' ? 'Cancel set' : 'Set range'}
             </RetroButton>
             {activeRange && (
-              <span
-                className="palette-editor__range-swatch"
-                style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]) }}
-              ></span>
-            )}
-            <RetroButton
-              variant={state.paletteEditor.armedAction === 'rangeEnd' ? 'secondary' : 'basic'}
-              disabled={activeRangeIndex === null}
-              onClick={(): void => actions.paletteEditor.armAction('rangeEnd')}
-            >
-              {state.paletteEditor.armedAction === 'rangeEnd' ? 'Cancel set' : 'Set end'}
-            </RetroButton>
-            {activeRange && (
-              <span
-                className="palette-editor__range-swatch"
-                style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]) }}
-              ></span>
+              <>
+                <span
+                  className="palette-editor__range-swatch"
+                  style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]) }}
+                ></span>
+                <span className="palette-editor__range-arrow"></span>
+                <span
+                  className="palette-editor__range-swatch"
+                  style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]) }}
+                ></span>
+              </>
             )}
           </span>
           <span className="palette-editor__range-clear">
