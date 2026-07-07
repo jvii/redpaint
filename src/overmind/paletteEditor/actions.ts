@@ -21,7 +21,7 @@ export const open = (context: Context): void => {
   context.state.paletteEditor.editedColorId = context.state.palette.foregroundColorId;
   context.state.paletteEditor.paletteSnapshot = copyPalette(context.state.palette.palette);
   context.state.paletteEditor.rangesSnapshot = copyRanges(context.state.palette.ranges);
-  context.state.paletteEditor.activeRangeIndex = null;
+  context.state.paletteEditor.activeRangeIndex = 0; // Range 1 preselected
   context.state.paletteEditor.armedAction = null;
   context.state.paletteEditor.isOpen = true;
 };
@@ -65,14 +65,13 @@ export const selectEditedColor = (context: Context, colorId: string): void => {
       fromId: context.state.paletteEditor.editedColorId,
       toId: colorId,
     });
-  } else if (armed === 'rangeStart' || armed === 'rangeEnd') {
+  } else if (armed === 'range') {
     const rangeIndex = context.state.paletteEditor.activeRangeIndex;
     if (rangeIndex !== null) {
-      const existing = context.state.palette.ranges[rangeIndex];
       context.actions.palette.setRange({
         rangeIndex,
-        start: armed === 'rangeStart' ? colorId : (existing?.start ?? colorId),
-        end: armed === 'rangeEnd' ? colorId : (existing?.end ?? colorId),
+        start: context.state.paletteEditor.editedColorId,
+        end: colorId,
       });
     }
   }
@@ -84,7 +83,7 @@ export const selectEditedColor = (context: Context, colorId: string): void => {
 // button doubles as its own cancel). Arming one action replaces the other.
 export const armAction = (
   context: Context,
-  action: 'copy' | 'swap' | 'spread' | 'rangeStart' | 'rangeEnd'
+  action: 'copy' | 'swap' | 'spread' | 'range'
 ): void => {
   context.state.paletteEditor.armedAction =
     context.state.paletteEditor.armedAction === action ? null : action;
@@ -92,11 +91,8 @@ export const armAction = (
 
 export const selectRange = (context: Context, rangeIndex: number): void => {
   context.state.paletteEditor.activeRangeIndex = rangeIndex;
-  // a pending endpoint pick was for the previously selected slot
-  if (
-    context.state.paletteEditor.armedAction === 'rangeStart' ||
-    context.state.paletteEditor.armedAction === 'rangeEnd'
-  ) {
+  // a pending range pick was for the previously selected slot
+  if (context.state.paletteEditor.armedAction === 'range') {
     context.state.paletteEditor.armedAction = null;
   }
 };

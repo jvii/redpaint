@@ -11,6 +11,7 @@
   -webkit-font-smoothing: none;
   font-size: 16px;
   text-transform: none;
+  white-space: nowrap; /* a gadget label never breaks lines */
   padding: 10px 16px;
   border: 2px solid black;
   border-radius: 0;

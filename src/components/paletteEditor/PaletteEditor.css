@@ -215,9 +215,17 @@
   gap: 8px;
 }
 
-/* destructive-ish, so pushed away from the setters and styled secondary */
+/* equal-width endpoint buttons: the two rows' swatches line up, and the
+   Set start/end <-> Cancel set label morph doesn't resize the button */
+.palette-editor__range-endpoints .retro-button {
+  min-width: 200px;
+}
+
+/* destructive-ish, so pushed away from the setters and styled secondary;
+   the padding keeps a minimum gap even when the row is at its widest */
 .palette-editor__range-clear {
   margin-left: auto;
+  padding-left: 24px;
 }
 
 .palette-editor__range-swatch {
@@ -225,4 +233,13 @@
   width: 20px;
   height: 20px;
   border: 2px solid black;
+}
+
+/* start -> end direction marker between the endpoint swatches */
+.palette-editor__range-arrow {
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-right: none;
+  border-left: 8px solid black;
 }
