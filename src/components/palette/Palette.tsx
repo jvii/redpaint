@@ -37,6 +37,15 @@ function columnCountFor(colorCount: number): number {
   return 8;
 }
 
+// Palette editor only: cap the square swatch at roughly the 32-color size
+// (the 148px grid split into 4 columns). Without a cap a low-column palette
+// (8 colors = 1 column) would blow each swatch up to the full grid width and
+// make the grid — and the sliders stretched to match it — many times too
+// tall. Wider palettes already have >4 columns, so their cells fall below the
+// cap and shrink to fit as before; height then tracks the row count, not the
+// column scarcity.
+const EDITOR_MAX_CELL_PX = 35;
+
 function Palette({
   selectedColorId,
   onSelectColor,
@@ -85,7 +94,9 @@ function Palette({
   // matching DPaint's numbering (ids 1..rows are column 1, and so on)
   const gridStyle = {
     gridAutoFlow: 'column',
-    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gridTemplateColumns: fillHeight
+      ? `repeat(${columns}, 1fr)`
+      : `repeat(${columns}, minmax(0, ${EDITOR_MAX_CELL_PX}px))`,
     gridTemplateRows: `repeat(${rows}, ${fillHeight ? '1fr' : 'auto'})`,
     columnGap: columnDividers ? MARK_WIDTH : 0,
     '--mark-width': `${MARK_WIDTH}px`,
