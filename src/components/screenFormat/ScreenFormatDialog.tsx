@@ -8,10 +8,27 @@ import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 
-const FORMAT_OPTIONS = Object.values(screenFormats).map((format) => ({
-  value: format.id,
-  label: `${format.name} ${format.width}x${format.height}`,
-}));
+// 'Native pixels' is the no-simulation state (screenFormatId === null): the
+// page is shown 1:1 in the window, no Amiga screen scaling — the startup mode.
+const NATIVE = 'native';
+type FormatChoice = ScreenFormatId | typeof NATIVE;
+
+const FORMAT_OPTIONS = [
+  { value: NATIVE, label: 'Native pixels' },
+  ...Object.values(screenFormats).map((format) => ({
+    value: format.id,
+    // name on the left, resolution right-aligned on the same row (the segment
+    // is laid out as a flex row in CSS)
+    label: (
+      <>
+        <span className="screen-format__format-name">{format.name}</span>
+        <span className="screen-format__format-res">
+          {format.width}x{format.height}
+        </span>
+      </>
+    ),
+  })),
+];
 
 // DPaint II offered 2..32 (the Amiga's bitplane depths); 64/128/256 are ours
 const COLOR_OPTIONS = [2, 4, 8, 16, 32, 64, 128, 256].map((colors) => ({
@@ -34,26 +51,40 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const actions = useActions();
 
   // Draft selections, applied only on OK (Cancel changes nothing).
-  const [formatId, setFormatId] = useState<ScreenFormatId>(state.canvas.screenFormatId ?? 'loRes');
+  const [formatId, setFormatId] = useState<FormatChoice>(
+    state.canvas.screenFormatId ?? NATIVE
+  );
+  const isNative = formatId === NATIVE;
   const [colors, setColors] = useState(
     COLOR_OPTIONS.some((option) => Number(option.value) === state.palette.paletteArray.length)
       ? state.palette.paletteArray.length
       : 32
   );
-  // DPaint's page choice: resize the page to one screenful (clears the
-  // drawing for now) or keep the current page under the new screen
-  const [pageMode, setPageMode] = useState<'screen' | 'keep'>('screen');
+  // What happens to the canvas (the pixel bitmap): resize it to one screenful,
+  // or leave it as it is under the new screen. TODO: resizing currently clears
+  // the canvas — a proper resize/remap of existing pixels is still to come.
+  const [canvasMode, setCanvasMode] = useState<'screen' | 'keep'>('screen');
   // How the screen is scaled to the window: uniform whole pixels with margin,
   // or a fractional stretch that fills the window (see ScaleMode).
   const [scaleMode, setScaleMode] = useState<ScaleMode>(state.canvas.scaleMode);
 
   const handleOk = (): void => {
+    const resolvedFormatId = isNative ? null : formatId;
     actions.palette.setNumberOfColors(colors);
     actions.canvas.setScreenFormat({
-      formatId,
+      formatId: resolvedFormatId,
       scaleMode,
-      resizePageToScreen: pageMode === 'screen',
+      resizeCanvasToScreen: canvasMode === 'screen',
     });
+    // Native has no fixed screen size, so "Resize to screen" means fill the
+    // window at 1:1 (the startup default). setScreenFormat skips its own resize
+    // for a null format, so size the canvas to the live viewport here instead.
+    if (resolvedFormatId === null && canvasMode === 'screen') {
+      const div = document.querySelector('.main-canvas-div');
+      if (div instanceof HTMLElement) {
+        actions.canvas.setResolution({ width: div.offsetWidth, height: div.offsetHeight });
+      }
+    }
     // the GL palette textures don't watch Overmind — push the resized palette
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
@@ -61,50 +92,57 @@ function ScreenFormatDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Choose Screen Format" width={620}>
+    <Modal header="Screen Format" width={840}>
       <div className="screen-format__body">
         <fieldset className="screen-format__formats">
-          <legend>Format</legend>
+          <legend>Resolution</legend>
           <RetroToggle
+            variant="column"
             options={FORMAT_OPTIONS}
             value={formatId}
-            onChange={(value): void => setFormatId(value as ScreenFormatId)}
+            onChange={(value): void => setFormatId(value as FormatChoice)}
           />
         </fieldset>
         <div className="screen-format__right">
           <fieldset className="screen-format__colors">
             <legend>Number of Colors</legend>
             <RetroToggle
+              variant="grid"
+              columns={4}
               options={COLOR_OPTIONS}
               value={String(colors)}
               onChange={(value): void => setColors(Number(value))}
             />
           </fieldset>
-          <fieldset className="screen-format__page">
-            <legend>Page</legend>
+          <fieldset className="screen-format__canvas">
+            <legend>Canvas</legend>
             <RetroToggle
+              variant="column"
               options={[
-                { value: 'screen', label: 'Screen Size Page' },
-                { value: 'keep', label: 'Keep Same Page' },
+                { value: 'screen', label: 'Resize to screen' },
+                { value: 'keep', label: 'Keep canvas' },
               ]}
-              value={pageMode}
-              onChange={(value): void => setPageMode(value as 'screen' | 'keep')}
+              value={canvasMode}
+              onChange={(value): void => setCanvasMode(value as 'screen' | 'keep')}
             />
           </fieldset>
           <fieldset className="screen-format__scaling">
             <legend>Scaling</legend>
+            {/* scaling only affects a simulated screen; native pixels are 1:1 */}
             <RetroToggle
+              variant="grid"
+              columns={2}
               options={[
                 { value: 'integer', label: 'Integer' },
                 { value: 'stretch', label: 'Stretch' },
               ]}
               value={scaleMode}
               onChange={(value): void => setScaleMode(value as ScaleMode)}
+              disabled={isNative}
             />
           </fieldset>
         </div>
       </div>
-      <hr className="retro-divider" />
       <RetroButton variant="secondary" onClick={actions.dialog.close}>
         Cancel
       </RetroButton>

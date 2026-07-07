@@ -1,9 +1,22 @@
 @import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
 
-/* one shared drop shadow for the whole segmented group */
+/* one shared drop shadow for the whole segmented group; the variant sets the
+   flow (row / vertical stack / N-column grid) */
 .retro-toggle {
-  display: inline-flex;
   box-shadow: 4px 4px 0 0 black;
+}
+
+.retro-toggle--row {
+  display: inline-flex;
+}
+
+.retro-toggle--column {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.retro-toggle--grid {
+  display: grid;
 }
 
 .retro-toggle__segment {
@@ -20,9 +33,14 @@
   cursor: pointer;
 }
 
-/* single 2px divider between the segments */
-.retro-toggle__segment:not(:first-child) {
+/* collapse the seam a neighbor already draws, so meeting edges stay a single
+   2px line (set by the component from each segment's row/column position) */
+.retro-toggle__segment--collapse-left {
   border-left: 0;
+}
+
+.retro-toggle__segment--collapse-top {
+  border-top: 0;
 }
 
 /* Workbench 1.3 orange (same accent as the menubar text hover) */
@@ -31,16 +49,38 @@
   color: white;
 }
 
-/* the selected segment sits pressed-in */
+/* the selected segment sits pressed-in, its label in Workbench orange the
+   way DPaint highlighted the active toggle text */
 .retro-toggle__segment--selected {
   background-color: rgb(17, 51, 202);
-  color: white;
+  color: #ff9900;
   box-shadow: inset 3px 3px 0 0 rgb(10, 28, 130);
 }
 
 /* clicking the selected segment is a no-op, so no hover feedback */
 .retro-toggle__segment--selected:hover {
   background-color: rgb(17, 51, 202);
-  color: white;
+  color: #ff9900;
   cursor: default;
+}
+
+/* disabled: greyed out, no hover accent, still shows the selected segment */
+.retro-toggle--disabled {
+  opacity: 0.4;
+}
+
+.retro-toggle--disabled .retro-toggle__segment {
+  cursor: default;
+  color: rgb(130, 130, 130);
+}
+
+.retro-toggle--disabled .retro-toggle__segment:hover {
+  background-color: transparent;
+  color: rgb(130, 130, 130);
+}
+
+.retro-toggle--disabled .retro-toggle__segment--selected,
+.retro-toggle--disabled .retro-toggle__segment--selected:hover {
+  background-color: rgb(17, 51, 202);
+  color: #ff9900;
 }

@@ -19,17 +19,17 @@ export type ScreenFormat = {
 };
 
 export const screenFormats: { [id in ScreenFormatId]: ScreenFormat } = {
-  loRes: { id: 'loRes', name: 'Lo-Res', width: 320, height: 256, aspectX: 1, aspectY: 1 },
-  medRes: { id: 'medRes', name: 'Med-Res', width: 640, height: 256, aspectX: 0.5, aspectY: 1 },
+  loRes: { id: 'loRes', name: 'Amiga Lo-Res', width: 320, height: 256, aspectX: 1, aspectY: 1 },
+  medRes: { id: 'medRes', name: 'Amiga Med-Res', width: 640, height: 256, aspectX: 0.5, aspectY: 1 },
   interlace: {
     id: 'interlace',
-    name: 'Interlace',
+    name: 'Amiga Interlace',
     width: 320,
     height: 512,
     aspectX: 1,
     aspectY: 0.5,
   },
-  hiRes: { id: 'hiRes', name: 'Hi-Res', width: 640, height: 512, aspectX: 0.5, aspectY: 0.5 },
+  hiRes: { id: 'hiRes', name: 'Amiga Hi-Res', width: 640, height: 512, aspectX: 0.5, aspectY: 0.5 },
 };
 
 // How the simulated screen is scaled to the browser window:
@@ -42,12 +42,12 @@ export const screenFormats: { [id in ScreenFormatId]: ScreenFormat } = {
 export type ScaleMode = 'stretch' | 'integer';
 
 export type State = {
-  // the page: the actual pixel bitmap being painted (GL drawing buffer size)
+  // the canvas: the actual pixel bitmap being painted (GL drawing buffer size)
   resolution: { width: number; height: number };
-  // the simulated screen: null means no simulation — the page is shown 1:1
+  // the simulated screen: null means no simulation — the canvas is shown 1:1
   // in the browser window (the startup behavior). With a format selected,
-  // the main canvas is scaled so one screenful of the page fills the
-  // window, and a page larger than the screen scrolls.
+  // the main canvas is scaled so one screenful of the canvas fills the
+  // window, and a canvas larger than the screen scrolls.
   screenFormatId: ScreenFormatId | null;
   scaleMode: ScaleMode;
   // the active format's pixel display shape ({1,1} when no format): every
