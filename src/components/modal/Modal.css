@@ -43,7 +43,7 @@
 .modal__header {
   padding: 17px 20px 12px 20px;
   font-size: 16px;
-  background-color: rgb(17, 51, 202);
+  background-color: rgb(0, 85, 170);
   color: white;
   border-radius: 3px 3px 0 0; /* fits inside the 2px window border */
   border-bottom: 1px rgb(209, 209, 209) solid;

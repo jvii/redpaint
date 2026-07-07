@@ -44,7 +44,7 @@
   height: 12px;
   width: calc((100% - 20px) * var(--retro-slider-fill, 0) + 2px);
   border-right: none; /* raw end, hidden under the thumb's border */
-  background: #ff9900;
+  background: #ff8800;
 }
 
 .retro-slider__remainder {
@@ -73,7 +73,7 @@
 /* the native focus ring is invisible along with the input; give the drawn
    thumb one instead */
 .retro-slider input:focus-visible ~ .retro-slider__thumb {
-  outline: 2px solid rgb(17, 51, 202);
+  outline: 2px solid rgb(0, 85, 170);
   outline-offset: 2px;
 }
 
