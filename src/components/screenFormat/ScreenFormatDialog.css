@@ -2,6 +2,9 @@
 
 .screen-format__body {
   display: flex;
+  /* resolution list hugs the left, the toggle groups hug the right so their
+     right edge lines up with the OK button below */
+  justify-content: space-between;
   gap: 30px;
   padding: 24px 30px 6px 30px;
   text-align: left;
@@ -10,6 +13,7 @@
 .screen-format__right {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 24px;
 }
 
@@ -23,59 +27,36 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   color: black;
-  font-size: 12px;
+  /* Press Start 2P only reads crisply at multiples of 8 (16 is the floor) */
+  font-size: 16px;
   padding: 0 0 12px 0;
 }
 
-/* The Format list stacks vertically (DPaint's column of screen formats);
-   the segmented toggle's shared shadow/borders still read as one gadget. */
-.screen-format__formats .retro-toggle {
-  flex-direction: column;
-}
+/* Layout (vertical / grid) and border seams are handled by RetroToggle's
+   variant prop; the rules below are only per-group content styling. */
 
+/* resolution rows: name on the left, resolution pushed to the right edge */
 .screen-format__formats .retro-toggle__segment {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
   text-align: left;
 }
 
-.screen-format__formats .retro-toggle__segment:not(:first-child) {
-  border-left: 2px solid black;
-  border-top: 0;
+.screen-format__format-name,
+.screen-format__format-res {
+  white-space: nowrap;
 }
 
-/* eight color depths wrap to two rows so the requester stays compact */
-.screen-format__colors .retro-toggle {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+/* resolution reads as secondary to the format name */
+.screen-format__format-res {
+  opacity: 0.75;
 }
 
 .screen-format__colors .retro-toggle__segment {
   padding: 12px 0;
   text-align: center;
-}
-
-/* borders collapse cleanly inside the grid: drop the default left-only rule
-   and paint a full box, so wrapped rows keep their top edge */
-.screen-format__colors .retro-toggle__segment:not(:first-child) {
-  border-left: 2px solid black;
-}
-
-.screen-format__colors .retro-toggle__segment:nth-child(n + 5) {
-  border-top: 0;
-}
-
-.screen-format__page .retro-toggle {
-  flex-direction: column;
-}
-
-.screen-format__page .retro-toggle__segment:not(:first-child) {
-  border-left: 2px solid black;
-  border-top: 0;
-}
-
-/* two equal-width segments spanning the same width as the page toggle above */
-.screen-format__scaling .retro-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
 }
 
 .screen-format__scaling .retro-toggle__segment {

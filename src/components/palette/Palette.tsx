@@ -25,13 +25,17 @@ type Props = {
   columnDividers?: boolean;
 };
 
-// DPaint laid its 32-color palette out as 4 columns of 8; Personal Paint
-// grew that shape downward for deeper screens (256 colors = 8 columns of
-// 32). Same rule here: fill columns of 8 up to 8 columns (64 colors), then
-// let the columns get taller. The same grid renders in the toolbox and the
-// palette editor so a swatch's position never shifts between the two.
-const BASE_ROWS = 8;
-const MAX_COLUMNS = 8;
+// Column count per palette depth. DPaint laid its 32-color palette out as 4
+// columns of 8; we keep 4 columns up to 64 (so 64 is 4x16, wide swatches),
+// then widen to 8 for the deep palettes — Personal Paint style (256 = 8x32).
+// The same grid renders in the toolbox and the palette editor so a swatch's
+// position never shifts between the two.
+function columnCountFor(colorCount: number): number {
+  if (colorCount <= 8) return 1;
+  if (colorCount <= 16) return 2;
+  if (colorCount <= 64) return 4;
+  return 8;
+}
 
 function Palette({
   selectedColorId,
@@ -44,7 +48,7 @@ function Palette({
   const actions = useActions()
 
   const colorCount = state.palette.paletteArray.length;
-  const columns = Math.min(MAX_COLUMNS, Math.max(1, Math.ceil(colorCount / BASE_ROWS)));
+  const columns = columnCountFor(colorCount);
   const rows = Math.ceil(colorCount / columns);
 
   const isSelected = (id: string): boolean =>
