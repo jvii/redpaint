@@ -98,7 +98,8 @@
 
 .menu__status {
   display: flex;
-  align-items: center;
+  /* the gadgets hang from the top of the strip, in line with the close button */
+  align-items: flex-start;
   gap: 20px;
   padding-bottom: 22px;
   margin-bottom: 22px;
