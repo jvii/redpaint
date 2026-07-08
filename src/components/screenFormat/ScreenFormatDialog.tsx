@@ -2,8 +2,6 @@ import { JSX, useState } from 'react';
 import './ScreenFormatDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { ScaleMode, ScreenFormatId, screenFormats } from '../../overmind/canvas/state';
-import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
-import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
@@ -66,34 +64,41 @@ function ScreenFormatDialogOpen(): JSX.Element {
 
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
-    actions.palette.setNumberOfColors(colors);
-    actions.canvas.setScreenFormat({ formatId: resolvedFormatId, scaleMode });
-    // the GL palette textures don't watch Overmind — push the resized palette
-    paintingCanvasController.updatePalette();
-    overlayCanvasController.updatePalette();
 
     // Native has no page size, so it keeps the current canvas as-is (shown 1:1).
-    // An Amiga format fits the canvas to its dimensions: growing (or an equal
-    // size) anchors the existing pixels top-left at 1:1 — nothing lost —
-    // whereas shrinking in either dimension would crop, so ask how to handle it.
     if (isNative) {
+      actions.canvas.applyScreenFormat({ formatId: null, scaleMode, colors });
       actions.dialog.close();
       return;
     }
+
+    // An Amiga format fits the canvas to its dimensions. Growing (or an equal
+    // size) anchors the existing pixels top-left at 1:1 — nothing is lost, so
+    // commit straight away. Shrinking in either dimension would crop, so hold
+    // the *whole* change unapplied and ask; that way Cancel undoes nothing
+    // (reverting a narrowed palette would lose the dropped colors for good).
     const format = screenFormats[formatId as ScreenFormatId];
     const target = { width: format.width, height: format.height };
     const current = state.canvas.resolution;
     const sameSize = target.width === current.width && target.height === current.height;
     const wouldShrink = target.width < current.width || target.height < current.height;
-    if (sameSize) {
-      actions.dialog.close();
-    } else if (wouldShrink) {
-      actions.canvas.setPendingScreenResize(target);
+
+    if (wouldShrink) {
+      actions.canvas.setPendingScreenFormat({
+        formatId: resolvedFormatId,
+        scaleMode,
+        colors,
+        target,
+      });
       actions.dialog.open('SCREEN_RESIZE');
-    } else {
-      actions.canvas.resizeCanvasPlacingContent(target);
-      actions.dialog.close();
+      return;
     }
+
+    actions.canvas.applyScreenFormat({ formatId: resolvedFormatId, scaleMode, colors });
+    if (!sameSize) {
+      actions.canvas.resizeCanvasPlacingContent(target);
+    }
+    actions.dialog.close();
   };
 
   return (

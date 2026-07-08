@@ -1,8 +1,9 @@
 import { Context } from '../../overmind'
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { Point } from '../../types';
-import { ScaleMode, ScreenFormatId, screenFormats } from './state';
+import { PendingScreenFormat, ScaleMode, ScreenFormatId, screenFormats } from './state';
 
 type Resolution = { width: number; height: number };
 
@@ -39,12 +40,13 @@ export const resizeCanvasPlacingContent = (
   context.actions.canvas.setResolution({ width, height });
 };
 
-// Holds the target size for a pending shrink question (see pendingScreenResize).
-export const setPendingScreenResize = (
+// Holds a screen format change that hasn't been applied yet, while the shrink
+// question is up (see pendingScreenFormat).
+export const setPendingScreenFormat = (
   context: Context,
-  target: { width: number; height: number } | null
+  pending: PendingScreenFormat | null
 ): void => {
-  context.state.canvas.pendingScreenResize = target;
+  context.state.canvas.pendingScreenFormat = pending;
 };
 
 export interface SetScreenFormatParams {
@@ -61,6 +63,25 @@ export const setScreenFormat = (
 ): void => {
   context.state.canvas.screenFormatId = formatId;
   context.state.canvas.scaleMode = scaleMode;
+};
+
+export interface ApplyScreenFormatParams extends SetScreenFormatParams {
+  colors: number;
+}
+
+// Commits a screen format choice: the palette depth and the simulated screen,
+// then pushes the resized palette into the GL textures (which don't watch
+// Overmind). The canvas resize, if any, is the caller's separate step. Both the
+// Screen Format requester and the shrink question commit through here, so a
+// deferred change applies exactly like an immediate one.
+export const applyScreenFormat = (
+  context: Context,
+  { formatId, scaleMode, colors }: ApplyScreenFormatParams
+): void => {
+  context.actions.palette.setNumberOfColors(colors);
+  context.actions.canvas.setScreenFormat({ formatId, scaleMode });
+  paintingCanvasController.updatePalette();
+  overlayCanvasController.updatePalette();
 };
 
 export const setScrollFocusPoint = (context: Context, point: Point): void => {
