@@ -169,6 +169,46 @@
   display: block;
 }
 
+/* View scaling: a gadget in the far corner of the strip that toggles on and
+   off. Pressed in (Workbench blue, orange label) means whole pixels — the
+   RetroToggle selected look, since it is the same "this state is active" idea. */
+.view-scaling {
+  margin-left: auto;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  line-height: 1.25;
+  color: black;
+  background-color: rgb(242, 242, 242);
+  border: 2px solid black;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 0 black;
+  padding: 11px 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.view-scaling:hover {
+  background-color: #ff8800;
+  color: white;
+}
+
+/* Darker than the menu it sits on, not the requesters' Workbench blue: that
+   blue is this menu's own background, so an active gadget would vanish into it.
+   Recessed instead — sunk into the panel, orange label. */
+.view-scaling--on {
+  background-color: rgb(0, 51, 102);
+  color: #ff8800;
+  box-shadow: inset 3px 3px 0 0 rgb(0, 30, 61), 4px 4px 0 0 black;
+}
+
+/* the active state keeps its colors on hover — the shadow already reads pressed */
+.view-scaling--on:hover {
+  background-color: rgb(0, 51, 102);
+  color: #ff8800;
+}
+
 /* the color count reads in orange, setting the palette depth apart from the
    two pixel dimensions (the hover rule still whitens it) */
 .screen-status__field--colors b {

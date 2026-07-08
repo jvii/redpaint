@@ -1,7 +1,7 @@
 import { JSX, useState } from 'react';
 import './ScreenFormatDialog.css';
 import { useActions, useAppState } from '../../overmind';
-import { ScaleMode, ScreenFormatId, screenFormats } from '../../overmind/canvas/state';
+import { ScreenFormatId, screenFormats } from '../../overmind/canvas/state';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
@@ -58,16 +58,12 @@ function ScreenFormatDialogOpen(): JSX.Element {
       ? state.palette.paletteArray.length
       : 32
   );
-  // How the screen is scaled to the window: uniform whole pixels with margin,
-  // or a fractional stretch that fills the window (see ScaleMode).
-  const [scaleMode, setScaleMode] = useState<ScaleMode>(state.canvas.scaleMode);
-
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
 
     // Native has no page size, so it keeps the current canvas as-is (shown 1:1).
     if (isNative) {
-      actions.canvas.applyScreenFormat({ formatId: null, scaleMode, colors });
+      actions.canvas.applyScreenFormat({ formatId: null, colors });
       actions.dialog.close();
       return;
     }
@@ -86,7 +82,6 @@ function ScreenFormatDialogOpen(): JSX.Element {
     if (wouldShrink) {
       actions.canvas.setPendingScreenFormat({
         formatId: resolvedFormatId,
-        scaleMode,
         colors,
         target,
       });
@@ -94,7 +89,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
       return;
     }
 
-    actions.canvas.applyScreenFormat({ formatId: resolvedFormatId, scaleMode, colors });
+    actions.canvas.applyScreenFormat({ formatId: resolvedFormatId, colors });
     if (!sameSize) {
       actions.canvas.resizeCanvasPlacingContent(target);
     }
@@ -122,21 +117,6 @@ function ScreenFormatDialogOpen(): JSX.Element {
               options={COLOR_OPTIONS}
               value={String(colors)}
               onChange={(value): void => setColors(Number(value))}
-            />
-          </fieldset>
-          <fieldset className="screen-format__scaling">
-            <legend>View scaling</legend>
-            {/* view scaling only applies to a simulated screen; native is 1:1 */}
-            <RetroToggle
-              variant="grid"
-              columns={2}
-              options={[
-                { value: 'integer', label: 'Integer' },
-                { value: 'stretch', label: 'Stretch' },
-              ]}
-              value={scaleMode}
-              onChange={(value): void => setScaleMode(value as ScaleMode)}
-              disabled={isNative}
             />
           </fieldset>
         </div>

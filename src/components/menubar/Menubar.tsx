@@ -201,6 +201,22 @@ export function Menubar(): JSX.Element {
                 </span>
               </button>
             </div>
+            {/* How the simulated screen fills the window: whole pixel blocks
+                (with a margin) or a fractional stretch. Independent of the
+                format, and meaningless at Native pixels, which is always 1:1. */}
+            {screenFormat && (
+              <button
+                className={
+                  'view-scaling' + (state.canvas.scaleMode === 'integer' ? ' view-scaling--on' : '')
+                }
+                type="button"
+                aria-pressed={state.canvas.scaleMode === 'integer'}
+                onClick={actions.canvas.toggleScaleMode}
+                title="Keep every pixel a whole number of screen pixels, instead of stretching the screen to fill the window"
+              >
+                Whole pixels
+              </button>
+            )}
           </div>
           <div className="menu__content">
             <div className="menu__image">

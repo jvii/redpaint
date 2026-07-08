@@ -45,7 +45,6 @@ export function DialogManager(): JSX.Element | null {
     if (pending) {
       actions.canvas.applyScreenFormat({
         formatId: pending.formatId,
-        scaleMode: pending.scaleMode,
         colors: pending.colors,
       });
       if (canvasChange === 'scale') {

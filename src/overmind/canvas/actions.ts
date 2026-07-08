@@ -51,18 +51,29 @@ export const setPendingScreenFormat = (
 
 export interface SetScreenFormatParams {
   formatId: ScreenFormatId | null;
-  scaleMode: ScaleMode;
 }
 
-// Applies only the simulated screen (which format is active and how it scales
-// to the window). Resizing the canvas to the screen is a separate, conditional
-// step (see the Screen Format dialog): grow/crop/scale only when it matters.
+// Applies only which screen is simulated. How that screen is scaled into the
+// window is an independent view preference (see setScaleMode), and resizing the
+// canvas to the screen is a separate, conditional step (see the Screen Format
+// requester): grow/crop/scale only when it matters.
 export const setScreenFormat = (
   context: Context,
-  { formatId, scaleMode }: SetScreenFormatParams
+  { formatId }: SetScreenFormatParams
 ): void => {
   context.state.canvas.screenFormatId = formatId;
+};
+
+// How the simulated screen fills the window. Independent of the format, and
+// meaningless for Native pixels (which is always 1:1), so it lives outside the
+// Screen Format requester.
+export const setScaleMode = (context: Context, scaleMode: ScaleMode): void => {
   context.state.canvas.scaleMode = scaleMode;
+};
+
+export const toggleScaleMode = (context: Context): void => {
+  context.state.canvas.scaleMode =
+    context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
 };
 
 export interface ApplyScreenFormatParams extends SetScreenFormatParams {
@@ -76,10 +87,10 @@ export interface ApplyScreenFormatParams extends SetScreenFormatParams {
 // deferred change applies exactly like an immediate one.
 export const applyScreenFormat = (
   context: Context,
-  { formatId, scaleMode, colors }: ApplyScreenFormatParams
+  { formatId, colors }: ApplyScreenFormatParams
 ): void => {
   context.actions.palette.setNumberOfColors(colors);
-  context.actions.canvas.setScreenFormat({ formatId, scaleMode });
+  context.actions.canvas.setScreenFormat({ formatId });
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();
 };
