@@ -65,7 +65,6 @@ export type State = {
 
 export type PendingScreenFormat = {
   formatId: ScreenFormatId | null;
-  scaleMode: ScaleMode;
   colors: number;
   // the canvas size the chosen screen implies
   target: { width: number; height: number };
