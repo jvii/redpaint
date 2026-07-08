@@ -100,7 +100,8 @@
   display: flex;
   /* the gadgets hang from the top of the strip, in line with the close button */
   align-items: flex-start;
-  gap: 20px;
+  /* just clear of the readout's drop shadow — the stretch gadget belongs to it */
+  gap: 10px;
   padding-bottom: 22px;
   margin-bottom: 22px;
   border-bottom: 2px solid rgba(255, 255, 255, 0.35);
@@ -170,24 +171,33 @@
   display: block;
 }
 
-/* View scaling: a gadget in the far corner of the strip that toggles on and
-   off. Pressed in (Workbench blue, orange label) means whole pixels — the
-   RetroToggle selected look, since it is the same "this state is active" idea. */
+/* View scaling: a toggle gadget sitting right beside the screen readout it
+   applies to, matching its height, so it reads as part of that group rather
+   than a stray control. Pressed in means the screen stretches to fill. */
 .view-scaling {
-  margin-left: auto;
-  font-family: 'Press Start 2P';
-  -webkit-font-smoothing: none;
-  font-size: 16px;
-  line-height: 1.25;
+  /* the readout's segments set the strip's height; match them */
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: black;
   background-color: rgb(242, 242, 242);
   border: 2px solid black;
   border-radius: 0;
   box-shadow: 4px 4px 0 0 black;
-  padding: 11px 14px;
-  white-space: nowrap;
+  padding: 0 8px;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
+}
+
+/* 48px over a 12-unit grid: one drawn pixel is 4 css pixels, the same size the
+   bitmap font paints at the close gadget's 32px */
+.view-scaling__icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
 }
 
 .view-scaling:hover {

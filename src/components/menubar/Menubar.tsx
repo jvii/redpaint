@@ -16,6 +16,45 @@ function isSaveableBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && !isBuiltInBrush(brush);
 }
 
+// Four arrows radiating to the corners: the standard "expand to fill" glyph.
+// (Axis-aligned outward arrows crossing at the centre are the *move* cursor.)
+// Each arrow is an open barb — two strokes meeting at the tip — and a diagonal
+// shaft stepping corner to corner, as a 45-degree line does in pixel art.
+//
+// A 12-unit grid drawn at 48px puts one drawn pixel on 4 css pixels, which is
+// exactly what Press Start 2P renders at the close gadget's 32px (its glyphs sit
+// on an 8px grid), so the icon and the X are built from the same size of pixel.
+// The font carries no arrow glyphs, so a text arrow would fall back to a system
+// one. fill inherits currentColor, following the gadget's hover/active colors.
+const stretchIcon = (
+  <svg className="view-scaling__icon" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+    {/* top-left */}
+    <rect x="1" y="1" width="3" height="1" />
+    <rect x="1" y="1" width="1" height="3" />
+    <rect x="2" y="2" width="1" height="1" />
+    <rect x="3" y="3" width="1" height="1" />
+    <rect x="4" y="4" width="1" height="1" />
+    {/* top-right */}
+    <rect x="8" y="1" width="3" height="1" />
+    <rect x="10" y="1" width="1" height="3" />
+    <rect x="9" y="2" width="1" height="1" />
+    <rect x="8" y="3" width="1" height="1" />
+    <rect x="7" y="4" width="1" height="1" />
+    {/* bottom-left */}
+    <rect x="1" y="10" width="3" height="1" />
+    <rect x="1" y="8" width="1" height="3" />
+    <rect x="2" y="9" width="1" height="1" />
+    <rect x="3" y="8" width="1" height="1" />
+    <rect x="4" y="7" width="1" height="1" />
+    {/* bottom-right */}
+    <rect x="8" y="10" width="3" height="1" />
+    <rect x="10" y="8" width="1" height="3" />
+    <rect x="9" y="9" width="1" height="1" />
+    <rect x="8" y="8" width="1" height="1" />
+    <rect x="7" y="7" width="1" height="1" />
+  </svg>
+);
+
 // Saves a canvas as PNG. Asks for the save location first, while the user
 // gesture is still fresh (transient activation can expire across async work).
 // showSaveFilePicker is Chromium only — other browsers fall back to a regular
@@ -213,10 +252,11 @@ export function Menubar(): JSX.Element {
                 }
                 type="button"
                 aria-pressed={state.canvas.scaleMode === 'stretch'}
+                aria-label="Stretch"
                 onClick={actions.canvas.toggleScaleMode}
                 title="Stretch the screen to fill the window. Off, every pixel stays a whole number of screen pixels."
               >
-                Stretch
+                {stretchIcon}
               </button>
             )}
           </div>
