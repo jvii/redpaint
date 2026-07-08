@@ -179,7 +179,7 @@ export function Menubar(): JSX.Element {
                     'Native pixels'
                   )}
                 </span>
-                <span className="screen-status__field">
+                <span className="screen-status__field screen-status__field--colors">
                   <span className="screen-status__label">Colors</span>
                   <b>{state.palette.paletteArray.length}</b>
                 </span>

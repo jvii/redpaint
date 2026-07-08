@@ -169,6 +169,12 @@
   display: block;
 }
 
+/* the color count reads in orange, setting the palette depth apart from the
+   two pixel dimensions (the hover rule still whitens it) */
+.screen-status__field--colors b {
+  color: #ff8800;
+}
+
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
    above each value uses the plain monospace face instead. */
 .screen-status__label {
