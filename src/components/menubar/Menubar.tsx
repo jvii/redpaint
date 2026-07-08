@@ -121,6 +121,11 @@ export function Menubar(): JSX.Element {
   };
 
   const mode = state.brush.mode;
+  // Matte stamps a brush's own colors, so it only means something for a brush
+  // that has some — a captured or loaded one. The pixel brush and the built-in
+  // shapes are always stamped in the foreground color, so Matte is not offered
+  // for them (selectBuiltInBrush pins the mode to Color anyway).
+  const paintsInForegroundColor = state.brush.selectedBuiltInBrushId !== null;
   // null while no screen is simulated (Native pixels): the canvas is shown 1:1
   const screenFormat = state.canvas.screenFormatId
     ? screenFormats[state.canvas.screenFormatId]
@@ -217,6 +222,7 @@ export function Menubar(): JSX.Element {
               <MenuItem
                 label="Matte"
                 isSelected={state.brush.mode === 'Matte'}
+                disabled={paintsInForegroundColor}
                 onClick={(): void => actions.brush.setMode('Matte')}
               ></MenuItem>
               <MenuItem
