@@ -36,26 +36,35 @@ export function DialogManager(): JSX.Element | null {
   };
 
   // The chosen screen is smaller than the current canvas, so fitting it would
-  // lose pixels. Scale the canvas down to fit, crop it to the top-left, or keep
-  // the canvas at its size (it just scrolls within the smaller screen).
-  const resizeScreenScale = (): void => {
-    const target = state.canvas.pendingScreenResize;
-    if (target) {
-      actions.canvas.resizeCanvasScalingContent(target);
+  // lose pixels. The format change is still unapplied at this point: each answer
+  // commits it and then does (or skips) the canvas resize. Scale the canvas down
+  // to fit, crop it to the top-left, or keep the canvas at its size (it just
+  // scrolls within the smaller screen).
+  const commitPendingScreenFormat = (canvasChange: 'scale' | 'place' | 'none'): void => {
+    const pending = state.canvas.pendingScreenFormat;
+    if (pending) {
+      actions.canvas.applyScreenFormat({
+        formatId: pending.formatId,
+        scaleMode: pending.scaleMode,
+        colors: pending.colors,
+      });
+      if (canvasChange === 'scale') {
+        actions.canvas.resizeCanvasScalingContent(pending.target);
+      } else if (canvasChange === 'place') {
+        actions.canvas.resizeCanvasPlacingContent(pending.target);
+      }
     }
-    actions.canvas.setPendingScreenResize(null);
+    actions.canvas.setPendingScreenFormat(null);
     actions.dialog.close();
   };
-  const resizeScreenCrop = (): void => {
-    const target = state.canvas.pendingScreenResize;
-    if (target) {
-      actions.canvas.resizeCanvasPlacingContent(target);
-    }
-    actions.canvas.setPendingScreenResize(null);
-    actions.dialog.close();
-  };
-  const resizeScreenKeep = (): void => {
-    actions.canvas.setPendingScreenResize(null);
+
+  const resizeScreenScale = (): void => commitPendingScreenFormat('scale');
+  const resizeScreenCrop = (): void => commitPendingScreenFormat('place');
+  const resizeScreenKeep = (): void => commitPendingScreenFormat('none');
+
+  // Nothing has been applied yet, so cancelling simply drops the whole change.
+  const resizeScreenCancel = (): void => {
+    actions.canvas.setPendingScreenFormat(null);
     actions.dialog.close();
   };
 
@@ -90,6 +99,9 @@ export function DialogManager(): JSX.Element | null {
           <RetroButton onClick={resizeScreenCrop}>Crop</RetroButton>
           <RetroButton variant="primary" onClick={resizeScreenKeep}>
             Keep original canvas size
+          </RetroButton>
+          <RetroButton variant="secondary" onClick={resizeScreenCancel}>
+            Cancel
           </RetroButton>
         </Dialog>
       );

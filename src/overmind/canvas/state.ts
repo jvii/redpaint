@@ -57,9 +57,18 @@ export type State = {
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
   loadedImageURL: string;
-  // target size for a pending screen resize that would shrink the canvas (and
-  // so lose pixels): held while the Resize/Crop/Keep question is up.
-  pendingScreenResize: { width: number; height: number } | null;
+  // A screen format change that would shrink the canvas (and so lose pixels) is
+  // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up —
+  // nothing changes until the user answers, so Cancel has something to cancel.
+  pendingScreenFormat: PendingScreenFormat | null;
+};
+
+export type PendingScreenFormat = {
+  formatId: ScreenFormatId | null;
+  scaleMode: ScaleMode;
+  colors: number;
+  // the canvas size the chosen screen implies
+  target: { width: number; height: number };
 };
 
 export const state: State = {
@@ -77,5 +86,5 @@ export const state: State = {
   scrollFocusPoint: null,
   zoomFocusPoint: null,
   loadedImageURL: '',
-  pendingScreenResize: null,
+  pendingScreenFormat: null,
 };
