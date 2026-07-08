@@ -152,14 +152,16 @@
   transition: color 0.2s;
 }
 
-/* hovering a segment shows it is the way into its requester */
+/* hovering a segment shows it is the way into its requester: the whole label,
+   value and caption go white on the Workbench orange, as RetroToggle does */
 .screen-status__segment:hover {
   background-color: #ff8800;
+  color: white;
 }
 
 .screen-status__segment:hover b,
 .screen-status__segment:hover .screen-status__label {
-  color: black;
+  color: white;
 }
 
 /* one label+value pair; the screen segment carries two of them */
