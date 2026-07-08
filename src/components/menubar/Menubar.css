@@ -87,13 +87,72 @@
   margin: 0 auto;
 }
 
+/* Everything but the close button: the screen status strip above the columns */
+.menu__main {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px;
+  flex: 1;
+  min-width: 0;
+}
+
+.menu__status {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
+}
+
 /* Position the content inside the overlay */
 .menu__content {
   display: grid;
   grid-template-columns: repeat(3, max-content);
   column-gap: 72px;
-  padding: 24px 32px;
-  flex: 1;
+}
+
+/* A read-only segmented readout of the current screen: same gadget language as
+   RetroToggle — 2px black borders, neighbours sharing a single seam, one drop
+   shadow for the whole group. */
+.screen-status {
+  display: inline-flex;
+  box-shadow: 4px 4px 0 0 black;
+}
+
+.screen-status__segment {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  line-height: 1.25;
+  color: black;
+  background-color: rgb(242, 242, 242);
+  border: 2px solid black;
+  padding: 11px 14px;
+  white-space: nowrap;
+}
+
+/* single 2px seam between neighbouring segments */
+.screen-status__segment:not(:first-child) {
+  border-left: 0;
+}
+
+/* the value reads in Workbench blue against the black label */
+.screen-status__segment b {
+  color: rgb(0, 85, 170);
+  font-weight: normal;
+}
+
+/* Press Start 2P only reads crisply at multiples of 8, so the small caption
+   above each value uses the plain monospace face instead. */
+.screen-status__label {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(106, 106, 106);
+  margin-bottom: 5px;
 }
 
 .menu__header {

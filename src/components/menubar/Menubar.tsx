@@ -7,6 +7,8 @@ import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCa
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
 import { isBuiltInBrush } from '../../overmind/brush/state';
+import { screenFormats } from '../../overmind/canvas/state';
+import { RetroButton } from '../ui/RetroButton';
 import './Menubar.css';
 
 // Only captured or loaded brushes can be saved — the pixel brush has no
@@ -120,6 +122,10 @@ export function Menubar(): JSX.Element {
   };
 
   const mode = state.brush.mode;
+  // null while no screen is simulated (Native pixels): the canvas is shown 1:1
+  const screenFormat = state.canvas.screenFormatId
+    ? screenFormats[state.canvas.screenFormatId]
+    : null;
 
   return (
     <>
@@ -134,44 +140,75 @@ export function Menubar(): JSX.Element {
       </div>
       <div
         className="menu"
-        style={{ height: state.app.menuOpen ? '25%' : '0%' }}
+        // fixed height, not a viewport percentage: the status strip made the
+        // content tall enough that a short window would clip it (overflow is
+        // hidden). The markup's height is constant, so a constant fits it.
+        style={{ height: state.app.menuOpen ? '280px' : '0px' }}
         onMouseLeave={close}
         onContextMenu={close}
       >
-        <div className="menu__content">
-          <div className="menu__image">
-            <div className="menu__header">Image</div>
-            <MenuItemOpen label="Open..." handleFile={handleImageFileOpen}></MenuItemOpen>
-            <MenuItemSave label="Save..." onSave={handleImageSave}></MenuItemSave>
-            <MenuItem
-              label="Screen format..."
+        <div className="menu__main">
+          {/* Live screen state, with the way into the Screen Format requester.
+              Replaces the old "Screen format..." item in the Image column. */}
+          <div className="menu__status">
+            <div className="screen-status">
+              <div className="screen-status__segment">
+                <span className="screen-status__label">Resolution</span>
+                {screenFormat ? (
+                  <>
+                    {screenFormat.name} <b>{`${screenFormat.width}x${screenFormat.height}`}</b>
+                  </>
+                ) : (
+                  'Native pixels'
+                )}
+              </div>
+              <div className="screen-status__segment">
+                <span className="screen-status__label">Colors</span>
+                <b>{state.palette.paletteArray.length}</b>
+              </div>
+              <div className="screen-status__segment">
+                <span className="screen-status__label">Canvas</span>
+                <b>{`${state.canvas.resolution.width}x${state.canvas.resolution.height}`}</b>
+              </div>
+            </div>
+            <RetroButton
+              variant="primary"
               onClick={(): void => {
                 actions.dialog.open('SCREEN_FORMAT');
                 close();
               }}
-            ></MenuItem>
+            >
+              Change...
+            </RetroButton>
           </div>
-          <div className="menu__brush">
-            <div className="menu__header">Brush</div>
-            <MenuItemOpen label="Open..." handleFile={handleBrushFileOpen}></MenuItemOpen>
-            <MenuItemSave
-              label="Save..."
-              onSave={handleBrushSave}
-              disabled={!isSaveableBrush(brushHistory.current)}
-            ></MenuItemSave>
-          </div>
-          <div className="menu__mode">
-            <div className="menu__header">Mode</div>
-            <MenuItem
-              label="Matte"
-              isSelected={state.brush.mode === 'Matte'}
-              onClick={(): void => actions.brush.setMode('Matte')}
-            ></MenuItem>
-            <MenuItem
-              label="Color"
-              isSelected={state.brush.mode === 'Color'}
-              onClick={(): void => actions.brush.setMode('Color')}
-            ></MenuItem>
+          <div className="menu__content">
+            <div className="menu__image">
+              <div className="menu__header">Image</div>
+              <MenuItemOpen label="Open..." handleFile={handleImageFileOpen}></MenuItemOpen>
+              <MenuItemSave label="Save..." onSave={handleImageSave}></MenuItemSave>
+            </div>
+            <div className="menu__brush">
+              <div className="menu__header">Brush</div>
+              <MenuItemOpen label="Open..." handleFile={handleBrushFileOpen}></MenuItemOpen>
+              <MenuItemSave
+                label="Save..."
+                onSave={handleBrushSave}
+                disabled={!isSaveableBrush(brushHistory.current)}
+              ></MenuItemSave>
+            </div>
+            <div className="menu__mode">
+              <div className="menu__header">Mode</div>
+              <MenuItem
+                label="Matte"
+                isSelected={state.brush.mode === 'Matte'}
+                onClick={(): void => actions.brush.setMode('Matte')}
+              ></MenuItem>
+              <MenuItem
+                label="Color"
+                isSelected={state.brush.mode === 'Color'}
+                onClick={(): void => actions.brush.setMode('Color')}
+              ></MenuItem>
+            </div>
           </div>
         </div>
         <div className="closeButtonDiv">
