@@ -8,7 +8,6 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
 import { isBuiltInBrush } from '../../overmind/brush/state';
 import { screenFormats } from '../../overmind/canvas/state';
-import { RetroButton } from '../ui/RetroButton';
 import './Menubar.css';
 
 // Only captured or loaded brushes can be saved — the pixel brush has no
@@ -127,6 +126,16 @@ export function Menubar(): JSX.Element {
     ? screenFormats[state.canvas.screenFormatId]
     : null;
 
+  const openScreenFormat = (): void => {
+    actions.dialog.open('SCREEN_FORMAT');
+    close();
+  };
+
+  // The canvas has no requester of its own yet; the screen format one is where
+  // it gets resized today (its fit / crop / keep question). Point this at a
+  // dedicated Canvas Size requester once that exists.
+  const openCanvasSize = openScreenFormat;
+
   return (
     <>
       <div className="menubar" onClick={toggle}>
@@ -148,38 +157,45 @@ export function Menubar(): JSX.Element {
         onContextMenu={close}
       >
         <div className="menu__main">
-          {/* Live screen state, with the way into the Screen Format requester.
-              Replaces the old "Screen format..." item in the Image column. */}
+          {/* Live screen state. Each segment is the way into the requester that
+              changes it, so this replaces the old "Screen format..." item in the
+              Image column. Resolution and colors share a segment because one
+              requester owns both. */}
           <div className="menu__status">
             <div className="screen-status">
-              <div className="screen-status__segment">
-                <span className="screen-status__label">Resolution</span>
-                {screenFormat ? (
-                  <>
-                    {screenFormat.name} <b>{`${screenFormat.width}x${screenFormat.height}`}</b>
-                  </>
-                ) : (
-                  'Native pixels'
-                )}
-              </div>
-              <div className="screen-status__segment">
-                <span className="screen-status__label">Colors</span>
-                <b>{state.palette.paletteArray.length}</b>
-              </div>
-              <div className="screen-status__segment">
-                <span className="screen-status__label">Canvas</span>
-                <b>{`${state.canvas.resolution.width}x${state.canvas.resolution.height}`}</b>
-              </div>
+              <button
+                className="screen-status__segment"
+                type="button"
+                onClick={openScreenFormat}
+                title="Change screen format"
+              >
+                <span className="screen-status__field">
+                  <span className="screen-status__label">Resolution</span>
+                  {screenFormat ? (
+                    <>
+                      {screenFormat.name} <b>{`${screenFormat.width}x${screenFormat.height}`}</b>
+                    </>
+                  ) : (
+                    'Native pixels'
+                  )}
+                </span>
+                <span className="screen-status__field">
+                  <span className="screen-status__label">Colors</span>
+                  <b>{state.palette.paletteArray.length}</b>
+                </span>
+              </button>
+              <button
+                className="screen-status__segment"
+                type="button"
+                onClick={openCanvasSize}
+                title="Change canvas size"
+              >
+                <span className="screen-status__field">
+                  <span className="screen-status__label">Canvas</span>
+                  <b>{`${state.canvas.resolution.width}x${state.canvas.resolution.height}`}</b>
+                </span>
+              </button>
             </div>
-            <RetroButton
-              variant="primary"
-              onClick={(): void => {
-                actions.dialog.open('SCREEN_FORMAT');
-                close();
-              }}
-            >
-              Change...
-            </RetroButton>
           </div>
           <div className="menu__content">
             <div className="menu__image">
