@@ -112,15 +112,20 @@
   column-gap: 72px;
 }
 
-/* A read-only segmented readout of the current screen: same gadget language as
-   RetroToggle — 2px black borders, neighbours sharing a single seam, one drop
-   shadow for the whole group. */
+/* A segmented readout of the current screen where each segment is also the
+   button that changes it. Same gadget language as RetroToggle — 2px black
+   borders, neighbours sharing a single seam, one drop shadow for the whole
+   group, the hovered segment picking up the Workbench orange. */
 .screen-status {
   display: inline-flex;
   box-shadow: 4px 4px 0 0 black;
 }
 
 .screen-status__segment {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  text-align: left;
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   font-size: 16px;
@@ -128,8 +133,11 @@
   color: black;
   background-color: rgb(242, 242, 242);
   border: 2px solid black;
+  border-radius: 0;
   padding: 11px 14px;
   white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 /* single 2px seam between neighbouring segments */
@@ -141,6 +149,22 @@
 .screen-status__segment b {
   color: rgb(0, 85, 170);
   font-weight: normal;
+  transition: color 0.2s;
+}
+
+/* hovering a segment shows it is the way into its requester */
+.screen-status__segment:hover {
+  background-color: #ff8800;
+}
+
+.screen-status__segment:hover b,
+.screen-status__segment:hover .screen-status__label {
+  color: black;
+}
+
+/* one label+value pair; the screen segment carries two of them */
+.screen-status__field {
+  display: block;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
@@ -153,6 +177,7 @@
   text-transform: uppercase;
   color: rgb(106, 106, 106);
   margin-bottom: 5px;
+  transition: color 0.2s;
 }
 
 .menu__header {
