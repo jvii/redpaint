@@ -9,7 +9,6 @@ interface Props {
 
 export function Modal({ header, children, width }: Props): JSX.Element | null {
   // Offset from the centered position, driven by dragging the header
-  // (Amiga requesters move by their title bar).
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const drag = useRef<{ startX: number; startY: number; baseX: number; baseY: number } | null>(
     null
