@@ -26,8 +26,9 @@ export function DialogManager(): JSX.Element | null {
   };
 
   const pasteAsImage = (): void => {
-    actions.canvas.setLoadedImage(state.app.pasteBufferImageObjectURL);
     actions.dialog.close();
+    // decodes, then opens the load requester — the same flow as Image > Open
+    actions.app.beginImageLoad(state.app.pasteBufferImageObjectURL);
   };
 
   const cancelPaste = (): void => {

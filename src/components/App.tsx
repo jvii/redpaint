@@ -10,6 +10,7 @@ import { GlobalHotKeyManager } from './GlobalHotkeyManager';
 import { DialogManager } from './dialog/DialogManager';
 import { PaletteEditor } from './paletteEditor/PaletteEditor';
 import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
+import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
 import './App.css';
 
@@ -41,6 +42,7 @@ function App(): JSX.Element {
       </div>
       <PaletteEditor></PaletteEditor>
       <ScreenFormatDialog></ScreenFormatDialog>
+      <ImageLoadDialog></ImageLoadDialog>
       <SymmetrySettings></SymmetrySettings>
       <DialogManager></DialogManager>
       <GlobalHotKeyManager />

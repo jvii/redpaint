@@ -106,7 +106,3 @@ export const setZoomFocusPoint = (context: Context, point: Point | null): void =
     context.state.toolbox.selectedSelectorToolId = null;
   }
 };
-
-export const setLoadedImage = (context: Context, loadedImageURL: string): void => {
-  context.state.canvas.loadedImageURL = loadedImageURL;
-};
