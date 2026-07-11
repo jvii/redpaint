@@ -96,7 +96,14 @@ export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
     const { ch } = widest(box);
     box.bins.sort((a, b) => channelOf(a, ch) - channelOf(b, ch));
 
-    // cut at the median pixel (not the median bin), keeping both halves non-empty
+    // Cut at the median pixel (not the median bin). Clamped so the right half
+    // always keeps at least one bin: when a single bin holds over half the
+    // pixels (a screenshot's uniform background) and sorts last on the chosen
+    // channel, the accumulator never reaches half and the loop would otherwise
+    // run off the end, splitting into (everything, nothing) — an empty box is
+    // a NaN palette entry, and the undiminished left box wins every following
+    // split, flooding the palette with them. The clamped cut instead isolates
+    // the dominant bin, which is exactly the split that case wants.
     const half = box.pixels / 2;
     let acc = 0;
     let cut = 0;
@@ -104,6 +111,7 @@ export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
       acc += counts[box.bins[cut]];
       if (acc >= half) break;
     }
+    cut = Math.min(cut, box.bins.length - 2);
     const leftBins = box.bins.slice(0, cut + 1);
     const rightBins = box.bins.slice(cut + 1);
     const leftPixels = leftBins.reduce((s, bin) => s + counts[bin], 0);
