@@ -229,7 +229,10 @@ export function Menubar(): JSX.Element {
                 </span>
                 <span className="screen-status__field screen-status__field--colors">
                   <span className="screen-status__label">Palette</span>
-                  <b>{hasTrueColorPixels ? 'True Color' : state.palette.paletteArray.length}</b>
+                  <b>
+                    {state.palette.paletteArray.length}
+                    {hasTrueColorPixels && ' / True Color'}
+                  </b>
                 </span>
               </button>
               <button
