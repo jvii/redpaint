@@ -22,6 +22,11 @@ export function MenuItemOpen({ label, handleFile }: Props): JSX.Element {
       <input
         ref={fileInputRef}
         type="file"
+        // both users of this item (image open, brush open) take images; the
+        // filter also disables non-image items in the native panel — notably
+        // macOS packages like the Photos Library, whose double-click can wedge
+        // Chrome's file-dialog state until a browser restart
+        accept="image/*"
         onChange={(event): void => {
           handleFile(event.target);
           // must reset or onChange won't fire if user opens the same file again

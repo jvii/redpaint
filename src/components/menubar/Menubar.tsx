@@ -167,6 +167,13 @@ export function Menubar(): JSX.Element {
   const screenFormat = state.canvas.screenFormatId
     ? screenFormats[state.canvas.screenFormatId]
     : null;
+  // The palette readout reads "True Color" while the canvas holds any
+  // true-color pixels. Read off the actual canvas each time the menu opens —
+  // a flag would go stale under undo and clear — with an early-exit tag scan
+  // that answers on the first true-color pixel it meets.
+  const hasTrueColorPixels =
+    state.app.menuOpen &&
+    (paintingCanvasController.getCanvasColorIndex()?.hasTrueColorPixels() ?? false);
 
   const openScreenFormat = (): void => {
     actions.dialog.open('SCREEN_FORMAT');
@@ -221,8 +228,8 @@ export function Menubar(): JSX.Element {
                   )}
                 </span>
                 <span className="screen-status__field screen-status__field--colors">
-                  <span className="screen-status__label">Colors</span>
-                  <b>{state.palette.paletteArray.length}</b>
+                  <span className="screen-status__label">Palette</span>
+                  <b>{hasTrueColorPixels ? 'True Color' : state.palette.paletteArray.length}</b>
                 </span>
               </button>
               <button

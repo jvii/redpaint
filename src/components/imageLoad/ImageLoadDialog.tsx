@@ -117,7 +117,7 @@ function ImageLoadDialogOpen(): JSX.Element {
           <RetroToggle
             variant="column"
             options={[
-              { value: 'true', label: 'True color' },
+              { value: 'true', label: 'True Color' },
               { value: 'new', label: 'New palette from image' },
               { value: 'current', label: `Current palette (${state.palette.paletteArray.length})` },
             ]}

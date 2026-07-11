@@ -104,6 +104,18 @@ export class CanvasColorIndex {
     return CanvasColorIndex.packIndexed(paintColor.colorNumber);
   }
 
+  // Whether any pixel is true color (the canvas is hybrid rather than fully
+  // indexed). A tag scan with an early exit: a true-color image answers on the
+  // first pixel; a fully indexed canvas costs one pass.
+  hasTrueColorPixels(): boolean {
+    for (let i = 3; i < this.indexArray.length; i += 4) {
+      if (this.indexArray[i] === ALPHA_TRUECOLOR) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   isTrueColorPixel(pixel: Point): boolean {
     const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;
     return this.indexArray[arrayIndex + 3] === ALPHA_TRUECOLOR;
