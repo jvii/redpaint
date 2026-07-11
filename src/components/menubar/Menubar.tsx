@@ -160,11 +160,8 @@ export function Menubar(): JSX.Element {
   };
 
   const mode = state.brush.mode;
-  // Matte stamps a brush's own colors, so it only means something for a brush
-  // that has some — a captured or loaded one. The pixel brush and the built-in
-  // shapes are always stamped in the foreground color, so Matte is not offered
-  // for them (selectBuiltInBrush pins the mode to Color anyway).
-  const paintsInForegroundColor = state.brush.selectedBuiltInBrushId !== null;
+  // for disabling Matte mode selection when using a built-in brush
+  const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
   // null while no screen is simulated (Native pixels): the canvas is shown 1:1
   const screenFormat = state.canvas.screenFormatId
     ? screenFormats[state.canvas.screenFormatId]
@@ -202,8 +199,7 @@ export function Menubar(): JSX.Element {
       >
         <div className="menu__main">
           {/* Live screen state. Each segment is the way into the requester that
-              changes it, so this replaces the old "Screen format..." item in the
-              Image column. Resolution and colors share a segment because one
+              changes it. Resolution and colors share a segment because one
               requester owns both. */}
           <div className="menu__status">
             <div className="screen-status">
@@ -241,9 +237,9 @@ export function Menubar(): JSX.Element {
               </button>
             </div>
             {/* How the simulated screen fills the window. Named for what
-                switching it on does, so the resting state needs no label: off,
-                every pixel stays a whole number of screen pixels (leaving a
-                margin); on, the screen stretches to fill the window. Independent
+                switching it on does, so the resting state needs no label: on,
+                the screen stretches to fill the window; off, it is pixel perfect
+                — every pixel the same whole block, leaving a margin. Independent
                 of the format, and meaningless at Native pixels, always 1:1. */}
             {screenFormat && (
               <button
@@ -254,7 +250,7 @@ export function Menubar(): JSX.Element {
                 aria-pressed={state.canvas.scaleMode === 'stretch'}
                 aria-label="Stretch"
                 onClick={actions.canvas.toggleScaleMode}
-                title="Stretch the screen to fill the window. Off, every pixel stays a whole number of screen pixels."
+                title="Stretch the screen to fill the window. Turn off for pixel-perfect scaling: every pixel the same whole block, leaving a margin."
               >
                 {stretchIcon}
               </button>
@@ -280,7 +276,7 @@ export function Menubar(): JSX.Element {
               <MenuItem
                 label="Matte"
                 isSelected={state.brush.mode === 'Matte'}
-                disabled={paintsInForegroundColor}
+                disabled={usingBuiltInBrush}
                 onClick={(): void => actions.brush.setMode('Matte')}
               ></MenuItem>
               <MenuItem

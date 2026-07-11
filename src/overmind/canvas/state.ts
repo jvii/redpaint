@@ -73,7 +73,7 @@ export type PendingScreenFormat = {
 export const state: State = {
   resolution: { width: 0, height: 0 },
   screenFormatId: null,
-  scaleMode: 'integer',
+  scaleMode: 'stretch',
   pixelAspect: derived((state: State) =>
     state.screenFormatId
       ? {
