@@ -119,7 +119,8 @@ export function Menubar(): JSX.Element {
 
   const handleImageFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
-      actions.canvas.setLoadedImage(URL.createObjectURL(input.files[0]));
+      // decodes, then opens the load requester (color treatment)
+      actions.app.beginImageLoad(URL.createObjectURL(input.files[0]));
     }
   };
 

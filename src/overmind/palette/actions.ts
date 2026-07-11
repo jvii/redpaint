@@ -21,7 +21,23 @@ export const setNumberOfColors = (context: Context, colors: number): void => {
     palette[id] = oldPalette[id] ? { ...oldPalette[id] } : defaults[id];
   }
   context.state.palette.palette = palette;
+  clampColorReferences(context, colors);
+};
 
+// Replaces the whole palette with the given colors (the palette extracted
+// from a loaded image), resizing its depth to match — the browser-era
+// equivalent of DPaint loading a picture's palette along with the picture.
+export const replacePalette = (context: Context, colors: Color[]): void => {
+  const palette: { [id: string]: Color } = {};
+  colors.forEach((color, i): void => {
+    palette[String(i + 1)] = { ...color };
+  });
+  context.state.palette.palette = palette;
+  clampColorReferences(context, colors.length);
+};
+
+// Everything that refers to a color id gets clamped into the new depth.
+function clampColorReferences(context: Context, colors: number): void {
   const clampId = (id: string): string => (Number(id) > colors ? String(colors) : id);
   context.state.palette.foregroundColorId = clampId(context.state.palette.foregroundColorId);
   context.state.palette.backgroundColorId = clampId(context.state.palette.backgroundColorId);
@@ -35,7 +51,7 @@ export const setNumberOfColors = (context: Context, colors: number): void => {
     }
     return { start: range.start, end: clampId(range.end) };
   });
-};
+}
 
 export const setForegroundColor = (context: Context, key: string): void => {
   context.state.palette.foregroundColorId = key;

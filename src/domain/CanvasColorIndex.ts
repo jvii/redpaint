@@ -72,6 +72,22 @@ export class CanvasColorIndex {
     return new CanvasColorIndex(width, height, indexArray);
   }
 
+  // Builds an indexed canvas from per-pixel 0-based palette positions (the
+  // output of mapToPalette), all pixels tagged ALPHA_INDEXED. Rows are flipped
+  // like fromImageData: image rows are top-down, texture rows bottom-up.
+  static fromIndexedPixels(width: number, height: number, indices: Uint8Array): CanvasColorIndex {
+    const indexArray = new Uint8Array(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      const sourceRow = y * width;
+      const targetRow = (height - y - 1) * width * 4;
+      for (let x = 0; x < width; x++) {
+        indexArray[targetRow + x * 4] = indices[sourceRow + x];
+        indexArray[targetRow + x * 4 + 3] = ALPHA_INDEXED;
+      }
+    }
+    return new CanvasColorIndex(width, height, indexArray);
+  }
+
   // Packs an indexed-pixel value for whole-pixel (32-bit) comparisons.
   // Typed arrays are little-endian in practice, so RGBA bytes read as
   // R | G<<8 | B<<16 | A<<24.

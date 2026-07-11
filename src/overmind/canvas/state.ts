@@ -56,7 +56,6 @@ export type State = {
   pixelAspect: { x: number; y: number };
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
-  loadedImageURL: string;
   // A screen format change that would shrink the canvas (and so lose pixels) is
   // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up —
   // nothing changes until the user answers, so Cancel has something to cancel.
@@ -84,6 +83,5 @@ export const state: State = {
   ),
   scrollFocusPoint: null,
   zoomFocusPoint: null,
-  loadedImageURL: '',
   pendingScreenFormat: null,
 };
