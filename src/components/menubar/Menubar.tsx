@@ -231,7 +231,7 @@ export function Menubar(): JSX.Element {
                   {state.canvas.trueColorEnabled ? (
                     <b className="screen-status__rainbow">ON</b>
                   ) : (
-                    <b>OFF</b>
+                    <b className="screen-status__truecolor-off">OFF</b>
                   )}
                 </span>
               </button>
