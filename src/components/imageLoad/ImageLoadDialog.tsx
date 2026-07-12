@@ -99,7 +99,7 @@ function ImageLoadDialogOpen(): JSX.Element {
     // queued content once the resize commits, and — as a fresh document —
     // resets the undo history to it
     setPendingCanvasContent(colorIndex, { freshDocument: true });
-    actions.canvas.setResolution({ width: image.width, height: image.height });
+    actions.canvas.setResolution({ width: image.width, height: image.height, recordUndoPoint: false });
     actions.app.clearImageLoadInfo();
     actions.dialog.close();
   };

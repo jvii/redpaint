@@ -7,9 +7,24 @@ import { PendingScreenFormat, ScaleMode, ScreenFormatId, screenFormats } from '.
 
 type Resolution = { width: number; height: number };
 
-export const setResolution = (context: Context, resolution: Resolution): void => {
-  context.state.canvas.resolution = resolution;
+export interface SetResolutionParams extends Resolution {
+  // Whether the freshly initialized (empty) canvas becomes a history entry.
+  // True for a bare resize (startup sizing the canvas to the window); false
+  // when content is queued to follow (image load, content-preserving resize,
+  // undo restore) — there the upload effect owns the history, and recording
+  // here would plant a blank artifact entry the user then undoes onto.
+  recordUndoPoint?: boolean;
+}
+
+export const setResolution = (
+  context: Context,
+  { width, height, recordUndoPoint = true }: SetResolutionParams
+): void => {
+  context.state.canvas.resolution = { width, height };
   paintingCanvasController.init();
+  if (recordUndoPoint) {
+    context.actions.undo.setUndoPoint();
+  }
 };
 
 // Both resize the canvas to a new size, keeping the existing content instead of
@@ -25,7 +40,7 @@ export const resizeCanvasScalingContent = (
   if (current && current.width > 0 && current.height > 0) {
     setPendingCanvasContent(current.resizedTo(width, height));
   }
-  context.actions.canvas.setResolution({ width, height });
+  context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
 
 export const resizeCanvasPlacingContent = (
@@ -37,7 +52,7 @@ export const resizeCanvasPlacingContent = (
     const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
     setPendingCanvasContent(current.placedInto(width, height, backgroundColorNumber));
   }
-  context.actions.canvas.setResolution({ width, height });
+  context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
 
 // Holds a screen format change that hasn't been applied yet, while the shrink

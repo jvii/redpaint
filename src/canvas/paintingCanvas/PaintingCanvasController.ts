@@ -87,7 +87,10 @@ export class PaintingCanvasController implements CanvasController {
     this.initColorIndexTexture();
     this.initPaletteTexture();
 
-    overmind.actions.undo.setUndoPoint(); // initial undo point
+    // No undo point here: whether the freshly initialized (empty) canvas is a
+    // history entry is the caller's call — see setResolution's recordUndoPoint.
+    // Recording one unconditionally used to plant blank artifact entries in
+    // the middle of content-preserving resizes and image loads.
   }
 
   points(points: Point[], color: PaintColor): void {
