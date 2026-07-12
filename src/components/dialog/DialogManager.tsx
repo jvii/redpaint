@@ -44,14 +44,18 @@ export function DialogManager(): JSX.Element | null {
   const commitPendingScreenFormat = (canvasChange: 'scale' | 'place' | 'none'): void => {
     const pending = state.canvas.pendingScreenFormat;
     if (pending) {
-      actions.canvas.applyScreenFormat({
+      const conformed = actions.canvas.applyScreenFormat({
         formatId: pending.formatId,
         colors: pending.colors,
+        trueColorEnabled: pending.trueColorEnabled,
       });
       if (canvasChange === 'scale') {
         actions.canvas.resizeCanvasScalingContent(pending.target);
       } else if (canvasChange === 'place') {
         actions.canvas.resizeCanvasPlacingContent(pending.target);
+      } else if (conformed) {
+        // Keep: no resize records the entry, so the conform owes one
+        actions.undo.setUndoPoint();
       }
     }
     actions.canvas.setPendingScreenFormat(null);

@@ -60,3 +60,9 @@
   padding: 12px 0;
   text-align: center;
 }
+
+.screen-format__truecolor .retro-toggle__segment {
+  padding: 12px 0;
+  text-align: center;
+  min-width: 88px;
+}

@@ -58,12 +58,23 @@ function ScreenFormatDialogOpen(): JSX.Element {
       ? state.palette.paletteArray.length
       : 32
   );
+  // Whether the document allows true-color pixels. Switching it off (with OK)
+  // conforms the canvas to the palette — the explicit color-reducing move.
+  const [trueColorEnabled, setTrueColorEnabled] = useState(state.canvas.trueColorEnabled);
+
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
 
     // Native has no page size, so it keeps the current canvas as-is (shown 1:1).
     if (isNative) {
-      actions.canvas.applyScreenFormat({ formatId: null, colors });
+      const conformed = actions.canvas.applyScreenFormat({
+        formatId: null,
+        colors,
+        trueColorEnabled,
+      });
+      if (conformed) {
+        actions.undo.setUndoPoint();
+      }
       actions.dialog.close();
       return;
     }
@@ -83,15 +94,24 @@ function ScreenFormatDialogOpen(): JSX.Element {
       actions.canvas.setPendingScreenFormat({
         formatId: resolvedFormatId,
         colors,
+        trueColorEnabled,
         target,
       });
       actions.dialog.open('SCREEN_RESIZE');
       return;
     }
 
-    actions.canvas.applyScreenFormat({ formatId: resolvedFormatId, colors });
+    const conformed = actions.canvas.applyScreenFormat({
+      formatId: resolvedFormatId,
+      colors,
+      trueColorEnabled,
+    });
     if (!sameSize) {
+      // one history entry for the whole change, via the resize upload — which
+      // picks up the conformed pixels, if any
       actions.canvas.resizeCanvasPlacingContent(target);
+    } else if (conformed) {
+      actions.undo.setUndoPoint();
     }
     actions.dialog.close();
   };
@@ -117,6 +137,21 @@ function ScreenFormatDialogOpen(): JSX.Element {
               options={COLOR_OPTIONS}
               value={String(colors)}
               onChange={(value): void => setColors(Number(value))}
+            />
+          </fieldset>
+          <fieldset className="screen-format__truecolor">
+            <legend>True Color</legend>
+            {/* off conforms the canvas to the palette on OK (flattening any
+                true-color pixels); loading an image as True Color re-enables */}
+            <RetroToggle
+              variant="grid"
+              columns={2}
+              options={[
+                { value: 'on', label: 'On' },
+                { value: 'off', label: 'Off' },
+              ]}
+              value={trueColorEnabled ? 'on' : 'off'}
+              onChange={(value): void => setTrueColorEnabled(value === 'on')}
             />
           </fieldset>
         </div>

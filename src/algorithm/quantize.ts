@@ -175,19 +175,14 @@ export function mapToPaletteExact(data: Uint8ClampedArray, palette: Color[]): Ui
   return indices;
 }
 
-// Maps every pixel to its nearest palette color (squared RGB distance),
-// returning 0-based palette positions. The search is memoized per 15-bit bin —
-// pixels within a bin (8 RGB units per channel) share one answer, so a photo
-// costs ~32k nearest-color searches instead of one per pixel. The error bound
-// is well under quantization's own, but it is approximate: use
+// A nearest-palette-color lookup (squared RGB distance), memoized per 15-bit
+// bin — colors within a bin (8 RGB units per channel) share one answer, so
+// mapping a photo costs ~32k searches instead of one per pixel. The error
+// bound is well under quantization's own, but it is approximate: use
 // mapToPaletteExact when the palette must reproduce the image verbatim.
-export function mapToPalette(data: Uint8ClampedArray, palette: Color[]): Uint8Array {
-  const indices = new Uint8Array(data.length / 4);
+export function createNearestMapper(palette: Color[]): (r: number, g: number, b: number) => number {
   const cache = new Int16Array(BINS).fill(-1);
-  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
+  return (r: number, g: number, b: number): number => {
     const bin = binOf(r, g, b);
     let index = cache[bin];
     if (index < 0) {
@@ -205,7 +200,17 @@ export function mapToPalette(data: Uint8ClampedArray, palette: Color[]): Uint8Ar
       }
       cache[bin] = index;
     }
-    indices[p] = index;
+    return index;
+  };
+}
+
+// Maps every pixel to its nearest palette color, returning 0-based palette
+// positions (see createNearestMapper for the memoization and its error bound).
+export function mapToPalette(data: Uint8ClampedArray, palette: Color[]): Uint8Array {
+  const nearest = createNearestMapper(palette);
+  const indices = new Uint8Array(data.length / 4);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    indices[p] = nearest(data[i], data[i + 1], data[i + 2]);
   }
   return indices;
 }
