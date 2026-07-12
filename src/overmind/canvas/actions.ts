@@ -87,7 +87,7 @@ export const setScreenFormat = (
 };
 
 // How the simulated screen fills the window. Independent of the format, and
-// meaningless for Native pixels (which is always 1:1), so it lives outside the
+// meaningless for Native (which is always 1:1), so it lives outside the
 // Screen Format requester.
 export const setScaleMode = (context: Context, scaleMode: ScaleMode): void => {
   context.state.canvas.scaleMode = scaleMode;

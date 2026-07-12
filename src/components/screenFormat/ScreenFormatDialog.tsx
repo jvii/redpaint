@@ -7,13 +7,13 @@ import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 
-// 'Native pixels' is the no-simulation state (screenFormatId === null): the
+// 'Native' is the no-simulation state (screenFormatId === null): the
 // page is shown 1:1 in the window, no Amiga screen scaling — the startup mode.
 const NATIVE = 'native';
 type FormatChoice = ScreenFormatId | typeof NATIVE;
 
 const FORMAT_OPTIONS = [
-  { value: NATIVE, label: 'Native pixels' },
+  { value: NATIVE, label: 'Native' },
   ...Object.values(screenFormats).map((format) => ({
     value: format.id,
     // name on the left, resolution right-aligned on the same row (the segment
