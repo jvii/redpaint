@@ -58,10 +58,12 @@ function ImageLoadDialogOpen(): JSX.Element {
   const [mode, setMode] = useState<ColorMode>('true');
   const [count, setCount] = useState(smallestSufficient ?? 256);
 
-  // A small preview of the decoded pixels, drawn at native size and scaled by
-  // CSS with image-rendering: pixelated — the same display trick the canvas
-  // itself uses. Tiny images upscale by a whole factor so their pixels stay
-  // even; large ones shrink fractionally, which a preview can afford.
+  // Previews of the decoded pixels — the original, and beside it the chosen
+  // treatment applied live, an arrow between them. Both drawn at native size
+  // and scaled by CSS with image-rendering: pixelated — the same display
+  // trick the canvas itself uses. Tiny images upscale by a whole factor so
+  // their pixels stay even; large ones shrink fractionally, which a preview
+  // can afford.
   const previewRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
     const image = peekPendingImage();
@@ -73,8 +75,50 @@ function ImageLoadDialogOpen(): JSX.Element {
     canvas.height = image.height;
     canvas.getContext('2d')?.putImageData(image, 0, 0);
   }, []);
-  const PREVIEW_MAX_W = 560;
-  const PREVIEW_MAX_H = 220;
+
+  // The treated side re-renders when the draft changes: the same palette and
+  // mapping the OK would commit, applied to the full image (cheap enough at
+  // typical sizes; the histogram passes dominate and are single-pass).
+  const treatedRef = useRef<HTMLCanvasElement>(null);
+  useEffect((): void => {
+    const image = peekPendingImage();
+    const canvas = treatedRef.current;
+    if (!image || !canvas) {
+      return;
+    }
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return;
+    }
+    if (mode === 'true') {
+      ctx.putImageData(image, 0, 0); // loads verbatim
+      return;
+    }
+    const exact = mode === 'new' && info.colorCount <= count;
+    const palette =
+      mode === 'new'
+        ? exact
+          ? extractExactPalette(image.data, count)
+          : medianCutPalette(image.data, count)
+        : state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b }));
+    const indices = exact
+      ? mapToPaletteExact(image.data, palette)
+      : mapToPalette(image.data, palette);
+    const out = ctx.createImageData(image.width, image.height);
+    for (let p = 0, i = 0; p < indices.length; p++, i += 4) {
+      const color = palette[indices[p]];
+      out.data[i] = color.r;
+      out.data[i + 1] = color.g;
+      out.data[i + 2] = color.b;
+      out.data[i + 3] = 255;
+    }
+    ctx.putImageData(out, 0, 0);
+  }, [mode, count]);
+
+  const PREVIEW_MAX_W = 250;
+  const PREVIEW_MAX_H = 170;
   let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
   if (previewScale >= 1) {
     previewScale = Math.max(1, Math.floor(previewScale));
@@ -148,7 +192,26 @@ function ImageLoadDialogOpen(): JSX.Element {
               <span className="image-load__exact"> &mdash; fits a palette exactly</span>
             )}
           </div>
-          <canvas ref={previewRef} className="image-load__preview" style={previewStyle} />
+          <div className="image-load__previews">
+            <canvas ref={previewRef} className="image-load__preview" style={previewStyle} />
+            {/* pixel-art arrow, drawn like the toolbox icons */}
+            <svg
+              className="image-load__arrow"
+              viewBox="0 0 12 12"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <rect x="1" y="5" width="7" height="2" />
+              <rect x="6" y="2" width="2" height="1" />
+              <rect x="7" y="3" width="2" height="1" />
+              <rect x="8" y="4" width="2" height="1" />
+              <rect x="9" y="5" width="2" height="2" />
+              <rect x="8" y="7" width="2" height="1" />
+              <rect x="7" y="8" width="2" height="1" />
+              <rect x="6" y="9" width="2" height="1" />
+            </svg>
+            <canvas ref={treatedRef} className="image-load__preview" style={previewStyle} />
+          </div>
         </div>
         <fieldset className="image-load__mode">
           <legend>Colors</legend>
