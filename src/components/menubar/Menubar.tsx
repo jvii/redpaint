@@ -1,4 +1,4 @@
-import React, { JSX, useRef } from 'react';
+import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { MenuItem } from './MenuItem';
 import { MenuItemSave } from './MenuItemSave';
@@ -167,19 +167,9 @@ export function Menubar(): JSX.Element {
   const screenFormat = state.canvas.screenFormatId
     ? screenFormats[state.canvas.screenFormatId]
     : null;
-  // The palette readout reads "True Color" while the canvas holds any
-  // true-color pixels. Read off the actual canvas each time the menu opens —
-  // a flag would go stale under undo and clear — with an early-exit tag scan
-  // that answers on the first true-color pixel it meets. The answer sticks
-  // while the menu is closed: closing starts a 120ms slide during which the
-  // content is still visible, and recomputing (or zeroing) on menuOpen going
-  // false would visibly flip the value mid-animation.
-  const lastTrueColorScan = useRef(false);
-  if (state.app.menuOpen) {
-    lastTrueColorScan.current =
-      paintingCanvasController.getCanvasColorIndex()?.hasTrueColorPixels() ?? false;
-  }
-  const hasTrueColorPixels = lastTrueColorScan.current;
+  // kept exact by the undo actions — every committed content change passes
+  // through setUndoPoint, and undo/redo restore the moved-to snapshot's answer
+  const hasTrueColorPixels = state.canvas.hasTrueColorPixels;
 
   const openScreenFormat = (): void => {
     actions.dialog.open('SCREEN_FORMAT');

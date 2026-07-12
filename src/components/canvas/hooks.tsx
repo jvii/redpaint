@@ -104,8 +104,13 @@ export function useCanvasContentUpload(): void {
     if (!pending) {
       return;
     }
-    paintingCanvasController.setCanvasColorIndex(pending);
+    paintingCanvasController.setCanvasColorIndex(pending.content);
     paintingCanvasController.render();
+    if (pending.freshDocument) {
+      // a loaded image starts a new document: drop the old picture's history
+      // (setUndoPoint below makes the fresh content its single entry)
+      actions.undo.reset();
+    }
     actions.undo.setUndoPoint();
     actions.app.setLoading(false);
   }, [state.canvas.resolution]);

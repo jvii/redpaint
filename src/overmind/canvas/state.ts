@@ -56,6 +56,12 @@ export type State = {
   pixelAspect: { x: number; y: number };
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
+  // Whether the committed canvas holds any true-color pixels (hybrid rather
+  // than fully indexed). Maintained by the undo actions: every committed
+  // content change passes through setUndoPoint, and undo/redo restore the
+  // answer memoized on the snapshot they move to — so this stays exact
+  // through strokes, loads, clears, undo and redo.
+  hasTrueColorPixels: boolean;
   // A screen format change that would shrink the canvas (and so lose pixels) is
   // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up —
   // nothing changes until the user answers, so Cancel has something to cancel.
@@ -83,5 +89,6 @@ export const state: State = {
   ),
   scrollFocusPoint: null,
   zoomFocusPoint: null,
+  hasTrueColorPixels: false,
   pendingScreenFormat: null,
 };
