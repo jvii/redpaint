@@ -15,3 +15,8 @@ export function takePendingImage(): ImageData | null {
   pending = null;
   return image;
 }
+
+// For the requester's preview: look without consuming.
+export function peekPendingImage(): ImageData | null {
+  return pending;
+}

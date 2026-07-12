@@ -1,7 +1,7 @@
-import { JSX, useState } from 'react';
+import { JSX, useEffect, useRef, useState } from 'react';
 import './ImageLoadDialog.css';
 import { useActions, useAppState } from '../../overmind';
-import { takePendingImage } from '../../canvas/pendingImage';
+import { peekPendingImage, takePendingImage } from '../../canvas/pendingImage';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import {
@@ -58,6 +58,32 @@ function ImageLoadDialogOpen(): JSX.Element {
   const [mode, setMode] = useState<ColorMode>('true');
   const [count, setCount] = useState(smallestSufficient ?? 256);
 
+  // A small preview of the decoded pixels, drawn at native size and scaled by
+  // CSS with image-rendering: pixelated — the same display trick the canvas
+  // itself uses. Tiny images upscale by a whole factor so their pixels stay
+  // even; large ones shrink fractionally, which a preview can afford.
+  const previewRef = useRef<HTMLCanvasElement>(null);
+  useEffect((): void => {
+    const image = peekPendingImage();
+    const canvas = previewRef.current;
+    if (!image || !canvas) {
+      return;
+    }
+    canvas.width = image.width;
+    canvas.height = image.height;
+    canvas.getContext('2d')?.putImageData(image, 0, 0);
+  }, []);
+  const PREVIEW_MAX_W = 200;
+  const PREVIEW_MAX_H = 140;
+  let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
+  if (previewScale >= 1) {
+    previewScale = Math.max(1, Math.floor(previewScale));
+  }
+  const previewStyle = {
+    width: Math.round(info.width * previewScale),
+    height: Math.round(info.height * previewScale),
+  };
+
   const handleCancel = (): void => {
     takePendingImage();
     actions.app.clearImageLoadInfo();
@@ -112,11 +138,17 @@ function ImageLoadDialogOpen(): JSX.Element {
   return (
     <Modal header="Load Image" width={640}>
       <div className="image-load__body">
-        <div className="image-load__info">
-          <span className="image-load__info-label">Image</span>
-          {`${info.width}x${info.height}`} &middot; <b>{info.colorCount.toLocaleString('en-US')}</b>{' '}
-          {info.colorCount === 1 ? 'color' : 'colors'}
-          {fitsPalette && <span className="image-load__exact"> &mdash; fits a palette exactly</span>}
+        <div className="image-load__top">
+          <div className="image-load__info">
+            <span className="image-load__info-label">Image</span>
+            {`${info.width}x${info.height}`} &middot;{' '}
+            <b>{info.colorCount.toLocaleString('en-US')}</b>{' '}
+            {info.colorCount === 1 ? 'color' : 'colors'}
+            {fitsPalette && (
+              <span className="image-load__exact"> &mdash; fits a palette exactly</span>
+            )}
+          </div>
+          <canvas ref={previewRef} className="image-load__preview" style={previewStyle} />
         </div>
         <fieldset className="image-load__mode">
           <legend>Colors</legend>
