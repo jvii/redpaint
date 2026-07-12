@@ -141,7 +141,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
         </fieldset>
         <div className="screen-format__right">
           <fieldset className="screen-format__colors">
-            <legend>Number of Colors</legend>
+            <legend>Indexed palette size</legend>
             <RetroToggle
               variant="grid"
               columns={4}
@@ -167,12 +167,13 @@ function ScreenFormatDialogOpen(): JSX.Element {
           </fieldset>
           <fieldset className="screen-format__remap">
             <legend>Remap to</legend>
-            {/* only a reduction remaps: fewer colors, or True Color going off */}
+            {/* only a reduction remaps: fewer colors, or True Color going off.
+                The count is the target size — both options produce it */}
             <RetroToggle
               variant="column"
               options={[
-                { value: 'current', label: 'Current palette' },
-                { value: 'picture', label: 'New palette from picture' },
+                { value: 'current', label: `Current palette (${colors})` },
+                { value: 'image', label: 'New palette from image' },
               ]}
               value={paletteSource}
               onChange={(value): void => setPaletteSource(value as PaletteSource)}

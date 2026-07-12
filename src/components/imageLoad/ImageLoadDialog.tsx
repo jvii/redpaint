@@ -130,7 +130,7 @@ function ImageLoadDialogOpen(): JSX.Element {
           />
         </fieldset>
         <fieldset className="image-load__count">
-          <legend>Palette size</legend>
+          <legend>Indexed palette size</legend>
           <RetroToggle
             variant="grid"
             columns={4}
