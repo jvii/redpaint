@@ -73,8 +73,8 @@ function ImageLoadDialogOpen(): JSX.Element {
     canvas.height = image.height;
     canvas.getContext('2d')?.putImageData(image, 0, 0);
   }, []);
-  const PREVIEW_MAX_W = 200;
-  const PREVIEW_MAX_H = 140;
+  const PREVIEW_MAX_W = 560;
+  const PREVIEW_MAX_H = 220;
   let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
   if (previewScale >= 1) {
     previewScale = Math.max(1, Math.floor(previewScale));

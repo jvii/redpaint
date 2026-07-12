@@ -11,9 +11,9 @@
 /* what was opened: size and distinct colors, in the status-strip idiom */
 .image-load__top {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 16px;
 }
 
 /* the decoded pixels at a glance; the checker shows through any transparency */
