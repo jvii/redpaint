@@ -78,6 +78,7 @@ export type PendingScreenFormat = {
   formatId: ScreenFormatId | null;
   colors: number;
   trueColorEnabled: boolean;
+  paletteSource: 'current' | 'picture';
   // the canvas size the chosen screen implies
   target: { width: number; height: number };
 };

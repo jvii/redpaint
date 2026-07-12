@@ -2,6 +2,7 @@ import { JSX, useState } from 'react';
 import './ScreenFormatDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { ScreenFormatId, screenFormats } from '../../overmind/canvas/state';
+import { PaletteSource } from '../../overmind/canvas/actions';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
@@ -61,6 +62,13 @@ function ScreenFormatDialogOpen(): JSX.Element {
   // Whether the document allows true-color pixels. Switching it off (with OK)
   // conforms the canvas to the palette — the explicit color-reducing move.
   const [trueColorEnabled, setTrueColorEnabled] = useState(state.canvas.trueColorEnabled);
+  // Where a reduction takes its palette from (see PaletteSource). Only
+  // meaningful when the draft actually reduces colors, so the toggle below is
+  // disabled otherwise.
+  const [paletteSource, setPaletteSource] = useState<PaletteSource>('current');
+  const reducesColors =
+    colors < state.palette.paletteArray.length ||
+    (!trueColorEnabled && state.canvas.hasTrueColorPixels);
 
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
@@ -71,6 +79,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
         formatId: null,
         colors,
         trueColorEnabled,
+        paletteSource,
       });
       if (conformed) {
         actions.undo.setUndoPoint();
@@ -95,6 +104,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
         formatId: resolvedFormatId,
         colors,
         trueColorEnabled,
+        paletteSource,
         target,
       });
       actions.dialog.open('SCREEN_RESIZE');
@@ -105,6 +115,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
       formatId: resolvedFormatId,
       colors,
       trueColorEnabled,
+      paletteSource,
     });
     if (!sameSize) {
       // one history entry for the whole change, via the resize upload — which
@@ -152,6 +163,20 @@ function ScreenFormatDialogOpen(): JSX.Element {
               ]}
               value={trueColorEnabled ? 'on' : 'off'}
               onChange={(value): void => setTrueColorEnabled(value === 'on')}
+            />
+          </fieldset>
+          <fieldset className="screen-format__remap">
+            <legend>Remap to</legend>
+            {/* only a reduction remaps: fewer colors, or True Color going off */}
+            <RetroToggle
+              variant="column"
+              options={[
+                { value: 'current', label: 'Current palette' },
+                { value: 'picture', label: 'New palette from picture' },
+              ]}
+              value={paletteSource}
+              onChange={(value): void => setPaletteSource(value as PaletteSource)}
+              disabled={!reducesColors}
             />
           </fieldset>
         </div>
