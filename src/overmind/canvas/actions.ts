@@ -107,9 +107,9 @@ export const setTrueColorEnabled = (context: Context, enabled: boolean): void =>
 
 // Where a color reduction takes its palette from: keep the current colors
 // (truncation — surviving slots unchanged, dropped ones remapped) or rebuild
-// an optimal palette from the picture itself (exact when the picture's
-// distinct colors fit the depth, median cut otherwise).
-export type PaletteSource = 'current' | 'picture';
+// an optimal palette from the image itself (exact when the image's distinct
+// colors fit the depth, median cut otherwise).
+export type PaletteSource = 'current' | 'image';
 
 export interface ApplyScreenFormatParams extends SetScreenFormatParams {
   colors: number;
@@ -137,11 +137,11 @@ export const applyScreenFormat = (
   const depthShrunk = colors < oldPalette.length;
   const needsConform = depthShrunk || flatten;
 
-  // A rebuilt palette comes from the picture as displayed: resolve the canvas
+  // A rebuilt palette comes from the image as displayed: resolve the canvas
   // to RGB, then take its own colors outright when they fit the depth
   // (lossless), or the median cut when they don't.
   let rebuilt: Color[] | null = null;
-  if (needsConform && paletteSource === 'picture') {
+  if (needsConform && paletteSource === 'image') {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
       const rgba = current.resolveToRGBA(oldPalette);
