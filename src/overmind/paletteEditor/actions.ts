@@ -26,12 +26,37 @@ export const open = (context: Context): void => {
   context.state.paletteEditor.isOpen = true;
 };
 
-// Keep the live edits; just close.
+// Keep the live edits and close. A session that changed the palette commits
+// one undo point (undo entries carry the palette, so the main UNDO reverts
+// the whole editing session — the job DPaint gave the requester's own Undo
+// button). It also keeps history honest: a palette change outside any entry
+// would be silently reverted by the next unrelated undo. Range-only changes
+// don't record one — ranges aren't in history. Cancel restores the snapshot
+// before coming through here, so it never records.
 export const close = (context: Context): void => {
+  const snapshot = context.state.paletteEditor.paletteSnapshot;
+  if (snapshot && !paletteEqualsSnapshot(context.state.palette.palette, snapshot)) {
+    context.actions.undo.setUndoPoint();
+  }
   context.state.paletteEditor.isOpen = false;
   context.state.paletteEditor.paletteSnapshot = null;
   context.state.paletteEditor.rangesSnapshot = null;
 };
+
+function paletteEqualsSnapshot(
+  palette: { [id: string]: Color },
+  snapshot: { [id: string]: Color }
+): boolean {
+  const ids = Object.keys(palette);
+  if (ids.length !== Object.keys(snapshot).length) {
+    return false;
+  }
+  return ids.every((id) => {
+    const a = palette[id];
+    const b = snapshot[id];
+    return b !== undefined && a.r === b.r && a.g === b.g && a.b === b.b;
+  });
+}
 
 // Restore the palette and ranges to how they were when the editor opened.
 export const cancel = (context: Context): void => {
