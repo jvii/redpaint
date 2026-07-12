@@ -167,10 +167,6 @@ export function Menubar(): JSX.Element {
   const screenFormat = state.canvas.screenFormatId
     ? screenFormats[state.canvas.screenFormatId]
     : null;
-  // kept exact by the undo actions — every committed content change passes
-  // through setUndoPoint, and undo/redo restore the moved-to snapshot's answer
-  const hasTrueColorPixels = state.canvas.hasTrueColorPixels;
-
   const openScreenFormat = (): void => {
     actions.dialog.open('SCREEN_FORMAT');
     close();
@@ -225,10 +221,18 @@ export function Menubar(): JSX.Element {
                 </span>
                 <span className="screen-status__field screen-status__field--colors">
                   <span className="screen-status__label">Palette</span>
-                  <b>
-                    {state.palette.paletteArray.length}
-                    {hasTrueColorPixels && ' / True Color'}
-                  </b>
+                  <b>{state.palette.paletteArray.length}</b>
+                </span>
+                {/* the mode (the requester's switch), not whether true-color
+                    pixels exist yet — so flipping the switch shows here at
+                    once, before anything is painted */}
+                <span className="screen-status__field">
+                  <span className="screen-status__label">True Color</span>
+                  {state.canvas.trueColorEnabled ? (
+                    <b className="screen-status__rainbow">ON</b>
+                  ) : (
+                    <b>OFF</b>
+                  )}
                 </span>
               </button>
               <button
