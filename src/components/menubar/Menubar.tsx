@@ -163,7 +163,7 @@ export function Menubar(): JSX.Element {
   const mode = state.brush.mode;
   // for disabling Matte mode selection when using a built-in brush
   const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
-  // null while no screen is simulated (Native pixels): the canvas is shown 1:1
+  // null while no screen is simulated (Native): the canvas is shown 1:1
   const screenFormat = state.canvas.screenFormatId
     ? screenFormats[state.canvas.screenFormatId]
     : null;
@@ -216,7 +216,7 @@ export function Menubar(): JSX.Element {
                       {screenFormat.name} <b>{`${screenFormat.width}x${screenFormat.height}`}</b>
                     </>
                   ) : (
-                    'Native pixels'
+                    'Native'
                   )}
                 </span>
                 <span className="screen-status__field screen-status__field--colors">
@@ -251,7 +251,7 @@ export function Menubar(): JSX.Element {
                 switching it on does, so the resting state needs no label: on,
                 the screen stretches to fill the window; off, it is pixel perfect
                 — every pixel the same whole block, leaving a margin. Independent
-                of the format, and meaningless at Native pixels, always 1:1. */}
+                of the format, and meaningless at Native, always 1:1. */}
             {screenFormat && (
               <button
                 className={
