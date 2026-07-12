@@ -230,7 +230,9 @@
    glyphs top to bottom (background-clip: text). On hover it whitens like any
    other value. OFF reads plain black, the switched-off state. */
 .screen-status__segment .screen-status__rainbow {
-  background-image: linear-gradient(180deg, #f00, #f80, #fe0, #0c0, #09f, #70f);
+  /* darkened stops: pure yellow and bright orange wash out against the
+     near-white segment, so the warm band runs red, burnt orange, gold */
+  background-image: linear-gradient(180deg, #e00, #d60, #b90, #080, #07c, #70d);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
