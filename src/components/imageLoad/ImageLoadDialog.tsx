@@ -96,8 +96,9 @@ function ImageLoadDialogOpen(): JSX.Element {
     }
 
     // the canvas resizes to the image; the resolution effect uploads the
-    // queued content once the resize commits
-    setPendingCanvasContent(colorIndex);
+    // queued content once the resize commits, and — as a fresh document —
+    // resets the undo history to it
+    setPendingCanvasContent(colorIndex, { freshDocument: true });
     actions.canvas.setResolution({ width: image.width, height: image.height });
     actions.app.clearImageLoadInfo();
     actions.dialog.close();

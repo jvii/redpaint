@@ -106,14 +106,21 @@ export class CanvasColorIndex {
 
   // Whether any pixel is true color (the canvas is hybrid rather than fully
   // indexed). A tag scan with an early exit: a true-color image answers on the
-  // first pixel; a fully indexed canvas costs one pass.
+  // first pixel; a fully indexed canvas costs one pass. Memoized — undo
+  // snapshots are built fresh by getIndex() and never written to afterwards,
+  // so the answer cannot change under an instance.
+  private trueColorScan: boolean | null = null;
   hasTrueColorPixels(): boolean {
-    for (let i = 3; i < this.indexArray.length; i += 4) {
-      if (this.indexArray[i] === ALPHA_TRUECOLOR) {
-        return true;
+    if (this.trueColorScan === null) {
+      this.trueColorScan = false;
+      for (let i = 3; i < this.indexArray.length; i += 4) {
+        if (this.indexArray[i] === ALPHA_TRUECOLOR) {
+          this.trueColorScan = true;
+          break;
+        }
       }
     }
-    return false;
+    return this.trueColorScan;
   }
 
   isTrueColorPixel(pixel: Point): boolean {
