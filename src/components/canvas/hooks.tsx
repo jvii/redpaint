@@ -5,7 +5,10 @@ import { useActions, useAppState } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { takePendingCanvasContent } from '../../canvas/pendingCanvasContent';
+import {
+  setPendingCanvasContent,
+  takePendingCanvasContent,
+} from '../../canvas/pendingCanvasContent';
 
 // Recover from WebGL context loss (Safari in particular kills contexts
 // under GPU memory pressure). Without preventDefault on webglcontextlost
@@ -78,6 +81,7 @@ export function useInitTool(isZoomCanvas: boolean): void {
 
 export function useUndo(): void {
   const state = useAppState();
+  const actions = useActions();
   useEffect((): void => {
     if (state.undo.currentIndex === null) {
       return;
@@ -86,15 +90,31 @@ export function useUndo(): void {
     if (state.undo.currentIndex === -1) {
       throw new Error('No color index in undo buffer at index' + state.undo.currentIndex);
     }
+    // History can cross canvas sizes (a snapshot from before a resize). A
+    // repaint into a different-size GL buffer would show the snapshot cropped
+    // or stretched, so restore the snapshot's own resolution first and let the
+    // resolution effect upload it after the resize commits — without touching
+    // the history being navigated.
+    const resolution = state.canvas.resolution;
+    if (colorIndex.width !== resolution.width || colorIndex.height !== resolution.height) {
+      setPendingCanvasContent(colorIndex, { recordUndoPoint: false });
+      actions.canvas.setResolution({
+        width: colorIndex.width,
+        height: colorIndex.height,
+        recordUndoPoint: false,
+      });
+      return;
+    }
     paintingCanvasController.setCanvasColorIndex(colorIndex);
     paintingCanvasController.render();
   }, [state.undo.lastUndoRedoTime]);
 }
 
-// Uploads content queued for after a resolution change — a loaded image or a
-// content-preserving canvas resize — once React has committed the canvas
-// element resize (which re-inits the GL drawing buffer). Image decode itself
-// happens up front, before the load requester (app.beginImageLoad).
+// Uploads content queued for after a resolution change — a loaded image, a
+// content-preserving canvas resize, or an undo/redo restore across a canvas
+// size change — once React has committed the canvas element resize (which
+// re-inits the GL drawing buffer). Image decode itself happens up front,
+// before the load requester (app.beginImageLoad).
 export function useCanvasContentUpload(): void {
   const state = useAppState();
   const actions = useActions();
@@ -111,7 +131,9 @@ export function useCanvasContentUpload(): void {
       // (setUndoPoint below makes the fresh content its single entry)
       actions.undo.reset();
     }
-    actions.undo.setUndoPoint();
+    if (pending.recordUndoPoint) {
+      actions.undo.setUndoPoint();
+    }
     actions.app.setLoading(false);
   }, [state.canvas.resolution]);
 }
