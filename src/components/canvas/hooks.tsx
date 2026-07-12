@@ -36,9 +36,9 @@ export function useContextLossRecovery(
     const restorePaintingCanvas = (): void => {
       console.warn('WebGL context restored (painting canvas)');
       paintingCanvasController.restoreContext();
-      const colorIndex = undoBuffer.getItem(overmind.state.undo.currentIndex);
-      if (colorIndex) {
-        paintingCanvasController.setCanvasColorIndex(colorIndex);
+      const entry = undoBuffer.getItem(overmind.state.undo.currentIndex);
+      if (entry) {
+        paintingCanvasController.setCanvasColorIndex(entry.colorIndex);
       }
       paintingCanvasController.render();
     };
@@ -86,10 +86,11 @@ export function useUndo(): void {
     if (state.undo.currentIndex === null) {
       return;
     }
-    const colorIndex = undoBuffer.getItem(state.undo.currentIndex);
-    if (state.undo.currentIndex === -1) {
-      throw new Error('No color index in undo buffer at index' + state.undo.currentIndex);
+    const entry = undoBuffer.getItem(state.undo.currentIndex);
+    if (!entry) {
+      throw new Error('No entry in undo buffer at index ' + state.undo.currentIndex);
     }
+    const colorIndex = entry.colorIndex;
     // History can cross canvas sizes (a snapshot from before a resize). A
     // repaint into a different-size GL buffer would show the snapshot cropped
     // or stretched, so restore the snapshot's own resolution first and let the

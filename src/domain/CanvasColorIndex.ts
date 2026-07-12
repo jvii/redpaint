@@ -193,16 +193,18 @@ export class CanvasColorIndex {
 
   // Conforms every pixel to a palette (the DPaint-spirited automatic color
   // reduction, done properly — the Amiga just dropped bitplanes and let the
-  // indices alias). Indexed pixels within the new depth keep their index
-  // (the screen format flow shrinks the palette by truncation, so surviving
-  // slots are unchanged); indexed pixels beyond it resolve to their old color
-  // and take the nearest new one. True-color pixels are flattened the same
-  // way when includeTrueColor is set (the True Color switch turning off),
-  // otherwise kept verbatim.
+  // indices alias). With remapAll unset, indexed pixels within the new depth
+  // keep their index (a truncation shrink leaves surviving slots unchanged)
+  // and only pixels beyond it resolve to their old color and take the nearest
+  // new one; with remapAll set (a rebuilt palette, where every slot changed)
+  // all indexed pixels remap that way. True-color pixels are flattened the
+  // same way when includeTrueColor is set (the True Color switch turning
+  // off), otherwise kept verbatim.
   conformedTo(
     oldPalette: Color[],
     newPalette: Color[],
     includeTrueColor: boolean,
+    remapAll: boolean,
     nearest: (r: number, g: number, b: number) => number
   ): CanvasColorIndex {
     const source = this.indexArray;
@@ -221,7 +223,7 @@ export class CanvasColorIndex {
         }
       } else {
         const index = source[i]; // stored 0-based
-        if (index < newPalette.length) {
+        if (!remapAll && index < newPalette.length) {
           dest[i] = index;
         } else {
           const old = oldPalette[index] ?? { r: 0, g: 0, b: 0 };
@@ -231,6 +233,29 @@ export class CanvasColorIndex {
       }
     }
     return new CanvasColorIndex(this.width, this.height, dest);
+  }
+
+  // The canvas resolved to displayable RGBA pixels (indexed pixels through
+  // the palette, true-color pixels directly) — the input for extracting an
+  // optimal palette from the picture itself. Row order is the stored one;
+  // palette building is orientation-blind.
+  resolveToRGBA(palette: Color[]): Uint8ClampedArray {
+    const source = this.indexArray;
+    const rgba = new Uint8ClampedArray(source.length);
+    for (let i = 0; i < source.length; i += 4) {
+      if (source[i + 3] === ALPHA_TRUECOLOR) {
+        rgba[i] = source[i];
+        rgba[i + 1] = source[i + 1];
+        rgba[i + 2] = source[i + 2];
+      } else {
+        const color = palette[source[i]] ?? { r: 0, g: 0, b: 0 };
+        rgba[i] = color.r;
+        rgba[i + 1] = color.g;
+        rgba[i + 2] = color.b;
+      }
+      rgba[i + 3] = 255;
+    }
+    return rgba;
   }
 
   // Whole-pixel (RGBA as one 32-bit value) access, used by flood fill so that

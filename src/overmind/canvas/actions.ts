@@ -2,7 +2,13 @@ import { Context } from '../../overmind'
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
-import { createNearestMapper } from '../../algorithm/quantize';
+import {
+  createNearestMapper,
+  extractExactPalette,
+  medianCutPalette,
+} from '../../algorithm/quantize';
+import { countDistinctColors } from '../../algorithm/imageColors';
+import { Color } from '../../types';
 import { Point } from '../../types';
 import { PendingScreenFormat, ScaleMode, ScreenFormatId, screenFormats } from './state';
 
@@ -99,23 +105,28 @@ export const setTrueColorEnabled = (context: Context, enabled: boolean): void =>
   context.state.canvas.trueColorEnabled = enabled;
 };
 
+// Where a color reduction takes its palette from: keep the current colors
+// (truncation — surviving slots unchanged, dropped ones remapped) or rebuild
+// an optimal palette from the picture itself (exact when the picture's
+// distinct colors fit the depth, median cut otherwise).
+export type PaletteSource = 'current' | 'picture';
+
 export interface ApplyScreenFormatParams extends SetScreenFormatParams {
   colors: number;
   trueColorEnabled: boolean;
+  paletteSource: PaletteSource;
 }
 
 // Commits a screen format choice: the palette depth, the simulated screen and
-// the True Color mode, then pushes the resized palette into the GL textures
-// (which don't watch Overmind), and conforms the canvas pixels to the result —
-// dropped palette slots always remap to their nearest surviving color (the
-// DPaint-spirited automatic reduction), and switching True Color off flattens
-// the true-color pixels too. The canvas resize, if any, is the caller's
-// separate step. Both the Screen Format requester and the shrink question
-// commit through here, so a deferred change applies exactly like an immediate
-// one.
+// the True Color mode, then pushes the resulting palette into the GL textures
+// (which don't watch Overmind), and conforms the canvas pixels to it — the
+// DPaint-spirited automatic reduction. Switching True Color off flattens the
+// true-color pixels too. The canvas resize, if any, is the caller's separate
+// step. Both the Screen Format requester and the shrink question commit
+// through here, so a deferred change applies exactly like an immediate one.
 export const applyScreenFormat = (
   context: Context,
-  { formatId, colors, trueColorEnabled }: ApplyScreenFormatParams
+  { formatId, colors, trueColorEnabled, paletteSource }: ApplyScreenFormatParams
 ): boolean => {
   const oldPalette = context.state.palette.paletteArray.map((c) => ({
     r: c.r,
@@ -124,8 +135,28 @@ export const applyScreenFormat = (
   }));
   const flatten = !trueColorEnabled && context.state.canvas.hasTrueColorPixels;
   const depthShrunk = colors < oldPalette.length;
+  const needsConform = depthShrunk || flatten;
 
-  context.actions.palette.setNumberOfColors(colors);
+  // A rebuilt palette comes from the picture as displayed: resolve the canvas
+  // to RGB, then take its own colors outright when they fit the depth
+  // (lossless), or the median cut when they don't.
+  let rebuilt: Color[] | null = null;
+  if (needsConform && paletteSource === 'picture') {
+    const current = paintingCanvasController.getCanvasColorIndex();
+    if (current) {
+      const rgba = current.resolveToRGBA(oldPalette);
+      rebuilt =
+        countDistinctColors(rgba) <= colors
+          ? extractExactPalette(rgba, colors)
+          : medianCutPalette(rgba, colors);
+    }
+  }
+
+  if (rebuilt) {
+    context.actions.palette.replacePalette(rebuilt);
+  } else {
+    context.actions.palette.setNumberOfColors(colors);
+  }
   context.actions.canvas.setScreenFormat({ formatId });
   context.state.canvas.trueColorEnabled = trueColorEnabled;
   paintingCanvasController.updatePalette();
@@ -135,7 +166,7 @@ export const applyScreenFormat = (
   // entry for the whole change — via its resize's upload, or setUndoPoint for
   // a same-size change — so undo restores the full pre-change canvas. Returns
   // whether the pixels changed, so the caller knows an entry is owed.
-  if (depthShrunk || flatten) {
+  if (needsConform) {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
       const newPalette = context.state.palette.paletteArray.map((c) => ({
@@ -147,6 +178,7 @@ export const applyScreenFormat = (
         oldPalette,
         newPalette,
         flatten,
+        rebuilt !== null, // every slot changed — all indexed pixels remap
         createNearestMapper(newPalette)
       );
       paintingCanvasController.setCanvasColorIndex(conformed);

@@ -48,6 +48,7 @@ export function DialogManager(): JSX.Element | null {
         formatId: pending.formatId,
         colors: pending.colors,
         trueColorEnabled: pending.trueColorEnabled,
+        paletteSource: pending.paletteSource,
       });
       if (canvasChange === 'scale') {
         actions.canvas.resizeCanvasScalingContent(pending.target);
