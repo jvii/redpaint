@@ -71,12 +71,14 @@ function ImageLoadDialogOpen(): JSX.Element {
       return;
     }
 
+    // the load is a new document, so its color choice decides the True Color
+    // mode outright: a True Color load opts in, an indexed load opts out —
+    // whatever the previous document had chosen
+    actions.canvas.setTrueColorEnabled(mode === 'true');
+
     let colorIndex: CanvasColorIndex;
     if (mode === 'true') {
       colorIndex = CanvasColorIndex.fromImageData(image);
-      // a new document loaded as True Color opts back into true color, even
-      // if the previous document had switched it off
-      actions.canvas.setTrueColorEnabled(true);
     } else if (mode === 'new') {
       const exact = info.colorCount <= count;
       const palette = exact
