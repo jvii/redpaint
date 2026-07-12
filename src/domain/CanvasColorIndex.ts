@@ -1,4 +1,4 @@
-import { PaintColor, Point } from '../types';
+import { Color, PaintColor, Point } from '../types';
 
 // Per-pixel tag stored in the alpha byte of the color index texture (see
 // docs/true-color-mode.md). Indexed pixels store a 0-based palette position in
@@ -189,6 +189,48 @@ export class CanvasColorIndex {
       }
     }
     return dest;
+  }
+
+  // Conforms every pixel to a palette (the DPaint-spirited automatic color
+  // reduction, done properly — the Amiga just dropped bitplanes and let the
+  // indices alias). Indexed pixels within the new depth keep their index
+  // (the screen format flow shrinks the palette by truncation, so surviving
+  // slots are unchanged); indexed pixels beyond it resolve to their old color
+  // and take the nearest new one. True-color pixels are flattened the same
+  // way when includeTrueColor is set (the True Color switch turning off),
+  // otherwise kept verbatim.
+  conformedTo(
+    oldPalette: Color[],
+    newPalette: Color[],
+    includeTrueColor: boolean,
+    nearest: (r: number, g: number, b: number) => number
+  ): CanvasColorIndex {
+    const source = this.indexArray;
+    const dest = new Uint8Array(source.length);
+    for (let i = 0; i < source.length; i += 4) {
+      const tag = source[i + 3];
+      if (tag === ALPHA_TRUECOLOR) {
+        if (includeTrueColor) {
+          dest[i] = nearest(source[i], source[i + 1], source[i + 2]);
+          dest[i + 3] = ALPHA_INDEXED;
+        } else {
+          dest[i] = source[i];
+          dest[i + 1] = source[i + 1];
+          dest[i + 2] = source[i + 2];
+          dest[i + 3] = tag;
+        }
+      } else {
+        const index = source[i]; // stored 0-based
+        if (index < newPalette.length) {
+          dest[i] = index;
+        } else {
+          const old = oldPalette[index] ?? { r: 0, g: 0, b: 0 };
+          dest[i] = nearest(old.r, old.g, old.b);
+        }
+        dest[i + 3] = ALPHA_INDEXED;
+      }
+    }
+    return new CanvasColorIndex(this.width, this.height, dest);
   }
 
   // Whole-pixel (RGBA as one 32-bit value) access, used by flood fill so that

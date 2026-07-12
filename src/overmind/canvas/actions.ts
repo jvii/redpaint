@@ -2,6 +2,7 @@ import { Context } from '../../overmind'
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
+import { createNearestMapper } from '../../algorithm/quantize';
 import { Point } from '../../types';
 import { PendingScreenFormat, ScaleMode, ScreenFormatId, screenFormats } from './state';
 
@@ -91,23 +92,69 @@ export const toggleScaleMode = (context: Context): void => {
     context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
 };
 
+// Loading an image as True Color opts the new document back into true color;
+// the Screen Format requester's switch goes through applyScreenFormat instead
+// (turning it off there also conforms the pixels).
+export const setTrueColorEnabled = (context: Context, enabled: boolean): void => {
+  context.state.canvas.trueColorEnabled = enabled;
+};
+
 export interface ApplyScreenFormatParams extends SetScreenFormatParams {
   colors: number;
+  trueColorEnabled: boolean;
 }
 
-// Commits a screen format choice: the palette depth and the simulated screen,
-// then pushes the resized palette into the GL textures (which don't watch
-// Overmind). The canvas resize, if any, is the caller's separate step. Both the
-// Screen Format requester and the shrink question commit through here, so a
-// deferred change applies exactly like an immediate one.
+// Commits a screen format choice: the palette depth, the simulated screen and
+// the True Color mode, then pushes the resized palette into the GL textures
+// (which don't watch Overmind), and conforms the canvas pixels to the result —
+// dropped palette slots always remap to their nearest surviving color (the
+// DPaint-spirited automatic reduction), and switching True Color off flattens
+// the true-color pixels too. The canvas resize, if any, is the caller's
+// separate step. Both the Screen Format requester and the shrink question
+// commit through here, so a deferred change applies exactly like an immediate
+// one.
 export const applyScreenFormat = (
   context: Context,
-  { formatId, colors }: ApplyScreenFormatParams
-): void => {
+  { formatId, colors, trueColorEnabled }: ApplyScreenFormatParams
+): boolean => {
+  const oldPalette = context.state.palette.paletteArray.map((c) => ({
+    r: c.r,
+    g: c.g,
+    b: c.b,
+  }));
+  const flatten = !trueColorEnabled && context.state.canvas.hasTrueColorPixels;
+  const depthShrunk = colors < oldPalette.length;
+
   context.actions.palette.setNumberOfColors(colors);
   context.actions.canvas.setScreenFormat({ formatId });
+  context.state.canvas.trueColorEnabled = trueColorEnabled;
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();
+
+  // Conform without recording history: the caller commits exactly one undo
+  // entry for the whole change — via its resize's upload, or setUndoPoint for
+  // a same-size change — so undo restores the full pre-change canvas. Returns
+  // whether the pixels changed, so the caller knows an entry is owed.
+  if (depthShrunk || flatten) {
+    const current = paintingCanvasController.getCanvasColorIndex();
+    if (current) {
+      const newPalette = context.state.palette.paletteArray.map((c) => ({
+        r: c.r,
+        g: c.g,
+        b: c.b,
+      }));
+      const conformed = current.conformedTo(
+        oldPalette,
+        newPalette,
+        flatten,
+        createNearestMapper(newPalette)
+      );
+      paintingCanvasController.setCanvasColorIndex(conformed);
+      paintingCanvasController.render();
+      return true;
+    }
+  }
+  return false;
 };
 
 export const setScrollFocusPoint = (context: Context, point: Point): void => {

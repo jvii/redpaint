@@ -62,6 +62,12 @@ export type State = {
   // answer memoized on the snapshot they move to — so this stays exact
   // through strokes, loads, clears, undo and redo.
   hasTrueColorPixels: boolean;
+  // Whether the document allows true-color pixels (the True Color switch in
+  // the Screen Format requester). Switching it off conforms the canvas to the
+  // palette; loading an image as True Color switches it back on. Writers that
+  // can produce rgb pixels will consult this as they grow (strict indexed
+  // mode, per docs/true-color-mode.md).
+  trueColorEnabled: boolean;
   // A screen format change that would shrink the canvas (and so lose pixels) is
   // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up —
   // nothing changes until the user answers, so Cancel has something to cancel.
@@ -71,6 +77,7 @@ export type State = {
 export type PendingScreenFormat = {
   formatId: ScreenFormatId | null;
   colors: number;
+  trueColorEnabled: boolean;
   // the canvas size the chosen screen implies
   target: { width: number; height: number };
 };
@@ -90,5 +97,6 @@ export const state: State = {
   scrollFocusPoint: null,
   zoomFocusPoint: null,
   hasTrueColorPixels: false,
+  trueColorEnabled: true,
   pendingScreenFormat: null,
 };

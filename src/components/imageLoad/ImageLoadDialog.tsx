@@ -74,6 +74,9 @@ function ImageLoadDialogOpen(): JSX.Element {
     let colorIndex: CanvasColorIndex;
     if (mode === 'true') {
       colorIndex = CanvasColorIndex.fromImageData(image);
+      // a new document loaded as True Color opts back into true color, even
+      // if the previous document had switched it off
+      actions.canvas.setTrueColorEnabled(true);
     } else if (mode === 'new') {
       const exact = info.colorCount <= count;
       const palette = exact
