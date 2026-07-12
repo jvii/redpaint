@@ -226,6 +226,20 @@
   color: #ff8800;
 }
 
+/* True Color ON earns the full spectrum: the gradient painted through the
+   glyphs (background-clip: text). It keeps its colors on hover too — beating
+   the segment's whiten rule needs the transparent fill restated there. */
+.screen-status__segment .screen-status__rainbow {
+  background-image: linear-gradient(90deg, #f00, #f80, #fe0, #0c0, #09f, #70f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.screen-status__segment:hover .screen-status__rainbow {
+  color: transparent;
+}
+
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
    above each value uses the plain monospace face instead. */
 .screen-status__label {
