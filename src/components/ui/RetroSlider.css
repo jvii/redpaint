@@ -77,6 +77,17 @@
   outline-offset: 2px;
 }
 
+/* disabled: greyed out, no pointer feedback, still shows the current value —
+   same treatment as RetroToggle's disabled prop */
+.retro-slider--disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.retro-slider--disabled input {
+  cursor: default;
+}
+
 /* vertical: min at the bottom, fill grows upward */
 .retro-slider--vertical {
   flex: none;

@@ -14,19 +14,29 @@ export type GradientFillStyle = {
   rangeLow: number; // 1-based color id, inclusive — same units as PaintColor.colorNumber
   rangeHigh: number; // 1-based color id, inclusive
   dither: number; // 0..20, 0 = off — PyDPainter's Random dither scale
+  // Divides dither into a jitter half-width, in units of a band's own width
+  // (half-width = dither/(2*ditherDivisor) of a band). 4 (the default when
+  // omitted) matches PyDPainter's fixed-point dither exactly — see
+  // colorIdForPosition. Exposed as a parameter, rather than only the fixed
+  // constant, so the Fill Style requester can offer it as an experimental
+  // tuning slider without the algorithm needing to know about the UI.
+  ditherDivisor?: number;
 };
+
+const DEFAULT_DITHER_DIVISOR = 4;
 
 // The color id for one pixel at `pos` along an axis spanning [min, min+span)
 // over bandCount+1 colors. Each color owns a "pointsPerColor"-wide band of
 // raw positions (floor-divided, not rounded — matching the reference); with
-// dither > 0, pos is jittered first by up to +/-(dither/4 * pointsPerColor)
-// pixels — the jitter range grows with the band width itself, which is why
-// high dither can blend a pixel several bands away, not just its immediate
-// neighbor. The /4 makes the half-width dither/8 of a band per slider unit,
-// matching PyDPainter's fixed-point dither (±32*gradient_dither out of 256)
-// exactly — verified pixel-for-pixel against its source. `random` defaults
-// to Math.random (genuine per-pixel randomness, as in the reference) but is
-// injectable so tests can assert exact output.
+// dither > 0, pos is jittered first by up to +/-(dither/ditherDivisor *
+// pointsPerColor) pixels — the jitter range grows with the band width
+// itself, which is why high dither can blend a pixel several bands away,
+// not just its immediate neighbor. ditherDivisor=4 (the default) makes the
+// half-width dither/8 of a band per slider unit, matching PyDPainter's
+// fixed-point dither (±32*gradient_dither out of 256) exactly — verified
+// pixel-for-pixel against its source. `random` defaults to Math.random
+// (genuine per-pixel randomness, as in the reference) but is injectable so
+// tests can assert exact output.
 function colorIdForPosition(
   pos: number,
   min: number,
@@ -40,7 +50,8 @@ function colorIdForPosition(
   }
   const numColors = bandCount + 1;
   const pointsPerColor = span / numColors;
-  const ditherFactor = (style.dither / 4) * pointsPerColor;
+  const ditherDivisor = style.ditherDivisor ?? DEFAULT_DITHER_DIVISOR;
+  const ditherFactor = (style.dither / ditherDivisor) * pointsPerColor;
   const jitter = ditherFactor > 0 ? random() * ditherFactor - ditherFactor / 2 : 0;
   const colorIndex = Math.floor((pos - min + jitter) / pointsPerColor);
   return style.rangeLow + Math.max(0, Math.min(bandCount, colorIndex));

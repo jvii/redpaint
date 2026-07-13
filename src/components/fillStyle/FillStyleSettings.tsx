@@ -128,13 +128,41 @@ function FillStyleSettingsOpen(): JSX.Element {
               onChange={(value): void =>
                 actions.fillStyle.setRangeIndex(Number(value) as 0 | 1 | 2 | 3)
               }
-              disabled={!isGradient}
+              disabled={!isGradient || state.fillStyle.rangeOverride}
             />
           ) : (
             <span className="fill-style-settings__hint">
               No ranges defined — set one in the palette editor (Range panel).
             </span>
           )}
+        </RetroFieldset>
+        <RetroFieldset legend="Range Low/High (Experimental)" className="fill-style-settings__dither">
+          <RetroLabeledSlider
+            label="Low"
+            vertical={false}
+            value={state.fillStyle.rangeOverride ? state.fillStyle.rangeLow : Number(
+              state.palette.ranges[state.fillStyle.rangeIndex]?.start ?? state.fillStyle.rangeLow
+            )}
+            min={1}
+            max={state.palette.paletteArray.length}
+            onChange={(value): void => actions.fillStyle.setRangeLow(value)}
+            disabled={!isGradient}
+          />
+          <RetroLabeledSlider
+            label="High"
+            vertical={false}
+            value={state.fillStyle.rangeOverride ? state.fillStyle.rangeHigh : Number(
+              state.palette.ranges[state.fillStyle.rangeIndex]?.end ?? state.fillStyle.rangeHigh
+            )}
+            min={1}
+            max={state.palette.paletteArray.length}
+            onChange={(value): void => actions.fillStyle.setRangeHigh(value)}
+            disabled={!isGradient}
+          />
+          <span className="fill-style-settings__hint">
+            Bypasses the picker above — touching either slider switches to it;
+            picking a preset range switches back.
+          </span>
         </RetroFieldset>
         <RetroFieldset legend="Dither" className="fill-style-settings__dither">
           <RetroLabeledSlider
@@ -144,7 +172,22 @@ function FillStyleSettingsOpen(): JSX.Element {
             min={0}
             max={20}
             onChange={(value): void => actions.fillStyle.setDither(value)}
+            disabled={!isGradient}
           />
+        </RetroFieldset>
+        <RetroFieldset legend="Dither Divisor (Experimental)" className="fill-style-settings__dither">
+          <RetroLabeledSlider
+            label=""
+            vertical={false}
+            value={state.fillStyle.ditherDivisor}
+            min={1}
+            max={10}
+            onChange={(value): void => actions.fillStyle.setDitherDivisor(value)}
+            disabled={!isGradient}
+          />
+          <span className="fill-style-settings__hint">
+            4 matches DPaint/PyDPainter (dither jitter = dither/8 of a band).
+          </span>
         </RetroFieldset>
       </div>
       <RetroButton variant="secondary" onClick={actions.fillStyle.cancelSettings}>

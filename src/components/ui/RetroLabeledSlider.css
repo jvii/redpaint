@@ -31,6 +31,16 @@
   color: black;
 }
 
+/* disabled: greys the label and readout; RetroSlider handles its own track */
+.retro-labeled-slider--disabled .retro-labeled-slider__label {
+  opacity: 0.4;
+}
+
+.retro-labeled-slider--disabled .retro-labeled-slider__input {
+  opacity: 0.4;
+  cursor: default;
+}
+
 /* Styled after retroui.dev's Input (border-2, rounded, shadow-sm, focus
    ring) — the softer/rounded sibling of RetroButton's sharp-cornered,
    hard-shadowed gadget look, appropriate for a field you type into. */

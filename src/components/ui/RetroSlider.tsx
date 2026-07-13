@@ -8,6 +8,10 @@ type Props = {
   step?: number;
   vertical?: boolean;
   onChange: (value: number) => void;
+  // Greys out and ignores clicks/drags (still shows the current value), for
+  // a slider that doesn't apply in the current context — same treatment as
+  // RetroToggle's disabled prop.
+  disabled?: boolean;
 };
 
 // Matches the thumb's 20px length in RetroSlider.css — needed here too so a
@@ -30,6 +34,7 @@ export function RetroSlider({
   step = 1,
   vertical = false,
   onChange,
+  disabled = false,
 }: Props): JSX.Element {
   // orient is a Firefox-only attribute for vertical range inputs; other
   // browsers use the writing-mode from the CSS class.
@@ -46,6 +51,9 @@ export function RetroSlider({
   // placement (RetroSlider.css), computed here so the click can be compared
   // against it.
   const handlePointerDown = (event: React.PointerEvent<HTMLInputElement>): void => {
+    if (disabled) {
+      return;
+    }
     const rect = event.currentTarget.getBoundingClientRect();
     const trackLength = vertical ? rect.height : rect.width;
     const thumbStart = (trackLength - THUMB_LENGTH) * (vertical ? 1 - fill : fill);
@@ -66,7 +74,11 @@ export function RetroSlider({
 
   return (
     <span
-      className={'retro-slider' + (vertical ? ' retro-slider--vertical' : '')}
+      className={
+        'retro-slider' +
+        (vertical ? ' retro-slider--vertical' : '') +
+        (disabled ? ' retro-slider--disabled' : '')
+      }
       style={{ '--retro-slider-fill': fill } as React.CSSProperties}
     >
       <input
@@ -75,6 +87,7 @@ export function RetroSlider({
         min={min}
         max={max}
         step={step}
+        disabled={disabled}
         onChange={(event): void => onChange(Number(event.target.value))}
         onPointerDown={handlePointerDown}
         {...orientProps}

@@ -9,6 +9,7 @@ type Props = {
   max: number;
   onChange: (value: number) => void;
   vertical?: boolean;
+  disabled?: boolean;
 };
 
 // A RetroSlider (vertical by default) with its label above and a
@@ -22,6 +23,7 @@ export function RetroLabeledSlider({
   max,
   onChange,
   vertical = true,
+  disabled = false,
 }: Props): JSX.Element {
   const [text, setText] = useState(String(value));
 
@@ -43,16 +45,30 @@ export function RetroLabeledSlider({
   }
 
   return (
-    <div className={'retro-labeled-slider' + (vertical ? '' : ' retro-labeled-slider--horizontal')}>
+    <div
+      className={
+        'retro-labeled-slider' +
+        (vertical ? '' : ' retro-labeled-slider--horizontal') +
+        (disabled ? ' retro-labeled-slider--disabled' : '')
+      }
+    >
       <span className="retro-labeled-slider__label">{label}</span>
       <div className="retro-labeled-slider__track">
-        <RetroSlider vertical={vertical} value={value} min={min} max={max} onChange={onChange} />
+        <RetroSlider
+          vertical={vertical}
+          value={value}
+          min={min}
+          max={max}
+          onChange={onChange}
+          disabled={disabled}
+        />
       </div>
       <input
         className="retro-labeled-slider__input"
         type="text"
         inputMode="numeric"
         value={text}
+        disabled={disabled}
         onChange={(event): void => setText(event.target.value)}
         onBlur={commit}
         onKeyDown={(event): void => {
