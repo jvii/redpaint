@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { bucketPointsByGradient, GradientFillStyle } from '../../src/algorithm/gradientFill';
 
 function bucketMap(buckets: Map<number, { x: number; y: number }[]>): Record<number, { x: number; y: number }[]> {
@@ -47,7 +47,7 @@ describe('bucketPointsByGradient', () => {
   test('horizontalLine normalizes each row against its own local x-extent, independently', () => {
     const style: GradientFillStyle = { axis: 'horizontalLine', rangeLow: 1, rangeHigh: 3, dither: 0 };
     const points = [
-      // row 0: span 0..2 -> t = 0, 0.5, 1
+      // row 0: span 0..2 -> relative fractions 0, 0.5, 1
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 2, y: 0 },
@@ -76,9 +76,7 @@ describe('bucketPointsByGradient', () => {
     });
   });
 
-  test('dither=0 gives hard bands: the midpoint of a 2-color range rounds up', () => {
-    // t = 0, 0.25, 0.5, 0.75, 1 across x=0..4; band boundary sits exactly at
-    // x=2 (t=0.5) — Math.round rounds .5 up, so it lands in the second color
+  test('dither=0 gives hard bands, floor-divided across the span', () => {
     const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 0 };
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
     const buckets = bucketPointsByGradient(points, style);
@@ -88,17 +86,33 @@ describe('bucketPointsByGradient', () => {
     });
   });
 
-  test('dither perturbs pixels via a deterministic pseudo-random hash, not true randomness', () => {
-    // same scenario as above, but with dither=20 (max): pixels whose hash
-    // pushes them past a rounding threshold flip band; the assignment is
-    // exact and reproducible (same hash every run), even though it looks
-    // patternless
-    const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 20 };
+  test('dither=0 never calls the random source, regardless of what it would return', () => {
+    const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 0 };
+    const random = vi.fn(() => 0.5);
+    bucketPointsByGradient([{ x: 0, y: 0 }], style, random);
+    expect(random).not.toHaveBeenCalled();
+  });
+
+  test('dither jitters the raw pixel position by up to dither/3 of a band width, in either direction', () => {
+    // range 1..2 over x=0..4 (span 4, pointsPerColor = 4/2 = 2); dither=6 ->
+    // ditherFactor = (6/3)*2 = 4, so jitter is either exactly -2 or +2 when
+    // the random source is pinned to an extreme. A jitter of -2 (minimum)
+    // should never push a point into color 2 except x=4, which was already
+    // on the boundary; a jitter of +2 (maximum) pushes every point into
+    // color 2, including x=0 — demonstrating the jitter magnitude really
+    // does scale with the band width, not a small fixed number of pixels.
+    const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 6 };
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
-    const buckets = bucketPointsByGradient(points, style);
-    expect(bucketMap(buckets)).toEqual({
-      1: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }],
-      2: [{ x: 3, y: 0 }, { x: 4, y: 0 }],
+
+    const minJitter = bucketPointsByGradient(points, style, () => 0);
+    expect(bucketMap(minJitter)).toEqual({
+      1: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
+      2: [{ x: 4, y: 0 }],
+    });
+
+    const maxJitter = bucketPointsByGradient(points, style, () => 1);
+    expect(bucketMap(maxJitter)).toEqual({
+      2: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }],
     });
   });
 });

@@ -186,14 +186,23 @@ cycling" above suggested: **Fill Style** (`src/components/fillStyle/`,
 right-clicking the flood fill button or any filled shape tool button (they
 share one setting, like DPaint). Gradient fill ports DPaint II's three axis
 modes (Vertical/Horizontal/Horizontal Line — the last one hugs a shape's own
-per-row contour, the "3-D sphere" look) plus a dither for band blending. This
-one turned out genuinely random, not ordered — a real DPaint II screenshot
-(2026-07-13) showed clearly speckled, non-repeating noise, contradicting the
-"ordered dithering is the period-correct look" assumption below (that note
-is about image-quantization dithering specifically, a different technique —
-gradient fill's dither is its own thing). Implemented as a deterministic
-per-pixel hash rather than `Math.random()`, so it's reproducible and
-unit-testable while still looking patternless.
+per-row contour, the "3-D sphere" look) plus a Dither slider, 0..20 like
+PyDPainter's (a well-regarded DPaint clone) Random dither mode. This one
+turned out genuinely random, not ordered — a real DPaint II screenshot
+showed clearly speckled, non-repeating noise, contradicting the "ordered
+dithering is the period-correct look" assumption below (that note is about
+image-quantization dithering specifically, a different technique — gradient
+fill's dither is its own thing). Checking PyDPainter's own source
+(`libs/prim.py`) pinned down the actual mechanics: color bands are floor-
+divided across the fill's raw pixel span (not normalized 0..1 first), and
+each pixel's position is jittered by a *real* `random()` call before that
+division — the jitter's range is `(dither/3) * pixelsPerColorBand`, so it
+scales with how wide a color's band is, not a fixed pixel count, which is
+why high dither can blend a pixel several bands away rather than just
+smearing the nearest boundary. `bucketPointsByGradient` takes an injectable
+random source (defaulting to `Math.random`, genuinely random at paint time)
+so tests can pin it to an exact value and assert precise output despite the
+real thing being non-deterministic.
 
 The implementation needed no WebGL/shader changes: every draw primitive
 still takes exactly one `PaintColor` per call (see `DrawTarget` in

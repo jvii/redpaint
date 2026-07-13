@@ -2,44 +2,45 @@ import { Point } from '../types';
 
 // DPaint II's gradient fill: a spatial axis mapped onto a palette range's
 // contiguous color band. See docs/true-color-mode.md and the Fill Style
-// requester (src/components/fillStyle/) for the user-facing picture.
+// requester (src/components/fillStyle/) for the user-facing picture. The
+// binning and dither math below follow PyDPainter's Random dither mode
+// (libs/prim.py) rather than an invented scheme — its result is genuinely
+// random per pixel (not an ordered/repeating pattern), confirmed against
+// real DPaint II output.
 export type GradientAxis = 'vertical' | 'horizontal' | 'horizontalLine';
 
 export type GradientFillStyle = {
   axis: GradientAxis;
   rangeLow: number; // 1-based color id, inclusive — same units as PaintColor.colorNumber
   rangeHigh: number; // 1-based color id, inclusive
-  dither: number; // 0..20, 0 = off — same scale as PyDPainter's Random dither slider
+  dither: number; // 0..20, 0 = off — PyDPainter's Random dither scale
 };
 
-const MAX_DITHER = 20;
-
-// A deterministic per-pixel pseudo-random value in [0, 1), used to perturb
-// each pixel's band position. DPaint II's own gradient dither is genuinely
-// noisy (speckled, not a repeating tile — confirmed against a real
-// screenshot), so this is a hash rather than an ordered/Bayer matrix: same
-// visual character as true randomness, but reproducible from a pixel's own
-// coordinates (no per-run variation, no seed to manage). Integer bit-mixing
-// hash (splitmix-style finalizer), not cryptographic — just needs to look
-// patternless at a glance.
-function pseudoRandom(x: number, y: number): number {
-  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  h ^= h >>> 16;
-  return (h >>> 0) / 4294967296;
-}
-
-// Maps a normalized position t (0..1) plus this pixel's dither offset to a
-// palette color id within [rangeLow, rangeHigh]. bandCount is the number of
-// steps between the range's ends (rangeHigh - rangeLow); dither=MAX_DITHER
-// can shift a pixel by up to half a band, same ceiling as before the slider
-// was rescaled to 0..20.
-function colorIdFor(t: number, point: Point, style: GradientFillStyle, bandCount: number): number {
-  const offset = pseudoRandom(point.x, point.y) - 0.5; // centered, roughly [-0.5, 0.5)
-  const strength = style.dither / MAX_DITHER;
-  const perturbed = t + (offset * strength) / bandCount;
-  const clamped = Math.max(0, Math.min(1, perturbed));
-  return style.rangeLow + Math.round(clamped * bandCount);
+// The color id for one pixel at `pos` along an axis spanning [min, min+span)
+// over bandCount+1 colors. Each color owns a "pointsPerColor"-wide band of
+// raw positions (floor-divided, not rounded — matching the reference); with
+// dither > 0, pos is jittered first by up to +/-(dither/3 * pointsPerColor)
+// pixels — the jitter range grows with the band width itself, which is why
+// high dither can blend a pixel several bands away, not just its immediate
+// neighbor. `random` defaults to Math.random (genuine per-pixel randomness,
+// as in the reference) but is injectable so tests can assert exact output.
+function colorIdForPosition(
+  pos: number,
+  min: number,
+  span: number,
+  style: GradientFillStyle,
+  bandCount: number,
+  random: () => number
+): number {
+  if (span <= 0) {
+    return style.rangeLow;
+  }
+  const numColors = bandCount + 1;
+  const pointsPerColor = span / numColors;
+  const ditherFactor = (style.dither / 3) * pointsPerColor;
+  const jitter = ditherFactor > 0 ? random() * ditherFactor - ditherFactor / 2 : 0;
+  const colorIndex = Math.floor((pos - min + jitter) / pointsPerColor);
+  return style.rangeLow + Math.max(0, Math.min(bandCount, colorIndex));
 }
 
 // Buckets an arbitrary point set by target color id. 'vertical'/'horizontal'
@@ -48,7 +49,11 @@ function colorIdFor(t: number, point: Point, style: GradientFillStyle, bandCount
 // x-extent, independently — the axis mode that makes a filled circle read as
 // a sphere. Returns one Point[] per distinct resulting color id; the caller
 // issues one ordinary single-color draw call per bucket.
-export function bucketPointsByGradient(points: Point[], style: GradientFillStyle): Map<number, Point[]> {
+export function bucketPointsByGradient(
+  points: Point[],
+  style: GradientFillStyle,
+  random: () => number = Math.random
+): Map<number, Point[]> {
   const buckets = new Map<number, Point[]>();
   const add = (colorId: number, point: Point): void => {
     const bucket = buckets.get(colorId);
@@ -86,10 +91,8 @@ export function bucketPointsByGradient(points: Point[], style: GradientFillStyle
         minX = Math.min(minX, p.x);
         maxX = Math.max(maxX, p.x);
       }
-      const span = maxX - minX;
       for (const point of rowPoints) {
-        const t = span > 0 ? (point.x - minX) / span : 0;
-        add(colorIdFor(t, point, style, bandCount), point);
+        add(colorIdForPosition(point.x, minX, maxX - minX, style, bandCount, random), point);
       }
     }
     return buckets;
@@ -105,19 +108,13 @@ export function bucketPointsByGradient(points: Point[], style: GradientFillStyle
     minY = Math.min(minY, p.y);
     maxY = Math.max(maxY, p.y);
   }
-  const spanX = maxX - minX;
-  const spanY = maxY - minY;
 
   for (const point of points) {
-    const t =
+    const colorId =
       style.axis === 'vertical'
-        ? spanY > 0
-          ? (point.y - minY) / spanY
-          : 0
-        : spanX > 0
-          ? (point.x - minX) / spanX
-          : 0;
-    add(colorIdFor(t, point, style, bandCount), point);
+        ? colorIdForPosition(point.y, minY, maxY - minY, style, bandCount, random)
+        : colorIdForPosition(point.x, minX, maxX - minX, style, bandCount, random);
+    add(colorId, point);
   }
   return buckets;
 }
