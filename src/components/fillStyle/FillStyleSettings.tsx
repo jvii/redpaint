@@ -1,8 +1,10 @@
-import { JSX } from 'react';
+import { JSX, useEffect, useRef } from 'react';
 import './FillStyleSettings.css';
 import { useActions, useAppState } from '../../overmind';
-import { GradientAxis } from '../../algorithm/gradientFill';
+import { GradientAxis, bucketPointsByGradient } from '../../algorithm/gradientFill';
+import { filledCircle } from '../../algorithm/shape';
 import { FillMode } from '../../overmind/fillStyle/state';
+import { Point } from '../../types';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
@@ -15,17 +17,78 @@ const AXIS_OPTIONS: { value: GradientAxis; label: string }[] = [
   { value: 'horizontalLine', label: 'Horizontal Line' },
 ];
 
+const PREVIEW_SIZE = 96;
+
 // The fill style requester — redpaint's equivalent of DPaint's Fill Type
 // dialog, opened by right-clicking the flood fill button or any filled
 // shape tool button (they all edit the same shared style, like DPaint).
 // Solid / Gradient for now; Pattern ("from brush") is a planned third mode.
 export function FillStyleSettings(): JSX.Element | null {
   const state = useAppState();
-  const actions = useActions();
 
   if (!state.fillStyle.settingsOpen) {
     return null;
   }
+  // remounts on every open, so the preview effect below always starts fresh
+  return <FillStyleSettingsOpen />;
+}
+
+function FillStyleSettingsOpen(): JSX.Element {
+  const state = useAppState();
+  const actions = useActions();
+
+  // A filled circle swatch previewing the current (uncommitted-until-OK)
+  // fill style live — a circle rather than a flat rect shows the
+  // Horizontal Line axis's per-row contour-hugging "3-D" look, which is
+  // otherwise easy to misjudge from the axis name alone. Solid mode
+  // previews as one flat fill of the foreground color, same as it would
+  // actually paint.
+  const previewRef = useRef<HTMLCanvasElement>(null);
+  useEffect((): void => {
+    const canvas = previewRef.current;
+    const ctx = canvas?.getContext('2d');
+    if (!canvas || !ctx) {
+      return;
+    }
+    canvas.width = PREVIEW_SIZE;
+    canvas.height = PREVIEW_SIZE;
+    const center = { x: PREVIEW_SIZE / 2, y: PREVIEW_SIZE / 2 };
+    const points = filledCircle(center, PREVIEW_SIZE / 2 - 2).flatMap((line) => line.asPoints());
+
+    const out = ctx.createImageData(PREVIEW_SIZE, PREVIEW_SIZE);
+    const paint = (point: Point, color: { r: number; g: number; b: number }): void => {
+      if (point.x < 0 || point.x >= PREVIEW_SIZE || point.y < 0 || point.y >= PREVIEW_SIZE) {
+        return;
+      }
+      const i = (point.y * PREVIEW_SIZE + point.x) * 4;
+      out.data[i] = color.r;
+      out.data[i + 1] = color.g;
+      out.data[i + 2] = color.b;
+      out.data[i + 3] = 255;
+    };
+
+    const style = state.fillStyle.effectiveFillStyle;
+    if (!style) {
+      for (const point of points) {
+        paint(point, state.palette.foregroundColor);
+      }
+    } else {
+      for (const [colorId, bucketPoints] of bucketPointsByGradient(points, style)) {
+        const color = state.palette.paletteArray[colorId - 1];
+        if (!color) {
+          continue;
+        }
+        for (const point of bucketPoints) {
+          paint(point, color);
+        }
+      }
+    }
+    ctx.putImageData(out, 0, 0);
+  }, [
+    state.fillStyle.effectiveFillStyle,
+    state.palette.paletteArray,
+    state.palette.foregroundColor,
+  ]);
 
   const rangeOptions = state.palette.ranges
     .map((range, index) => ({ range, index }))
@@ -37,6 +100,7 @@ export function FillStyleSettings(): JSX.Element | null {
   return (
     <Modal header="Fill Style">
       <div className="fill-style-settings__body">
+        <canvas ref={previewRef} className="fill-style-settings__preview" />
         <RetroFieldset legend="Fill">
           <RetroToggle
             options={[
