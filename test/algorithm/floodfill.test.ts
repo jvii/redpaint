@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { floodFill } from './floodfill';
-import { CanvasColorIndex } from '../domain/CanvasColorIndex';
-import { PaintColor, Point } from '../types';
+import { floodFill } from '../../src/algorithm/floodfill';
+import { CanvasColorIndex } from '../../src/domain/CanvasColorIndex';
+import { PaintColor, Point } from '../../src/types';
 
 function colorNumberAt(canvas: CanvasColorIndex, point: Point): number {
   const paintColor = canvas.getPaintColorForPixel(point);

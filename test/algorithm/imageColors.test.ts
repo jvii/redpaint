@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { countDistinctColors } from './imageColors';
+import { countDistinctColors } from '../../src/algorithm/imageColors';
 
 function pixels(colors: [number, number, number, number][]): Uint8ClampedArray {
   const data = new Uint8ClampedArray(colors.length * 4);
