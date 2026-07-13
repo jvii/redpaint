@@ -47,20 +47,47 @@ describe('bucketPointsByGradient', () => {
   test('horizontalLine normalizes each row against its own local x-extent, independently', () => {
     const style: GradientFillStyle = { axis: 'horizontalLine', rangeLow: 1, rangeHigh: 3, dither: 0 };
     const points = [
-      // row 0: span 0..2 -> relative fractions 0, 0.5, 1
+      // row 0: span 0..2 (3 points, contiguous) -> relative fractions 0, 0.5, 1
       { x: 0, y: 0 },
       { x: 1, y: 0 },
       { x: 2, y: 0 },
-      // row 10: span 100..104, but the same *relative* positions (0, 0.5, 1)
+      // row 10: span 100..102, a wider row, same relative shape as row 0 but
+      // shifted — normalized independently rather than against row 0's span
       { x: 100, y: 10 },
+      { x: 101, y: 10 },
       { x: 102, y: 10 },
-      { x: 104, y: 10 },
     ];
     const buckets = bucketPointsByGradient(points, style);
     expect(bucketMap(buckets)).toEqual({
       1: [{ x: 0, y: 0 }, { x: 100, y: 10 }],
-      2: [{ x: 1, y: 0 }, { x: 102, y: 10 }],
-      3: [{ x: 2, y: 0 }, { x: 104, y: 10 }],
+      2: [{ x: 1, y: 0 }, { x: 101, y: 10 }],
+      3: [{ x: 2, y: 0 }, { x: 102, y: 10 }],
+    });
+  });
+
+  test('horizontalLine normalizes each contiguous run on a row independently, not the row as a whole', () => {
+    // a flood-filled ring/crescent: one row can have two disjoint fragments
+    // (a gap in the middle) — PyDPainter's floodfill() draws each merged
+    // scanline fragment with its own hline() call, each normalized to its
+    // own local span; bridging the gap into one wide span (as if it were a
+    // single run) is the bug this guards against. Both runs are the same
+    // relative shape (3 contiguous points), so both should land on the same
+    // 1,2,3 pattern despite the second starting at x=10, not x=0.
+    const style: GradientFillStyle = { axis: 'horizontalLine', rangeLow: 1, rangeHigh: 3, dither: 0 };
+    const points = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      // gap: x=3..9 unfilled
+      { x: 10, y: 0 },
+      { x: 11, y: 0 },
+      { x: 12, y: 0 },
+    ];
+    const buckets = bucketPointsByGradient(points, style);
+    expect(bucketMap(buckets)).toEqual({
+      1: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
+      2: [{ x: 1, y: 0 }, { x: 11, y: 0 }],
+      3: [{ x: 2, y: 0 }, { x: 12, y: 0 }],
     });
   });
 

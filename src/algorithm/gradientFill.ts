@@ -60,10 +60,18 @@ function colorIdForPosition(
 
 // Buckets an arbitrary point set by target color id. 'vertical'/'horizontal'
 // normalize against the whole point set's own bounding box; 'horizontalLine'
-// groups points by row first and normalizes each row against its own local
-// x-extent, independently — the axis mode that makes a filled circle read as
-// a sphere. Returns one Point[] per distinct resulting color id; the caller
-// issues one ordinary single-color draw call per bucket.
+// groups points by row first and normalizes each row's *contiguous runs*
+// against their own local x-extent, independently — the axis mode that
+// makes a filled circle read as a sphere. Splitting each row into
+// contiguous runs (rather than one bbox per row) matters for flood fill in
+// particular: PyDPainter's floodfill() builds one scanline fragment per
+// contiguous run and draws each with its own hline() call, normalized only
+// to that fragment's own span (prim.py's hline(), the FillMode.HORIZ_FIT
+// branch — not the row's overall extent bridging any gap). A row with a
+// gap (a ring, a crescent, anything with a "waist") would otherwise stretch
+// the gradient across the gap instead of restarting it per run. Returns one
+// Point[] per distinct resulting color id; the caller issues one ordinary
+// single-color draw call per bucket.
 export function bucketPointsByGradient(
   points: Point[],
   style: GradientFillStyle,
@@ -100,14 +108,17 @@ export function bucketPointsByGradient(
       }
     }
     for (const rowPoints of rows.values()) {
-      let minX = Infinity;
-      let maxX = -Infinity;
-      for (const p of rowPoints) {
-        minX = Math.min(minX, p.x);
-        maxX = Math.max(maxX, p.x);
-      }
-      for (const point of rowPoints) {
-        add(colorIdForPosition(point.x, minX, maxX - minX, style, bandCount, random), point);
+      const sorted = [...rowPoints].sort((a, b) => a.x - b.x);
+      let runStart = 0;
+      for (let i = 1; i <= sorted.length; i++) {
+        if (i === sorted.length || sorted[i].x - sorted[i - 1].x > 1) {
+          const minX = sorted[runStart].x;
+          const maxX = sorted[i - 1].x;
+          for (let j = runStart; j < i; j++) {
+            add(colorIdForPosition(sorted[j].x, minX, maxX - minX, style, bandCount, random), sorted[j]);
+          }
+          runStart = i;
+        }
       }
     }
     return buckets;
