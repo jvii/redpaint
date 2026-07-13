@@ -93,14 +93,14 @@ describe('bucketPointsByGradient', () => {
     expect(random).not.toHaveBeenCalled();
   });
 
-  test('dither jitters the raw pixel position by up to dither/3 of a band width, in either direction', () => {
+  test('dither jitters the raw pixel position by up to dither/4 of a band width, in either direction', () => {
     // range 1..2 over x=0..4 (span 4, pointsPerColor = 4/2 = 2); dither=6 ->
-    // ditherFactor = (6/3)*2 = 4, so jitter is either exactly -2 or +2 when
-    // the random source is pinned to an extreme. A jitter of -2 (minimum)
-    // should never push a point into color 2 except x=4, which was already
-    // on the boundary; a jitter of +2 (maximum) pushes every point into
-    // color 2, including x=0 — demonstrating the jitter magnitude really
-    // does scale with the band width, not a small fixed number of pixels.
+    // ditherFactor = (6/4)*2 = 3, so jitter is exactly -1.5 or +1.5 when the
+    // random source is pinned to an extreme (half-width = dither/8 of a band,
+    // matching PyDPainter). At min jitter (-1.5) only x=4 reaches color 2; at
+    // max jitter (+1.5) everything from x=1 up crosses into color 2 while x=0
+    // (starting deepest in color 1) still doesn't quite make it — the jitter
+    // magnitude scales with band width, not a fixed pixel count.
     const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 6 };
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
 
@@ -112,7 +112,8 @@ describe('bucketPointsByGradient', () => {
 
     const maxJitter = bucketPointsByGradient(points, style, () => 1);
     expect(bucketMap(maxJitter)).toEqual({
-      2: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }],
+      1: [{ x: 0, y: 0 }],
+      2: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }],
     });
   });
 });

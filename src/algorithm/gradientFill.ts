@@ -19,11 +19,14 @@ export type GradientFillStyle = {
 // The color id for one pixel at `pos` along an axis spanning [min, min+span)
 // over bandCount+1 colors. Each color owns a "pointsPerColor"-wide band of
 // raw positions (floor-divided, not rounded — matching the reference); with
-// dither > 0, pos is jittered first by up to +/-(dither/3 * pointsPerColor)
+// dither > 0, pos is jittered first by up to +/-(dither/4 * pointsPerColor)
 // pixels — the jitter range grows with the band width itself, which is why
 // high dither can blend a pixel several bands away, not just its immediate
-// neighbor. `random` defaults to Math.random (genuine per-pixel randomness,
-// as in the reference) but is injectable so tests can assert exact output.
+// neighbor. The /4 makes the half-width dither/8 of a band per slider unit,
+// matching PyDPainter's fixed-point dither (±32*gradient_dither out of 256)
+// exactly — verified pixel-for-pixel against its source. `random` defaults
+// to Math.random (genuine per-pixel randomness, as in the reference) but is
+// injectable so tests can assert exact output.
 function colorIdForPosition(
   pos: number,
   min: number,
@@ -37,7 +40,7 @@ function colorIdForPosition(
   }
   const numColors = bandCount + 1;
   const pointsPerColor = span / numColors;
-  const ditherFactor = (style.dither / 3) * pointsPerColor;
+  const ditherFactor = (style.dither / 4) * pointsPerColor;
   const jitter = ditherFactor > 0 ? random() * ditherFactor - ditherFactor / 2 : 0;
   const colorIndex = Math.floor((pos - min + jitter) / pointsPerColor);
   return style.rangeLow + Math.max(0, Math.min(bandCount, colorIndex));
