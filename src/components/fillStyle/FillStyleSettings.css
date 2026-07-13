@@ -6,15 +6,31 @@
   text-align: left;
 }
 
+.fill-style-settings__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
 /* live preview of the current fill style, on a filled-circle swatch so the
    Horizontal Line axis's per-row "3-D" look is visible, not just named */
 .fill-style-settings__preview {
-  align-self: flex-start;
+  flex: none;
   width: 220px;
   height: 220px;
   border: 2px solid black;
   box-shadow: 4px 4px 0 0 black;
   image-rendering: pixelated;
+}
+
+/* groups every gradient-only control in one visible box, since they all
+   disable together when Fill is set to Solid */
+.fill-style-settings__gradient-box {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border: 2px solid black;
+  padding: 20px 24px;
 }
 
 .fill-style-settings__hint {

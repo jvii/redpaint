@@ -100,68 +100,77 @@ function FillStyleSettingsOpen(): JSX.Element {
   return (
     <Modal header="Fill Style">
       <div className="fill-style-settings__body">
-        <canvas ref={previewRef} className="fill-style-settings__preview" />
-        <RetroFieldset legend="Fill">
-          <RetroToggle
-            options={[
-              { value: 'solid', label: 'Solid' },
-              { value: 'gradient', label: 'Gradient' },
-            ]}
-            value={state.fillStyle.mode}
-            onChange={(value): void => actions.fillStyle.setMode(value as FillMode)}
-          />
-        </RetroFieldset>
-        <RetroFieldset legend="Gradient Direction" className="fill-style-settings__axis">
-          <RetroToggle
-            variant="column"
-            options={AXIS_OPTIONS}
-            value={state.fillStyle.axis}
-            onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
-            disabled={!isGradient}
-          />
-        </RetroFieldset>
-        <RetroFieldset legend="Range" className="fill-style-settings__range">
-          {rangeOptions.length > 0 ? (
+        <div className="fill-style-settings__top">
+          <canvas ref={previewRef} className="fill-style-settings__preview" />
+          <RetroFieldset legend="Fill">
             <RetroToggle
-              options={rangeOptions}
-              value={String(state.fillStyle.rangeIndex)}
-              onChange={(value): void =>
-                actions.fillStyle.setRangeIndex(Number(value) as 0 | 1 | 2 | 3)
-              }
+              variant="column"
+              options={[
+                { value: 'solid', label: 'Solid' },
+                { value: 'gradient', label: 'Gradient' },
+              ]}
+              value={state.fillStyle.mode}
+              onChange={(value): void => actions.fillStyle.setMode(value as FillMode)}
+            />
+          </RetroFieldset>
+        </div>
+        <div className="fill-style-settings__gradient-box">
+          <RetroFieldset legend="Gradient Direction" className="fill-style-settings__axis">
+            <RetroToggle
+              variant="column"
+              options={AXIS_OPTIONS}
+              value={state.fillStyle.axis}
+              onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
               disabled={!isGradient}
             />
-          ) : (
+          </RetroFieldset>
+          <RetroFieldset legend="Range" className="fill-style-settings__range">
+            {rangeOptions.length > 0 ? (
+              <RetroToggle
+                options={rangeOptions}
+                value={String(state.fillStyle.rangeIndex)}
+                onChange={(value): void =>
+                  actions.fillStyle.setRangeIndex(Number(value) as 0 | 1 | 2 | 3)
+                }
+                disabled={!isGradient}
+              />
+            ) : (
+              <span className="fill-style-settings__hint">
+                No ranges defined — set one in the palette editor (Range panel).
+              </span>
+            )}
+          </RetroFieldset>
+          <RetroFieldset legend="Dither" className="fill-style-settings__dither">
+            <RetroLabeledSlider
+              label=""
+              vertical={false}
+              value={state.fillStyle.dither}
+              min={0}
+              max={20}
+              onChange={(value): void => actions.fillStyle.setDither(value)}
+              disabled={!isGradient}
+            />
             <span className="fill-style-settings__hint">
-              No ranges defined — set one in the palette editor (Range panel).
+              How much adjacent bands randomly blend at their boundary. 0 = hard
+              edges; 5 matches DPaint's default.
             </span>
-          )}
-        </RetroFieldset>
-        <RetroFieldset legend="Dither" className="fill-style-settings__dither">
-          <RetroLabeledSlider
-            label=""
-            vertical={false}
-            value={state.fillStyle.dither}
-            min={0}
-            max={20}
-            onChange={(value): void => actions.fillStyle.setDither(value)}
-            disabled={!isGradient}
-          />
-        </RetroFieldset>
-        <RetroFieldset legend="Jitter (Experimental)" className="fill-style-settings__dither">
-          <RetroLabeledSlider
-            label=""
-            vertical={false}
-            value={state.fillStyle.jitter}
-            min={0}
-            max={50}
-            onChange={(value): void => actions.fillStyle.setJitter(value)}
-            disabled={!isGradient}
-          />
-          <span className="fill-style-settings__hint">
-            How far dither can push a pixel, as a % of a band's width. 13 matches
-            DPaint/PyDPainter.
-          </span>
-        </RetroFieldset>
+          </RetroFieldset>
+          <RetroFieldset legend="Jitter" className="fill-style-settings__dither">
+            <RetroLabeledSlider
+              label=""
+              vertical={false}
+              value={state.fillStyle.jitter}
+              min={0}
+              max={50}
+              onChange={(value): void => actions.fillStyle.setJitter(value)}
+              disabled={!isGradient}
+            />
+            <span className="fill-style-settings__hint">
+              How far dither can push a pixel, as a % of a band's width. 13 matches
+              DPaint/PyDPainter.
+            </span>
+          </RetroFieldset>
+        </div>
       </div>
       <RetroButton variant="secondary" onClick={actions.fillStyle.cancelSettings}>
         Cancel

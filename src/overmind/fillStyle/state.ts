@@ -36,7 +36,7 @@ export const state: State = {
   mode: 'solid',
   axis: 'vertical',
   rangeIndex: 0,
-  dither: 0,
+  dither: 5,
   jitter: 13,
   settingsOpen: false,
   settingsSnapshot: null,
