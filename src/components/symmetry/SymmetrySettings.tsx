@@ -3,6 +3,7 @@ import './SymmetrySettings.css';
 import { useActions, useAppState } from '../../overmind';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
+import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroSlider } from '../ui/RetroSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 
@@ -56,8 +57,7 @@ export function SymmetrySettings(): JSX.Element | null {
             onChange={(value): void => actions.symmetry.setMirror(value === 'mirror')}
           />
         </div>
-        <fieldset className="symmetry-settings__center">
-          <legend>Center</legend>
+        <RetroFieldset legend="Center" bordered className="symmetry-settings__center">
           <span className="symmetry-settings__label">
             X: {center.x} Y: {center.y}
           </span>
@@ -71,7 +71,7 @@ export function SymmetrySettings(): JSX.Element | null {
               Reset
             </RetroButton>
           </span>
-        </fieldset>
+        </RetroFieldset>
       </div>
       <RetroButton variant="secondary" onClick={actions.symmetry.cancelSettings}>
         Cancel

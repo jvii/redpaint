@@ -48,25 +48,20 @@
 }
 
 /* two-color actions (Spread/Swap/Copy): the armed button morphs into its
-   own cancel, with the instruction line above the buttons */
-.palette-editor__edit-colors {
-  font-family: 'Press Start 2P';
-  -webkit-font-smoothing: none;
-  color: black;
+   own cancel, with the instruction line above the buttons.
+   ".retro-fieldset" is repeated here (not just the page-specific class) to
+   out-specificity RetroFieldset's own margin:0/padding:0 base rule — with
+   only a single class each, whichever stylesheet's import happens to land
+   last in the bundle would otherwise win, which is exactly what silently
+   collapsed this box's margin before. */
+.retro-fieldset.palette-editor__edit-colors {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 12px;
-  border: 2px solid black;
-  border-radius: 0;
   padding: 14px 20px 18px;
   margin: 0 30px 12px;
   text-align: left;
-}
-
-.palette-editor__edit-colors > legend {
-  font-size: 16px;
-  padding: 0 8px;
 }
 
 .palette-editor__actions {
@@ -133,25 +128,17 @@
   border-right: 9px solid #ff8800;
 }
 
-/* two fixed rows: the range slot toggle, then Set start/end + Clear */
-.palette-editor__ranges {
-  font-family: 'Press Start 2P';
-  -webkit-font-smoothing: none;
-  color: black;
+/* two fixed rows: the range slot toggle, then Set start/end + Clear.
+   ".retro-fieldset" repeated for the same specificity reason as
+   .palette-editor__edit-colors above. */
+.retro-fieldset.palette-editor__ranges {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 20px;
-  border: 2px solid black;
-  border-radius: 0;
   padding: 14px 20px 18px;
   margin: 0 30px 20px;
   text-align: left;
-}
-
-.palette-editor__ranges > legend {
-  font-size: 16px;
-  padding: 0 8px;
 }
 
 .palette-editor__range-row {

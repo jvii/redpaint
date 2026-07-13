@@ -8,6 +8,7 @@ import { colorToRGBString, rgbToHsv, hsvToRgb } from '../../tools/util/util';
 import Palette from '../palette/Palette';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
+import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 
@@ -141,8 +142,7 @@ export function PaletteEditor(): JSX.Element | null {
       {/* DPaint's Spread, Ex(change) and Copy: two-color actions — arm,
           then click the second color. The armed button becomes its own
           cancel. */}
-      <fieldset className="palette-editor__edit-colors">
-        <legend>Edit colors</legend>
+      <RetroFieldset legend="Edit colors" bordered className="palette-editor__edit-colors">
         <div className="palette-editor__actions">
           {/* DPaint's order: Spread first, then the slot-surgery pair */}
           <RetroButton
@@ -166,10 +166,9 @@ export function PaletteEditor(): JSX.Element | null {
             </RetroButton>
           </span>
         </div>
-      </fieldset>
+      </RetroFieldset>
 
-      <fieldset className="palette-editor__ranges">
-        <legend>Range</legend>
+      <RetroFieldset legend="Range" bordered className="palette-editor__ranges">
         <RetroToggle
           options={RANGE_OPTIONS}
           value={activeRangeIndex !== null ? String(activeRangeIndex) : ''}
@@ -212,7 +211,7 @@ export function PaletteEditor(): JSX.Element | null {
             </RetroButton>
           </span>
         </div>
-      </fieldset>
+      </RetroFieldset>
 
       <RetroButton variant="secondary" onClick={handleCancel}>
         Cancel
