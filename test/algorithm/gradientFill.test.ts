@@ -88,11 +88,10 @@ describe('bucketPointsByGradient', () => {
     });
   });
 
-  test('dither perturbs the boundary pixel via the ordered (Bayer) pattern, deterministically', () => {
-    // same scenario as above, but with dither=1: only the exact-boundary
-    // pixel (x=2, whose Bayer threshold at (2,0) is negative) flips to the
-    // lower band; the rest are unaffected because they're far enough from
-    // the boundary that the perturbation doesn't cross a rounding threshold
+  test('dither perturbs pixels via a deterministic pseudo-random hash, not true randomness', () => {
+    // same scenario as above, but with dither=1: pixels whose hash pushes
+    // them past a rounding threshold flip band; the assignment is exact and
+    // reproducible (same hash every run), even though it looks patternless
     const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 1 };
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
     const buckets = bucketPointsByGradient(points, style);

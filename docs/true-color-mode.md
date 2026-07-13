@@ -186,9 +186,14 @@ cycling" above suggested: **Fill Style** (`src/components/fillStyle/`,
 right-clicking the flood fill button or any filled shape tool button (they
 share one setting, like DPaint). Gradient fill ports DPaint II's three axis
 modes (Vertical/Horizontal/Horizontal Line — the last one hugs a shape's own
-per-row contour, the "3-D sphere" look) plus an ordered (Bayer matrix) dither
-for band blending, deterministic rather than random per the "ordered
-dithering is the period-correct look" note above.
+per-row contour, the "3-D sphere" look) plus a dither for band blending. This
+one turned out genuinely random, not ordered — a real DPaint II screenshot
+(2026-07-13) showed clearly speckled, non-repeating noise, contradicting the
+"ordered dithering is the period-correct look" assumption below (that note
+is about image-quantization dithering specifically, a different technique —
+gradient fill's dither is its own thing). Implemented as a deterministic
+per-pixel hash rather than `Math.random()`, so it's reproducible and
+unit-testable while still looking patternless.
 
 The implementation needed no WebGL/shader changes: every draw primitive
 still takes exactly one `PaintColor` per call (see `DrawTarget` in

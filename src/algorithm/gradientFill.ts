@@ -9,23 +9,22 @@ export type GradientFillStyle = {
   axis: GradientAxis;
   rangeLow: number; // 1-based color id, inclusive — same units as PaintColor.colorNumber
   rangeHigh: number; // 1-based color id, inclusive
-  dither: number; // 0..1, ordered-dither overlap amount between adjacent bands
+  dither: number; // 0..1, random overlap amount between adjacent bands
 };
 
-// A 4x4 Bayer matrix, used to perturb each pixel's band position by a fixed,
-// repeatable amount instead of true randomness — deterministic and the
-// period-correct look (see docs/true-color-mode.md). Values normalized to a
-// threshold centered at 0, roughly [-0.5, 0.5).
-const BAYER_4X4 = [
-  [0, 8, 2, 10],
-  [12, 4, 14, 6],
-  [3, 11, 1, 9],
-  [15, 7, 13, 5],
-];
-
-function ditherOffset(x: number, y: number): number {
-  const row = BAYER_4X4[((y % 4) + 4) % 4];
-  return (row[((x % 4) + 4) % 4] + 0.5) / 16 - 0.5;
+// A deterministic per-pixel pseudo-random value in [0, 1), used to perturb
+// each pixel's band position. DPaint II's own gradient dither is genuinely
+// noisy (speckled, not a repeating tile — confirmed against a real
+// screenshot), so this is a hash rather than an ordered/Bayer matrix: same
+// visual character as true randomness, but reproducible from a pixel's own
+// coordinates (no per-run variation, no seed to manage). Integer bit-mixing
+// hash (splitmix-style finalizer), not cryptographic — just needs to look
+// patternless at a glance.
+function pseudoRandom(x: number, y: number): number {
+  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
 }
 
 // Maps a normalized position t (0..1) plus this pixel's dither offset to a
@@ -33,7 +32,8 @@ function ditherOffset(x: number, y: number): number {
 // steps between the range's ends (rangeHigh - rangeLow); the dither
 // perturbation is scaled so dither=1 can shift a pixel by up to half a band.
 function colorIdFor(t: number, point: Point, style: GradientFillStyle, bandCount: number): number {
-  const perturbed = t + (ditherOffset(point.x, point.y) * style.dither) / bandCount;
+  const offset = pseudoRandom(point.x, point.y) - 0.5; // centered, roughly [-0.5, 0.5)
+  const perturbed = t + (offset * style.dither) / bandCount;
   const clamped = Math.max(0, Math.min(1, perturbed));
   return style.rangeLow + Math.round(clamped * bandCount);
 }
