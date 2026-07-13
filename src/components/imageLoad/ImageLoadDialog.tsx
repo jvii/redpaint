@@ -102,8 +102,8 @@ function ImageLoadDialogOpen(): JSX.Element {
     ctx.putImageData(out, 0, 0);
   }, [mode, count]);
 
-  const PREVIEW_MAX_W = 560;
-  const PREVIEW_MAX_H = 220;
+  const PREVIEW_MAX_W = 680;
+  const PREVIEW_MAX_H = 340;
   let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
   if (previewScale >= 1) {
     previewScale = Math.max(1, Math.floor(previewScale));
@@ -165,7 +165,7 @@ function ImageLoadDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Load Image" width={640}>
+    <Modal header="Load Image" width={760}>
       <div className="image-load__body">
         <div className="image-load__top">
           <div className="image-load__info">
