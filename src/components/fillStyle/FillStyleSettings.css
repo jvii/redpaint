@@ -24,13 +24,26 @@
 }
 
 /* groups every gradient-only control in one visible box, since they all
-   disable together when Fill is set to Solid */
+   disable together when Fill is set to Solid — same fieldset/legend
+   treatment as the palette editor's Range box */
 .fill-style-settings__gradient-box {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 24px;
   border: 2px solid black;
+  border-radius: 0;
   padding: 20px 24px;
+  margin: 0;
+  text-align: left;
+}
+
+.fill-style-settings__gradient-box > legend {
+  font-size: 16px;
+  padding: 0 8px;
 }
 
 .fill-style-settings__hint {
