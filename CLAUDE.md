@@ -15,9 +15,11 @@ for the actual painting).
   browser-verification workflow in this project hardcodes that port)
 - `npm run build` — type-checks (`tsc --noEmit`) then production build to `dist/`
 - `npm run preview` — serves the production build from `dist/` locally
-- `npm test` — Vitest, single run. Note: there are currently no test files in `src/`.
-- `npm run lint` — ESLint over `src/**/*.{ts,tsx}` (config extends `react-app`/`react-app/jest`, from
-  `eslint-config-react-app`)
+- `npm test` — Vitest, single run. Tests are colocated with source as `*.test.ts` (currently only the
+  `src/algorithm/` layer and `src/domain/Line*` — pure functions with no WebGL/Overmind/DOM dependency;
+  UI/components are untested on purpose while the UI is still actively changing).
+- `npm run lint` — ESLint over `src/**/*.{ts,tsx}` and `test/**/*.ts` (config extends `react-app`/
+  `react-app/jest`, from `eslint-config-react-app`)
 - Formatting: Prettier is configured (`.prettierrc.json`: 100 col width, single quotes, ES5 trailing commas)
   but there is no `format` script — run `npx prettier --write` directly if needed.
 - Deploys via Netlify, config in `netlify.toml` (Node version pinned there and in `.nvmrc`).
@@ -106,3 +108,21 @@ happens outside Overmind, in `src/components/canvas/hooks.tsx`, which watches th
 channel, Y-flipped indexing since GL textures start at the bottom); this is what gets undo-snapshotted and
 what flood fill reads. `BrushColorIndex` — same idea but sized to a brush bitmap, with factories/helpers for
 building from ASCII art and marking transparency.
+
+### Algorithms (`src/algorithm/*.ts`) and testing
+
+Everything here is pure — geometry (`shape.ts`, the actual math behind the drawing tools: line, curve,
+rect, circle, ellipse, polygon, returning plain `Point[]`/`Line[]` with no canvas involved — `PixelBrush`
+is just a thin adapter handing the result to a `DrawTarget`), `symmetry.ts` (DPaint-style kaleidoscope point
+transforms), `quantize.ts`/`imageColors.ts` (median-cut palette extraction, exact palette/nearest-color
+mapping, distinct-color census — see "Image loading" below), and `floodfill.ts` (takes its bounds from the
+`CanvasColorIndex` passed in, not from Overmind — keep it that way, it's what makes it testable standalone).
+This is the layer with test coverage (`*.test.ts` colocated with source); UI is deliberately untested for
+now.
+
+Shape tests compare against checked-in PNG fixtures under `src/algorithm/__fixtures__/shape/` — real,
+openable images (rasterize the algorithm's `Point[]`/`Line[]` output with `test/pixelGrid.ts`, compare via
+`test/shapeFixture.ts#expectMatchesFixture`, which decodes both sides with the hand-rolled zero-dependency
+PNG codec in `test/png.ts` rather than comparing bytes). A missing fixture, or a run with
+`UPDATE_FIXTURES=1 npm test`, (re)writes the fixture instead of asserting — the golden-file workflow for a
+deliberate algorithm change: regenerate, open the PNGs to confirm the shape still looks right, commit.

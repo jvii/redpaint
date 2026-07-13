@@ -1,4 +1,3 @@
-import { overmind } from '..';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 import { PaintColor, Point } from '../types';
 
@@ -7,8 +6,7 @@ export function floodFill(
   originPoint: Point,
   canvasColorIndex: CanvasColorIndex
 ): Point[] {
-  const height = overmind.state.canvas.resolution.height;
-  const width = overmind.state.canvas.resolution.width;
+  const { width, height } = canvasColorIndex;
 
   // Base value is the original pixel at originPoint. Pixels are compared as
   // whole 32-bit RGBA values so that true-color pixels compare by their full

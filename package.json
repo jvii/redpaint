@@ -24,7 +24,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint './src/**/*.{ts,tsx}'"
+    "lint": "eslint './src/**/*.{ts,tsx}' './test/**/*.ts'"
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
