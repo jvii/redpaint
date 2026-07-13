@@ -7,7 +7,9 @@ interface Props {
   isUpperHalfSelected: boolean;
   onUpperHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onLowerHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  onRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  // Only the lower (filled) half opens a right-click menu today — the
+  // outline half has no per-tool settings of its own.
+  onLowerHalfRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export function ToolboxDualToggleButton({
@@ -16,7 +18,7 @@ export function ToolboxDualToggleButton({
   isUpperHalfSelected,
   onUpperHalfClick,
   onLowerHalfClick,
-  onRightClick,
+  onLowerHalfRightClick,
 }: Props): JSX.Element {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     if (isLowerHalfClick(event)) {
@@ -27,8 +29,8 @@ export function ToolboxDualToggleButton({
   };
 
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    if (onRightClick) {
-      onRightClick(event);
+    if (onLowerHalfRightClick && isLowerHalfClick(event)) {
+      onLowerHalfRightClick(event);
     }
     event.preventDefault();
   };
