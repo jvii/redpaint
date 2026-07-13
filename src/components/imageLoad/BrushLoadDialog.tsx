@@ -156,7 +156,10 @@ function BrushLoadDialogOpen(): JSX.Element {
             variant="column"
             options={[
               { value: 'true', label: 'True Color (original)' },
-              { value: 'current', label: `Current palette (${state.palette.paletteArray.length})` },
+              {
+                value: 'current',
+                label: `Remap to current palette (${state.palette.paletteArray.length})`,
+              },
             ]}
             value={mode}
             onChange={(value): void => setMode(value as ColorMode)}

@@ -186,7 +186,10 @@ function ImageLoadDialogOpen(): JSX.Element {
             options={[
               { value: 'true', label: 'True Color (original)' },
               { value: 'new', label: 'New palette from image' },
-              { value: 'current', label: `Current palette (${state.palette.paletteArray.length})` },
+              {
+                value: 'current',
+                label: `Remap to current palette (${state.palette.paletteArray.length})`,
+              },
             ]}
             value={mode}
             onChange={(value): void => setMode(value as ColorMode)}
