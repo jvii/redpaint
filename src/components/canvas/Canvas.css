@@ -5,7 +5,7 @@
   image-rendering: crisp-edges;
   outline: 1px white dotted;
   cursor:
-    url(../../resources/cursorCrossHair2.png) 14 14,
+    url(../../resources/cursorCrossHair2.png) 23 23,
     auto;
   display: block; /* explicitly set to prevent a vertical scroll bar caused by element being inline */
 }
