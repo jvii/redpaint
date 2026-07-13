@@ -1,4 +1,4 @@
-import { JSX, useEffect, useState } from 'react';
+import { JSX } from 'react';
 import './PaletteEditor.css';
 import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
@@ -8,7 +8,7 @@ import { colorToRGBString, rgbToHsv, hsvToRgb } from '../../tools/util/util';
 import Palette from '../palette/Palette';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
-import { RetroSlider } from '../ui/RetroSlider';
+import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 
 const RANGE_OPTIONS = [
@@ -17,61 +17,6 @@ const RANGE_OPTIONS = [
   { value: '2', label: '3' },
   { value: '3', label: '4' },
 ];
-
-type SliderFieldProps = {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-};
-
-// Vertical slider with its label above and a directly-editable numeric
-// readout below. The readout keeps its own text buffer so a value can be
-// typed freely (including transiently invalid/empty states) and is only
-// clamped and committed on blur/Enter.
-function SliderField({ label, value, min, max, onChange }: SliderFieldProps): JSX.Element {
-  const [text, setText] = useState(String(value));
-
-  useEffect((): void => {
-    setText(String(value));
-  }, [value]);
-
-  function commit(): void {
-    const parsed = Math.round(Number(text));
-    if (Number.isNaN(parsed)) {
-      setText(String(value));
-      return;
-    }
-    const clamped = Math.max(min, Math.min(max, parsed));
-    setText(String(clamped));
-    if (clamped !== value) {
-      onChange(clamped);
-    }
-  }
-
-  return (
-    <div className="palette-editor__slider">
-      <span className="palette-editor__slider-label">{label}</span>
-      <div className="palette-editor__slider-track">
-        <RetroSlider vertical value={value} min={min} max={max} onChange={onChange} />
-      </div>
-      <input
-        className="palette-editor__slider-input"
-        type="text"
-        inputMode="numeric"
-        value={text}
-        onChange={(event): void => setText(event.target.value)}
-        onBlur={commit}
-        onKeyDown={(event): void => {
-          if (event.key === 'Enter') {
-            (event.target as HTMLInputElement).blur();
-          }
-        }}
-      />
-    </div>
-  );
-}
 
 export function PaletteEditor(): JSX.Element | null {
   const state = useAppState();
@@ -126,21 +71,21 @@ export function PaletteEditor(): JSX.Element | null {
             on the right */}
         <div className="palette-editor__sliders">
           <div className="palette-editor__slider-group">
-            <SliderField
+            <RetroLabeledSlider
               label="R"
               value={editedColor.r}
               min={0}
               max={255}
               onChange={(value): void => setColor({ ...editedColor, r: value })}
             />
-            <SliderField
+            <RetroLabeledSlider
               label="G"
               value={editedColor.g}
               min={0}
               max={255}
               onChange={(value): void => setColor({ ...editedColor, g: value })}
             />
-            <SliderField
+            <RetroLabeledSlider
               label="B"
               value={editedColor.b}
               min={0}
@@ -150,21 +95,21 @@ export function PaletteEditor(): JSX.Element | null {
           </div>
           <div className="palette-editor__slider-divider"></div>
           <div className="palette-editor__slider-group">
-            <SliderField
+            <RetroLabeledSlider
               label="H"
               value={hsv.h}
               min={0}
               max={359}
               onChange={(value): void => setHsv({ ...hsv, h: value })}
             />
-            <SliderField
+            <RetroLabeledSlider
               label="S"
               value={hsv.s}
               min={0}
               max={100}
               onChange={(value): void => setHsv({ ...hsv, s: value })}
             />
-            <SliderField
+            <RetroLabeledSlider
               label="V"
               value={hsv.v}
               min={0}

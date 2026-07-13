@@ -1,0 +1,53 @@
+.retro-labeled-slider {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.retro-labeled-slider__track {
+  display: flex;
+  flex: 1; /* fill the height left over by the label and input */
+  min-height: 0;
+}
+
+.retro-labeled-slider__label {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  color: black;
+}
+
+/* Styled after retroui.dev's Input (border-2, rounded, shadow-sm, focus
+   ring) — the softer/rounded sibling of RetroButton's sharp-cornered,
+   hard-shadowed gadget look, appropriate for a field you type into. */
+/* A regular monospace face here, not Press Start 2P: the bitmap font only
+   looks crisp at multiples of 8px, and 16px reads fine but is wider than
+   this small a field wants. A proportional monospace isn't grid-locked, so
+   it can sit compact at any size — same treatment the design docs use for
+   numeric readouts alongside pixel-font headings. */
+.retro-labeled-slider__input {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  color: black;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  width: 3ch;
+  padding: 7px 5px;
+  border: 2px solid black;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 2px 2px 0 0 black;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.retro-labeled-slider__input:focus {
+  outline: 2px solid rgb(0, 85, 170);
+  outline-offset: 2px;
+  box-shadow: 1px 1px 0 0 black;
+  transform: translate(1px, 1px);
+}
