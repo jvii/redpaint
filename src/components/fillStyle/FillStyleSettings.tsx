@@ -114,8 +114,7 @@ function FillStyleSettingsOpen(): JSX.Element {
             />
           </RetroFieldset>
         </div>
-        <fieldset className="fill-style-settings__gradient-box">
-          <legend>Gradient</legend>
+        <RetroFieldset legend="Gradient" bordered className="fill-style-settings__gradient-box">
           <RetroToggle
             variant="column"
             options={AXIS_OPTIONS}
@@ -169,7 +168,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               DPaint/PyDPainter.
             </span>
           </RetroFieldset>
-        </fieldset>
+        </RetroFieldset>
       </div>
       <RetroButton variant="secondary" onClick={actions.fillStyle.cancelSettings}>
         Cancel

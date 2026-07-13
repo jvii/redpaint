@@ -12,3 +12,16 @@
   font-size: 16px;
   padding: 0 0 12px 0;
 }
+
+/* opt-in bordered variant — the legend straddles the border line instead of
+   sitting above it, DPaint-manual-requester style (see the palette editor's
+   Range box for the same treatment) */
+.retro-fieldset--bordered {
+  border: 2px solid black;
+  border-radius: 0;
+  padding: 20px 24px;
+}
+
+.retro-fieldset--bordered > .retro-fieldset__legend {
+  padding: 0 8px;
+}
