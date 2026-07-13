@@ -12,6 +12,18 @@
   min-height: 0;
 }
 
+/* label, track, input side by side instead of stacked; the track (a
+   horizontal RetroSlider) stretches to fill the remaining width */
+.retro-labeled-slider--horizontal {
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.retro-labeled-slider--horizontal .retro-labeled-slider__track {
+  min-height: unset;
+}
+
 .retro-labeled-slider__label {
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;

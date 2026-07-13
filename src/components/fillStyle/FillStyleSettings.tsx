@@ -139,10 +139,11 @@ function FillStyleSettingsOpen(): JSX.Element {
         <RetroFieldset legend="Dither" className="fill-style-settings__dither">
           <RetroLabeledSlider
             label=""
-            value={Math.round(state.fillStyle.dither * 100)}
+            vertical={false}
+            value={state.fillStyle.dither}
             min={0}
-            max={100}
-            onChange={(value): void => actions.fillStyle.setDither(value / 100)}
+            max={20}
+            onChange={(value): void => actions.fillStyle.setDither(value)}
           />
         </RetroFieldset>
       </div>

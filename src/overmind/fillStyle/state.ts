@@ -8,7 +8,7 @@ export type State = {
   mode: FillMode;
   axis: GradientAxis;
   rangeIndex: 0 | 1 | 2 | 3; // which of the palette's 4 ranges
-  dither: number; // 0..1
+  dither: number; // 0..20, 0 = off (PyDPainter's Random dither scale)
   settingsOpen: boolean;
   settingsSnapshot: { mode: FillMode; axis: GradientAxis; rangeIndex: 0 | 1 | 2 | 3; dither: number } | null;
   // The effective gradient to paint with: null in solid mode, or when the

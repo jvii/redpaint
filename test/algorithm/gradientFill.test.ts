@@ -89,10 +89,11 @@ describe('bucketPointsByGradient', () => {
   });
 
   test('dither perturbs pixels via a deterministic pseudo-random hash, not true randomness', () => {
-    // same scenario as above, but with dither=1: pixels whose hash pushes
-    // them past a rounding threshold flip band; the assignment is exact and
-    // reproducible (same hash every run), even though it looks patternless
-    const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 1 };
+    // same scenario as above, but with dither=20 (max): pixels whose hash
+    // pushes them past a rounding threshold flip band; the assignment is
+    // exact and reproducible (same hash every run), even though it looks
+    // patternless
+    const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 20 };
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
     const buckets = bucketPointsByGradient(points, style);
     expect(bucketMap(buckets)).toEqual({

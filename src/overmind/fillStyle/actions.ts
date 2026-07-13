@@ -15,7 +15,7 @@ export const setRangeIndex = (context: Context, rangeIndex: 0 | 1 | 2 | 3): void
 };
 
 export const setDither = (context: Context, dither: number): void => {
-  context.state.fillStyle.dither = Math.max(0, Math.min(1, dither));
+  context.state.fillStyle.dither = Math.max(0, Math.min(20, Math.round(dither)));
 };
 
 export const openSettings = (context: Context): void => {

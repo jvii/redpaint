@@ -9,8 +9,10 @@ export type GradientFillStyle = {
   axis: GradientAxis;
   rangeLow: number; // 1-based color id, inclusive — same units as PaintColor.colorNumber
   rangeHigh: number; // 1-based color id, inclusive
-  dither: number; // 0..1, random overlap amount between adjacent bands
+  dither: number; // 0..20, 0 = off — same scale as PyDPainter's Random dither slider
 };
+
+const MAX_DITHER = 20;
 
 // A deterministic per-pixel pseudo-random value in [0, 1), used to perturb
 // each pixel's band position. DPaint II's own gradient dither is genuinely
@@ -29,11 +31,13 @@ function pseudoRandom(x: number, y: number): number {
 
 // Maps a normalized position t (0..1) plus this pixel's dither offset to a
 // palette color id within [rangeLow, rangeHigh]. bandCount is the number of
-// steps between the range's ends (rangeHigh - rangeLow); the dither
-// perturbation is scaled so dither=1 can shift a pixel by up to half a band.
+// steps between the range's ends (rangeHigh - rangeLow); dither=MAX_DITHER
+// can shift a pixel by up to half a band, same ceiling as before the slider
+// was rescaled to 0..20.
 function colorIdFor(t: number, point: Point, style: GradientFillStyle, bandCount: number): number {
   const offset = pseudoRandom(point.x, point.y) - 0.5; // centered, roughly [-0.5, 0.5)
-  const perturbed = t + (offset * style.dither) / bandCount;
+  const strength = style.dither / MAX_DITHER;
+  const perturbed = t + (offset * strength) / bandCount;
   const clamped = Math.max(0, Math.min(1, perturbed));
   return style.rangeLow + Math.round(clamped * bandCount);
 }
