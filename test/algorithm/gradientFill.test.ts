@@ -93,14 +93,15 @@ describe('bucketPointsByGradient', () => {
     expect(random).not.toHaveBeenCalled();
   });
 
-  test('dither jitters the raw pixel position by up to dither/4 of a band width, in either direction', () => {
-    // range 1..2 over x=0..4 (span 4, pointsPerColor = 4/2 = 2); dither=6 ->
-    // ditherFactor = (6/4)*2 = 3, so jitter is exactly -1.5 or +1.5 when the
-    // random source is pinned to an extreme (half-width = dither/8 of a band,
-    // matching PyDPainter). At min jitter (-1.5) only x=4 reaches color 2; at
-    // max jitter (+1.5) everything from x=1 up crosses into color 2 while x=0
-    // (starting deepest in color 1) still doesn't quite make it — the jitter
-    // magnitude scales with band width, not a fixed pixel count.
+  test('dither jitters the raw pixel position by up to ~dither/8 of a band width, in either direction', () => {
+    // range 1..2 over x=0..4 (span 4, pointsPerColor = 4/2 = 2); dither=6,
+    // default jitter=13% -> half-width = 6*0.13*2 = 1.56, so jitter is
+    // exactly -1.56 or +1.56 when the random source is pinned to an extreme
+    // (close to PyDPainter's dither/8 of a band). At min jitter only x=4
+    // reaches color 2; at max jitter everything from x=1 up crosses into
+    // color 2 while x=0 (starting deepest in color 1) still doesn't quite
+    // make it — the jitter magnitude scales with band width, not a fixed
+    // pixel count.
     const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 2, dither: 6 };
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
 
