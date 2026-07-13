@@ -13,6 +13,7 @@ import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
 import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
 import { BrushLoadDialog } from './imageLoad/BrushLoadDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
+import { FillStyleSettings } from './fillStyle/FillStyleSettings';
 import './App.css';
 
 function App(): JSX.Element {
@@ -36,6 +37,7 @@ function App(): JSX.Element {
       <ImageLoadDialog></ImageLoadDialog>
       <BrushLoadDialog></BrushLoadDialog>
       <SymmetrySettings></SymmetrySettings>
+      <FillStyleSettings></FillStyleSettings>
       <DialogManager></DialogManager>
       <GlobalHotKeyManager />
     </div>

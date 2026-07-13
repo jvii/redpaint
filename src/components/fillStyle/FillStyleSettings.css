@@ -1,0 +1,24 @@
+.fill-style-settings__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 30px 28px 30px;
+  text-align: left;
+}
+
+.fill-style-settings__hint {
+  display: block;
+  max-width: 260px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(106, 106, 106);
+}
+
+.fill-style-settings__dither .retro-labeled-slider {
+  width: 100%;
+}
+
+.fill-style-settings__dither .retro-labeled-slider__track {
+  min-height: 60px;
+}

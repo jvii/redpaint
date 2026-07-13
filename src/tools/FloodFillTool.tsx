@@ -8,6 +8,7 @@ import { symmetryTransforms } from '../algorithm/symmetry';
 import { drawSymmetryIndicator } from './util/symmetryIndicator';
 import { PaintColor, Point } from '../types';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
+import { bucketPointsByGradient } from '../algorithm/gradientFill';
 
 export class FloodFillTool implements Tool {
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -25,7 +26,7 @@ export class FloodFillTool implements Tool {
     const fillColor = overmind.state.palette.foregroundPaintColor;
 
     const pointsToFill = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
-    paintingCanvasController.points(pointsToFill, fillColor);
+    this.paintPoints(pointsToFill, fillColor);
     overmind.actions.undo.setUndoPoint();
     overmind.actions.app.setLoading(false);
   }
@@ -44,10 +45,26 @@ export class FloodFillTool implements Tool {
     // This is a hack to ensure the loading state is visible. Something to do with browser rendering timing.
     setTimeout(() => {
       const pointsToFill = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
-      paintingCanvasController.points(pointsToFill, fillColor);
+      this.paintPoints(pointsToFill, fillColor);
       overmind.actions.undo.setUndoPoint();
       overmind.actions.app.setLoading(false);
     }, 50);
+  }
+
+  // Solid mode (the default) paints pointsToFill with solidColor via a
+  // single call, as before. Gradient mode ignores solidColor (a gradient
+  // isn't a single color to swap for FG/BG — left- and right-click apply the
+  // same gradient) and instead buckets the same points by target color,
+  // issuing one call per bucket.
+  private paintPoints(pointsToFill: Point[], solidColor: PaintColor): void {
+    const style = overmind.state.fillStyle.effectiveFillStyle;
+    if (!style) {
+      paintingCanvasController.points(pointsToFill, solidColor);
+      return;
+    }
+    for (const [colorNumber, bucketPoints] of bucketPointsByGradient(pointsToFill, style)) {
+      paintingCanvasController.points(bucketPoints, { kind: 'index', colorNumber });
+    }
   }
 
   // Overlay

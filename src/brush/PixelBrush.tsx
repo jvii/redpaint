@@ -13,6 +13,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '..';
 import { DrawTarget } from '../canvas/CanvasController';
+import { drawFilledLines, drawFilledQuad } from './fillStyleDraw';
 
 export class PixelBrush implements BrushInterface {
   public drawPoints(points: Point[], canvas: DrawTarget): void {
@@ -35,7 +36,7 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
-    canvas.quad(start, end, overmind.state.tool.activePaintColor);
+    drawFilledQuad(start, end, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
@@ -45,7 +46,7 @@ export class PixelBrush implements BrushInterface {
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     const filledCircleAsLines = filledCircle(center, radius);
-    canvas.lines(filledCircleAsLines, overmind.state.tool.activePaintColor);
+    drawFilledLines(filledCircleAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledEllipse(
@@ -67,7 +68,7 @@ export class PixelBrush implements BrushInterface {
     canvas: DrawTarget
   ): void {
     const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(filledEllipseAsLines, overmind.state.tool.activePaintColor);
+    drawFilledLines(filledEllipseAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: DrawTarget): void {
@@ -77,6 +78,6 @@ export class PixelBrush implements BrushInterface {
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     const filledPolygonAsLines = filledPolygon(vertices);
-    canvas.lines(filledPolygonAsLines, overmind.state.tool.activePaintColor);
+    drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 }

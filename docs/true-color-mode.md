@@ -177,6 +177,36 @@ Sketched 2026-07-05, to be designed properly with the effects feature:
   the stroke need ping-pong framebuffers (WebGL cannot sample the texture
   being rendered into) — that is the real infrastructure cost of effects.
 
+### Gradient Fill (done 2026-07-13)
+
+Palette ranges (`PaletteRange`, `state.palette.ranges`) turned out to have
+their first real consumer sooner than "prerequisite for Shade and color
+cycling" above suggested: **Fill Style** (`src/components/fillStyle/`,
+`src/overmind/fillStyle/`), a Solid/Gradient requester reachable by
+right-clicking the flood fill button or any filled shape tool button (they
+share one setting, like DPaint). Gradient fill ports DPaint II's three axis
+modes (Vertical/Horizontal/Horizontal Line — the last one hugs a shape's own
+per-row contour, the "3-D sphere" look) plus an ordered (Bayer matrix) dither
+for band blending, deterministic rather than random per the "ordered
+dithering is the period-correct look" note above.
+
+The implementation needed no WebGL/shader changes: every draw primitive
+still takes exactly one `PaintColor` per call (see `DrawTarget` in
+`src/canvas/CanvasController.ts`), so gradient fill rasterizes the fill as
+usual (`Point[]`/`LineH[]`, same as solid fills always have), buckets the
+result by computed target color (`bucketPointsByGradient`,
+`src/algorithm/gradientFill.ts`), and issues one ordinary single-color call
+per bucket instead of one call total. This also composes with symmetry for
+free, since `SymmetryBrush` already re-rasterizes each copy independently.
+
+Range selection is an explicit picker in the requester rather than DPaint's
+implicit "whichever range contains the current foreground color" (which
+silently fell back to solid if the color wasn't in any range) — the same
+kind of small, deliberate improvement over the original mechanic as
+elsewhere in this doc. Deferred: "From brush" pattern fill (the type union
+already anticipates a third mode) and DPaint's reverse-gradient modifier
+click.
+
 ### Brush color-reduction gaps (noted 2026-07-13, unimplemented)
 
 Two loose ends between brush loading (see "Brush files" above) and the

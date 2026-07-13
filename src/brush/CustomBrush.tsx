@@ -19,6 +19,7 @@ import { LineV } from '../domain/LineV';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
+import { drawFilledLines, drawFilledQuad } from './fillStyleDraw';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -117,7 +118,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    canvas.quad(start, end, overmind.state.tool.activePaintColor);
+    drawFilledQuad(start, end, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
@@ -128,7 +129,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
     const filledCircleAsLines = filledCircle(center, radius);
-    canvas.lines(filledCircleAsLines, overmind.state.tool.activePaintColor);
+    drawFilledLines(filledCircleAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledEllipse(
@@ -161,7 +162,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   ): void {
     // DPaint just draws the filled shape as if using a pixel brush
     const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(filledEllipseAsLines, overmind.state.tool.activePaintColor);
+    drawFilledLines(filledEllipseAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: DrawTarget): void {
@@ -175,7 +176,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
     const filledPolygonAsLines = filledPolygon(vertices);
-    canvas.lines(filledPolygonAsLines, overmind.state.tool.activePaintColor);
+    drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 
   private adjustHandle(point: Point): Point {

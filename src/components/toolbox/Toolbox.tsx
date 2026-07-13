@@ -37,6 +37,7 @@ export function Toolbox(): JSX.Element {
         buttonClass="floodfill"
         isSelected={state.toolbox.activeToolId === 'floodFill'}
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('floodFill')}
+        onRightClick={(): void => actions.fillStyle.openSettings()}
       />
       <div className="toolbox-button-divider"></div>
       <ToolboxToggleButton
@@ -50,6 +51,7 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'rectangleFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('rectangleNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('rectangleFilled')}
+        onRightClick={(): void => actions.fillStyle.openSettings()}
       />
       <div className="toolbox-button-divider"></div>
       <ToolboxDualToggleButton
@@ -58,6 +60,7 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'circleFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('circleNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('circleFilled')}
+        onRightClick={(): void => actions.fillStyle.openSettings()}
       />
       <ToolboxDualToggleButton
         buttonClass="ellipse"
@@ -65,6 +68,7 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'ellipseFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('ellipseFilled')}
+        onRightClick={(): void => actions.fillStyle.openSettings()}
       />
       <div className="toolbox-button-divider"></div>
       <ToolboxDualToggleButton
@@ -73,6 +77,7 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'polygonFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('polygonNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('polygonFilled')}
+        onRightClick={(): void => actions.fillStyle.openSettings()}
       />
       <ToolboxToggleButton
         buttonClass="brushselect"

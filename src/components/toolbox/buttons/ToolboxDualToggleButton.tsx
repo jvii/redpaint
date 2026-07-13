@@ -7,6 +7,7 @@ interface Props {
   isUpperHalfSelected: boolean;
   onUpperHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onLowerHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  onRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export function ToolboxDualToggleButton({
@@ -15,6 +16,7 @@ export function ToolboxDualToggleButton({
   isUpperHalfSelected,
   onUpperHalfClick,
   onLowerHalfClick,
+  onRightClick,
 }: Props): JSX.Element {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     if (isLowerHalfClick(event)) {
@@ -22,6 +24,13 @@ export function ToolboxDualToggleButton({
     } else {
       onUpperHalfClick(event);
     }
+  };
+
+  const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
+    if (onRightClick) {
+      onRightClick(event);
+    }
+    event.preventDefault();
   };
 
   let modifier = buttonClass;
@@ -40,6 +49,7 @@ export function ToolboxDualToggleButton({
           (isLowerHalfSelected || isUpperHalfSelected ? ' toolbox_button_color_active' : '')
         }
         onClick={handleClick}
+        onContextMenu={handleRightClick}
       ></button>
     </ToolboxButtonHoverManager>
   );

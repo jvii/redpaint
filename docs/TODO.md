@@ -40,15 +40,15 @@ is scheduled. Design details live in the linked docs where they exist.
 
 See "Future: effects and a strict indexed mode" in docs/true-color-mode.md.
 
-- [ ] **Palette ranges** (DPaint's Shade/cycling ranges) — prerequisite for
-  Shade and color cycling.
 - [ ] **Effect write policy**: effect core computes RGB → policy resolves to a
   `PaintColor` (hybrid → rgb pixel; indexed → nearest palette color).
 - [ ] **Ping-pong framebuffers** for effects that read the canvas around the
   stroke (WebGL can't sample the texture being rendered into) — the real
   infrastructure cost.
 - [ ] **Blend / Smear / Shade / Smooth** tools once the above exist.
-- [ ] **Color cycling** (needs palette ranges).
+- [ ] **Color cycling** — palette ranges already exist (`PaletteRange`,
+  used by Gradient Fill); this needs cycling animation state on top, not
+  designed yet.
 
 ## Images and palettes
 

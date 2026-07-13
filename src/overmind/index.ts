@@ -16,6 +16,7 @@ import * as toolbox from './toolbox';
 import * as brush from './brush';
 import * as tool from './tool';
 import * as symmetry from './symmetry';
+import * as fillStyle from './fillStyle';
 
 export const config = namespaced({
   app,
@@ -28,6 +29,7 @@ export const config = namespaced({
   tool,
   brush,
   symmetry,
+  fillStyle,
 });
 
 export type Context = IContext<typeof config>
