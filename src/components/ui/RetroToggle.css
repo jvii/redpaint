@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
-
 /* one shared drop shadow for the whole segmented group; the variant sets the
    flow (row / vertical stack / N-column grid) */
 .retro-toggle {

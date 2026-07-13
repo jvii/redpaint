@@ -15,6 +15,8 @@ import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanva
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
+import { RetroFieldset } from '../ui/RetroFieldset';
+import { LoadPreview } from './LoadPreview';
 
 // How the loaded image's colors are treated (the image always loads at its
 // own size — resizing is the screen format's business):
@@ -102,17 +104,6 @@ function ImageLoadDialogOpen(): JSX.Element {
     ctx.putImageData(out, 0, 0);
   }, [mode, count]);
 
-  const PREVIEW_MAX_W = 680;
-  const PREVIEW_MAX_H = 340;
-  let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
-  if (previewScale >= 1) {
-    previewScale = Math.max(1, Math.floor(previewScale));
-  }
-  const previewStyle = {
-    width: Math.round(info.width * previewScale),
-    height: Math.round(info.height * previewScale),
-  };
-
   const handleCancel = (): void => {
     takePendingImage();
     actions.app.clearImageLoadInfo();
@@ -167,20 +158,15 @@ function ImageLoadDialogOpen(): JSX.Element {
   return (
     <Modal header="Load Image" width={760}>
       <div className="image-load__body">
-        <div className="image-load__top">
-          <div className="image-load__info">
-            <span className="image-load__info-label">Image</span>
-            {`${info.width}x${info.height}`} &middot;{' '}
-            <b>{info.colorCount.toLocaleString('en-US')}</b>{' '}
-            {info.colorCount === 1 ? 'color' : 'colors'}
-            {fitsPalette && (
-              <span className="image-load__exact"> &mdash; fits a palette exactly</span>
-            )}
-          </div>
-          <canvas ref={previewRef} className="image-load__preview" style={previewStyle} />
-        </div>
-        <fieldset className="image-load__mode">
-          <legend>Colors</legend>
+        <LoadPreview
+          label="Image"
+          width={info.width}
+          height={info.height}
+          colorCount={info.colorCount}
+          exactNote={fitsPalette ? 'fits a palette exactly' : undefined}
+          canvasRef={previewRef}
+        />
+        <RetroFieldset legend="Colors">
           <RetroToggle
             variant="column"
             options={[
@@ -194,9 +180,8 @@ function ImageLoadDialogOpen(): JSX.Element {
             value={mode}
             onChange={(value): void => setMode(value as ColorMode)}
           />
-        </fieldset>
-        <fieldset className="image-load__count">
-          <legend>Indexed palette size</legend>
+        </RetroFieldset>
+        <RetroFieldset legend="Indexed palette size" className="image-load__count">
           <RetroToggle
             variant="grid"
             columns={4}
@@ -205,7 +190,7 @@ function ImageLoadDialogOpen(): JSX.Element {
             onChange={(value): void => setCount(Number(value))}
             disabled={mode !== 'new'}
           />
-        </fieldset>
+        </RetroFieldset>
       </div>
       <RetroButton variant="secondary" onClick={handleCancel}>
         Cancel

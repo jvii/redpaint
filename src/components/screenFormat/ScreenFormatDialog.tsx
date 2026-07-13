@@ -6,6 +6,7 @@ import { PaletteSource } from '../../overmind/canvas/actions';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
+import { RetroFieldset } from '../ui/RetroFieldset';
 
 // 'Native' is the no-simulation state (screenFormatId === null): the
 // page is shown 1:1 in the window, no Amiga screen scaling — the startup mode.
@@ -130,18 +131,16 @@ function ScreenFormatDialogOpen(): JSX.Element {
   return (
     <Modal header="Screen Format" width={840}>
       <div className="screen-format__body">
-        <fieldset className="screen-format__formats">
-          <legend>Resolution</legend>
+        <RetroFieldset legend="Resolution" className="screen-format__formats">
           <RetroToggle
             variant="column"
             options={FORMAT_OPTIONS}
             value={formatId}
             onChange={(value): void => setFormatId(value as FormatChoice)}
           />
-        </fieldset>
+        </RetroFieldset>
         <div className="screen-format__right">
-          <fieldset className="screen-format__colors">
-            <legend>Indexed palette size</legend>
+          <RetroFieldset legend="Indexed palette size" className="screen-format__colors">
             <RetroToggle
               variant="grid"
               columns={4}
@@ -149,9 +148,8 @@ function ScreenFormatDialogOpen(): JSX.Element {
               value={String(colors)}
               onChange={(value): void => setColors(Number(value))}
             />
-          </fieldset>
-          <fieldset className="screen-format__truecolor">
-            <legend>True Color</legend>
+          </RetroFieldset>
+          <RetroFieldset legend="True Color" className="screen-format__truecolor">
             {/* off conforms the canvas to the palette on OK (flattening any
                 true-color pixels); loading an image as True Color re-enables */}
             <RetroToggle
@@ -164,9 +162,8 @@ function ScreenFormatDialogOpen(): JSX.Element {
               value={trueColorEnabled ? 'on' : 'off'}
               onChange={(value): void => setTrueColorEnabled(value === 'on')}
             />
-          </fieldset>
-          <fieldset className="screen-format__remap">
-            <legend>Remap to</legend>
+          </RetroFieldset>
+          <RetroFieldset legend="Remap to" className="screen-format__remap">
             {/* only a reduction remaps: fewer colors, or True Color going off.
                 The count is the target size — both options produce it */}
             <RetroToggle
@@ -179,7 +176,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
               onChange={(value): void => setPaletteSource(value as PaletteSource)}
               disabled={!reducesColors}
             />
-          </fieldset>
+          </RetroFieldset>
         </div>
       </div>
       <RetroButton variant="secondary" onClick={actions.dialog.close}>

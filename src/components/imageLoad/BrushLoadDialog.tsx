@@ -11,6 +11,8 @@ import { Color } from '../../types';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
+import { RetroFieldset } from '../ui/RetroFieldset';
+import { LoadPreview } from './LoadPreview';
 
 // The greedy remap (see remapColorsGreedy) as a 24-bit-RGB -> palette-index
 // lookup, shared by the live preview and the actual commit in handleOk.
@@ -95,17 +97,6 @@ function BrushLoadDialogOpen(): JSX.Element {
     ctx.putImageData(out, 0, 0);
   }, [mode]);
 
-  const PREVIEW_MAX_W = 680;
-  const PREVIEW_MAX_H = 340;
-  let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
-  if (previewScale >= 1) {
-    previewScale = Math.max(1, Math.floor(previewScale));
-  }
-  const previewStyle = {
-    width: Math.round(info.width * previewScale),
-    height: Math.round(info.height * previewScale),
-  };
-
   const handleCancel = (): void => {
     takePendingBrush();
     actions.app.clearBrushLoadInfo();
@@ -138,20 +129,15 @@ function BrushLoadDialogOpen(): JSX.Element {
   return (
     <Modal header="Load Brush" width={760}>
       <div className="brush-load__body">
-        <div className="brush-load__top">
-          <div className="brush-load__info">
-            <span className="brush-load__info-label">Brush</span>
-            {`${info.width}x${info.height}`} &middot;{' '}
-            <b>{info.colorCount.toLocaleString('en-US')}</b>{' '}
-            {info.colorCount === 1 ? 'color' : 'colors'}
-            {fitsPalette && (
-              <span className="brush-load__exact"> &mdash; fits the palette exactly</span>
-            )}
-          </div>
-          <canvas ref={previewRef} className="brush-load__preview" style={previewStyle} />
-        </div>
-        <fieldset className="brush-load__mode">
-          <legend>Colors</legend>
+        <LoadPreview
+          label="Brush"
+          width={info.width}
+          height={info.height}
+          colorCount={info.colorCount}
+          exactNote={fitsPalette ? 'fits the palette exactly' : undefined}
+          canvasRef={previewRef}
+        />
+        <RetroFieldset legend="Colors">
           <RetroToggle
             variant="column"
             options={[
@@ -164,7 +150,7 @@ function BrushLoadDialogOpen(): JSX.Element {
             value={mode}
             onChange={(value): void => setMode(value as ColorMode)}
           />
-        </fieldset>
+        </RetroFieldset>
       </div>
       <RetroButton variant="secondary" onClick={handleCancel}>
         Cancel

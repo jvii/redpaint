@@ -1,0 +1,50 @@
+/* what was opened: size and distinct colors, in the status-strip idiom */
+.load-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.load-preview__info {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  line-height: 1.4;
+  color: black;
+}
+
+.load-preview__info b {
+  color: rgb(0, 85, 170);
+  font-weight: normal;
+}
+
+.load-preview__info-label {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(106, 106, 106);
+  margin-bottom: 5px;
+}
+
+.load-preview__exact {
+  color: #ff8800;
+}
+
+/* the media as the draft would load it; the checker shows through transparency */
+.load-preview__canvas {
+  flex: none;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  image-rendering: pixelated;
+  background-color: #e8e8e8;
+  background-image:
+    linear-gradient(45deg, #cfcfcf 25%, transparent 25%),
+    linear-gradient(135deg, #cfcfcf 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #cfcfcf 75%),
+    linear-gradient(135deg, transparent 75%, #cfcfcf 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 0, 6px -6px, 0 6px;
+}

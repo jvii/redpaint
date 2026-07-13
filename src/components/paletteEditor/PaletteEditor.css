@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
-
 /* DPaint's Palette Window arrangement: sliders on the left, swatch grid on
    the right. The palette's intrinsic height (4 cols x rows-of-8, square
    cells sized off the width) sets the row height; the sliders stretch to

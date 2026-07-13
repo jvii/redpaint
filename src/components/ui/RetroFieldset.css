@@ -1,0 +1,14 @@
+.retro-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.retro-fieldset__legend {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  /* Press Start 2P only reads crisply at multiples of 8 (16 is the floor) */
+  font-size: 16px;
+  padding: 0 0 12px 0;
+}
