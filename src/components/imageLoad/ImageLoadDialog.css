@@ -16,22 +16,7 @@
   gap: 16px;
 }
 
-/* original and treated side by side, the arrow reading as "becomes" */
-.image-load__previews {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.image-load__arrow {
-  flex: none;
-  width: 36px;
-  height: 36px;
-  fill: black;
-  shape-rendering: crispEdges;
-}
-
-/* the decoded pixels at a glance; the checker shows through any transparency */
+/* the image as the draft would load it; the checker shows through transparency */
 .image-load__preview {
   flex: none;
   border: 2px solid black;

@@ -58,31 +58,16 @@ function ImageLoadDialogOpen(): JSX.Element {
   const [mode, setMode] = useState<ColorMode>('true');
   const [count, setCount] = useState(smallestSufficient ?? 256);
 
-  // Previews of the decoded pixels — the original, and beside it the chosen
-  // treatment applied live, an arrow between them. Both drawn at native size
-  // and scaled by CSS with image-rendering: pixelated — the same display
-  // trick the canvas itself uses. Tiny images upscale by a whole factor so
-  // their pixels stay even; large ones shrink fractionally, which a preview
-  // can afford.
+  // One preview showing the image as the draft treatment would load it — the
+  // same palette and mapping OK would commit, re-rendered when the mode or
+  // depth changes (True Color shows the original). Drawn at native size and
+  // scaled by CSS with image-rendering: pixelated — the canvas's own display
+  // trick. Tiny images upscale by a whole factor so their pixels stay even;
+  // large ones shrink fractionally, which a preview can afford.
   const previewRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
     const image = peekPendingImage();
     const canvas = previewRef.current;
-    if (!image || !canvas) {
-      return;
-    }
-    canvas.width = image.width;
-    canvas.height = image.height;
-    canvas.getContext('2d')?.putImageData(image, 0, 0);
-  }, []);
-
-  // The treated side re-renders when the draft changes: the same palette and
-  // mapping the OK would commit, applied to the full image (cheap enough at
-  // typical sizes; the histogram passes dominate and are single-pass).
-  const treatedRef = useRef<HTMLCanvasElement>(null);
-  useEffect((): void => {
-    const image = peekPendingImage();
-    const canvas = treatedRef.current;
     if (!image || !canvas) {
       return;
     }
@@ -117,8 +102,8 @@ function ImageLoadDialogOpen(): JSX.Element {
     ctx.putImageData(out, 0, 0);
   }, [mode, count]);
 
-  const PREVIEW_MAX_W = 250;
-  const PREVIEW_MAX_H = 170;
+  const PREVIEW_MAX_W = 560;
+  const PREVIEW_MAX_H = 220;
   let previewScale = Math.min(PREVIEW_MAX_W / info.width, PREVIEW_MAX_H / info.height);
   if (previewScale >= 1) {
     previewScale = Math.max(1, Math.floor(previewScale));
@@ -192,33 +177,14 @@ function ImageLoadDialogOpen(): JSX.Element {
               <span className="image-load__exact"> &mdash; fits a palette exactly</span>
             )}
           </div>
-          <div className="image-load__previews">
-            <canvas ref={previewRef} className="image-load__preview" style={previewStyle} />
-            {/* pixel-art arrow, drawn like the toolbox icons */}
-            <svg
-              className="image-load__arrow"
-              viewBox="0 0 12 12"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <rect x="1" y="5" width="7" height="2" />
-              <rect x="6" y="2" width="2" height="1" />
-              <rect x="7" y="3" width="2" height="1" />
-              <rect x="8" y="4" width="2" height="1" />
-              <rect x="9" y="5" width="2" height="2" />
-              <rect x="8" y="7" width="2" height="1" />
-              <rect x="7" y="8" width="2" height="1" />
-              <rect x="6" y="9" width="2" height="1" />
-            </svg>
-            <canvas ref={treatedRef} className="image-load__preview" style={previewStyle} />
-          </div>
+          <canvas ref={previewRef} className="image-load__preview" style={previewStyle} />
         </div>
         <fieldset className="image-load__mode">
           <legend>Colors</legend>
           <RetroToggle
             variant="column"
             options={[
-              { value: 'true', label: 'True Color' },
+              { value: 'true', label: 'True Color (original)' },
               { value: 'new', label: 'New palette from image' },
               { value: 'current', label: `Current palette (${state.palette.paletteArray.length})` },
             ]}
