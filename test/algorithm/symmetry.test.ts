@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { symmetryCopies } from './symmetry';
+import { symmetryCopies } from '../../src/algorithm/symmetry';
 
 describe('symmetryCopies', () => {
   test('order 1 without mirror is just the identity', () => {

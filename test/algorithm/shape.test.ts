@@ -11,9 +11,9 @@ import {
   unfilledEllipse,
   unfilledPolygon,
   unfilledRect,
-} from './shape';
-import { rasterizeLines, rasterizePoints } from '../../test/pixelGrid';
-import { expectMatchesFixture } from '../../test/shapeFixture';
+} from '../../src/algorithm/shape';
+import { rasterizeLines, rasterizePoints } from '../pixelGrid';
+import { expectMatchesFixture } from '../shapeFixture';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 

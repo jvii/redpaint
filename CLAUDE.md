@@ -15,9 +15,10 @@ for the actual painting).
   browser-verification workflow in this project hardcodes that port)
 - `npm run build` — type-checks (`tsc --noEmit`) then production build to `dist/`
 - `npm run preview` — serves the production build from `dist/` locally
-- `npm test` — Vitest, single run. Tests are colocated with source as `*.test.ts` (currently only the
-  `src/algorithm/` layer and `src/domain/Line*` — pure functions with no WebGL/Overmind/DOM dependency;
-  UI/components are untested on purpose while the UI is still actively changing).
+- `npm test` — Vitest, single run. Tests live under `test/`, mirroring `src/`'s structure rather than being
+  colocated (currently only the `src/algorithm/` layer and `src/domain/Line*` — pure functions with no
+  WebGL/Overmind/DOM dependency; UI/components are untested on purpose while the UI is still actively
+  changing).
 - `npm run lint` — ESLint over `src/**/*.{ts,tsx}` and `test/**/*.ts` (config extends `react-app`/
   `react-app/jest`, from `eslint-config-react-app`)
 - Formatting: Prettier is configured (`.prettierrc.json`: 100 col width, single quotes, ES5 trailing commas)
@@ -117,10 +118,13 @@ is just a thin adapter handing the result to a `DrawTarget`), `symmetry.ts` (DPa
 transforms), `quantize.ts`/`imageColors.ts` (median-cut palette extraction, exact palette/nearest-color
 mapping, distinct-color census — see "Image loading" below), and `floodfill.ts` (takes its bounds from the
 `CanvasColorIndex` passed in, not from Overmind — keep it that way, it's what makes it testable standalone).
-This is the layer with test coverage (`*.test.ts` colocated with source); UI is deliberately untested for
-now.
+This is the layer with test coverage. Tests live in `test/`, a separate tree mirroring `src/`'s structure
+(`test/algorithm/shape.test.ts` tests `src/algorithm/shape.ts`, `test/domain/Line.test.ts` tests
+`src/domain/Line*.ts`, etc.) rather than being colocated with source; UI is deliberately untested for now.
+Shared test infrastructure (not itself a test suite) lives at the `test/` root: `test/pixelGrid.ts`,
+`test/png.ts`, `test/shapeFixture.ts`.
 
-Shape tests compare against checked-in PNG fixtures under `src/algorithm/__fixtures__/shape/` — real,
+Shape tests compare against checked-in PNG fixtures under `test/algorithm/__fixtures__/shape/` — real,
 openable images (rasterize the algorithm's `Point[]`/`Line[]` output with `test/pixelGrid.ts`, compare via
 `test/shapeFixture.ts#expectMatchesFixture`, which decodes both sides with the hand-rolled zero-dependency
 PNG codec in `test/png.ts` rather than comparing bytes). A missing fixture, or a run with

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { LineH } from './LineH';
-import { LineV } from './LineV';
+import { LineH } from '../../src/domain/LineH';
+import { LineV } from '../../src/domain/LineV';
 
 describe('LineH', () => {
   test('throws when the endpoints are not on the same row', () => {

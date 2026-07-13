@@ -4,7 +4,7 @@ import {
   mapToPalette,
   mapToPaletteExact,
   medianCutPalette,
-} from './quantize';
+} from '../../src/algorithm/quantize';
 
 function pixels(colors: [number, number, number][]): Uint8ClampedArray {
   const data = new Uint8ClampedArray(colors.length * 4);
