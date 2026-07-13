@@ -64,6 +64,34 @@ export class BrushColorIndex {
     return new BrushColorIndex(width, height, indexArray);
   }
 
+  // Same as fromImageData, but opaque pixels are indexed against indexByColor
+  // (a 24-bit RGB -> 0-based palette position map, built by the brush load
+  // requester from remapColorsGreedy) instead of carrying their own literal
+  // RGB — the "remap to current palette" load option.
+  static fromRemappedImageData(
+    imageData: ImageData,
+    indexByColor: Map<number, number>
+  ): BrushColorIndex {
+    const { width, height, data } = imageData;
+    const indexArray = new Uint8Array(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      const sourceRow = y * width * 4;
+      const targetRow = (height - y - 1) * width * 4;
+      for (let x = 0; x < width; x++) {
+        if (data[sourceRow + x * 4 + 3] < 128) {
+          continue; // transparent (alpha tag stays 0)
+        }
+        const rgb =
+          (data[sourceRow + x * 4] << 16) |
+          (data[sourceRow + x * 4 + 1] << 8) |
+          data[sourceRow + x * 4 + 2];
+        indexArray[targetRow + x * 4] = indexByColor.get(rgb) ?? 0;
+        indexArray[targetRow + x * 4 + 3] = ALPHA_INDEXED;
+      }
+    }
+    return new BrushColorIndex(width, height, indexArray);
+  }
+
   // Marks the pixels whose indexed color equals the transparent color number
   // (1-based palette id) as transparent (alpha tag 0). True-color pixels are
   // never transparent.

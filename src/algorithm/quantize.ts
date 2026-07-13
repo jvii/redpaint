@@ -214,3 +214,58 @@ export function mapToPalette(data: Uint8ClampedArray, palette: Color[]): Uint8Ar
   }
   return indices;
 }
+
+// DPaint's brush-to-palette remap (REMAP.C: BMRemapCols/BrRemapCols),
+// ported. A brush typically has few distinct colors, so unlike mapToPalette's
+// independent per-pixel nearest search, this assigns colors globally and
+// greedily: the most frequent color first claims its nearest still-unclaimed
+// palette slot, and so on down in frequency order, so two brush colors don't
+// collapse onto the same slot while room remains. Once every slot is
+// claimed, remaining colors fall back to nearest-any (slots become shared).
+// Returns the assigned palette index per input color, same order as `colors`.
+export function remapColorsGreedy(
+  colors: { color: Color; count: number }[],
+  palette: Color[]
+): number[] {
+  const distSquared = (a: Color, b: Color): number => {
+    const dr = a.r - b.r;
+    const dg = a.g - b.g;
+    const db = a.b - b.b;
+    return dr * dr + dg * dg + db * db;
+  };
+
+  const byFrequencyDesc = colors
+    .map((_, index) => index)
+    .sort((a, b) => colors[b].count - colors[a].count);
+
+  const claimed = new Array<boolean>(palette.length).fill(false);
+  const assigned = new Array<number>(colors.length).fill(0);
+
+  for (const i of byFrequencyDesc) {
+    const color = colors[i].color;
+    let best = -1;
+    let bestDist = Infinity;
+    for (let j = 0; j < palette.length; j++) {
+      if (claimed[j]) continue;
+      const dist = distSquared(color, palette[j]);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = j;
+      }
+    }
+    if (best < 0) {
+      // every slot already claimed: nearest of any, now shared
+      for (let j = 0; j < palette.length; j++) {
+        const dist = distSquared(color, palette[j]);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = j;
+        }
+      }
+    }
+    claimed[best] = true;
+    assigned[i] = best;
+  }
+
+  return assigned;
+}

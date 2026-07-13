@@ -125,20 +125,10 @@ export function Menubar(): JSX.Element {
   };
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
-    const file = input.files?.[0];
-    if (!file) {
-      alert('Failed to open file!');
-      return;
+    if (input.files?.[0]) {
+      // decodes, then opens the load requester (color treatment)
+      actions.app.beginBrushLoad(URL.createObjectURL(input.files[0]));
     }
-    const url = URL.createObjectURL(file);
-    CustomBrush.fromImageUrl(url)
-      .then((brush): void => {
-        brushHistory.set(brush);
-        actions.brush.clearBuiltInBrushSelection();
-        actions.brush.setMode('Matte');
-      })
-      .catch((): void => alert('Failed to open file!'))
-      .finally((): void => URL.revokeObjectURL(url));
   };
 
   const handleImageSave = (): void => {

@@ -4,6 +4,7 @@ import {
   mapToPalette,
   mapToPaletteExact,
   medianCutPalette,
+  remapColorsGreedy,
 } from '../../src/algorithm/quantize';
 
 function pixels(colors: [number, number, number][]): Uint8ClampedArray {
@@ -100,5 +101,49 @@ describe('medianCutPalette', () => {
     ]);
     const palette = medianCutPalette(data, 4);
     expect(palette).toHaveLength(4);
+  });
+});
+
+describe('remapColorsGreedy', () => {
+  const black = { r: 0, g: 0, b: 0 };
+  const white = { r: 255, g: 255, b: 255 };
+
+  test('more source colors than palette slots: high-frequency colors claim a slot first', () => {
+    // 3 colors competing for 2 slots — the most-frequent two (near-black,
+    // near-white) should each get their own slot; the least-frequent
+    // (mid-gray) only gets a look-in once both are already claimed, and
+    // ends up sharing whichever slot is nearest (white, by a hair)
+    const colors = [
+      { color: { r: 10, g: 10, b: 10 }, count: 100 }, // near-black
+      { color: { r: 245, g: 245, b: 245 }, count: 50 }, // near-white
+      { color: { r: 128, g: 128, b: 128 }, count: 10 }, // mid-gray
+    ];
+    const assigned = remapColorsGreedy(colors, [black, white]);
+    expect(assigned[0]).toBe(0); // near-black -> black
+    expect(assigned[1]).toBe(1); // near-white -> white
+    expect(assigned[2]).toBe(1); // mid-gray falls back, nearest is white
+  });
+
+  test('fewer source colors than palette slots: every color gets a unique slot', () => {
+    const red = { r: 255, g: 0, b: 0 };
+    const blue = { r: 0, g: 0, b: 255 };
+    const colors = [
+      { color: { r: 250, g: 5, b: 5 }, count: 5 }, // reddish
+      { color: { r: 5, g: 5, b: 250 }, count: 3 }, // bluish
+    ];
+    const assigned = remapColorsGreedy(colors, [black, white, red, blue]);
+    expect(assigned[0]).toBe(2); // reddish -> red
+    expect(assigned[1]).toBe(3); // bluish -> blue
+    expect(assigned[0]).not.toBe(assigned[1]);
+  });
+
+  test('returns assignments in the same order as the input colors, not frequency order', () => {
+    const colors = [
+      { color: { r: 245, g: 245, b: 245 }, count: 1 }, // least frequent, listed first
+      { color: { r: 10, g: 10, b: 10 }, count: 100 }, // most frequent, listed second
+    ];
+    const assigned = remapColorsGreedy(colors, [black, white]);
+    expect(assigned[0]).toBe(1); // near-white
+    expect(assigned[1]).toBe(0); // near-black
   });
 });

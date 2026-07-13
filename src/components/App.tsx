@@ -11,6 +11,7 @@ import { DialogManager } from './dialog/DialogManager';
 import { PaletteEditor } from './paletteEditor/PaletteEditor';
 import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
 import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
+import { BrushLoadDialog } from './imageLoad/BrushLoadDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
 import './App.css';
 
@@ -33,6 +34,7 @@ function App(): JSX.Element {
       <PaletteEditor></PaletteEditor>
       <ScreenFormatDialog></ScreenFormatDialog>
       <ImageLoadDialog></ImageLoadDialog>
+      <BrushLoadDialog></BrushLoadDialog>
       <SymmetrySettings></SymmetrySettings>
       <DialogManager></DialogManager>
       <GlobalHotKeyManager />

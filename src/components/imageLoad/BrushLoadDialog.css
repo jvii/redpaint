@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap');
+
+.brush-load__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 30px 28px 30px;
+  text-align: left;
+}
+
+/* what was opened: size and distinct colors, in the status-strip idiom */
+.brush-load__top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+/* the brush as the draft would load it; the checker shows through transparency */
+.brush-load__preview {
+  flex: none;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  image-rendering: pixelated;
+  background-color: #e8e8e8;
+  background-image:
+    linear-gradient(45deg, #cfcfcf 25%, transparent 25%),
+    linear-gradient(135deg, #cfcfcf 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #cfcfcf 75%),
+    linear-gradient(135deg, transparent 75%, #cfcfcf 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 6px 0, 6px -6px, 0 6px;
+}
+
+.brush-load__info {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  line-height: 1.4;
+  color: black;
+}
+
+.brush-load__info b {
+  color: rgb(0, 85, 170);
+  font-weight: normal;
+}
+
+.brush-load__info-label {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(106, 106, 106);
+  margin-bottom: 5px;
+}
+
+.brush-load__exact {
+  color: #ff8800;
+}
+
+.brush-load__body fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.brush-load__body legend {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  /* Press Start 2P only reads crisply at multiples of 8 (16 is the floor) */
+  font-size: 16px;
+  padding: 0 0 12px 0;
+}

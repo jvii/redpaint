@@ -1,8 +1,6 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { Dialog } from './Dialog';
-import { CustomBrush } from '../../brush/CustomBrush';
-import { brushHistory } from '../../brush/BrushHistory';
 import './Dialog.css';
 import { RetroButton } from '../ui/RetroButton';
 
@@ -11,18 +9,9 @@ export function DialogManager(): JSX.Element | null {
   const state = useAppState();
 
   const pasteAsBrush = (): void => {
-    const url = state.app.pasteBufferImageObjectURL;
     actions.dialog.close();
-    CustomBrush.fromImageUrl(url)
-      .then((brush): void => {
-        // same behavior as capturing a brush from the canvas
-        brushHistory.set(brush);
-        actions.brush.clearBuiltInBrushSelection();
-        actions.brush.setMode('Matte');
-        actions.toolbox.setSelectedDrawingTool('dottedFreehand');
-      })
-      .catch((): void => actions.dialog.open('PASTE_ERROR'))
-      .finally((): void => URL.revokeObjectURL(url));
+    // decodes, then opens the load requester — the same flow as Brush > Open
+    actions.app.beginBrushLoad(state.app.pasteBufferImageObjectURL);
   };
 
   const pasteAsImage = (): void => {

@@ -121,15 +121,23 @@ concerned with the active painting color. The
 brush transparency marker — so the BG picker still ignores true-color
 pixels.
 
-**Brush files (2026-07-05):** brushes round-trip through ordinary PNGs using
-the tag encoding. Save resolves the pristine matte bitmap to displayable
-pixels (indexed through the palette, true color directly, `ALPHA_TRANSPARENT`
-→ PNG alpha 0). Load — Brush ▸ Open and the clipboard "Paste as brush" share
-`CustomBrush.fromImageUrl` — maps PNG alpha < 128 to brush transparency and
-every opaque pixel to a **true-color** pixel. So a saved indexed brush comes
-back with its palette colors baked in (deliberate simplification: PNG carries
-no palette identity); Matte mode stamps those colors verbatim and Color mode
-recolors the whole shape either way.
+**Brush files (2026-07-05, requester added 2026-07-13):** brushes round-trip
+through ordinary PNGs using the tag encoding. Save resolves the pristine
+matte bitmap to displayable pixels (indexed through the palette, true color
+directly, `ALPHA_TRANSPARENT` → PNG alpha 0). Load — Brush ▸ Open and the
+clipboard "Paste as brush" both go through `beginBrushLoad` (mirroring image
+loading's `beginImageLoad`), which opens `BrushLoadDialog`: a live preview
+plus a choice between **True Color (original)** (`BrushColorIndex.fromImageData`,
+maps PNG alpha < 128 to brush transparency and every opaque pixel to a
+true-color pixel — the only behavior before the requester existed) and
+**Current palette** (`BrushColorIndex.fromRemappedImageData`, indexed against
+the document's palette via `remapColorsGreedy` — DPaint's `REMAP.C` greedy
+per-color assignment, not a per-pixel nearest search: a brush usually has few
+distinct colors, so the most frequent ones each claim their own nearest
+still-unclaimed palette slot rather than every pixel searching independently
+and potentially collapsing two brush colors onto the same slot). Either way,
+Matte mode stamps the resulting colors (literal RGB or palette index)
+verbatim and Color mode recolors the whole shape.
 
 - **Phase A — hybrid storage, indexed tools.** Normalize alpha writes to the
   tag encoding; add the tag branch to the display shaders; widen
