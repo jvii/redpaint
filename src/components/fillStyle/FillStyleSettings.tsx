@@ -17,7 +17,7 @@ const AXIS_OPTIONS: { value: GradientAxis; label: string }[] = [
   { value: 'horizontalLine', label: 'Horizontal Line' },
 ];
 
-const PREVIEW_SIZE = 220;
+const PREVIEW_SIZE = 100; // canvas resolution; scaled up to fill-style-settings.css's display size
 
 // The fill style requester — redpaint's equivalent of DPaint's Fill Type
 // dialog, opened by right-clicking the flood fill button or any filled
