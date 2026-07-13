@@ -2,11 +2,28 @@ import { Context } from '../../overmind';
 import { Mode, BuiltInBrushId, builtInBrushes } from './state';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
+import { DrawingToolId } from '../toolbox/state';
+
+// DPaint switches away to (dotted) freehand when a built-in brush is picked
+// while a fill tool is active, since a brush stamp and an area fill don't
+// combine — this app switches to plain freehand instead.
+const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
+  'floodFill',
+  'rectangleFilled',
+  'circleFilled',
+  'ellipseFilled',
+  'polygonFilled',
+];
 
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.state.brush.selectedBuiltInBrushId = brushNumber;
   brushHistory.set(builtInBrushes[brushNumber]);
   context.actions.brush.setMode('Color');
+  if (
+    TOOLS_INCOMPATIBLE_WITH_BRUSHES.includes(context.state.toolbox.activeToolId as DrawingToolId)
+  ) {
+    context.actions.toolbox.setSelectedDrawingTool('freeHand');
+  }
 };
 
 // Called when a custom (captured or loaded) brush becomes the current brush
