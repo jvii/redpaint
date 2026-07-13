@@ -25,8 +25,8 @@ export class FloodFillTool implements Tool {
 
     const fillColor = overmind.state.palette.foregroundPaintColor;
 
-    const pointsToFill = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
-    this.paintPoints(pointsToFill, fillColor);
+    const pointGroups = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
+    this.paintPoints(pointGroups, fillColor);
     overmind.actions.undo.setUndoPoint();
     overmind.actions.app.setLoading(false);
   }
@@ -44,26 +44,30 @@ export class FloodFillTool implements Tool {
 
     // This is a hack to ensure the loading state is visible. Something to do with browser rendering timing.
     setTimeout(() => {
-      const pointsToFill = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
-      this.paintPoints(pointsToFill, fillColor);
+      const pointGroups = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
+      this.paintPoints(pointGroups, fillColor);
       overmind.actions.undo.setUndoPoint();
       overmind.actions.app.setLoading(false);
     }, 50);
   }
 
-  // Solid mode (the default) paints pointsToFill with solidColor via a
-  // single call, as before. Gradient mode ignores solidColor (a gradient
-  // isn't a single color to swap for FG/BG — left- and right-click apply the
-  // same gradient) and instead buckets the same points by target color,
-  // issuing one call per bucket.
-  private paintPoints(pointsToFill: Point[], solidColor: PaintColor): void {
+  // Solid mode (the default) merges every seed's points into a single call
+  // with solidColor, as before (the color is uniform, so merging first costs
+  // nothing). Gradient mode ignores solidColor (a gradient isn't a single
+  // color to swap for FG/BG — left- and right-click apply the same gradient)
+  // and buckets each seed's points *independently*, so every symmetry copy
+  // gets its own gradient normalized to its own extent, rather than one
+  // gradient stretched across the combined bounding box of every copy.
+  private paintPoints(pointGroups: Point[][], solidColor: PaintColor): void {
     const style = overmind.state.fillStyle.effectiveFillStyle;
     if (!style) {
-      paintingCanvasController.points(pointsToFill, solidColor);
+      paintingCanvasController.points(pointGroups.flat(), solidColor);
       return;
     }
-    for (const [colorNumber, bucketPoints] of bucketPointsByGradient(pointsToFill, style)) {
-      paintingCanvasController.points(bucketPoints, { kind: 'index', colorNumber });
+    for (const group of pointGroups) {
+      for (const [colorNumber, bucketPoints] of bucketPointsByGradient(group, style)) {
+        paintingCanvasController.points(bucketPoints, { kind: 'index', colorNumber });
+      }
     }
   }
 
@@ -91,26 +95,28 @@ export class FloodFillTool implements Tool {
   // the underlying image is not symmetric. Instead we run an independent real flood
   // fill from each symmetry-transformed seed point. The fills run sequentially on the
   // same (mutating) color index, so overlapping regions are handled like DPaint.
+  // Returns one group per seed (rather than one merged array) so a gradient
+  // fill can bucket each seed's region against its own extent independently
+  // — see paintPoints.
   private floodFillWithSymmetry(
     fillColor: PaintColor,
     seed: Point,
     canvasColorIndex: CanvasColorIndex
-  ): Point[] {
+  ): Point[][] {
     const settings = overmind.state.symmetry.activeSettings;
     const seeds = settings ? symmetryTransforms(settings).map((transform) => transform(seed)) : [seed];
 
     const { width, height } = overmind.state.canvas.resolution;
-    const pointsToFill: Point[] = [];
+    const pointGroups: Point[][] = [];
     for (const s of seeds) {
       if (s.x < 0 || s.x >= width || s.y < 0 || s.y >= height) {
         continue; // seed rotated off-canvas
       }
-      // no spread here: a fill can span the whole canvas, and spreading that
-      // many arguments into push() overflows the call stack
-      for (const point of floodFill(fillColor, s, canvasColorIndex)) {
-        pointsToFill.push(point);
+      const filled = floodFill(fillColor, s, canvasColorIndex);
+      if (filled.length > 0) {
+        pointGroups.push(filled);
       }
     }
-    return pointsToFill;
+    return pointGroups;
   }
 }
