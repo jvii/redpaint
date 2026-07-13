@@ -9,7 +9,6 @@
     "@types/jest": "^29.5.14",
     "@types/node": "^22.14.1",
     "@types/react-dom": "^19.1.2",
-    "jshint": "^2.12.0",
     "overmind": "^28.0.4-1744327087385",
     "overmind-react": "^29.0.6-1744327087385",
     "react": "^19.1.0",
