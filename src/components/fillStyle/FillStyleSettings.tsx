@@ -134,7 +134,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               />
             ) : (
               <span className="fill-style-settings__hint">
-                No ranges defined — set one in the palette editor (Range panel).
+                No ranges defined — set one in the palette editor.
               </span>
             )}
           </RetroFieldset>
@@ -150,7 +150,7 @@ function FillStyleSettingsOpen(): JSX.Element {
             />
             <span className="fill-style-settings__hint">
               How much adjacent bands randomly blend at their boundary. 0 = hard
-              edges; 5 matches DPaint's default.
+              edges
             </span>
           </RetroFieldset>
           <RetroFieldset legend="Jitter" className="fill-style-settings__dither">
@@ -164,8 +164,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               disabled={!isGradient}
             />
             <span className="fill-style-settings__hint">
-              How far dither can push a pixel, as a % of a band's width. 13 matches
-              DPaint/PyDPainter.
+              How far dither can push a pixel, as a % of a band's width.
             </span>
           </RetroFieldset>
         </RetroFieldset>
