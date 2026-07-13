@@ -6,18 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 dxpaint is a browser-based pixel-art paint program, a re-imagining of Amiga's Deluxe Paint (freehand,
 shapes, flood fill, custom brushes, 32-color palette, undo/redo, zoom preview). Built with React 19 +
-TypeScript on Create React App (react-scripts), state managed with Overmind, and all drawing done via raw
-WebGL (no canvas 2D context for the actual painting).
+TypeScript on Vite, state managed with Overmind, and all drawing done via raw WebGL (no canvas 2D context
+for the actual painting).
 
 ## Commands
 
-- `npm start` — dev server on http://localhost:3000 (CRA hot reload)
-- `npm run build` — production build to `build/` (runs with `CI=` to not fail on warnings)
-- `npm test` — Jest via `react-scripts test` in interactive watch mode. Note: there are currently no test
-  files in `src/`.
-- `npm run lint` — ESLint over `src/**/*.{ts,tsx}` (config extends `react-app`/`react-app/jest`)
+- `npm start` — Vite dev server on http://localhost:3000 (port pinned in `vite.config.ts` — every CDP
+  browser-verification workflow in this project hardcodes that port)
+- `npm run build` — type-checks (`tsc --noEmit`) then production build to `dist/`
+- `npm run preview` — serves the production build from `dist/` locally
+- `npm test` — Vitest, single run. Note: there are currently no test files in `src/`.
+- `npm run lint` — ESLint over `src/**/*.{ts,tsx}` (config extends `react-app`/`react-app/jest`, from
+  `eslint-config-react-app`)
 - Formatting: Prettier is configured (`.prettierrc.json`: 100 col width, single quotes, ES5 trailing commas)
   but there is no `format` script — run `npx prettier --write` directly if needed.
+- Deploys via Netlify, config in `netlify.toml` (Node version pinned there and in `.nvmrc`).
 
 `tsconfig.json` has `strict: false`. There are `paths` overrides pointing `react`/`react-dom` at
 `node_modules` — leave these alone, they exist to work around a local linked-package setup.

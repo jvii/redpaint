@@ -2,6 +2,9 @@
   "name": "dxpaint",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.14.1",
@@ -11,36 +14,28 @@
     "overmind-react": "^29.0.6-1744327087385",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-scripts": "^5.0.1",
     "typescript": "^5.8.3"
   },
   "overrides": {
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "CI= react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
     "lint": "eslint './src/**/*.{ts,tsx}'"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   },
   "devDependencies": {
     "@types/react": "^19.1.2",
+    "@vitejs/plugin-react": "^4.3.4",
     "cross-env": "^7.0.2",
     "eslint-config-prettier": "^10.1.2",
     "eslint-config-react": "^1.1.7",
-    "prettier": "^3.5.3"
+    "eslint-config-react-app": "^7.0.1",
+    "jsdom": "^25.0.1",
+    "prettier": "^3.5.3",
+    "vite": "^6.3.5",
+    "vitest": "^3.2.4"
   }
 }
