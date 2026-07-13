@@ -177,6 +177,27 @@ Sketched 2026-07-05, to be designed properly with the effects feature:
   the stroke need ping-pong framebuffers (WebGL cannot sample the texture
   being rendered into) — that is the real infrastructure cost of effects.
 
+### Brush color-reduction gaps (noted 2026-07-13, unimplemented)
+
+Two loose ends between brush loading (see "Brush files" above) and the
+palette-reducing operations:
+
+- **True Color → off should probably remap the active brush too.** Turning
+  the document's True Color switch off already conforms the *canvas's* own
+  true-color pixels to the palette (`CanvasColorIndex.conformedTo`), but a
+  brush loaded via "True Color (original)" keeps its true-color pixels
+  untouched — stamping it afterward would inject true-color pixels straight
+  back into a document that's supposed to be strictly indexed now. This one
+  is a real correctness gap, not just a nicety, and should eventually make
+  the brush conform at the same moment the canvas does.
+- **"New palette from image" doesn't consider the brush's own colors.**
+  Rebuilding the palette samples canvas pixels only; a loaded-but-unstamped
+  brush's colors (if absent from the canvas) are neither represented in the
+  new palette nor remapped to it. Lower priority and more of a judgment call
+  than a bug — DPaint has no precedent here, since its brushes were always
+  already indexed and never faced this. Would need the brush's pixels folded
+  into the same color census as the canvas before quantizing.
+
 ### The 256th color — reclaimed (done 2026-07-05)
 
 255 used to come from 1-based index storage ("index 0 = brush transparency").
