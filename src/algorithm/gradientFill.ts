@@ -16,15 +16,17 @@ export type GradientFillStyle = {
   dither: number; // 0..20, 0 = off — PyDPainter's Random dither scale
   // How far dither can push a pixel's position, as a percentage of a band's
   // own width, per unit of dither (half-width = dither * jitter% of a
-  // band). 13 (the default when omitted, ~1/8) matches PyDPainter's
-  // fixed-point dither closely — see colorIdForPosition. Exposed as a
-  // parameter, rather than only the fixed constant, so the Fill Style
+  // band). 17 (the default when omitted, ~1/6) matches PyDPainter's
+  // hline() FillMode.HORIZ_FIT dither exactly (ditherfactor =
+  // gradient_dither/3.0 * pointspercolor, half-width = ditherfactor/2 =
+  // gradient_dither/6 * pointspercolor) — see colorIdForPosition. Exposed
+  // as a parameter, rather than only the fixed constant, so the Fill Style
   // requester can offer it as an experimental tuning slider without the
   // algorithm needing to know about the UI.
   jitter?: number;
 };
 
-const DEFAULT_JITTER_PERCENT = 13;
+const DEFAULT_JITTER_PERCENT = 100 / 6;
 
 // The color id for one pixel at `pos` along an axis spanning [min, min+span)
 // over bandCount+1 colors. Each color owns a "pointsPerColor"-wide band of
@@ -32,12 +34,12 @@ const DEFAULT_JITTER_PERCENT = 13;
 // dither > 0, pos is jittered first by up to +/-(dither * jitter% *
 // pointsPerColor) pixels — the jitter range grows with the band width
 // itself, which is why high dither can blend a pixel several bands away,
-// not just its immediate neighbor. jitter=13% (the default) makes the
-// half-width ~dither/8 of a band per slider unit, matching PyDPainter's
-// fixed-point dither (±32*gradient_dither out of 256) closely — verified
-// pixel-for-pixel against its source. `random` defaults to Math.random
-// (genuine per-pixel randomness, as in the reference) but is injectable so
-// tests can assert exact output.
+// not just its immediate neighbor. jitter=1/6 (the default) matches
+// PyDPainter's hline() dither for FillMode.HORIZ_FIT ("Horizontal Line")
+// exactly — verified against prim.py's hline(): ditherfactor =
+// gradient_dither/3.0 * pointspercolor, half-width = ditherfactor/2.
+// `random` defaults to Math.random (genuine per-pixel randomness, as in
+// the reference) but is injectable so tests can assert exact output.
 function colorIdForPosition(
   pos: number,
   min: number,

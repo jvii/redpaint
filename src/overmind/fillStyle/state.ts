@@ -37,7 +37,7 @@ export const state: State = {
   axis: 'vertical',
   rangeIndex: 0,
   dither: 5,
-  jitter: 13,
+  jitter: 17, // ~1/6, matches PyDPainter's HORIZ_FIT dither (see gradientFill.ts)
   settingsOpen: false,
   settingsSnapshot: null,
   effectiveFillStyle: derived((state: State, rootState: OvermindState): GradientFillStyle | null => {

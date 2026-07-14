@@ -19,7 +19,8 @@ export const setDither = (context: Context, dither: number): void => {
 };
 
 // Experimental: tunes the dither jitter half-width (dither * jitter% of a
-// band — see gradientFill.ts). 13% matches PyDPainter/DPaint closely.
+// band — see gradientFill.ts). 17% (~1/6) matches PyDPainter's HORIZ_FIT
+// dither exactly.
 export const setJitter = (context: Context, jitter: number): void => {
   context.state.fillStyle.jitter = Math.max(0, Math.min(50, Math.round(jitter)));
 };
