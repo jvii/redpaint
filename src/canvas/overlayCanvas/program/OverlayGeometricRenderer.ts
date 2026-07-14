@@ -94,12 +94,17 @@ export class OverlayGeometricRenderer {
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
 
-    const shiftedStart = shiftPoint(start);
-    const shiftedEnd = shiftPoint(end);
-    const xLeft = canvasToWebGLCoordX(gl, shiftedStart.x);
-    const xRight = canvasToWebGLCoordX(gl, shiftedEnd.x);
-    const yTop = canvasToWebGLCoordY(gl, shiftedStart.y);
-    const yBottom = canvasToWebGLCoordY(gl, shiftedEnd.y);
+    // pixel n covers canvas coordinates [n, n+1), so the quad must extend to
+    // the far edge of whichever pixel is greater, not just to its center
+    const left = Math.min(start.x, end.x);
+    const right = Math.max(start.x, end.x) + 1;
+    const top = Math.min(start.y, end.y);
+    const bottom = Math.max(start.y, end.y) + 1;
+
+    const xLeft = canvasToWebGLCoordX(gl, left);
+    const xRight = canvasToWebGLCoordX(gl, right);
+    const yTop = canvasToWebGLCoordY(gl, top);
+    const yBottom = canvasToWebGLCoordY(gl, bottom);
 
     const vertices = new Float32Array(8);
     vertices[0] = xLeft;
