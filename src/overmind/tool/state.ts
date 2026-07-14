@@ -34,6 +34,7 @@ export type State = {
     start: Point | null;
   };
   brushSelectorTool: { start: Point | null };
+  floodFillTool: { hoverColor: PaintColor | null };
   activePaintColor: PaintColor;
 };
 
@@ -53,5 +54,6 @@ export const state: State = {
   polygonTool: { vertices: [] },
   textTool: { text: '', start: null },
   brushSelectorTool: { start: null },
+  floodFillTool: { hoverColor: null },
   activePaintColor: { kind: 'index', colorNumber: 1 },
 };

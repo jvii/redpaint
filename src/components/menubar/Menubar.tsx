@@ -8,6 +8,7 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
 import { isBuiltInBrush } from '../../overmind/brush/state';
 import { screenFormats } from '../../overmind/canvas/state';
+import { colorToRGBString } from '../../tools/util/util';
 import './Menubar.css';
 
 // Only captured or loaded brushes can be saved — the pixel brush has no
@@ -52,6 +53,32 @@ const stretchIcon = (
     <rect x="9" y="9" width="1" height="1" />
     <rect x="8" y="8" width="1" height="1" />
     <rect x="7" y="7" width="1" height="1" />
+  </svg>
+);
+
+// The flood fill bucket glyph, lifted from the toolbox sprite's
+// "floodfill-active" symbol (src/resources/toolbar.svg) minus its outer
+// square outline — just the tilted bucket + pour lines, sized up a bit for
+// the menubar.
+const floodFillIcon = (
+  <svg
+    className="menubar__floodfill-icon"
+    viewBox="0 0 26.458 26.458"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <g transform="translate(-3.635 -3.4126)" stroke="black" fill="none">
+      <rect
+        transform="rotate(45)"
+        x="16.248"
+        y="-7.1208"
+        width="11.319"
+        height="11.319"
+        strokeWidth="1.6139"
+      />
+      <path d="m15.555 21.495v6.3424" strokeWidth="1.3833" />
+      <path d="m11.217 27.49h8.6364" strokeWidth="1.3795" />
+    </g>
   </svg>
 );
 
@@ -151,6 +178,15 @@ export function Menubar(): JSX.Element {
   };
 
   const mode = state.brush.mode;
+  // Flood Fill targets whatever pixel is under the cursor rather than a
+  // fixed FG/BG color, so a hover swatch previews what the fill would hit.
+  const floodFillHoverColor = state.tool.floodFillTool.hoverColor;
+  const floodFillHoverSwatchColor =
+    state.toolbox.activeToolId === 'floodFill' && floodFillHoverColor
+      ? floodFillHoverColor.kind === 'rgb'
+        ? floodFillHoverColor.color
+        : state.palette.palette[floodFillHoverColor.colorNumber]
+      : null;
   // for disabling Matte mode selection when using a built-in brush
   const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
   // null while no screen is simulated (Native): the canvas is shown 1:1
@@ -177,6 +213,16 @@ export function Menubar(): JSX.Element {
           </div>
         </div>
         <div className="menubar__mode-indicator">{mode}</div>
+        {floodFillHoverSwatchColor && (
+          <div className="menubar__floodfill-indicator">
+            {floodFillIcon}
+            <div
+              className="menubar__floodfill-swatch"
+              style={{ backgroundColor: colorToRGBString(floodFillHoverSwatchColor) }}
+              title="Flood fill target color"
+            ></div>
+          </div>
+        )}
       </div>
       <div
         className="menu"

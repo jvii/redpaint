@@ -1,5 +1,5 @@
 import { Context } from '../../overmind'
-import { Point } from '../../types';
+import { PaintColor, Point } from '../../types';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../palette/state';
 
 export const activeToolToFGFillStyle = (context: Context): void => {
@@ -108,6 +108,12 @@ export const textToolKey = (context: Context, key: string): void => {
 export const textToolReset = (context: Context): void => {
   context.state.tool.textTool.start = null;
   context.state.tool.textTool.text = '';
+};
+
+// flood fill
+
+export const floodFillToolHoverColor = (context: Context, color: PaintColor | null): void => {
+  context.state.tool.floodFillTool.hoverColor = color;
 };
 
 // brush selection

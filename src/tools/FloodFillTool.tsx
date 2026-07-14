@@ -28,6 +28,7 @@ export class FloodFillTool implements Tool {
     const pointGroups = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
     this.paintPoints(pointGroups, fillColor);
     overmind.actions.undo.setUndoPoint();
+    this.updateHoverColor(mousePos);
     overmind.actions.app.setLoading(false);
   }
 
@@ -47,8 +48,18 @@ export class FloodFillTool implements Tool {
       const pointGroups = this.floodFillWithSymmetry(fillColor, mousePos, canvasColorIndex);
       this.paintPoints(pointGroups, fillColor);
       overmind.actions.undo.setUndoPoint();
+      this.updateHoverColor(mousePos);
       overmind.actions.app.setLoading(false);
     }, 50);
+  }
+
+  // Refreshes the hover swatch after a fill commits: the mouse hasn't moved,
+  // so onMouseMoveOverlay won't fire on its own, but the pixel under the
+  // cursor has just changed color.
+  private updateHoverColor(mousePos: Point): void {
+    overmind.actions.tool.floodFillToolHoverColor(
+      paintingCanvasController.getPaintColorForPoint(mousePos)
+    );
   }
 
   // Solid mode (the default) merges every seed's points into a single call
@@ -74,21 +85,30 @@ export class FloodFillTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    const mousePos = getMousePos(event);
+    overmind.actions.tool.floodFillToolHoverColor(
+      paintingCanvasController.getPaintColorForPoint(mousePos)
+    );
     if (event.buttons) {
       return;
     }
     // Show where the symmetric fills will be seeded. The primary point is
     // skipped so the indicator never covers the pixel color being targeted
     // (DPaint's fill pointer left the hotspot blank for the same reason).
-    drawSymmetryIndicator(getMousePos(event), false);
+    drawSymmetryIndicator(mousePos, false);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
   }
 
+  public onExitOverlay(): void {
+    overmind.actions.tool.floodFillToolHoverColor(null);
+  }
+
   public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     overlayCanvasController.clear();
+    overmind.actions.tool.floodFillToolHoverColor(null);
   }
 
   // Under symmetry a flood fill cannot be a rotated copy of the fill region, because

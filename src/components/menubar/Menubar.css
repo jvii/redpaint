@@ -5,7 +5,15 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   display: grid;
-  grid-template-areas: 'title modeIndicator';
+  grid-template-areas: 'title modeIndicator floodFillSwatch';
+  /* title/mode columns are sized to their own content only (not stretched
+     to fill leftover space) so the flood fill indicator appearing/disappearing
+     in the third column can't shove them around; the row is pinned to the
+     bar's own height so a taller item in that column can't grow the row and
+     shift "redpaint" vertically */
+  grid-template-columns: max-content max-content 1fr;
+  grid-template-rows: 50px;
+  column-gap: 180px;
   font-size: 24px;
   user-select: none;
   height: 50px; /* helps with Firefox pointer hotspot issues */
@@ -42,6 +50,29 @@
 .menubar__mode-indicator {
   grid-area: modeIndicator;
   margin: 10px;
+}
+
+.menubar__floodfill-indicator {
+  grid-area: floodFillSwatch;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  /* fits the fixed 50px row exactly (10px margin top/bottom + 30px content) */
+  height: 30px;
+}
+
+.menubar__floodfill-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+
+.menubar__floodfill-swatch {
+  width: 26px;
+  height: 26px;
+  border: 2px solid black;
+  box-sizing: border-box;
 }
 
 .menubar__loading-indicator {
@@ -137,7 +168,9 @@
   padding: 11px 14px;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 /* single 2px seam between neighbouring segments */
@@ -185,7 +218,9 @@
   box-shadow: 4px 4px 0 0 black;
   padding: 0 8px;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 /* 48px over a 12-unit grid: one drawn pixel is 4 css pixels, the same size the
@@ -209,7 +244,9 @@
 .view-scaling--on {
   background-color: rgb(0, 51, 102);
   color: #ff8800;
-  box-shadow: inset 3px 3px 0 0 rgb(0, 30, 61), 4px 4px 0 0 black;
+  box-shadow:
+    inset 3px 3px 0 0 rgb(0, 30, 61),
+    4px 4px 0 0 black;
 }
 
 /* the active state keeps its colors on hover — the shadow already reads pressed */
