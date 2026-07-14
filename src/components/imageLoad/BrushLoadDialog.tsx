@@ -121,6 +121,9 @@ function BrushLoadDialogOpen(): JSX.Element {
     brushHistory.set(new CustomBrush(colorIndex, image.width, image.height));
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
+    // DPaint switches to (dotted) freehand after loading a brush — matches
+    // the brush selector tool's own switch after capturing one.
+    actions.toolbox.setSelectedDrawingTool('dottedFreehand');
 
     actions.app.clearBrushLoadInfo();
     actions.dialog.close();
