@@ -52,7 +52,7 @@ describe('shape (visual fixtures)', () => {
   });
 
   test('unfilled ellipse', () => {
-    const grid = rasterizeLines(unfilledEllipse({ x: 20, y: 15 }, 16, 8, 20), 40, 32);
+    const grid = rasterizePoints(unfilledEllipse({ x: 20, y: 15 }, 16, 8, 20), 40, 32);
     expectMatchesFixture(grid, fixture('unfilled-ellipse'));
   });
 

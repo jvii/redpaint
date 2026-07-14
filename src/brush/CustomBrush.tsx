@@ -15,7 +15,6 @@ import { overmind } from '../index';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../overmind/palette/state';
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
-import { LineV } from '../domain/LineV';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -139,16 +138,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     rotationAngle: number,
     canvas: DrawTarget
   ): void {
-    const unfilledEllipseAsLines = unfilledEllipse(
+    const unfilledEllipseAsPoints = unfilledEllipse(
       this.adjustHandle(center),
       radiusX,
       radiusY,
       rotationAngle
-    );
-    // ellipse lines as an array of Points for drawImage
-    const unfilledEllipseAsPoints = unfilledEllipseAsLines.reduce(
-      (acc: Point[], item: LineV): Point[] => acc.concat(item.asPoints()),
-      []
     );
     canvas.drawImage(unfilledEllipseAsPoints, this);
   }

@@ -56,8 +56,8 @@ export class PixelBrush implements BrushInterface {
     rotationAngle: number,
     canvas: DrawTarget
   ): void {
-    const unfilledEllipseAsLines = unfilledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.lines(unfilledEllipseAsLines, overmind.state.tool.activePaintColor);
+    const unfilledEllipseAsPoints = unfilledEllipse(center, radiusX, radiusY, rotationAngle);
+    canvas.points(unfilledEllipseAsPoints, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledEllipse(
