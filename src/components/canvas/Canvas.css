@@ -21,9 +21,10 @@
 }
 
 .canvas-cursor {
+  /* width/height/background-size are set inline (Canvas.tsx), scaled by
+     devicePixelRatio so the box always renders at exactly 47 physical
+     pixels — see the comment there */
   position: fixed;
-  width: 47px;
-  height: 47px;
   background-image: url(../../resources/cursorCrossHair2.png);
   background-repeat: no-repeat;
   image-rendering: pixelated;
