@@ -15,13 +15,13 @@ interface Props {
   displayScale?: Point;
 }
 
-// cursorCrossHair2.png is 47x47; 23.5 is its true center, so the crosshair
-// div (whose left/top set its corner) lands exactly on cursorPos. The former
-// CSS cursor's hotspot had to round this to the integer 23 (CSS cursor
-// hotspots can't be fractional) — our own div isn't limited to that, so this
-// closes the last half-pixel gap.
+// cursorCrossHair2.png's native size. Its hotspot is this halved (see
+// cursorHotspot below): the crosshair div's left/top set its corner, not its
+// center, so the true center needs locating explicitly — and unlike the
+// former CSS cursor's hotspot, which had to round this to the integer 23
+// (CSS cursor hotspots can't be fractional), our own div isn't limited to
+// whole numbers.
 const CURSOR_SIZE = 47;
-const CURSOR_HOTSPOT = CURSOR_SIZE / 2;
 
 export function Canvas({
   isZoomCanvas,
@@ -84,19 +84,21 @@ export function Canvas({
   // native pointer shows instead — to keep dragging a big brush around
   // (e.g. drawing a line with it) cheap.
   const usePreciseCursor = state.brush.selectedBuiltInBrushId !== null;
-  // The div's CSS size is normally 47px, i.e. 47 * dpr physical pixels — a
-  // non-integer pixel count whenever dpr itself is fractional (Windows'
-  // 125%/150% scaling presets), forcing the browser to resample the 47x47
-  // bitmap into that odd-sized box. Nearest-neighbor upscaling by a
-  // fractional factor duplicates rows/columns unevenly, which looked warped/
-  // corrupted (the native CSS cursor doesn't have this problem — cursor
-  // bitmaps render through the OS's own DPI-aware pipeline, not the page's
-  // CSS box model). Sizing the box to 47 / dpr CSS px instead always renders
-  // at exactly 47 physical pixels, a 1:1 match to the bitmap with no
-  // resampling at all, regardless of the display's scale factor.
+  // Windows scales the native cursor's own bitmap up by the display's DPI
+  // setting (125%/150%/...), so matching its size means scaling ours by dpr
+  // too — but the div's CSS size in plain CSS px (47 * dpr, physical pixels)
+  // lands on a non-integer physical pixel count whenever dpr is fractional,
+  // forcing the browser to resample the 47x47 bitmap into that odd-sized
+  // box; nearest-neighbor upscaling by a fractional factor duplicates rows/
+  // columns unevenly, which looked warped/corrupted (the native CSS cursor
+  // doesn't have this problem — cursor bitmaps render through the OS's own
+  // DPI-aware pipeline, not the page's CSS box model). Rounding the target
+  // to the nearest whole physical pixel keeps the size in step with the
+  // native cursor's scaling while still landing on an exact pixel grid, so
+  // there's no fractional-pixel blur.
   const dpr = useDevicePixelRatio();
-  const cursorBoxSize = CURSOR_SIZE / dpr;
-  const cursorHotspot = CURSOR_HOTSPOT / dpr;
+  const cursorBoxSize = Math.round(CURSOR_SIZE * dpr) / dpr;
+  const cursorHotspot = cursorBoxSize / 2;
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const updateCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
     if (!usePreciseCursor) {
