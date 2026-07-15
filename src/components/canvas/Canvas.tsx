@@ -116,11 +116,12 @@ export function Canvas({
     ...CSSZoom,
     ...(state.app.isLoading ? { cursor: 'wait' } : usePreciseCursor ? { cursor: 'none' } : {}),
   };
+  const canvasClassName = 'canvas' + (usePreciseCursor ? '' : ' canvas--native-crosshair-cursor');
 
   return (
     <>
       <canvas
-        className="canvas"
+        className={canvasClassName}
         ref={paintingCanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}
@@ -157,7 +158,7 @@ export function Canvas({
         }}
       />
       <canvas
-        className="canvas canvas--overlay"
+        className={canvasClassName + ' canvas--overlay'}
         ref={overlayCanvasRef}
         width={state.canvas.resolution.width}
         height={state.canvas.resolution.height}

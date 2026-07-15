@@ -10,6 +10,16 @@
   display: block; /* explicitly set to prevent a vertical scroll bar caused by element being inline */
 }
 
+.canvas--native-crosshair-cursor {
+  /* same bitmap/hotspot as .canvas-cursor (used for built-in brushes), shown
+     as a plain native CSS cursor here instead — a captured/loaded brush is
+     usually large enough that exact hotspot alignment barely matters, so
+     it's not worth paying per-mousemove state updates for */
+  cursor:
+    url(../../resources/cursorCrossHair2.png) 23 23,
+    auto;
+}
+
 .canvas-cursor {
   position: fixed;
   width: 47px;
