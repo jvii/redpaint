@@ -1,6 +1,6 @@
 import React, { JSX, useEffect, useRef, useState } from 'react';
 import { Canvas } from './Canvas';
-import { useCanvasContentUpload, useScrollToFocusPoint } from './hooks';
+import { useCanvasContentUpload, useDevicePixelRatio, useScrollToFocusPoint } from './hooks';
 import { useActions, useAppState } from '../../overmind';
 import { screenFormats } from '../../overmind/canvas/state';
 import { Point } from '../../types';
@@ -11,6 +11,7 @@ export function MainCanvas(): JSX.Element {
   const actions = useActions();
 
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
+  const dpr = useDevicePixelRatio();
 
   // The screen-format display scale: CSS pixels per buffer pixel, per axis.
   // A format fills the window on both axes independently (pixels need not stay
@@ -21,14 +22,18 @@ export function MainCanvas(): JSX.Element {
   //  - 'integer' floors to whole CSS pixels per buffer pixel, so every pixel
   //    is a uniform block (no cursor drift) at the cost of black margin on the
   //    right/bottom until the window is enlarged; its floor is 1.
-  // {1,1} while no format is active (page shown 1:1, the startup behavior).
+  // While no format is active (the startup behavior), the canvas should show
+  // artwork pixels at their true physical size — one artwork pixel per screen
+  // pixel, like a native image viewer's 100% view — rather than at whatever
+  // size the host's OS display scaling happens to stretch a CSS pixel to, so
+  // this divides by devicePixelRatio instead of using a flat {1,1}.
   // Window resizes recompute the scale; the page and painting are untouched.
   const formatId = state.canvas.screenFormatId;
   const scaleMode = state.canvas.scaleMode;
   const [displayScale, setDisplayScale] = useState<Point>({ x: 1, y: 1 });
   useEffect((): (() => void) | void => {
     if (formatId === null) {
-      setDisplayScale({ x: 1, y: 1 });
+      setDisplayScale({ x: 1 / dpr, y: 1 / dpr });
       return;
     }
     const format = screenFormats[formatId];
@@ -58,17 +63,20 @@ export function MainCanvas(): JSX.Element {
     compute();
     window.addEventListener('resize', compute);
     return (): void => window.removeEventListener('resize', compute);
-  }, [formatId, scaleMode]);
+  }, [formatId, scaleMode, dpr]);
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);
   useCanvasContentUpload();
 
-  // set initial canvas size according to initial window size
+  // Set initial canvas size according to initial window size — in physical
+  // pixels (offsetWidth/Height times dpr), not CSS pixels, so the freshly
+  // initialized canvas has one artwork pixel per physical screen pixel here
+  // too (see the displayScale comment above).
 
   useEffect((): void => {
     actions.canvas.setResolution({
-      width: canvasDivRef.current.offsetWidth,
-      height: canvasDivRef.current.offsetHeight,
+      width: Math.round(canvasDivRef.current.offsetWidth * dpr),
+      height: Math.round(canvasDivRef.current.offsetHeight * dpr),
     });
   }, []);
 

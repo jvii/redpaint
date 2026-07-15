@@ -1,6 +1,6 @@
 import React, { useState, useRef, JSX } from 'react';
 import { Canvas } from './Canvas';
-import { useRefreshZoomCanvas, useScrollToFocusPoint } from './hooks';
+import { useDevicePixelRatio, useRefreshZoomCanvas, useScrollToFocusPoint } from './hooks';
 import { useActions, useAppState } from '../../overmind';
 import { Point } from '../../types';
 import './Canvas.css';
@@ -11,12 +11,15 @@ export function ZoomCanvas(): JSX.Element {
 
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(20);
+  const dpr = useDevicePixelRatio();
 
   // page-pixel to CSS-pixel scale, per axis: the zoom magnification times
-  // the active screen format's pixel aspect
+  // the active screen format's pixel aspect, divided by devicePixelRatio so
+  // "20x" is always 20 physical screen pixels per artwork pixel, regardless
+  // of the host's OS display scaling (see the comment in MainCanvas.tsx).
   const scale: Point = {
-    x: zoomFactor * state.canvas.pixelAspect.x,
-    y: zoomFactor * state.canvas.pixelAspect.y,
+    x: (zoomFactor * state.canvas.pixelAspect.x) / dpr,
+    y: (zoomFactor * state.canvas.pixelAspect.y) / dpr,
   };
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.zoomFocusPoint, scale);

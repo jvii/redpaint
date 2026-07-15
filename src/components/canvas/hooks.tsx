@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Point } from '../../types';
 import { overmind } from '../..';
 import { useActions, useAppState } from '../../overmind';
@@ -165,4 +165,26 @@ export function useRefreshZoomCanvas(zoomModeOn: boolean): void {
     }
     paintingCanvasController.render();
   }, [zoomModeOn]);
+}
+
+// window.devicePixelRatio folds together OS display scaling (Windows' 125%/
+// 150% presets) and browser zoom into one CSS-pixels-per-physical-pixel
+// ratio. The painting canvas divides its CSS size by this so that "no zoom"
+// always means one artwork pixel per physical screen pixel, the same way a
+// native image viewer's 100% view is unaffected by OS scaling — instead of
+// ballooning by whatever the host happens to be scaled to. A matchMedia query
+// at the current ratio fires exactly once, the next time the ratio changes
+// (screen change, OS scaling change, browser zoom); each firing re-subscribes
+// at the new ratio, since the old query is now stale.
+export function useDevicePixelRatio(): number {
+  const [dpr, setDpr] = useState(window.devicePixelRatio);
+
+  useEffect((): (() => void) => {
+    const media = window.matchMedia(`(resolution: ${dpr}dppx)`);
+    const update = (): void => setDpr(window.devicePixelRatio);
+    media.addEventListener('change', update);
+    return (): void => media.removeEventListener('change', update);
+  }, [dpr]);
+
+  return dpr;
 }
