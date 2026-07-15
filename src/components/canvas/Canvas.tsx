@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useRef } from 'react';
+import React, { JSX, useEffect, useRef, useState } from 'react';
 import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
 import { getEventHandler } from '../../tools/util/util';
@@ -14,6 +14,9 @@ interface Props {
   // which can differ per axis (non-square pixels).
   displayScale?: Point;
 }
+
+// Matches cursorCrossHair2.png's size (Canvas.css) and its former CSS cursor hotspot.
+const CURSOR_HOTSPOT = 23;
 
 export function Canvas({
   isZoomCanvas,
@@ -58,6 +61,18 @@ export function Canvas({
 
   const tool = state.toolbox.activeTool;
 
+  // The native cursor is hidden over the canvas (Canvas.css) and replaced by
+  // this app-drawn crosshair, positioned straight from clientX/Y — the same
+  // coordinates the browser itself used to place the (now hidden) native
+  // cursor — instead of a custom CSS cursor image, whose hotspot Chromium
+  // misplaces on Windows at fractional display scaling. It tracks the raw
+  // mouse position, not a canvas-buffer pixel, so it stays pointer-sized
+  // (never magnified) even on the zoom canvas.
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const updateCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    setCursorPos({ x: event.clientX, y: event.clientY });
+  };
+
   // Displayed size vs drawing-buffer size: WebGL always renders at the page
   // resolution (the width/height attributes below); the browser stretches
   // that buffer to this CSS size with image-rendering: pixelated.
@@ -92,14 +107,17 @@ export function Canvas({
           getEventHandler(tool, 'onMouseUpOverlay')(event);
         }}
         onMouseEnter={(event): void => {
+          updateCursorPos(event);
           getEventHandler(tool, 'onMouseEnter')(event);
           getEventHandler(tool, 'onMouseEnterOverlay')(event);
         }}
         onMouseLeave={(event): void => {
+          setCursorPos(null);
           getEventHandler(tool, 'onMouseLeave')(event);
           getEventHandler(tool, 'onMouseLeaveOverlay')(event);
         }}
         onMouseMove={(event): void => {
+          updateCursorPos(event);
           getEventHandler(tool, 'onMouseMove')(event);
           getEventHandler(tool, 'onMouseMoveOverlay')(event);
         }}
@@ -114,6 +132,12 @@ export function Canvas({
         height={state.canvas.resolution.height}
         style={canvasStyle}
       />
+      {cursorPos && !state.app.isLoading && (
+        <div
+          className="canvas-cursor"
+          style={{ left: cursorPos.x - CURSOR_HOTSPOT, top: cursorPos.y - CURSOR_HOTSPOT }}
+        />
+      )}
     </>
   );
 }

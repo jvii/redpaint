@@ -4,10 +4,22 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   outline: 1px white dotted;
-  cursor:
-    url(../../resources/cursorCrossHair2.png) 23 23,
-    auto;
+  /* the native cursor is replaced by .canvas-cursor below: Chromium on
+     Windows misplaces a custom CSS cursor's hotspot at fractional device
+     pixel ratios (125%/150% display scaling), so what you saw never quite
+     matched where a click actually landed */
+  cursor: none;
   display: block; /* explicitly set to prevent a vertical scroll bar caused by element being inline */
+}
+
+.canvas-cursor {
+  position: fixed;
+  width: 47px;
+  height: 47px;
+  background-image: url(../../resources/cursorCrossHair2.png);
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
 }
 
 .canvas--overlay {
