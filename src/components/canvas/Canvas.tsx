@@ -1,5 +1,5 @@
 import React, { JSX, useEffect, useRef, useState } from 'react';
-import { useContextLossRecovery, useDevicePixelRatio, useInitTool, useUndo } from './hooks';
+import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
 import { getEventHandler } from '../../tools/util/util';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
@@ -15,13 +15,10 @@ interface Props {
   displayScale?: Point;
 }
 
-// cursorCrossHair2.png's native size. Its hotspot is this halved (see
-// cursorHotspot below): the crosshair div's left/top set its corner, not its
-// center, so the true center needs locating explicitly — and unlike the
-// former CSS cursor's hotspot, which had to round this to the integer 23
-// (CSS cursor hotspots can't be fractional), our own div isn't limited to
-// whole numbers.
-const CURSOR_SIZE = 47;
+// cursorCrossHair.svg's viewBox size (Canvas.css). Its hotspot is this
+// halved: the crosshair div's left/top set its corner, not its center, so
+// the true center needs locating explicitly.
+const CURSOR_HOTSPOT = 47 / 2;
 
 export function Canvas({
   isZoomCanvas,
@@ -84,21 +81,6 @@ export function Canvas({
   // native pointer shows instead — to keep dragging a big brush around
   // (e.g. drawing a line with it) cheap.
   const usePreciseCursor = state.brush.selectedBuiltInBrushId !== null;
-  // Windows scales the native cursor's own bitmap up by the display's DPI
-  // setting (125%/150%/...), so matching its size means scaling ours by dpr
-  // too — but the div's CSS size in plain CSS px (47 * dpr, physical pixels)
-  // lands on a non-integer physical pixel count whenever dpr is fractional,
-  // forcing the browser to resample the 47x47 bitmap into that odd-sized
-  // box; nearest-neighbor upscaling by a fractional factor duplicates rows/
-  // columns unevenly, which looked warped/corrupted (the native CSS cursor
-  // doesn't have this problem — cursor bitmaps render through the OS's own
-  // DPI-aware pipeline, not the page's CSS box model). Rounding the target
-  // to the nearest whole physical pixel keeps the size in step with the
-  // native cursor's scaling while still landing on an exact pixel grid, so
-  // there's no fractional-pixel blur.
-  const dpr = useDevicePixelRatio();
-  const cursorBoxSize = Math.round(CURSOR_SIZE * dpr) / dpr;
-  const cursorHotspot = cursorBoxSize / 2;
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const updateCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
     if (!usePreciseCursor) {
@@ -183,13 +165,7 @@ export function Canvas({
       {usePreciseCursor && cursorPos && !state.app.isLoading && (
         <div
           className="canvas-cursor"
-          style={{
-            left: cursorPos.x - cursorHotspot,
-            top: cursorPos.y - cursorHotspot,
-            width: cursorBoxSize,
-            height: cursorBoxSize,
-            backgroundSize: `${cursorBoxSize}px ${cursorBoxSize}px`,
-          }}
+          style={{ left: cursorPos.x - CURSOR_HOTSPOT, top: cursorPos.y - CURSOR_HOTSPOT }}
         />
       )}
     </>

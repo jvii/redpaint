@@ -11,23 +11,24 @@
 }
 
 .canvas--native-crosshair-cursor {
-  /* same bitmap/hotspot as .canvas-cursor (used for built-in brushes), shown
-     as a plain native CSS cursor here instead — a captured/loaded brush is
+  /* same SVG/hotspot as .canvas-cursor (used for built-in brushes), shown as
+     a plain native CSS cursor here instead — a captured/loaded brush is
      usually large enough that exact hotspot alignment barely matters, so
-     it's not worth paying per-mousemove state updates for */
+     it's not worth paying per-mousemove state updates for. SVG (vector, not
+     a fixed-resolution bitmap) so both cursors render identically at any
+     display scale — no per-DPI resampling to keep in sync between them. */
   cursor:
-    url(../../resources/cursorCrossHair2.png) 23 23,
+    url(../../resources/cursorCrossHair.svg) 23 23,
     auto;
 }
 
 .canvas-cursor {
-  /* width/height/background-size are set inline (Canvas.tsx), scaled by
-     devicePixelRatio so the box always renders at exactly 47 physical
-     pixels — see the comment there */
   position: fixed;
-  background-image: url(../../resources/cursorCrossHair2.png);
+  width: 47px;
+  height: 47px;
+  background-image: url(../../resources/cursorCrossHair.svg);
+  background-size: 47px 47px;
   background-repeat: no-repeat;
-  image-rendering: pixelated;
   pointer-events: none;
 }
 

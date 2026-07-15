@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47 47" shape-rendering="crispEdges">
+  <g fill="none" stroke="#555555" stroke-width="2">
+    <!-- vertical arm: two parallel strokes with a 1-unit gap, split top/bottom
+         around a hole at the true center, each half dashed outward from the
+         center so the pattern stays symmetric -->
+    <path d="M22 20 V0" stroke-dasharray="4 2" />
+    <path d="M25 20 V0" stroke-dasharray="4 2" />
+    <path d="M22 27 V47" stroke-dasharray="4 2" />
+    <path d="M25 27 V47" stroke-dasharray="4 2" />
+    <!-- horizontal arm: mirrors the vertical arm -->
+    <path d="M20 22 H0" stroke-dasharray="4 2" />
+    <path d="M20 25 H0" stroke-dasharray="4 2" />
+    <path d="M27 22 H47" stroke-dasharray="4 2" />
+    <path d="M27 25 H47" stroke-dasharray="4 2" />
+  </g>
+</svg>
