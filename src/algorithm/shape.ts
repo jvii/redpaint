@@ -14,7 +14,11 @@ export function line(start: Point, end: Point): Point[] {
   // line, landing more than one step in some columns/rows (duplicate
   // pixels) while unevenly spacing the rest, an uneven, "noisy" look
   // distinct from a clean single-pixel-wide Bresenham-style line.
-  const dist = Math.max(Math.abs(dx), Math.abs(dy));
+  // Rounded because start/end aren't guaranteed to be integers (e.g. an
+  // odd-width custom brush's handle offset is a .5 fraction) — new Array()
+  // below requires an integer length, and used to get one for free from
+  // Math.round(distance(...)) before this became dominant-axis-based.
+  const dist = Math.round(Math.max(Math.abs(dx), Math.abs(dy)));
   if (dist === 0) {
     // just draw a dot
     return [{ x: start.x, y: start.y }];
