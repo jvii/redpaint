@@ -7,19 +7,26 @@ import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
 
 export function line(start: Point, end: Point): Point[] {
-  const dist = Math.round(distance(start, end));
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  // Steps = the dominant axis's pixel span, not the Euclidean distance —
+  // using distance() here (as this once did) over-samples any non-45-degree
+  // line, landing more than one step in some columns/rows (duplicate
+  // pixels) while unevenly spacing the rest, an uneven, "noisy" look
+  // distinct from a clean single-pixel-wide Bresenham-style line.
+  const dist = Math.max(Math.abs(dx), Math.abs(dy));
   if (dist === 0) {
     // just draw a dot
     return [{ x: start.x, y: start.y }];
   }
 
-  const cx = (end.x - start.x) / dist;
-  const cy = (end.y - start.y) / dist;
+  const cx = dx / dist;
+  const cy = dy / dist;
 
-  const line: Point[] = new Array(Math.floor(dist));
+  const line: Point[] = new Array(dist + 1);
 
   for (let i = 0; i <= dist; i++) {
-    line[i] = { x: Math.floor(start.x + cx * i), y: Math.floor(start.y + cy * i) };
+    line[i] = { x: Math.floor(start.x + cx * i + 0.5), y: Math.floor(start.y + cy * i + 0.5) };
   }
   return line;
 }
