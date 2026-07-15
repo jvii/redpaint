@@ -4,11 +4,9 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   outline: 1px white dotted;
-  /* the native cursor is replaced by .canvas-cursor below: Chromium on
-     Windows misplaces a custom CSS cursor's hotspot at fractional device
-     pixel ratios (125%/150% display scaling), so what you saw never quite
-     matched where a click actually landed */
-  cursor: none;
+  /* cursor: none (hiding the native pointer for .canvas-cursor below) is set
+     inline, per Canvas.tsx, only while a built-in brush is active — see the
+     comment there */
   display: block; /* explicitly set to prevent a vertical scroll bar caused by element being inline */
 }
 

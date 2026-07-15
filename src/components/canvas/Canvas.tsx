@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useRef, useState } from 'react';
 import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
-import { getEventHandler, getMousePos } from '../../tools/util/util';
+import { getEventHandler } from '../../tools/util/util';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from '../../types';
@@ -65,9 +65,9 @@ export function Canvas({
 
   const tool = state.toolbox.activeTool;
 
-  // The native cursor is hidden over the canvas (Canvas.css) and replaced by
-  // this app-drawn crosshair, instead of a custom CSS cursor image whose
-  // hotspot Chromium misplaces on Windows at fractional display scaling.
+  // The native cursor is hidden over the canvas and replaced by this
+  // app-drawn crosshair, instead of a custom CSS cursor image whose hotspot
+  // Chromium misplaces on Windows at fractional display scaling.
   //
   // On the main canvas it's snapped to the screen center of whichever buffer
   // pixel getMousePos would report for this same event — the exact pixel any
@@ -76,8 +76,18 @@ export function Canvas({
   // sub-pixel rounding between the two. On the zoom canvas this would be a
   // visible jump every time the mouse crosses into the next (hugely
   // magnified) buffer pixel, so there it just tracks the raw pointer.
+  //
+  // A captured/loaded (non-built-in) brush is usually large enough that
+  // exact hotspot alignment barely matters, so there it's skipped entirely —
+  // no state update or getBoundingClientRect call per mousemove, and the
+  // native pointer shows instead — to keep dragging a big brush around
+  // (e.g. drawing a line with it) cheap.
+  const usePreciseCursor = state.brush.selectedBuiltInBrushId !== null;
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const updateCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    if (!usePreciseCursor) {
+      return;
+    }
     if (isZoomCanvas) {
       setCursorPos({ x: event.clientX, y: event.clientY });
       return;
@@ -86,10 +96,11 @@ export function Canvas({
     const rect = canvas.getBoundingClientRect();
     const cssPerBufferX = rect.width / canvas.width;
     const cssPerBufferY = rect.height / canvas.height;
-    const bufferPos = getMousePos(event);
+    const bufferX = Math.floor((event.clientX - rect.left) * (canvas.width / rect.width));
+    const bufferY = Math.floor((event.clientY - rect.top) * (canvas.height / rect.height));
     setCursorPos({
-      x: rect.left + (bufferPos.x + 0.5) * cssPerBufferX,
-      y: rect.top + (bufferPos.y + 0.5) * cssPerBufferY,
+      x: rect.left + (bufferX + 0.5) * cssPerBufferX,
+      y: rect.top + (bufferY + 0.5) * cssPerBufferY,
     });
   };
 
@@ -103,7 +114,7 @@ export function Canvas({
 
   const canvasStyle = {
     ...CSSZoom,
-    ...(state.app.isLoading ? { cursor: 'wait' } : {}),
+    ...(state.app.isLoading ? { cursor: 'wait' } : usePreciseCursor ? { cursor: 'none' } : {}),
   };
 
   return (
@@ -152,7 +163,7 @@ export function Canvas({
         height={state.canvas.resolution.height}
         style={canvasStyle}
       />
-      {cursorPos && !state.app.isLoading && (
+      {usePreciseCursor && cursorPos && !state.app.isLoading && (
         <div
           className="canvas-cursor"
           style={{ left: cursorPos.x - CURSOR_HOTSPOT, top: cursorPos.y - CURSOR_HOTSPOT }}
