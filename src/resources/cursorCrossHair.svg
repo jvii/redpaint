@@ -1,16 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 47 47" shape-rendering="crispEdges">
-  <g fill="none" stroke="#555555" stroke-width="2">
+<svg xmlns="http://www.w3.org/2000/svg" width="47" height="47" viewBox="0 0 47 47" shape-rendering="crispEdges">
+  <g fill="none" stroke-width="2">
     <!-- vertical arm: two parallel strokes with a 1-unit gap, split top/bottom
-         around a hole at the true center, each half dashed outward from the
-         center so the pattern stays symmetric -->
-    <path d="M22 20 V0" stroke-dasharray="4 2" />
-    <path d="M25 20 V0" stroke-dasharray="4 2" />
-    <path d="M22 27 V47" stroke-dasharray="4 2" />
-    <path d="M25 27 V47" stroke-dasharray="4 2" />
+         around a hole at the true center. Each half fades from dark at the
+         tip to light near the center, matching the original bitmap. -->
+    <g stroke="#555555">
+      <path d="M22 6.667 V0" stroke-dasharray="4 2" />
+      <path d="M25 6.667 V0" stroke-dasharray="4 2" />
+      <path d="M22 47 V40.333" stroke-dasharray="4 2" />
+      <path d="M25 47 V40.333" stroke-dasharray="4 2" />
+    </g>
+    <g stroke="#656565">
+      <path d="M22 13.333 V6.667" stroke-dasharray="4 2" />
+      <path d="M25 13.333 V6.667" stroke-dasharray="4 2" />
+      <path d="M22 40.333 V33.667" stroke-dasharray="4 2" />
+      <path d="M25 40.333 V33.667" stroke-dasharray="4 2" />
+    </g>
+    <g stroke="#757575">
+      <path d="M22 20 V13.333" stroke-dasharray="4 2" />
+      <path d="M25 20 V13.333" stroke-dasharray="4 2" />
+      <path d="M22 33.667 V27" stroke-dasharray="4 2" />
+      <path d="M25 33.667 V27" stroke-dasharray="4 2" />
+    </g>
     <!-- horizontal arm: mirrors the vertical arm -->
-    <path d="M20 22 H0" stroke-dasharray="4 2" />
-    <path d="M20 25 H0" stroke-dasharray="4 2" />
-    <path d="M27 22 H47" stroke-dasharray="4 2" />
-    <path d="M27 25 H47" stroke-dasharray="4 2" />
+    <g stroke="#555555">
+      <path d="M6.667 22 H0" stroke-dasharray="4 2" />
+      <path d="M6.667 25 H0" stroke-dasharray="4 2" />
+      <path d="M47 22 H40.333" stroke-dasharray="4 2" />
+      <path d="M47 25 H40.333" stroke-dasharray="4 2" />
+    </g>
+    <g stroke="#656565">
+      <path d="M13.333 22 H6.667" stroke-dasharray="4 2" />
+      <path d="M13.333 25 H6.667" stroke-dasharray="4 2" />
+      <path d="M40.333 22 H33.667" stroke-dasharray="4 2" />
+      <path d="M40.333 25 H33.667" stroke-dasharray="4 2" />
+    </g>
+    <g stroke="#757575">
+      <path d="M20 22 H13.333" stroke-dasharray="4 2" />
+      <path d="M20 25 H13.333" stroke-dasharray="4 2" />
+      <path d="M33.667 22 H27" stroke-dasharray="4 2" />
+      <path d="M33.667 25 H27" stroke-dasharray="4 2" />
+    </g>
   </g>
 </svg>
