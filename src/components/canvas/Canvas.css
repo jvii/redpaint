@@ -23,7 +23,14 @@
 }
 
 .canvas-cursor {
+  /* left/top stay at the fixed origin; Canvas.tsx moves it via transform
+     (compositor-only, no layout) and toggles visibility directly through a
+     ref rather than React state, so tracking the mouse doesn't cost a
+     react re-render or a layout pass on every single mousemove */
   position: fixed;
+  left: 0;
+  top: 0;
+  visibility: hidden;
   width: 47px;
   height: 47px;
   background-image: url(../../resources/cursorCrossHair.svg);

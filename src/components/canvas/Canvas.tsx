@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useRef, useState } from 'react';
+import React, { JSX, useEffect, useRef } from 'react';
 import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
 import { getEventHandler } from '../../tools/util/util';
@@ -77,29 +77,44 @@ export function Canvas({
   //
   // A captured/loaded (non-built-in) brush is usually large enough that
   // exact hotspot alignment barely matters, so there it's skipped entirely —
-  // no state update or getBoundingClientRect call per mousemove, and the
-  // native pointer shows instead — to keep dragging a big brush around
-  // (e.g. drawing a line with it) cheap.
+  // no per-mousemove work at all, and the native pointer shows instead — to
+  // keep dragging a big brush around (e.g. drawing a line with it) cheap.
   const usePreciseCursor = state.brush.selectedBuiltInBrushId !== null;
-  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
+  // Positioned by directly mutating the DOM through this ref, not React
+  // state: the native cursor moves via the OS/browser compositor with zero
+  // JS involved, and a setState here would mean a full Canvas re-render (two
+  // <canvas> elements included) on every single mousemove, plus left/top
+  // triggers layout — both add latency a native cursor never pays, which
+  // reads as jerkiness at typical mousemove rates. transform + visibility
+  // are compositor-only, no layout/re-render, keeping this as close to the
+  // native cursor's smoothness as an app-drawn element can get.
+  const cursorRef = useRef<HTMLDivElement>(null);
   const updateCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
-    if (!usePreciseCursor) {
+    if (!usePreciseCursor || !cursorRef.current) {
       return;
     }
+    let x: number;
+    let y: number;
     if (isZoomCanvas) {
-      setCursorPos({ x: event.clientX, y: event.clientY });
-      return;
+      x = event.clientX;
+      y = event.clientY;
+    } else {
+      const canvas = event.currentTarget;
+      const rect = canvas.getBoundingClientRect();
+      const cssPerBufferX = rect.width / canvas.width;
+      const cssPerBufferY = rect.height / canvas.height;
+      const bufferX = Math.floor((event.clientX - rect.left) * (canvas.width / rect.width));
+      const bufferY = Math.floor((event.clientY - rect.top) * (canvas.height / rect.height));
+      x = rect.left + (bufferX + 0.5) * cssPerBufferX;
+      y = rect.top + (bufferY + 0.5) * cssPerBufferY;
     }
-    const canvas = event.currentTarget;
-    const rect = canvas.getBoundingClientRect();
-    const cssPerBufferX = rect.width / canvas.width;
-    const cssPerBufferY = rect.height / canvas.height;
-    const bufferX = Math.floor((event.clientX - rect.left) * (canvas.width / rect.width));
-    const bufferY = Math.floor((event.clientY - rect.top) * (canvas.height / rect.height));
-    setCursorPos({
-      x: rect.left + (bufferX + 0.5) * cssPerBufferX,
-      y: rect.top + (bufferY + 0.5) * cssPerBufferY,
-    });
+    cursorRef.current.style.transform = `translate(${x - CURSOR_HOTSPOT}px, ${y - CURSOR_HOTSPOT}px)`;
+    cursorRef.current.style.visibility = 'visible';
+  };
+  const hideCursor = (): void => {
+    if (cursorRef.current) {
+      cursorRef.current.style.visibility = 'hidden';
+    }
   };
 
   // Displayed size vs drawing-buffer size: WebGL always renders at the page
@@ -142,7 +157,7 @@ export function Canvas({
           getEventHandler(tool, 'onMouseEnterOverlay')(event);
         }}
         onMouseLeave={(event): void => {
-          setCursorPos(null);
+          hideCursor();
           getEventHandler(tool, 'onMouseLeave')(event);
           getEventHandler(tool, 'onMouseLeaveOverlay')(event);
         }}
@@ -162,12 +177,7 @@ export function Canvas({
         height={state.canvas.resolution.height}
         style={canvasStyle}
       />
-      {usePreciseCursor && cursorPos && !state.app.isLoading && (
-        <div
-          className="canvas-cursor"
-          style={{ left: cursorPos.x - CURSOR_HOTSPOT, top: cursorPos.y - CURSOR_HOTSPOT }}
-        />
-      )}
+      {usePreciseCursor && !state.app.isLoading && <div ref={cursorRef} className="canvas-cursor" />}
     </>
   );
 }
