@@ -15,8 +15,12 @@ interface Props {
   displayScale?: Point;
 }
 
-// Matches cursorCrossHair2.png's size (Canvas.css) and its former CSS cursor hotspot.
-const CURSOR_HOTSPOT = 23;
+// Half of cursorCrossHair2.png's 47x47 size (Canvas.css): the image's true
+// center, so the crosshair div (whose left/top set its corner) lands exactly
+// on cursorPos. The former CSS cursor's hotspot had to round this to the
+// integer 23 (CSS cursor hotspots can't be fractional) — our own div isn't
+// limited to that, so this closes the last half-pixel gap.
+const CURSOR_HOTSPOT = 23.5;
 
 export function Canvas({
   isZoomCanvas,
