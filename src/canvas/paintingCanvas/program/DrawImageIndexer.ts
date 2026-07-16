@@ -2,6 +2,9 @@ import { CustomBrush } from '../../../brush/CustomBrush';
 import { Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
+import { overmind } from '../../..';
+import { backgroundPaintColorOf } from '../../../overmind/palette/state';
+import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../../../domain/CanvasColorIndex';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -19,6 +22,8 @@ export class DrawImageIndexer {
   // getAttribLocation are driver round-trips, too slow for per-draw-call use
   private a_position: number;
   private a_texCoord: number;
+  private u_replMode: WebGLUniformLocation | null;
+  private u_replPixel: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -26,6 +31,8 @@ export class DrawImageIndexer {
     this.buffers = buffers;
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
     this.a_texCoord = gl.getAttribLocation(this.program, 'a_texCoord');
+    this.u_replMode = gl.getUniformLocation(this.program, 'u_replMode');
+    this.u_replPixel = gl.getUniformLocation(this.program, 'u_replPixel');
     // createProgram leaves the program bound; the brush texture is always in
     // texture unit 2, so the sampler uniform can be set once
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_image'), 2);
@@ -49,6 +56,23 @@ export class DrawImageIndexer {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
+
+    const repl = overmind.state.brush.mode === 'Repl';
+    gl.uniform1f(this.u_replMode, repl ? 1 : 0);
+    if (repl) {
+      const bg = backgroundPaintColorOf(overmind.state.palette);
+      if (bg.kind === 'rgb') {
+        gl.uniform4f(
+          this.u_replPixel,
+          bg.color.r / 255,
+          bg.color.g / 255,
+          bg.color.b / 255,
+          ALPHA_TRUECOLOR / 255
+        );
+      } else {
+        gl.uniform4f(this.u_replPixel, (bg.colorNumber - 1) / 255, 0, 0, ALPHA_INDEXED / 255);
+      }
+    }
 
     // Render to to the target framebuffer (color index texture)
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
@@ -150,13 +174,21 @@ export class DrawImageIndexer {
     precision mediump float;
 
     uniform sampler2D u_image;
+    uniform float u_replMode;  // 1.0 in Repl mode: no transparent pixels
+    uniform vec4 u_replPixel;  // packed BG pixel stamped where the brush is transparent
     varying vec2 v_texCoord;
 
     void main () {
       vec4 color = texture2D(u_image, v_texCoord);
 
       if (color.a < 0.1) {
-        discard; // alpha tag 0 means this pixel of the brush is transparent
+        if (u_replMode < 0.5) {
+          discard; // alpha tag 0 means this pixel of the brush is transparent
+        }
+        // Repl: the brush's transparent pixels stamp the background color
+        // (their captured color was discarded at transparency-marking time)
+        gl_FragColor = u_replPixel;
+        return;
       }
       if (color.a > 0.9) {
         // true-color brush pixel: write the literal color, keep the tag
