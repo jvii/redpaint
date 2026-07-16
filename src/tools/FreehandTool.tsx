@@ -57,6 +57,7 @@ export class FreehandTool implements Tool {
   }
 
   public onMouseLeave(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
+    paintingCanvasController.endEffectStroke();
     this.onInit();
   }
 

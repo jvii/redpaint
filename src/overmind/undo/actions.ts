@@ -5,6 +5,8 @@ import { Color } from '../../types';
 import { undoBuffer, UndoEntry } from './UndoBuffer';
 
 export const setUndoPoint = (context: Context): void => {
+  // every committed stroke ends here — also the effect chains' reset point
+  paintingCanvasController.endEffectStroke();
   const colorIndex = paintingCanvasController.getCanvasColorIndex();
   if (!colorIndex) {
     console.log('no index');

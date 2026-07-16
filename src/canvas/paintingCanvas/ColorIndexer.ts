@@ -1,5 +1,6 @@
 import { GeometricIndexer } from './program/GeometricIndexer';
 import { DrawImageIndexer } from './program/DrawImageIndexer';
+import { EffectIndexer } from './program/EffectIndexer';
 import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
@@ -19,6 +20,7 @@ export class ColorIndexer {
   private colorIndexFramebuffer: WebGLFramebuffer;
   private geometricIndexer: GeometricIndexer;
   private drawImageIndexer: DrawImageIndexer;
+  private effectIndexer: EffectIndexer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -28,6 +30,7 @@ export class ColorIndexer {
 
     this.geometricIndexer = new GeometricIndexer(gl, buffers.colorIndexFramebuffer);
     this.drawImageIndexer = new DrawImageIndexer(gl, buffers);
+    this.effectIndexer = new EffectIndexer(gl, buffers);
   }
 
   /**
@@ -41,6 +44,10 @@ export class ColorIndexer {
     if (this.drawImageIndexer) {
       this.drawImageIndexer.dispose();
       this.drawImageIndexer = null;
+    }
+    if (this.effectIndexer) {
+      this.effectIndexer.dispose();
+      this.effectIndexer = null;
     }
   }
 
@@ -58,6 +65,14 @@ export class ColorIndexer {
 
   drawImage(points: Point[], brush: CustomBrush): void {
     this.drawImageIndexer.indexDrawImage(points, brush);
+  }
+
+  effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
+    this.effectIndexer.effectDraw(points, brush, copyId);
+  }
+
+  endEffectStroke(): void {
+    this.effectIndexer.endEffectStroke();
   }
 
   getIndex(): CanvasColorIndex {

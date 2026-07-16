@@ -118,10 +118,14 @@ export class PaintingCanvasController implements CanvasController {
   }
 
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
-    // wired to ColorIndexer/EffectIndexer in the next task
+    this.colorIndexer?.effectDraw(points, brush, copyId);
+    this.mainCanvasRenderer?.renderCanvas();
+    this.renderZoomCanvas();
   }
 
-  endEffectStroke(): void {}
+  endEffectStroke(): void {
+    this.colorIndexer?.endEffectStroke();
+  }
 
   render(): void {
     this.mainCanvasRenderer?.renderCanvas();

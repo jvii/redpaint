@@ -13,6 +13,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../overmind/palette/state';
+import { usesEffectDraw } from '../overmind/brush/mode';
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
@@ -84,15 +85,15 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public drawPoints(points: Point[], canvas: DrawTarget): void {
-    canvas.drawImage(
+    this.stamp(
       points.map((point) => this.adjustHandle(point)),
-      this
+      canvas
     );
   }
 
   public drawLine(start: Point, end: Point, canvas: DrawTarget): void {
     const lineAsPoints = line(this.adjustHandle(start), this.adjustHandle(end));
-    canvas.drawImage(lineAsPoints, this);
+    this.stamp(lineAsPoints, canvas);
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: DrawTarget): void {
@@ -101,7 +102,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       this.adjustHandle(end),
       this.adjustHandle(middlePoint)
     );
-    canvas.drawImage(curveAsPoints, this);
+    this.stamp(curveAsPoints, canvas);
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: DrawTarget): void {
@@ -112,7 +113,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       ...unfilledRectAsLines[2].asPoints(),
       ...unfilledRectAsLines[3].asPoints(),
     ]; // rect sides as an array of Points for drawImage
-    canvas.drawImage(unfilledRectAsPoints, this);
+    this.stamp(unfilledRectAsPoints, canvas);
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
@@ -122,7 +123,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     const unfilledCircleAsPoints = unfilledCircle(this.adjustHandle(center), radius);
-    canvas.drawImage(unfilledCircleAsPoints, this);
+    this.stamp(unfilledCircleAsPoints, canvas);
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
@@ -144,7 +145,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       radiusY,
       rotationAngle
     );
-    canvas.drawImage(unfilledEllipseAsPoints, this);
+    this.stamp(unfilledEllipseAsPoints, canvas);
   }
 
   public drawFilledEllipse(
@@ -164,7 +165,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       vertices.map(this.adjustHandle.bind(this)),
       complete
     );
-    canvas.drawImage(unfilledPolygonAsPoints, this);
+    this.stamp(unfilledPolygonAsPoints, canvas);
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
@@ -175,6 +176,14 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   private adjustHandle(point: Point): Point {
     return { x: point.x - this.width / 2, y: point.y - this.heigth / 2 }; // center handle to brush
+  }
+
+  private stamp(points: Point[], canvas: DrawTarget): void {
+    if (usesEffectDraw(overmind.state.brush.mode)) {
+      canvas.effectDraw(points, this, 0);
+    } else {
+      canvas.drawImage(points, this);
+    }
   }
 
   // CustomBrushFeatures

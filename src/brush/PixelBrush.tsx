@@ -14,24 +14,53 @@ import {
 import { overmind } from '..';
 import { DrawTarget } from '../canvas/CanvasController';
 import { drawFilledLines, drawFilledQuad } from './fillStyleDraw';
+import { CustomBrush } from './CustomBrush';
+import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { ALPHA_INDEXED } from '../domain/CanvasColorIndex';
+import { usesEffectDraw } from '../overmind/brush/mode';
+import { PaintColor } from '../types';
+
+// A single opaque indexed pixel: the PixelBrush's shape in effect modes.
+// Built lazily (not at module scope): PixelBrush sits in an import cycle with
+// CustomBrush's own dependency chain (CustomBrush -> PaintingCanvasController
+// -> overmind config -> tools -> PixelBrush), so constructing a CustomBrush
+// eagerly at PixelBrush's module-load time can run into the CustomBrush class
+// binding's temporal dead zone depending on which module in the cycle loads
+// first.
+let pixelShapeInstance: CustomBrush | null = null;
+function pixelShape(): CustomBrush {
+  if (!pixelShapeInstance) {
+    pixelShapeInstance = new CustomBrush(
+      new BrushColorIndex(1, 1, new Uint8Array([0, 0, 0, ALPHA_INDEXED])),
+      1,
+      1
+    );
+  }
+  return pixelShapeInstance;
+}
 
 export class PixelBrush implements BrushInterface {
   public drawPoints(points: Point[], canvas: DrawTarget): void {
-    canvas.points(points, overmind.state.tool.activePaintColor);
+    this.stampOrPoints(points, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawLine(start: Point, end: Point, canvas: DrawTarget): void {
     const lineAsPoints = line(start, end);
-    canvas.points(lineAsPoints, overmind.state.tool.activePaintColor);
+    this.stampOrPoints(lineAsPoints, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawCurve(start: Point, end: Point, middlePoint: Point, canvas: DrawTarget): void {
     const curveAsPoints = curve(start, end, middlePoint);
-    canvas.points(curveAsPoints, overmind.state.tool.activePaintColor);
+    this.stampOrPoints(curveAsPoints, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawUnfilledRect(start: Point, end: Point, canvas: DrawTarget): void {
     const unfilledRectAsLines = unfilledRect(start, end);
+    if (usesEffectDraw(overmind.state.brush.mode)) {
+      const points = unfilledRectAsLines.flatMap((line) => line.asPoints());
+      canvas.effectDraw(points, pixelShape(), 0);
+      return;
+    }
     canvas.lines(unfilledRectAsLines, overmind.state.tool.activePaintColor);
   }
 
@@ -41,7 +70,7 @@ export class PixelBrush implements BrushInterface {
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     const unfilledCircleAsPoints = unfilledCircle(center, radius);
-    canvas.points(unfilledCircleAsPoints, overmind.state.tool.activePaintColor);
+    this.stampOrPoints(unfilledCircleAsPoints, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
@@ -57,7 +86,7 @@ export class PixelBrush implements BrushInterface {
     canvas: DrawTarget
   ): void {
     const unfilledEllipseAsPoints = unfilledEllipse(center, radiusX, radiusY, rotationAngle);
-    canvas.points(unfilledEllipseAsPoints, overmind.state.tool.activePaintColor);
+    this.stampOrPoints(unfilledEllipseAsPoints, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledEllipse(
@@ -73,11 +102,19 @@ export class PixelBrush implements BrushInterface {
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: DrawTarget): void {
     const unfilledPolygonAsPoints = unfilledPolygon(vertices, complete);
-    canvas.points(unfilledPolygonAsPoints, overmind.state.tool.activePaintColor);
+    this.stampOrPoints(unfilledPolygonAsPoints, canvas, overmind.state.tool.activePaintColor);
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     const filledPolygonAsLines = filledPolygon(vertices);
     drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
+  }
+
+  private stampOrPoints(points: Point[], canvas: DrawTarget, color: PaintColor): void {
+    if (usesEffectDraw(overmind.state.brush.mode)) {
+      canvas.effectDraw(points, pixelShape(), 0);
+    } else {
+      canvas.points(points, color);
+    }
   }
 }
