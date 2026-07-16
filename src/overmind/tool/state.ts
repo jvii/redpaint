@@ -36,6 +36,9 @@ export type State = {
   brushSelectorTool: { start: Point | null };
   floodFillTool: { hoverColor: PaintColor | null };
   activePaintColor: PaintColor;
+  // +1 while painting with the left button (FG), -1 with the right (BG) —
+  // Shade's up/down direction rides the existing FG/BG stroke distinction
+  shadeDirection: 1 | -1;
 };
 
 export const state: State = {
@@ -56,4 +59,5 @@ export const state: State = {
   brushSelectorTool: { start: null },
   floodFillTool: { hoverColor: null },
   activePaintColor: { kind: 'index', colorNumber: 1 },
+  shadeDirection: 1,
 };

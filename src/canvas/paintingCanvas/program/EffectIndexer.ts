@@ -3,7 +3,8 @@ import { Point } from '../../../types';
 import { overmind } from '../../..';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
-import { stampRect, scratchSize, StampRect } from '../../../algorithm/effectRect';
+import { stampRect, scratchSize, maskOffset, StampRect } from '../../../algorithm/effectRect';
+import { activeRangeIndices, RangeIndices } from '../../../algorithm/paletteRange';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -15,6 +16,7 @@ type GLBuffers = {
 // smear/blend trail (see docs/effects.md).
 type CopyState = {
   save: WebGLTexture; // canvas pixels under this copy's previous stamp
+  mask: WebGLTexture; // this copy's previous stamp coverage (overlap mask)
   prevOrigin: Point | null; // previous stamp's (unclamped) brush top-left
   prevRect: StampRect | null; // previous stamp's rect: save-valid texcoords
 };
@@ -28,6 +30,9 @@ export class EffectIndexer {
   private gl: WebGLRenderingContext;
   private buffers: GLBuffers;
   private smearProgram: WebGLProgram | null;
+  private shadeProgram: WebGLProgram | null;
+  private maskProgram: WebGLProgram | null;
+  private scratchFbo: WebGLFramebuffer | null;
   private brushTexture: WebGLTexture | null = null;
   private currentBrushId = 0;
   private work: WebGLTexture | null = null;
@@ -36,12 +41,17 @@ export class EffectIndexer {
   private scratchH = 0;
   private brushW = 0;
   private brushH = 0;
+  // the current stamp's origin, held for shadePass's mask-offset computation
+  private curOrigin: Point | null = null;
 
   public constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
     this.buffers = buffers;
     this.smearProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMEAR_FRAGMENT_SHADER);
-    console.log('Program ready (EffectIndexer: smear)');
+    this.shadeProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SHADE_FRAGMENT_SHADER);
+    this.maskProgram = createProgram(gl, EFFECT_VERTEX_SHADER, MASK_FRAGMENT_SHADER);
+    this.scratchFbo = gl.createFramebuffer();
+    console.log('Program ready (EffectIndexer: smear, shade, mask)');
   }
 
   public effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
@@ -60,6 +70,7 @@ export class EffectIndexer {
     for (const point of points) {
       const shifted = shiftPoint(point);
       const origin = { x: Math.round(shifted.x) - 1, y: Math.round(shifted.y) - 1 };
+      this.curOrigin = origin;
       const rect = stampRect(origin, this.brushW, this.brushH, canvasW, canvasH);
       if (!rect) {
         // fully off-canvas: the chain breaks here, like DPaint's clipping
@@ -78,6 +89,9 @@ export class EffectIndexer {
         const tmp = state.save;
         state.save = this.work as WebGLTexture;
         this.work = tmp;
+      } else if (mode === 'Shade') {
+        this.shadePass(rect, state);
+        this.updateMask(rect, state);
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -97,6 +111,18 @@ export class EffectIndexer {
       gl.deleteProgram(this.smearProgram);
       this.smearProgram = null;
     }
+    if (this.shadeProgram) {
+      gl.deleteProgram(this.shadeProgram);
+      this.shadeProgram = null;
+    }
+    if (this.maskProgram) {
+      gl.deleteProgram(this.maskProgram);
+      this.maskProgram = null;
+    }
+    if (this.scratchFbo) {
+      gl.deleteFramebuffer(this.scratchFbo);
+      this.scratchFbo = null;
+    }
     if (this.brushTexture) {
       gl.deleteTexture(this.brushTexture);
       this.brushTexture = null;
@@ -107,6 +133,7 @@ export class EffectIndexer {
     }
     for (const state of this.copyStates) {
       gl.deleteTexture(state.save);
+      gl.deleteTexture(state.mask);
     }
     this.copyStates = [];
   }
@@ -128,7 +155,84 @@ export class EffectIndexer {
     this.drawStampQuad(program, rect);
   }
 
+  private shadePass(rect: StampRect, state: CopyState): void {
+    const gl = this.gl;
+    const program = this.shadeProgram as WebGLProgram;
+    activateProgram(gl, program);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, this.work);
+    gl.uniform1f(
+      gl.getUniformLocation(program, 'u_direction'),
+      overmind.state.tool.shadeDirection
+    );
+    this.rangeUniforms(program);
+    this.maskUniforms(program, state, this.curOrigin as Point);
+    this.setShapeUniforms(program);
+    this.drawStampQuad(program, rect);
+  }
+
+  // Renders this stamp's brush coverage into the copy's mask texture. Runs
+  // on the scratch-sized framebuffer, so the viewport MUST be restored to
+  // canvas size afterwards — the other indexers rely on it.
+  private updateMask(rect: StampRect, state: CopyState): void {
+    const gl = this.gl;
+    const program = this.maskProgram as WebGLProgram;
+    activateProgram(gl, program);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.scratchFbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, state.mask, 0);
+    gl.viewport(0, 0, this.scratchW, this.scratchH);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
+    this.setShapeUniforms(program);
+    // quad over the written subrect, in scratch clip space (derived from uv)
+    this.drawScratchQuad(program, rect);
+    // restore global state for everyone else
+    gl.viewport(
+      0, 0,
+      overmind.state.canvas.resolution.width,
+      overmind.state.canvas.resolution.height
+    );
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+  }
+
   // --- shared plumbing ---
+
+  // Range restriction + policy uniforms shared by Shade/Blend/Smooth.
+  private rangeUniforms(program: WebGLProgram): void {
+    const gl = this.gl;
+    const palette = overmind.state.palette;
+    const range: RangeIndices = activeRangeIndices(
+      palette.ranges,
+      palette.foregroundColorId,
+      palette.foregroundRgb !== null,
+      palette.paletteArray.length
+    );
+    gl.uniform1f(gl.getUniformLocation(program, 'u_rangeStart'), range.start);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_rangeEnd'), range.end);
+    gl.uniform1f(gl.getUniformLocation(program, 'u_wholePalette'), range.wholePalette ? 1 : 0);
+  }
+
+  // Overlap-mask uniforms shared by Shade/Blend: where (and whether) the
+  // previous stamp's coverage mask applies.
+  private maskUniforms(program: WebGLProgram, state: CopyState, curOrigin: Point): void {
+    const gl = this.gl;
+    gl.uniform1i(gl.getUniformLocation(program, 'u_mask'), 5);
+    gl.activeTexture(gl.TEXTURE5);
+    gl.bindTexture(gl.TEXTURE_2D, state.mask);
+    if (state.prevOrigin && state.prevRect) {
+      const off = maskOffset(state.prevOrigin, curOrigin, this.scratchW, this.scratchH);
+      const prev = state.prevRect;
+      gl.uniform1f(gl.getUniformLocation(program, 'u_hasMask'), 1);
+      gl.uniform2f(gl.getUniformLocation(program, 'u_maskOffset'), off.du, off.dv);
+      gl.uniform4f(gl.getUniformLocation(program, 'u_maskBounds'), prev.u0, prev.v0, prev.u1, prev.v1);
+    } else {
+      gl.uniform1f(gl.getUniformLocation(program, 'u_hasMask'), 0);
+    }
+  }
 
   private setShapeUniforms(program: WebGLProgram): void {
     const gl = this.gl;
@@ -168,6 +272,35 @@ export class EffectIndexer {
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
+  // Like drawStampQuad, but positioned in the scratch texture's own clip
+  // space (for the mask pass).
+  private drawScratchQuad(program: WebGLProgram, rect: StampRect): void {
+    const gl = this.gl;
+    const xLeft = rect.u0 * 2 - 1;
+    const xRight = rect.u1 * 2 - 1;
+    const yBottom = rect.v0 * 2 - 1;
+    const yTop = rect.v1 * 2 - 1;
+    const vertices = new Float32Array([
+      xLeft, yTop, xLeft, yBottom, xRight, yTop,
+      xLeft, yBottom, xRight, yTop, xRight, yBottom,
+    ]);
+    const texCoords = new Float32Array([
+      rect.u0, rect.v1, rect.u0, rect.v0, rect.u1, rect.v1,
+      rect.u0, rect.v0, rect.u1, rect.v1, rect.u1, rect.v0,
+    ]);
+    const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
+    gl.enableVertexAttribArray(a_texCoord);
+    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.DYNAMIC_DRAW);
+    const a_position = gl.getAttribLocation(program, 'a_position');
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
+    gl.enableVertexAttribArray(a_position);
+    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
   private copyCanvasRect(target: WebGLTexture, rect: StampRect): void {
     const gl = this.gl;
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
@@ -194,7 +327,9 @@ export class EffectIndexer {
     this.work = this.createScratchTexture();
     for (const state of this.copyStates) {
       gl.deleteTexture(state.save);
+      gl.deleteTexture(state.mask);
       state.save = this.createScratchTexture() as WebGLTexture;
+      state.mask = this.createScratchTexture() as WebGLTexture;
       state.prevOrigin = null;
       state.prevRect = null;
     }
@@ -205,6 +340,7 @@ export class EffectIndexer {
     while (this.copyStates.length <= copyId) {
       this.copyStates.push({
         save: this.createScratchTexture() as WebGLTexture,
+        mask: this.createScratchTexture() as WebGLTexture,
         prevOrigin: null,
         prevRect: null,
       });
@@ -293,5 +429,69 @@ void main () {
   }
   // drag the previous position's pixel here, tag and all
   gl_FragColor = texture2D(u_save, v_texCoord);
+}
+`;
+
+const SHADE_FRAGMENT_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_shape;
+uniform sampler2D u_work;    // current canvas pixels under the brush
+uniform sampler2D u_mask;    // previous stamp's coverage
+uniform float u_hasMask;
+uniform vec2 u_maskOffset;
+uniform vec4 u_maskBounds;
+uniform float u_direction;   // +1 shade up (toward range end), -1 down
+uniform float u_rangeStart;  // 0-based palette storage indices, inclusive
+uniform float u_rangeEnd;
+uniform float u_wholePalette;
+
+varying vec2 v_texCoord;
+varying vec2 v_shapeCoord;
+
+void main () {
+  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+    discard;
+  }
+  if (u_hasMask > 0.5) {
+    vec2 m = v_texCoord + u_maskOffset;
+    if (m.x >= u_maskBounds.x && m.y >= u_maskBounds.y &&
+        m.x <= u_maskBounds.z && m.y <= u_maskBounds.w) {
+      if (texture2D(u_mask, m).r > 0.5) {
+        discard; // just shaded by the immediately previous stamp
+      }
+    }
+  }
+  vec4 p = texture2D(u_work, v_texCoord);
+  if (p.a > 0.9) {
+    // true-color pixel: participates only when the whole palette is the
+    // range; additive brightness step so shading up works from black
+    if (u_wholePalette < 0.5) {
+      discard;
+    }
+    gl_FragColor = vec4(clamp(p.rgb + u_direction * (26.0 / 255.0), 0.0, 1.0), 1.0);
+    return;
+  }
+  float idx = floor(p.r * 255.0 + 0.5);
+  if (idx < u_rangeStart || idx > u_rangeEnd) {
+    discard; // out-of-range indexed pixels pass through untouched
+  }
+  idx = clamp(idx + u_direction, u_rangeStart, u_rangeEnd);
+  gl_FragColor = vec4(idx / 255.0, 0.0, 0.0, 127.0 / 255.0);
+}
+`;
+
+const MASK_FRAGMENT_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_shape;
+
+varying vec2 v_shapeCoord;
+
+void main () {
+  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+    discard;
+  }
+  gl_FragColor = vec4(1.0);
 }
 `;

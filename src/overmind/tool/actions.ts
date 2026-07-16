@@ -5,10 +5,12 @@ import { foregroundPaintColorOf, backgroundPaintColorOf } from '../palette/state
 export const activeToolToFGFillStyle = (context: Context): void => {
   // computed from raw fields: derived state is not readable inside actions
   context.state.tool.activePaintColor = foregroundPaintColorOf(context.state.palette);
+  context.state.tool.shadeDirection = 1;
 };
 
 export const activeToolToBGFillStyle = (context: Context): void => {
   context.state.tool.activePaintColor = backgroundPaintColorOf(context.state.palette);
+  context.state.tool.shadeDirection = -1;
 };
 
 // freehand

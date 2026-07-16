@@ -20,4 +20,8 @@ Compare a new capture against the fixture with `cmp` (byte-identical PNGs
 from the same browser) or by eye. Named `<mode>-<policy>.png`
 (e.g. smear.png, shade-up.png, blend-hybrid.png, blend-indexed.png).
 Overlap-mask behavior is pinned by a slow, dense stroke fixture:
-`__redpaintEffectStroke([{x:40,y:100},{x:44,y:100},{x:48,y:100}])`.
+`__redpaintEffectStroke([{x:40,y:100},{x:44,y:100},{x:48,y:100}])` — for
+range-restricted effects (Shade), make sure that x range falls inside an
+in-range bar first (e.g. set a range covering colors 2-6, which start at
+canvas x 149 in the 8-bar scene, and stroke around x:170-198), or the
+fixture just pins "out-of-range passthrough" instead of the overlap mask.
