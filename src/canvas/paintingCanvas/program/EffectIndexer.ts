@@ -34,6 +34,7 @@ export class EffectIndexer {
   private shadeProgram: WebGLProgram | null;
   private maskProgram: WebGLProgram | null;
   private blendProgram: WebGLProgram | null;
+  private smoothProgram: WebGLProgram | null;
   private scratchFbo: WebGLFramebuffer | null;
   private brushTexture: WebGLTexture | null = null;
   private currentBrushId = 0;
@@ -53,8 +54,9 @@ export class EffectIndexer {
     this.shadeProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SHADE_FRAGMENT_SHADER);
     this.maskProgram = createProgram(gl, EFFECT_VERTEX_SHADER, MASK_FRAGMENT_SHADER);
     this.blendProgram = createProgram(gl, EFFECT_VERTEX_SHADER, BLEND_FRAGMENT_SHADER);
+    this.smoothProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMOOTH_FRAGMENT_SHADER);
     this.scratchFbo = gl.createFramebuffer();
-    console.log('Program ready (EffectIndexer: smear, shade, mask, blend)');
+    console.log('Program ready (EffectIndexer: smear, shade, mask, blend, smooth)');
   }
 
   public effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
@@ -103,6 +105,8 @@ export class EffectIndexer {
         const tmp = state.save;
         state.save = this.work as WebGLTexture;
         this.work = tmp;
+      } else if (mode === 'Smooth') {
+        this.smoothPass(rect);
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -133,6 +137,10 @@ export class EffectIndexer {
     if (this.blendProgram) {
       gl.deleteProgram(this.blendProgram);
       this.blendProgram = null;
+    }
+    if (this.smoothProgram) {
+      gl.deleteProgram(this.smoothProgram);
+      this.smoothProgram = null;
     }
     if (this.scratchFbo) {
       gl.deleteFramebuffer(this.scratchFbo);
@@ -235,6 +243,25 @@ export class EffectIndexer {
     );
     this.rangeUniforms(program);
     this.maskUniforms(program, state, this.curOrigin as Point);
+    this.setShapeUniforms(program);
+    this.drawStampQuad(program, rect);
+  }
+
+  private smoothPass(rect: StampRect): void {
+    const gl = this.gl;
+    const program = this.smoothProgram as WebGLProgram;
+    activateProgram(gl, program);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_palette'), 1);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, this.work);
+    gl.uniform1f(
+      gl.getUniformLocation(program, 'u_indexedPolicy'),
+      overmind.state.canvas.trueColorEnabled ? 0 : 1
+    );
+    this.rangeUniforms(program);
     this.setShapeUniforms(program);
     this.drawStampQuad(program, rect);
   }
@@ -577,5 +604,38 @@ void main () {
     discard;
   }
   gl_FragColor = resolveColor((displayed(cur) + displayed(prev)) * 0.5);
+}
+`;
+
+const SMOOTH_FRAGMENT_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_shape;
+uniform sampler2D u_work;
+// highp to match the vertex shader's default precision for this uniform —
+// WebGL treats a precision mismatch on the same uniform name as a link error
+uniform highp vec2 u_scratchSize;
+
+varying vec2 v_texCoord;
+varying vec2 v_shapeCoord;
+
+${EFFECT_LIB}
+
+void main () {
+  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+    discard;
+  }
+  vec4 center = texture2D(u_work, v_texCoord);
+  if (!inRange(center)) {
+    discard; // only in-range pixels are written; neighbors just contribute
+  }
+  vec2 px = 1.0 / u_scratchSize;
+  vec3 sum = vec3(0.0);
+  for (int dy = -1; dy <= 1; dy++) {
+    for (int dx = -1; dx <= 1; dx++) {
+      sum += displayed(texture2D(u_work, v_texCoord + vec2(float(dx), float(dy)) * px));
+    }
+  }
+  gl_FragColor = resolveColor(sum / 9.0);
 }
 `;
