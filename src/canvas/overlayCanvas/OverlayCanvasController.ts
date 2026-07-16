@@ -65,6 +65,16 @@ class OverlayCanvasController implements CanvasController {
     this.renderZoomCanvas();
   }
 
+  effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
+    // effects cannot be previewed without applying them; show the brush
+    // shape as the cursor, like DPaint did
+    this.drawImage(points, brush);
+  }
+
+  endEffectStroke(): void {
+    // overlay holds no committed pixels, nothing to end
+  }
+
   selectionBox(start: Point, end: Point): void {
     this.mainCanvasRenderer?.selectionBox(start, end);
     this.renderZoomCanvas();

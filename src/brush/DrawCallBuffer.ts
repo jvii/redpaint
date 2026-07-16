@@ -2,7 +2,7 @@ import { DrawTarget } from '../canvas/CanvasController';
 import { PaintColor, Point } from '../types';
 import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
-import { CustomBrush } from './CustomBrush';
+import type { CustomBrush } from './CustomBrush';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 
 // A DrawTarget that records draw calls instead of drawing them, then replays
@@ -26,6 +26,7 @@ export class DrawCallBuffer implements DrawTarget {
   private quadBatches = new Map<number, { color: PaintColor; quads: { start: Point; end: Point }[] }>();
   private imagePointBuffer: Point[] = [];
   private imageBrush: CustomBrush | null = null;
+  private effectBatches: { points: Point[]; brush: CustomBrush }[] = [];
 
   public points(points: Point[], color: PaintColor): void {
     const batch = this.batchFor(this.pointBatches, color, () => ({ color, points: [] }));
@@ -53,6 +54,17 @@ export class DrawCallBuffer implements DrawTarget {
     }
   }
 
+  public effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
+    // the caller's copyId is ignored: the buffer assigns replay ordinals —
+    // each symmetry copy contributes exactly one effectDraw per segment
+    this.effectBatches.push({ points, brush });
+  }
+
+  public endEffectStroke(): void {
+    // never buffered: SymmetryBrush buffers per segment, but the stroke ends
+    // at the tools' mouse-up, which reaches the controller directly
+  }
+
   private batchFor<T>(map: Map<number, T>, color: PaintColor, create: () => T): T {
     const key = CanvasColorIndex.packPaintColor(color);
     let batch = map.get(key);
@@ -78,5 +90,8 @@ export class DrawCallBuffer implements DrawTarget {
     if (this.imagePointBuffer.length > 0 && this.imageBrush) {
       target.drawImage(this.imagePointBuffer, this.imageBrush);
     }
+    this.effectBatches.forEach((batch, copyId) => {
+      target.effectDraw(batch.points, batch.brush, copyId);
+    });
   }
 }

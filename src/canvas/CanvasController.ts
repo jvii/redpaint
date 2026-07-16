@@ -11,6 +11,13 @@ export interface DrawTarget {
   lines(lines: (LineH | LineV)[], color: PaintColor): void;
   quad(start: Point, end: Point, color: PaintColor): void;
   drawImage(points: Point[], brush: CustomBrush): void;
+  // Effect-mode stamping (Smear/Shade/Blend/Smooth/Cycle): order-dependent
+  // per-point stamps handled by EffectIndexer. copyId identifies the symmetry
+  // copy so each kaleidoscope copy keeps its own effect chain; plain callers
+  // pass 0 and DrawCallBuffer assigns real ids on replay. endEffectStroke
+  // resets the chains (previous-stamp state) at stroke end.
+  effectDraw(points: Point[], brush: CustomBrush, copyId: number): void;
+  endEffectStroke(): void;
 }
 
 // A canvas controller is a DrawTarget that also owns and manages real canvas
