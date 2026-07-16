@@ -229,7 +229,9 @@ export function Menubar(): JSX.Element {
         // fixed height, not a viewport percentage: the status strip made the
         // content tall enough that a short window would clip it (overflow is
         // hidden). The markup's height is constant, so a constant fits it.
-        style={{ height: state.app.menuOpen ? '280px' : '0px' }}
+        // 420px clears the Mode column's 8 entries (Matte..Smooth) with a
+        // little headroom; content measures ~411px tall.
+        style={{ height: state.app.menuOpen ? '420px' : '0px' }}
         onMouseLeave={close}
         onContextMenu={close}
       >
