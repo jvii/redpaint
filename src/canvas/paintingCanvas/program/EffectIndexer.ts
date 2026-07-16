@@ -5,6 +5,7 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import { stampRect, scratchSize, maskOffset, StampRect } from '../../../algorithm/effectRect';
 import { activeRangeIndices, RangeIndices } from '../../../algorithm/paletteRange';
+import { cycleColorIndex } from '../../../algorithm/cycle';
 import { EFFECT_LIB } from './effectShaderLib';
 
 type GLBuffers = {
@@ -20,6 +21,7 @@ type CopyState = {
   mask: WebGLTexture; // this copy's previous stamp coverage (overlap mask)
   prevOrigin: Point | null; // previous stamp's (unclamped) brush top-left
   prevRect: StampRect | null; // previous stamp's rect: save-valid texcoords
+  cycleStep: number; // Cycle mode: this copy's stamp ordinal within the stroke
 };
 
 // Renders the canvas-reading paint modes (Smear/Shade/Blend/Smooth) and
@@ -35,6 +37,7 @@ export class EffectIndexer {
   private maskProgram: WebGLProgram | null;
   private blendProgram: WebGLProgram | null;
   private smoothProgram: WebGLProgram | null;
+  private cycleProgram: WebGLProgram | null;
   private scratchFbo: WebGLFramebuffer | null;
   private brushTexture: WebGLTexture | null = null;
   private currentBrushId = 0;
@@ -55,8 +58,9 @@ export class EffectIndexer {
     this.maskProgram = createProgram(gl, EFFECT_VERTEX_SHADER, MASK_FRAGMENT_SHADER);
     this.blendProgram = createProgram(gl, EFFECT_VERTEX_SHADER, BLEND_FRAGMENT_SHADER);
     this.smoothProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMOOTH_FRAGMENT_SHADER);
+    this.cycleProgram = createProgram(gl, EFFECT_VERTEX_SHADER, CYCLE_FRAGMENT_SHADER);
     this.scratchFbo = gl.createFramebuffer();
-    console.log('Program ready (EffectIndexer: smear, shade, mask, blend, smooth)');
+    console.log('Program ready (EffectIndexer: smear, shade, mask, blend, smooth, cycle)');
   }
 
   public effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
@@ -83,7 +87,9 @@ export class EffectIndexer {
         state.prevRect = null;
         continue;
       }
-      this.copyCanvasRect(this.work as WebGLTexture, rect);
+      if (mode !== 'Cycle') {
+        this.copyCanvasRect(this.work as WebGLTexture, rect);
+      }
       if (mode === 'Smear') {
         if (state.prevRect) {
           this.smearPass(rect, state);
@@ -107,6 +113,9 @@ export class EffectIndexer {
         this.work = tmp;
       } else if (mode === 'Smooth') {
         this.smoothPass(rect);
+      } else if (mode === 'Cycle') {
+        this.cyclePass(rect, state);
+        state.cycleStep++;
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -117,6 +126,7 @@ export class EffectIndexer {
     for (const state of this.copyStates) {
       state.prevOrigin = null;
       state.prevRect = null;
+      state.cycleStep = 0;
     }
   }
 
@@ -141,6 +151,10 @@ export class EffectIndexer {
     if (this.smoothProgram) {
       gl.deleteProgram(this.smoothProgram);
       this.smoothProgram = null;
+    }
+    if (this.cycleProgram) {
+      gl.deleteProgram(this.cycleProgram);
+      this.cycleProgram = null;
     }
     if (this.scratchFbo) {
       gl.deleteFramebuffer(this.scratchFbo);
@@ -262,6 +276,28 @@ export class EffectIndexer {
       overmind.state.canvas.trueColorEnabled ? 0 : 1
     );
     this.rangeUniforms(program);
+    this.setShapeUniforms(program);
+    this.drawStampQuad(program, rect);
+  }
+
+  private cyclePass(rect: StampRect, state: CopyState): void {
+    const gl = this.gl;
+    const program = this.cycleProgram as WebGLProgram;
+    activateProgram(gl, program);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
+    const palette = overmind.state.palette;
+    const range = activeRangeIndices(
+      palette.ranges,
+      palette.foregroundColorId,
+      palette.foregroundRgb !== null,
+      palette.paletteArray.length
+    );
+    // no range: paint plain FG, i.e. a one-color "cycle" on the FG index
+    const idx = range.wholePalette
+      ? Number(palette.foregroundColorId) - 1
+      : cycleColorIndex(range, state.cycleStep);
+    gl.uniform4f(gl.getUniformLocation(program, 'u_pixel'), idx / 255, 0, 0, 127 / 255);
     this.setShapeUniforms(program);
     this.drawStampQuad(program, rect);
   }
@@ -399,6 +435,7 @@ export class EffectIndexer {
       state.mask = this.createScratchTexture() as WebGLTexture;
       state.prevOrigin = null;
       state.prevRect = null;
+      state.cycleStep = 0;
     }
     return this.work !== null;
   }
@@ -410,6 +447,7 @@ export class EffectIndexer {
         mask: this.createScratchTexture() as WebGLTexture,
         prevOrigin: null,
         prevRect: null,
+        cycleStep: 0,
       });
     }
     return this.copyStates[copyId];
@@ -637,5 +675,21 @@ void main () {
     }
   }
   gl_FragColor = resolveColor(sum / 9.0);
+}
+`;
+
+const CYCLE_FRAGMENT_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_shape;
+uniform vec4 u_pixel; // the cycling color as a packed indexed pixel
+
+varying vec2 v_shapeCoord;
+
+void main () {
+  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+    discard;
+  }
+  gl_FragColor = u_pixel;
 }
 `;
