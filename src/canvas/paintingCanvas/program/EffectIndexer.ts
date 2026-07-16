@@ -5,6 +5,7 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import { stampRect, scratchSize, maskOffset, StampRect } from '../../../algorithm/effectRect';
 import { activeRangeIndices, RangeIndices } from '../../../algorithm/paletteRange';
+import { EFFECT_LIB } from './effectShaderLib';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -32,6 +33,7 @@ export class EffectIndexer {
   private smearProgram: WebGLProgram | null;
   private shadeProgram: WebGLProgram | null;
   private maskProgram: WebGLProgram | null;
+  private blendProgram: WebGLProgram | null;
   private scratchFbo: WebGLFramebuffer | null;
   private brushTexture: WebGLTexture | null = null;
   private currentBrushId = 0;
@@ -50,8 +52,9 @@ export class EffectIndexer {
     this.smearProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMEAR_FRAGMENT_SHADER);
     this.shadeProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SHADE_FRAGMENT_SHADER);
     this.maskProgram = createProgram(gl, EFFECT_VERTEX_SHADER, MASK_FRAGMENT_SHADER);
+    this.blendProgram = createProgram(gl, EFFECT_VERTEX_SHADER, BLEND_FRAGMENT_SHADER);
     this.scratchFbo = gl.createFramebuffer();
-    console.log('Program ready (EffectIndexer: smear, shade, mask)');
+    console.log('Program ready (EffectIndexer: smear, shade, mask, blend)');
   }
 
   public effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
@@ -92,6 +95,14 @@ export class EffectIndexer {
       } else if (mode === 'Shade') {
         this.shadePass(rect, state);
         this.updateMask(rect, state);
+      } else if (mode === 'Blend') {
+        if (state.prevRect) {
+          this.blendPass(rect, state);
+        }
+        this.updateMask(rect, state);
+        const tmp = state.save;
+        state.save = this.work as WebGLTexture;
+        this.work = tmp;
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -118,6 +129,10 @@ export class EffectIndexer {
     if (this.maskProgram) {
       gl.deleteProgram(this.maskProgram);
       this.maskProgram = null;
+    }
+    if (this.blendProgram) {
+      gl.deleteProgram(this.blendProgram);
+      this.blendProgram = null;
     }
     if (this.scratchFbo) {
       gl.deleteFramebuffer(this.scratchFbo);
@@ -197,6 +212,31 @@ export class EffectIndexer {
       overmind.state.canvas.resolution.height
     );
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+  }
+
+  private blendPass(rect: StampRect, state: CopyState): void {
+    const gl = this.gl;
+    const program = this.blendProgram as WebGLProgram;
+    activateProgram(gl, program);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_save'), 4);
+    gl.uniform1i(gl.getUniformLocation(program, 'u_palette'), 1);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, this.work);
+    gl.activeTexture(gl.TEXTURE4);
+    gl.bindTexture(gl.TEXTURE_2D, state.save);
+    const prev = state.prevRect as StampRect;
+    gl.uniform4f(gl.getUniformLocation(program, 'u_saveBounds'), prev.u0, prev.v0, prev.u1, prev.v1);
+    gl.uniform1f(
+      gl.getUniformLocation(program, 'u_indexedPolicy'),
+      overmind.state.canvas.trueColorEnabled ? 0 : 1
+    );
+    this.rangeUniforms(program);
+    this.maskUniforms(program, state, this.curOrigin as Point);
+    this.setShapeUniforms(program);
+    this.drawStampQuad(program, rect);
   }
 
   // --- shared plumbing ---
@@ -493,5 +533,49 @@ void main () {
     discard;
   }
   gl_FragColor = vec4(1.0);
+}
+`;
+
+const BLEND_FRAGMENT_SHADER = `
+precision mediump float;
+
+uniform sampler2D u_shape;
+uniform sampler2D u_work;   // pixels at the current position
+uniform sampler2D u_save;   // pixels saved at the previous position
+uniform vec4 u_saveBounds;
+uniform sampler2D u_mask;
+uniform float u_hasMask;
+uniform vec2 u_maskOffset;
+uniform vec4 u_maskBounds;
+
+varying vec2 v_texCoord;
+varying vec2 v_shapeCoord;
+
+${EFFECT_LIB}
+
+void main () {
+  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+    discard;
+  }
+  if (u_hasMask > 0.5) {
+    vec2 m = v_texCoord + u_maskOffset;
+    if (m.x >= u_maskBounds.x && m.y >= u_maskBounds.y &&
+        m.x <= u_maskBounds.z && m.y <= u_maskBounds.w) {
+      if (texture2D(u_mask, m).r > 0.5) {
+        discard;
+      }
+    }
+  }
+  if (v_texCoord.x < u_saveBounds.x || v_texCoord.y < u_saveBounds.y ||
+      v_texCoord.x > u_saveBounds.z || v_texCoord.y > u_saveBounds.w) {
+    discard;
+  }
+  vec4 cur = texture2D(u_work, v_texCoord);
+  vec4 prev = texture2D(u_save, v_texCoord);
+  // both ends must be in range (DPaint's A-and-B range mask)
+  if (!inRange(cur) || !inRange(prev)) {
+    discard;
+  }
+  gl_FragColor = resolveColor((displayed(cur) + displayed(prev)) * 0.5);
 }
 `;
