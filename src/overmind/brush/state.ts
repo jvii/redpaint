@@ -1,7 +1,9 @@
 import { PixelBrush } from '../../brush/PixelBrush';
 import { createBuiltInBrush } from '../../brush/BuiltInBrushFactory';
 
-export type Mode = 'Matte' | 'Color';
+import type { Mode } from './mode';
+export type { Mode } from './mode';
+export { usesEffectDraw } from './mode';
 export type BuiltInBrushId = keyof typeof builtInBrushes;
 
 export const builtInBrushes = {

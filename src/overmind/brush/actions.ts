@@ -35,11 +35,15 @@ export const setMode = (context: Context, mode: Mode): void => {
   context.state.brush.mode = mode;
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
-    if (mode === 'Color') {
+    if (mode === 'Color' || mode === 'Cycle') {
+      // Cycle recolors the whole shape per stamp, like Color with a rotating
+      // color — the FG-colorized bitmap is the right resting state
       brush.setFGColor();
       brush.setBGColor();
       brush.toFGColor();
-    } else if (mode === 'Matte') {
+    } else {
+      // Matte, Repl and the canvas-reading effects all stamp from the
+      // pristine matte bitmap (the effects use it purely as the shape mask)
       brush.setBGColor();
       brush.toMatte();
     }

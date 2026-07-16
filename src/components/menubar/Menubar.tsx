@@ -331,6 +331,37 @@ export function Menubar(): JSX.Element {
                 isSelected={state.brush.mode === 'Color'}
                 onClick={(): void => actions.brush.setMode('Color')}
               ></MenuItem>
+              <MenuItem
+                label="Repl"
+                isSelected={state.brush.mode === 'Repl'}
+                disabled={usingBuiltInBrush}
+                onClick={(): void => actions.brush.setMode('Repl')}
+              ></MenuItem>
+              <MenuItem
+                label="Smear"
+                isSelected={state.brush.mode === 'Smear'}
+                onClick={(): void => actions.brush.setMode('Smear')}
+              ></MenuItem>
+              <MenuItem
+                label="Shade"
+                isSelected={state.brush.mode === 'Shade'}
+                onClick={(): void => actions.brush.setMode('Shade')}
+              ></MenuItem>
+              <MenuItem
+                label="Blend"
+                isSelected={state.brush.mode === 'Blend'}
+                onClick={(): void => actions.brush.setMode('Blend')}
+              ></MenuItem>
+              <MenuItem
+                label="Cycle"
+                isSelected={state.brush.mode === 'Cycle'}
+                onClick={(): void => actions.brush.setMode('Cycle')}
+              ></MenuItem>
+              <MenuItem
+                label="Smooth"
+                isSelected={state.brush.mode === 'Smooth'}
+                onClick={(): void => actions.brush.setMode('Smooth')}
+              ></MenuItem>
             </div>
           </div>
         </div>
