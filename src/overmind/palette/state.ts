@@ -55,7 +55,10 @@ export const state: State = {
   foregroundColorId: '20',
   backgroundColorId: '1',
   foregroundRgb: null,
-  ranges: [null, null, null, null],
+  // Range 1 defaults to the grey ramp (the default 32-color palette's last
+  // 12 entries), matching DPaint's own default range — a sensible starting
+  // point for Shade/Blend/Cycle before the user defines their own ranges.
+  ranges: [{ start: '21', end: '32' }, null, null, null],
   foregroundColor: derived(
     (state: State) => state.foregroundRgb ?? state.palette[state.foregroundColorId]
   ),

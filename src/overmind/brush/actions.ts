@@ -18,7 +18,16 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.state.brush.selectedBuiltInBrushId = brushNumber;
   brushHistory.set(builtInBrushes[brushNumber]);
-  context.actions.brush.setMode('Color');
+  // Matte and Repl are custom-brush-only (disabled in the menu for built-ins,
+  // since a built-in shape has no inherent captured color) — falling back to
+  // Color there matches the old single-Matte/Color world. Every other mode
+  // (the canvas-reading effects, Cycle) works fine with a built-in shape, so
+  // switching a brush mid-effect shouldn't silently reset it to Color.
+  if (context.state.brush.mode === 'Matte' || context.state.brush.mode === 'Repl') {
+    context.actions.brush.setMode('Color');
+  } else {
+    context.actions.brush.setMode(context.state.brush.mode);
+  }
   if (
     TOOLS_INCOMPATIBLE_WITH_BRUSHES.includes(context.state.toolbox.activeToolId as DrawingToolId)
   ) {
