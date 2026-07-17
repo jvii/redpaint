@@ -13,7 +13,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../overmind/palette/state';
-import { usesEffectDraw } from '../overmind/brush/mode';
+import { usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode';
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
@@ -199,7 +199,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
         foregroundPaintColorOf(overmind.state.palette)
       )
     );
-    if (overmind.state.brush.mode === 'Color') {
+    if (usesColorizedBrush(overmind.state.brush.mode)) {
       this.toFGColor(); // must be set here for fg color, not ideal:(
     }
   }
