@@ -38,16 +38,13 @@ is scheduled. Design details live in the linked docs where they exist.
 
 ## Effects (own feature, enabled by true-color mode)
 
-See "Future: effects and a strict indexed mode" in docs/true-color-mode.md.
+Effects design and status: docs/effects.md — the full DPaint II Mode set
+(Matte, Color, Repl, Smear, Shade, Blend, Cycle, Smooth) is implemented.
 
-- [ ] **Effect write policy**: effect core computes RGB → policy resolves to a
-  `PaintColor` (hybrid → rgb pixel; indexed → nearest palette color).
-- [ ] **Ping-pong framebuffers** for effects that read the canvas around the
-  stroke (WebGL can't sample the texture being rendered into) — the real
-  infrastructure cost.
-- [ ] **Blend / Smear / Shade / Smooth** tools once the above exist.
-- [ ] **Color cycling** — palette ranges already exist (`PaletteRange`,
-  used by Gradient Fill); this needs cycling animation state on top, not
+- [ ] **Color cycling animation** — palette ranges already exist
+  (`PaletteRange`, used by Gradient Fill, and by the Cycle paint mode), and
+  Cycle now steps through them per stamp; this is the separate feature of
+  animating a range's colors over time regardless of painting, not
   designed yet.
 
 ## Images and palettes
