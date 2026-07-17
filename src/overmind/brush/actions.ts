@@ -1,5 +1,6 @@
 import { Context } from '../../overmind';
 import { Mode, BuiltInBrushId, builtInBrushes } from './state';
+import { usesColorizedBrush } from './mode';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
 import { DrawingToolId } from '../toolbox/state';
@@ -44,15 +45,18 @@ export const setMode = (context: Context, mode: Mode): void => {
   context.state.brush.mode = mode;
   const brush = brushHistory.current;
   if (brush instanceof CustomBrush) {
-    if (mode === 'Color' || mode === 'Cycle') {
-      // Cycle recolors the whole shape per stamp, like Color with a rotating
-      // color — the FG-colorized bitmap is the right resting state
+    if (usesColorizedBrush(mode)) {
+      // Color, Cycle and the canvas-reading effects all show (and Color/
+      // Cycle paint) the FG-colorized bitmap — the effects only ever read
+      // its alpha as a shape mask, but the colorized version is the more
+      // useful overlay cursor.
       brush.setFGColor();
       brush.setBGColor();
       brush.toFGColor();
     } else {
-      // Matte, Repl and the canvas-reading effects all stamp from the
-      // pristine matte bitmap (the effects use it purely as the shape mask)
+      // Matte previews the brush's own transparency; Repl stamps that same
+      // pristine bitmap with holes filled from BG — both need the matte
+      // bitmap as their resting state, not a colorized one.
       brush.setBGColor();
       brush.toMatte();
     }
@@ -61,10 +65,12 @@ export const setMode = (context: Context, mode: Mode): void => {
 
 export const toFGBrush = (context: Context): void => {
   const brush = brushHistory.current;
-  if (context.state.brush.mode === 'Color' && brush instanceof CustomBrush) {
-    brush.toFGColor();
+  if (!(brush instanceof CustomBrush)) {
+    return;
   }
-  if (context.state.brush.mode === 'Matte' && brush instanceof CustomBrush) {
+  if (usesColorizedBrush(context.state.brush.mode)) {
+    brush.toFGColor();
+  } else {
     brush.toMatte();
   }
 };
