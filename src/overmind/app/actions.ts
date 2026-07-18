@@ -102,3 +102,7 @@ export const toggleMenu = (context: Context): void => {
 export const closeMenu = (context: Context): void => {
   context.state.app.menuOpen = false;
 };
+
+export const toggleBrushDrawer = (context: Context): void => {
+  context.state.app.brushDrawerOpen = !context.state.app.brushDrawerOpen;
+};

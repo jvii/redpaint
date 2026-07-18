@@ -246,4 +246,14 @@ A modal drag on the canvas, DPaint-style:
   showed only the XOR curves). Menu-only + Esc, like the original (it had no
   bend keys). The transform items also moved into their own **Transform**
   menu column at this point — the Brush column had outgrown short windows.
-- **Phase E (maybe) — icon-button widget row / menu redesign.**
+- **Phase E — icon-button menu redesign.** ✅ Done ("status rail + Brush
+  drawer", concept gallery in the menu-concepts artifact). The four-column
+  text panel is gone: the menu's status row became a rail carrying image disk
+  I/O (WB1.3 floppy gadgets), a Brush gadget, and the mode selector as a
+  compact 4x2 RetroToggle (every mode one click, the pressed segment is the
+  mode display; Matte/Repl per-segment disabled for built-ins). The Brush
+  gadget toggles a drawer with brush disk I/O and the transforms as pixel-icon
+  gadget clusters under the Size/Flip/Rotate/Bend heads. Pixel icons are
+  ASCII-map-rendered SVGs (`pixelIcons.tsx`); gadgets share one 64px row
+  height (`MenuGadgets.tsx`); hotkeys unchanged, hints moved into gadget
+  tooltips.

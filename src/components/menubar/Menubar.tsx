@@ -1,15 +1,20 @@
-import React, { JSX } from 'react';
+import React, { JSX, useLayoutEffect, useRef, useState } from 'react';
 import { useActions, useAppState } from '../../overmind';
-import { MenuItem } from './MenuItem';
-import { MenuItemSave } from './MenuItemSave';
-import { MenuItemOpen } from './MenuItemOpen';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushHistory } from '../../brush/BrushHistory';
-import { isBuiltInBrush } from '../../overmind/brush/state';
+import { isBuiltInBrush, Mode } from '../../overmind/brush/state';
 import { screenFormats } from '../../overmind/canvas/state';
 import { colorToRGBString } from '../../tools/util/util';
+import { RetroToggle } from '../ui/RetroToggle';
+import { Gadget, GadgetGroup, GadgetOpen, GadgetCluster } from './MenuGadgets';
+import { icons } from './pixelIcons';
+import { BrushTransformToolId } from '../../overmind/toolbox/actions';
 import './Menubar.css';
+
+// rail mode-toggle order: two rows of four, reading order matching the old
+// Mode column
+const MODE_ORDER: Mode[] = ['Matte', 'Color', 'Repl', 'Smear', 'Shade', 'Blend', 'Cycle', 'Smooth'];
 
 // Only captured or loaded brushes can be saved — the pixel brush has no
 // bitmap and the built-in brushes are not the user's work.
@@ -217,6 +222,38 @@ export function Menubar(): JSX.Element {
   // dedicated Canvas Size requester once that exists.
   const openCanvasSize = openScreenFormat;
 
+  // gadget click helpers: an instant transform applies and closes the menu;
+  // a drag transform arms its modal tool and closes so the drag can start
+  const instant = (action: () => void) => (): void => {
+    action();
+    close();
+  };
+  const armTransform = (tool: BrushTransformToolId) => (): void => {
+    actions.toolbox.toggleBrushTransformMode(tool);
+    close();
+  };
+
+  // The panel's open height is measured from its content rather than a
+  // hand-picked pixel constant — the gadget grid reflows (icon size, wrapped
+  // cluster rows, window width) far too often for a magic number to keep up.
+  // scrollHeight reports the content's natural height regardless of the
+  // explicit height clamp below, so this is safe to read every render.
+  const menuMainRef = useRef<HTMLDivElement>(null);
+  const [menuContentHeight, setMenuContentHeight] = useState(0);
+  useLayoutEffect((): (() => void) | void => {
+    const node = menuMainRef.current;
+    if (!node) {
+      return;
+    }
+    const measure = (): void => setMenuContentHeight(node.scrollHeight);
+    measure();
+    // covers reflow the state dependency array can't: wrapping caused purely
+    // by a window resize, with no state change to re-trigger this effect
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return (): void => observer.disconnect();
+  }, [state.app.brushDrawerOpen, state.brush.mode, armedTransform, usingBuiltInBrush]);
+
   return (
     <>
       <div className="menubar" onClick={toggle}>
@@ -249,17 +286,14 @@ export function Menubar(): JSX.Element {
       </div>
       <div
         className="menu"
-        // fixed height, not a viewport percentage: the status strip made the
-        // content tall enough that a short window would clip it (overflow is
-        // hidden). The markup's height is constant, so a constant fits it.
-        // 504px clears the Transform column's 11 entries (Flip Horiz..
-        // Restore, the tallest at ~495px); each menu row adds 28px (16px
-        // label + 12px margin).
-        style={{ height: state.app.menuOpen ? '504px' : '0px' }}
+        // measured from the content (see menuContentHeight above), not a
+        // viewport percentage: overflow is hidden, so a too-small height
+        // would clip the gadget grid instead of the panel just growing.
+        style={{ height: state.app.menuOpen ? `${menuContentHeight}px` : '0px' }}
         onMouseLeave={close}
         onContextMenu={close}
       >
-        <div className="menu__main">
+        <div className="menu__main" ref={menuMainRef}>
           {/* Live screen state. Each segment is the way into the requester that
               changes it. Resolution and colors share a segment because one
               requester owns both. */}
@@ -328,189 +362,178 @@ export function Menubar(): JSX.Element {
                 {stretchIcon}
               </button>
             )}
+            {/* image disk I/O, one click from the rail */}
+            <GadgetGroup>
+              <GadgetOpen
+                icon={icons.disk}
+                label="Open"
+                title="Open image..."
+                handleFile={handleImageFileOpen}
+              />
+              <Gadget
+                icon={icons.disk}
+                label="Save"
+                title="Save image..."
+                onClick={handleImageSave}
+              />
+            </GadgetGroup>
+            {/* everything brush lives behind this: transforms + brush disk */}
+            <GadgetGroup>
+              <Gadget
+                icon={icons.brush}
+                label="Brush"
+                title="Brush tools"
+                on={state.app.brushDrawerOpen}
+                onClick={actions.app.toggleBrushDrawer}
+              />
+            </GadgetGroup>
           </div>
-          <div className="menu__content">
-            <div className="menu__image">
-              <div className="menu__header">Image</div>
-              <MenuItemOpen label="Open..." handleFile={handleImageFileOpen}></MenuItemOpen>
-              <MenuItemSave label="Save..." onSave={handleImageSave}></MenuItemSave>
-            </div>
-            <div className="menu__brush">
-              <div className="menu__header">Brush</div>
-              <MenuItemOpen label="Open..." handleFile={handleBrushFileOpen}></MenuItemOpen>
-              <MenuItemSave
-                label="Save..."
-                onSave={handleBrushSave}
-                disabled={!isSaveableBrush(brushHistory.current)}
-              ></MenuItemSave>
-            </div>
-            <div className="menu__transform">
-              {/* Brush transforms (docs/brush-transforms.md) — custom brushes
-                  only, like DPaint (its Brush menu's Size/Flip/Rotate/Bend
-                  submenus, flattened). Double Horiz/Vert exist too but are
-                  keyboard-only (Shift-X/Y), matching the original. The menu
-                  closes on selection so the reshaped brush cursor shows at
-                  once. */}
-              <div className="menu__header">Transform</div>
-              <MenuItem
-                label="Flip Horiz"
-                shortcut="x"
-                disabled={usingBuiltInBrush}
-                onClick={(): void => {
-                  actions.brush.flipBrushHorizontal();
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Flip Vert"
-                shortcut="y"
-                disabled={usingBuiltInBrush}
-                onClick={(): void => {
-                  actions.brush.flipBrushVertical();
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Rotate 90"
-                shortcut="z"
-                disabled={usingBuiltInBrush}
-                onClick={(): void => {
-                  actions.brush.rotateBrush90();
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Rotate Any"
-                shortcut="R"
-                disabled={usingBuiltInBrush}
-                isSelected={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
-                onClick={(): void => {
-                  actions.toolbox.toggleBrushTransformMode('brushRotateTool');
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Halve"
-                shortcut="h"
-                disabled={usingBuiltInBrush}
-                onClick={(): void => {
-                  actions.brush.halveBrush();
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Double"
-                shortcut="H"
-                disabled={usingBuiltInBrush}
-                onClick={(): void => {
-                  actions.brush.doubleBrush();
-                  close();
-                }}
-              ></MenuItem>
-              {/* modal drags on the canvas (Stretch/ShearBrushTool); the
-                  items only arm the mode, so close the menu to start
-                  dragging */}
-              <MenuItem
-                label="Stretch"
-                shortcut="Z"
-                disabled={usingBuiltInBrush}
-                isSelected={state.toolbox.selectedSelectorToolId === 'brushStretchTool'}
-                onClick={(): void => {
-                  actions.toolbox.toggleBrushTransformMode('brushStretchTool');
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Shear"
-                shortcut="S"
-                disabled={usingBuiltInBrush}
-                isSelected={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
-                onClick={(): void => {
-                  actions.toolbox.toggleBrushTransformMode('brushShearTool');
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Bend Horiz"
-                disabled={usingBuiltInBrush}
-                isSelected={state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'}
-                onClick={(): void => {
-                  actions.toolbox.toggleBrushTransformMode('brushBendHorizontalTool');
-                  close();
-                }}
-              ></MenuItem>
-              <MenuItem
-                label="Bend Vert"
-                disabled={usingBuiltInBrush}
-                isSelected={state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'}
-                onClick={(): void => {
-                  actions.toolbox.toggleBrushTransformMode('brushBendVerticalTool');
-                  close();
-                }}
-              ></MenuItem>
-              {/* enabled when the recall chain has a step to take: on a
+          {/* every mode one click away; the pressed segment is the mode
+              display. Matte and Repl are custom-brush-only, as before. */}
+          <div className="menu__mode-row">
+            <div className="wb-cluster__head">Mode</div>
+            <RetroToggle
+              variant="row"
+              value={state.brush.mode}
+              onChange={(value): void => actions.brush.setMode(value as Mode)}
+              options={MODE_ORDER.map((m) => ({
+                value: m,
+                label: m,
+                disabled: (m === 'Matte' || m === 'Repl') && usingBuiltInBrush,
+              }))}
+            />
+          </div>
+          {/* Brush transforms (docs/brush-transforms.md) — custom brushes
+              only, like DPaint, grouped as its Size/Flip/Rotate/Bend
+              submenus. Double Horiz/Vert exist too but are keyboard-only
+              (Shift-X/Y), matching the original. Instant transforms and the
+              modal drags close the menu on selection so the reshaped brush
+              cursor (or the armed drag) shows at once. */}
+          {state.app.brushDrawerOpen && (
+            <div className="menu__brush-drawer">
+              <div className="wb-cluster__head menu__brush-drawer-head">Brush</div>
+              <div className="menu__brush-drawer-row">
+                <GadgetCluster head="File">
+                  <GadgetOpen
+                    icon={icons.disk}
+                    label="Open"
+                    title="Open brush..."
+                    handleFile={handleBrushFileOpen}
+                  />
+                  <Gadget
+                    icon={icons.disk}
+                    label="Save"
+                    title="Save brush..."
+                    onClick={handleBrushSave}
+                    disabled={!isSaveableBrush(brushHistory.current)}
+                  />
+                </GadgetCluster>
+              </div>
+              {/* every transform gets its own row, separate from the file
+                  gadgets above — it's a distinct kind of action */}
+              <div className="menu__brush-drawer-row">
+                <GadgetCluster head="Size">
+                  <Gadget
+                    icon={icons.stretch}
+                    label="Stretch"
+                    title="Stretch (drag on canvas) — Z"
+                    disabled={usingBuiltInBrush}
+                    on={state.toolbox.selectedSelectorToolId === 'brushStretchTool'}
+                    onClick={armTransform('brushStretchTool')}
+                  />
+                  <Gadget
+                    icon={icons.halve}
+                    label="Halve"
+                    title="Halve — h"
+                    disabled={usingBuiltInBrush}
+                    onClick={instant(actions.brush.halveBrush)}
+                  />
+                  <Gadget
+                    icon={icons.double}
+                    label="Double"
+                    title="Double — H"
+                    disabled={usingBuiltInBrush}
+                    onClick={instant(actions.brush.doubleBrush)}
+                  />
+                </GadgetCluster>
+                <GadgetCluster head="Flip">
+                  <Gadget
+                    icon={icons.flipH}
+                    label="Flip H"
+                    title="Flip horizontally — x"
+                    disabled={usingBuiltInBrush}
+                    onClick={instant(actions.brush.flipBrushHorizontal)}
+                  />
+                  <Gadget
+                    icon={icons.flipV}
+                    label="Flip V"
+                    title="Flip vertically — y"
+                    disabled={usingBuiltInBrush}
+                    onClick={instant(actions.brush.flipBrushVertical)}
+                  />
+                </GadgetCluster>
+                <GadgetCluster head="Rotate">
+                  <Gadget
+                    icon={icons.rot90}
+                    label="Rot 90"
+                    title="Rotate 90 degrees — z"
+                    disabled={usingBuiltInBrush}
+                    onClick={instant(actions.brush.rotateBrush90)}
+                  />
+                  <Gadget
+                    icon={icons.rotAny}
+                    label="Rotate"
+                    title="Rotate any angle (drag on canvas) — R"
+                    disabled={usingBuiltInBrush}
+                    on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
+                    onClick={armTransform('brushRotateTool')}
+                  />
+                  <Gadget
+                    icon={icons.shear}
+                    label="Shear"
+                    title="Shear (drag on canvas) — S"
+                    disabled={usingBuiltInBrush}
+                    on={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
+                    onClick={armTransform('brushShearTool')}
+                  />
+                </GadgetCluster>
+                <GadgetCluster head="Bend">
+                  <Gadget
+                    icon={icons.bendH}
+                    label="Bend H"
+                    title="Bend horizontally (drag on canvas)"
+                    disabled={usingBuiltInBrush}
+                    on={state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'}
+                    onClick={armTransform('brushBendHorizontalTool')}
+                  />
+                  <Gadget
+                    icon={icons.bendV}
+                    label="Bend V"
+                    title="Bend vertically (drag on canvas)"
+                    disabled={usingBuiltInBrush}
+                    on={state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'}
+                    onClick={armTransform('brushBendVerticalTool')}
+                  />
+                </GadgetCluster>
+                {/* enabled when the recall chain has a step to take: on a
                   built-in it re-activates the last custom brush, on a
                   transformed custom brush it undoes the transforms */}
-              <MenuItem
-                label="Restore"
-                shortcut="B"
-                disabled={
-                  usingBuiltInBrush
-                    ? !state.brush.hasLastCustomBrush
-                    : !state.brush.hasOriginalBrush
-                }
-                onClick={(): void => {
-                  actions.brush.restoreOriginalBrush();
-                  close();
-                }}
-              ></MenuItem>
+                <GadgetCluster>
+                  <Gadget
+                    icon={icons.restore}
+                    label="Restore"
+                    title="Restore original brush — B"
+                    disabled={
+                      usingBuiltInBrush
+                        ? !state.brush.hasLastCustomBrush
+                        : !state.brush.hasOriginalBrush
+                    }
+                    onClick={instant(actions.brush.restoreOriginalBrush)}
+                  />
+                </GadgetCluster>
+              </div>
             </div>
-            <div className="menu__mode">
-              <div className="menu__header">Mode</div>
-              <MenuItem
-                label="Matte"
-                isSelected={state.brush.mode === 'Matte'}
-                disabled={usingBuiltInBrush}
-                onClick={(): void => actions.brush.setMode('Matte')}
-              ></MenuItem>
-              <MenuItem
-                label="Color"
-                isSelected={state.brush.mode === 'Color'}
-                onClick={(): void => actions.brush.setMode('Color')}
-              ></MenuItem>
-              <MenuItem
-                label="Repl"
-                isSelected={state.brush.mode === 'Repl'}
-                disabled={usingBuiltInBrush}
-                onClick={(): void => actions.brush.setMode('Repl')}
-              ></MenuItem>
-              <MenuItem
-                label="Smear"
-                isSelected={state.brush.mode === 'Smear'}
-                onClick={(): void => actions.brush.setMode('Smear')}
-              ></MenuItem>
-              <MenuItem
-                label="Shade"
-                isSelected={state.brush.mode === 'Shade'}
-                onClick={(): void => actions.brush.setMode('Shade')}
-              ></MenuItem>
-              <MenuItem
-                label="Blend"
-                isSelected={state.brush.mode === 'Blend'}
-                onClick={(): void => actions.brush.setMode('Blend')}
-              ></MenuItem>
-              <MenuItem
-                label="Cycle"
-                isSelected={state.brush.mode === 'Cycle'}
-                onClick={(): void => actions.brush.setMode('Cycle')}
-              ></MenuItem>
-              <MenuItem
-                label="Smooth"
-                isSelected={state.brush.mode === 'Smooth'}
-                onClick={(): void => actions.brush.setMode('Smooth')}
-              ></MenuItem>
-            </div>
-          </div>
+          )}
         </div>
         <div className="closeButtonDiv">
           <button className="menu__closebtn" onClick={close} type="button" aria-label="Close menu">

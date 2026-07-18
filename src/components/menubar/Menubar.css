@@ -120,6 +120,9 @@
   transition: height 0.12s ease-out;
   display: flex;
   margin: 0 auto;
+  /* gadget labels and status text are UI chrome, not copy — without this a
+     drag across the panel leaves text-selection highlights everywhere */
+  user-select: none;
 }
 
 /* Everything but the close button: the screen status strip above the columns */
@@ -127,19 +130,25 @@
   display: flex;
   flex-direction: column;
   padding: 24px 32px;
+  /* fills the row's available width (flex-basis 0%), so its own children
+     (the gadget clusters) wrap against that width, same as before */
   flex: 1;
   min-width: 0;
+  /* height from its own content, not stretched to match .menu's cross-axis
+     size (the default). .menu's height is a JS-measured px value driven by
+     this element's scrollHeight (Menubar.tsx) — if the parent's height could
+     stretch this element, closing the menu would shrink it, corrupting the
+     very measurement that height is read from. */
+  align-self: flex-start;
 }
 
 .menu__status {
   display: flex;
   /* the gadgets hang from the top of the strip, in line with the close button */
   align-items: flex-start;
-  /* just clear of the readout's drop shadow — the stretch gadget belongs to it */
+  /* just clear of the readout's drop shadow; the disk/brush gadgets sit next
+     to the canvas widget with the same spacing as its stretch gadget */
   gap: 10px;
-  padding-bottom: 22px;
-  margin-bottom: 22px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.35);
 }
 
 /* Position the content inside the overlay */
@@ -357,6 +366,129 @@
 .menu__item-shortcut {
   margin-left: 12px;
   color: #8888aa;
+}
+
+/* ---- icon gadgets (menu rail + brush drawer) ----------------------------
+   The screen-status segment language: 2px black borders, neighbours sharing
+   a single seam, one hard drop shadow per group, orange hover, pressed-in
+   blue when on. Every gadget is the same fixed height so rows line up. */
+
+.wb-gadget-group {
+  display: inline-flex;
+  box-shadow: 4px 4px 0 0 black;
+  vertical-align: top;
+}
+
+.wb-gadget {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 64px;
+  background-color: rgb(242, 242, 242);
+  color: black;
+  border: 2px solid black;
+  border-radius: 0;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 12px;
+  padding: 8px 8px;
+  cursor: pointer;
+}
+
+.wb-gadget + .wb-gadget {
+  border-left: none;
+}
+
+.wb-gadget:hover {
+  background-color: #ff8800;
+  color: white;
+}
+
+.wb-gadget:disabled,
+.wb-gadget:disabled:hover {
+  background-color: rgb(242, 242, 242);
+  color: rgba(0, 0, 0, 0.3);
+  cursor: default;
+}
+
+/* pressed-in: the open/armed gadget, like RetroToggle's selected segment */
+.wb-gadget--on,
+.wb-gadget--on:hover {
+  background-color: rgb(0, 85, 170);
+  color: #ff8800;
+  box-shadow: inset 3px 3px 0 0 rgb(0, 51, 102);
+}
+
+.wb-gadget__label {
+  font-size: 16px;
+}
+
+/* Section heads (Mode, Brush): one rule per drawer state, not one per
+   cluster — these are the only headings that get the underline treatment. */
+.wb-cluster__head {
+  font-size: 16px;
+  color: white;
+  border-bottom: 2px solid white;
+  padding-bottom: 10px;
+  margin: 0 0 20px;
+}
+
+.wb-cluster__head--blank {
+  visibility: hidden;
+}
+
+/* Sub-heads inside the drawer (File / Size / Flip / Rotate / Bend): a quiet
+   label, no rule — the drawer already reads as one group under "Brush", so
+   five more underlines were noise, not structure. */
+.wb-cluster__subhead {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 1px;
+  margin: 0 0 10px;
+}
+
+.wb-cluster__subhead--blank {
+  visibility: hidden;
+}
+
+/* the always-visible mode strip under the rail; the toggle's segments are
+   transparent, so give the group its usual gadget face here (the menu's own
+   blue would swallow the unselected segments). max-content keeps the Mode
+   head's underline hugging the toggle instead of running the full menu. */
+.menu__mode-row {
+  margin-top: 40px;
+  width: max-content;
+}
+
+.menu__mode-row .retro-toggle {
+  background-color: rgb(242, 242, 242);
+}
+
+/* a plain vertical stack of full-width rows (File; the transforms) — each
+   row wraps its own clusters independently, so a transform row never shares
+   a line with the file gadgets above it */
+.menu__brush-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 44px;
+}
+
+/* the drawer's own Brush head — its underline doubles as the divider between
+   the always-visible strip and the drawer. Its own 20px margin-bottom
+   (.wb-cluster__head) plus the drawer's 28px row gap would stack to more
+   space than Mode gets before its toggle, so this negative margin nets the
+   two out to the same 20px. */
+.menu__brush-drawer-head {
+  margin-bottom: -8px;
+}
+
+.menu__brush-drawer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 32px;
+  align-items: flex-start;
 }
 
 .closeButtonDiv {

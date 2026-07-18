@@ -4,6 +4,9 @@ import './RetroToggle.css';
 type Option = {
   value: string;
   label: ReactNode;
+  // Greys out and ignores clicks on this segment only (the group stays live),
+  // for options that don't apply in the current context.
+  disabled?: boolean;
 };
 
 // How the segments are laid out. 'row' is a horizontal strip, 'column' a
@@ -39,12 +42,13 @@ export function RetroToggle({
   // row is one row of N, a column is N rows of one, a grid is N of `columns`.
   const cols = variant === 'grid' ? columns : variant === 'column' ? 1 : options.length;
 
-  const style =
-    variant === 'grid' ? { gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined;
+  const style = variant === 'grid' ? { gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined;
 
   return (
     <div
-      className={`retro-toggle retro-toggle--${variant}` + (disabled ? ' retro-toggle--disabled' : '')}
+      className={
+        `retro-toggle retro-toggle--${variant}` + (disabled ? ' retro-toggle--disabled' : '')
+      }
       style={style}
     >
       {options.map((option, index): JSX.Element => {
@@ -56,10 +60,11 @@ export function RetroToggle({
           <button
             key={option.value}
             type="button"
-            disabled={disabled}
+            disabled={disabled || option.disabled}
             className={
               'retro-toggle__segment' +
               (option.value === value ? ' retro-toggle__segment--selected' : '') +
+              (option.disabled ? ' retro-toggle__segment--disabled' : '') +
               (collapseLeft ? ' retro-toggle__segment--collapse-left' : '') +
               (collapseTop ? ' retro-toggle__segment--collapse-top' : '')
             }

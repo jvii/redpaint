@@ -10,6 +10,9 @@ export type State = {
   brushLoadInfo: { width: number; height: number; colorCount: number } | null;
   isLoading: boolean;
   menuOpen: boolean;
+  // the Brush drawer (transforms + brush disk) inside the menu; remembered
+  // across menu open/close so it reopens the way it was left
+  brushDrawerOpen: boolean;
 };
 
 export const state: State = {
@@ -18,4 +21,5 @@ export const state: State = {
   brushLoadInfo: null,
   isLoading: false,
   menuOpen: false,
+  brushDrawerOpen: true,
 };
