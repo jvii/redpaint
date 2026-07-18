@@ -52,6 +52,12 @@
   margin: 10px;
 }
 
+/* an armed modal brush transform (Stretch) replaces the mode text — accent
+   color so the armed state is unmissable at a glance */
+.menubar__mode-indicator--transform {
+  color: #ff8800;
+}
+
 .menubar__floodfill-indicator {
   grid-area: floodFillSwatch;
   margin: 10px;
@@ -340,6 +346,14 @@
 }
 
 .menu__item-label:disabled:hover {
+  color: #8888aa;
+}
+
+/* Keyboard shortcut hint after a menu item's label: stays dim through hover
+   (only the label lights up); same shade as a disabled item, so disabled
+   items read uniformly too. */
+.menu__item-shortcut {
+  margin-left: 12px;
   color: #8888aa;
 }
 

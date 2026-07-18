@@ -6,6 +6,7 @@ import { overmind } from '../index';
 export function GlobalHotKeyManager(): null {
   usePaste();
   useMenuHotkey();
+  useBrushTransformHotkeys();
 
   return null;
 }
@@ -72,6 +73,102 @@ function useMenuHotkey(): void {
   }
 
   useEffect((): void => {
+    document.addEventListener('keydown', handleKey);
+  }, []);
+}
+
+// The brush-cursor preview on the overlay canvas only repaints on mouse move,
+// so a transform applied via the keyboard would otherwise stay invisible until
+// the mouse next moves. Re-sending a mousemove at the pointer's last position
+// replays the active tool's own preview path (getMousePos reads clientX/Y),
+// showing the transformed brush immediately.
+let lastPointerPos: { x: number; y: number } | null = null;
+
+function refreshBrushPreview(): void {
+  if (!lastPointerPos) {
+    return;
+  }
+  const target = document.elementFromPoint(lastPointerPos.x, lastPointerPos.y);
+  target?.dispatchEvent(
+    new MouseEvent('mousemove', {
+      clientX: lastPointerPos.x,
+      clientY: lastPointerPos.y,
+      bubbles: true, // React listens at the root, not on the canvas element
+    })
+  );
+}
+
+// DPaint's Brush menu transform keys (docs/brush-transforms.md). Case matters:
+// lowercase and Shift-modified letters are different operations, so this
+// switches on event.key. No-ops while a built-in brush is active (the actions
+// guard). Modifier chords (Cmd-X cut etc.) must pass through untouched.
+function useBrushTransformHotkeys(): void {
+  const actions = useActions();
+
+  function trackPointer(event: MouseEvent): void {
+    if (event.isTrusted) {
+      lastPointerPos = { x: event.clientX, y: event.clientY };
+    }
+  }
+
+  function handleKey(event: KeyboardEvent): void {
+    if (event.ctrlKey || event.metaKey || event.altKey || hotkeysSuspended(event)) {
+      return;
+    }
+    switch (event.key) {
+      case 'x':
+        actions.brush.flipBrushHorizontal();
+        break;
+      case 'y':
+        actions.brush.flipBrushVertical();
+        break;
+      case 'z':
+        actions.brush.rotateBrush90();
+        break;
+      case 'h':
+        actions.brush.halveBrush();
+        break;
+      case 'H':
+        actions.brush.doubleBrush();
+        break;
+      case 'X':
+        actions.brush.doubleBrushHorizontal();
+        break;
+      case 'Y':
+        actions.brush.doubleBrushVertical();
+        break;
+      case 'B':
+        actions.brush.restoreOriginalBrush();
+        break;
+      case 'Z':
+        actions.toolbox.toggleBrushTransformMode('brushStretchTool');
+        break;
+      case 'S':
+        actions.toolbox.toggleBrushTransformMode('brushShearTool');
+        break;
+      case 'R':
+        actions.toolbox.toggleBrushTransformMode('brushRotateTool');
+        break;
+      case 'Escape': {
+        // cancel a pending drag transform: nothing to undo, it only previews
+        const armed = overmind.state.toolbox.selectedSelectorToolId;
+        if (
+          armed === 'brushStretchTool' ||
+          armed === 'brushShearTool' ||
+          armed === 'brushRotateTool'
+        ) {
+          actions.toolbox.toggleBrushTransformMode(armed);
+        }
+        return;
+      }
+      default:
+        return;
+    }
+    refreshBrushPreview();
+  }
+
+  useEffect((): void => {
+    document.addEventListener('mousemove', trackPointer);
     document.addEventListener('keydown', handleKey);
   }, []);
 }

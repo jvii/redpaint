@@ -91,8 +91,7 @@ async function saveCanvasAsPng(canvas: HTMLCanvasElement, suggestedName: string)
     suggestedName?: string;
     types?: { description: string; accept: Record<string, string[]> }[];
   }) => Promise<{ createWritable: () => Promise<WritableStream> }>;
-  const showSaveFilePicker = (window as { showSaveFilePicker?: SaveFilePicker })
-    .showSaveFilePicker;
+  const showSaveFilePicker = (window as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
 
   let fileHandle = null;
   if (showSaveFilePicker) {
@@ -178,6 +177,18 @@ export function Menubar(): JSX.Element {
   };
 
   const mode = state.brush.mode;
+  // the armed modal brush transform's display name (null when none is armed);
+  // an active rotate drag appends its live angle readout
+  const armedTransform =
+    state.toolbox.selectedSelectorToolId === 'brushStretchTool'
+      ? 'Stretch'
+      : state.toolbox.selectedSelectorToolId === 'brushShearTool'
+        ? 'Shear'
+        : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
+          ? state.tool.brushRotateTool.center
+            ? `Rotate ${state.tool.brushRotateTool.angle}°`
+            : 'Rotate'
+          : null;
   // Flood Fill targets whatever pixel is under the cursor rather than a
   // fixed FG/BG color, so a hover swatch previews what the fill would hit.
   const floodFillHoverColor = state.tool.floodFillTool.hoverColor;
@@ -212,7 +223,16 @@ export function Menubar(): JSX.Element {
             ...
           </div>
         </div>
-        <div className="menubar__mode-indicator">{mode}</div>
+        {/* while a modal brush transform is armed, a click reshapes the brush
+            instead of painting with the mode — so the mode slot says so */}
+        <div
+          className={
+            'menubar__mode-indicator' +
+            (armedTransform ? ' menubar__mode-indicator--transform' : '')
+          }
+        >
+          {armedTransform ?? mode}
+        </div>
         {floodFillHoverSwatchColor && (
           <div className="menubar__floodfill-indicator">
             {floodFillIcon}
@@ -229,9 +249,10 @@ export function Menubar(): JSX.Element {
         // fixed height, not a viewport percentage: the status strip made the
         // content tall enough that a short window would clip it (overflow is
         // hidden). The markup's height is constant, so a constant fits it.
-        // 420px clears the Mode column's 8 entries (Matte..Smooth) with a
-        // little headroom; content measures ~411px tall.
-        style={{ height: state.app.menuOpen ? '420px' : '0px' }}
+        // 504px clears the Brush column's 11 entries (Open..Restore, now the
+        // tallest at ~495px); each menu row adds 28px (16px label + 12px
+        // margin).
+        style={{ height: state.app.menuOpen ? '504px' : '0px' }}
         onMouseLeave={close}
         onContextMenu={close}
       >
@@ -319,6 +340,105 @@ export function Menubar(): JSX.Element {
                 onSave={handleBrushSave}
                 disabled={!isSaveableBrush(brushHistory.current)}
               ></MenuItemSave>
+              {/* Brush transforms (docs/brush-transforms.md) — custom brushes
+                  only, like DPaint. Double Horiz/Vert exist too but are
+                  keyboard-only (Shift-X/Y), matching the original. The menu
+                  closes on selection so the reshaped brush cursor shows at
+                  once. */}
+              <MenuItem
+                label="Flip Horiz"
+                shortcut="x"
+                disabled={usingBuiltInBrush}
+                onClick={(): void => {
+                  actions.brush.flipBrushHorizontal();
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Flip Vert"
+                shortcut="y"
+                disabled={usingBuiltInBrush}
+                onClick={(): void => {
+                  actions.brush.flipBrushVertical();
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Rotate 90"
+                shortcut="z"
+                disabled={usingBuiltInBrush}
+                onClick={(): void => {
+                  actions.brush.rotateBrush90();
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Rotate Any"
+                shortcut="R"
+                disabled={usingBuiltInBrush}
+                isSelected={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
+                onClick={(): void => {
+                  actions.toolbox.toggleBrushTransformMode('brushRotateTool');
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Halve"
+                shortcut="h"
+                disabled={usingBuiltInBrush}
+                onClick={(): void => {
+                  actions.brush.halveBrush();
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Double"
+                shortcut="H"
+                disabled={usingBuiltInBrush}
+                onClick={(): void => {
+                  actions.brush.doubleBrush();
+                  close();
+                }}
+              ></MenuItem>
+              {/* modal drags on the canvas (Stretch/ShearBrushTool); the
+                  items only arm the mode, so close the menu to start
+                  dragging */}
+              <MenuItem
+                label="Stretch"
+                shortcut="Z"
+                disabled={usingBuiltInBrush}
+                isSelected={state.toolbox.selectedSelectorToolId === 'brushStretchTool'}
+                onClick={(): void => {
+                  actions.toolbox.toggleBrushTransformMode('brushStretchTool');
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Shear"
+                shortcut="S"
+                disabled={usingBuiltInBrush}
+                isSelected={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
+                onClick={(): void => {
+                  actions.toolbox.toggleBrushTransformMode('brushShearTool');
+                  close();
+                }}
+              ></MenuItem>
+              {/* enabled when the recall chain has a step to take: on a
+                  built-in it re-activates the last custom brush, on a
+                  transformed custom brush it undoes the transforms */}
+              <MenuItem
+                label="Restore"
+                shortcut="B"
+                disabled={
+                  usingBuiltInBrush
+                    ? !state.brush.hasLastCustomBrush
+                    : !state.brush.hasOriginalBrush
+                }
+                onClick={(): void => {
+                  actions.brush.restoreOriginalBrush();
+                  close();
+                }}
+              ></MenuItem>
             </div>
             <div className="menu__mode">
               <div className="menu__header">Mode</div>

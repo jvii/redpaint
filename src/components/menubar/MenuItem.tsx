@@ -6,6 +6,7 @@ interface Props {
   onClick?: () => void;
   isSelected?: boolean;
   disabled?: boolean;
+  shortcut?: string;
 }
 
 export function MenuItem({
@@ -13,6 +14,7 @@ export function MenuItem({
   onClick,
   isSelected = false,
   disabled = false,
+  shortcut,
 }: Props): JSX.Element {
   return (
     <div className="menu__item">
@@ -25,6 +27,7 @@ export function MenuItem({
         aria-label={label}
       >
         {label}
+        {shortcut && <span className="menu__item-shortcut">{shortcut}</span>}
       </button>
     </div>
   );
