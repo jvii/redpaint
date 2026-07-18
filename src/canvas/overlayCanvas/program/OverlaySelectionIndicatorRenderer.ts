@@ -74,6 +74,34 @@ export class OverlaySelectionIndicatorRenderer {
     this.gl.drawArrays(gl.LINES, 0, 2 * boxLines.length);
   }
 
+  // A closed outline through arbitrary (not axis-aligned) corner points, in
+  // the same color-inverting style — the rotating box of the brush-rotate
+  // drag. Plain +0.5 pixel centering; the axis-aligned endpoint stretching
+  // shiftLine does would warp slanted lines.
+  public renderSelectionPolygon(points: Point[]): void {
+    const gl = this.gl;
+
+    activateProgram(gl, this.program);
+    this.updateCanvasTexture();
+
+    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(this.a_position);
+
+    const vertices = new Float32Array(2 * 2 * points.length);
+    for (let i = 0; i < points.length; i++) {
+      const from = points[i];
+      const to = points[(i + 1) % points.length];
+      vertices[i * 4] = canvasToWebGLCoordX(gl, from.x + 0.5);
+      vertices[i * 4 + 1] = canvasToWebGLCoordY(gl, from.y + 0.5);
+      vertices[i * 4 + 2] = canvasToWebGLCoordX(gl, to.x + 0.5);
+      vertices[i * 4 + 3] = canvasToWebGLCoordY(gl, to.y + 0.5);
+    }
+
+    this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
+
+    this.gl.drawArrays(gl.LINES, 0, 2 * points.length);
+  }
+
   public renderSelectionCrosshair(point: Point): void {
     const gl = this.gl;
 

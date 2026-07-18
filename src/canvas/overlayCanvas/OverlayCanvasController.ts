@@ -85,6 +85,11 @@ class OverlayCanvasController implements CanvasController {
     this.renderZoomCanvas();
   }
 
+  selectionPolygon(points: Point[]): void {
+    this.mainCanvasRenderer?.selectionPolygon(points);
+    this.renderZoomCanvas();
+  }
+
   // Copying the overlay into the zoom view costs a full-canvas blit per draw
   // call, so skip it while the zoom view is hidden.
   private renderZoomCanvas(): void {

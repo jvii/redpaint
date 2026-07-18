@@ -81,6 +81,11 @@ export class OverlayMainCanvasRenderer {
     this.selectionIndicatorRenderer.renderSelectionCrosshair(point);
   }
 
+  selectionPolygon(points: Point[]): void {
+    this.updateViewport();
+    this.selectionIndicatorRenderer.renderSelectionPolygon(points);
+  }
+
   renderCanvas(): void {
     //this.drawImageRenderer.renderCanvas();
   }

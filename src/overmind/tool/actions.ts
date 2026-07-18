@@ -1,4 +1,4 @@
-import { Context } from '../../overmind'
+import { Context } from '../../overmind';
 import { PaintColor, Point } from '../../types';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../palette/state';
 
@@ -122,4 +122,27 @@ export const floodFillToolHoverColor = (context: Context, color: PaintColor | nu
 
 export const brushSelectionStart = (context: Context, point: Point | null): void => {
   context.state.tool.brushSelectorTool.start = point;
+};
+
+// brush stretch / shear
+
+export const brushStretchStart = (context: Context, anchor: Point | null): void => {
+  context.state.tool.brushStretchTool.anchor = anchor;
+};
+
+export const brushShearStart = (context: Context, anchor: Point | null): void => {
+  context.state.tool.brushShearTool.anchor = anchor;
+};
+
+export const brushRotateStart = (
+  context: Context,
+  start: { center: Point; startAngle: number } | null
+): void => {
+  context.state.tool.brushRotateTool.center = start?.center ?? null;
+  context.state.tool.brushRotateTool.startAngle = start?.startAngle ?? 0;
+  context.state.tool.brushRotateTool.angle = 0;
+};
+
+export const brushRotateAngle = (context: Context, angle: number): void => {
+  context.state.tool.brushRotateTool.angle = angle;
 };

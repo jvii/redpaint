@@ -34,6 +34,12 @@ export type State = {
     start: Point | null;
   };
   brushSelectorTool: { start: Point | null };
+  // anchor = the dragged brush's fixed top-left corner (null while not dragging)
+  brushStretchTool: { anchor: Point | null };
+  brushShearTool: { anchor: Point | null };
+  // center = rotation pivot (null while not dragging); startAngle = the
+  // pointer's angle at press; angle = live readout in whole degrees
+  brushRotateTool: { center: Point | null; startAngle: number; angle: number };
   floodFillTool: { hoverColor: PaintColor | null };
   activePaintColor: PaintColor;
   // +1 while painting with the left button (FG), -1 with the right (BG) —
@@ -57,6 +63,9 @@ export const state: State = {
   polygonTool: { vertices: [] },
   textTool: { text: '', start: null },
   brushSelectorTool: { start: null },
+  brushStretchTool: { anchor: null },
+  brushShearTool: { anchor: null },
+  brushRotateTool: { center: null, startAngle: 0, angle: 0 },
   floodFillTool: { hoverColor: null },
   activePaintColor: { kind: 'index', colorNumber: 1 },
   shadeDirection: 1,

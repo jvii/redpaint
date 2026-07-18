@@ -6,6 +6,9 @@ import { FloodFillTool } from '../../tools/FloodFillTool';
 import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelectorTool';
 import { SymmetryCenterSelectorTool } from '../../tools/SymmetryCenterSelectorTool';
 import { BrushSelector } from '../../tools/BrushSelector';
+import { StretchBrushTool } from '../../tools/StretchBrushTool';
+import { ShearBrushTool } from '../../tools/ShearBrushTool';
+import { RotateBrushTool } from '../../tools/RotateBrushTool';
 import { CircleTool } from '../../tools/CircleTool';
 import { CurveTool } from '../../tools/CurveTool';
 import { EllipseTool } from '../../tools/EllipseTool';
@@ -44,6 +47,9 @@ const selectorTools = {
   zoomInitialPointSelectorTool: new ZoomInitialPointSelectorTool(),
   symmetryCenterSelectorTool: new SymmetryCenterSelectorTool(),
   brushSelectorTool: new BrushSelector(),
+  brushStretchTool: new StretchBrushTool(),
+  brushShearTool: new ShearBrushTool(),
+  brushRotateTool: new RotateBrushTool(),
   foregroundColorSelectorTool: new ColorSelectorTool(foregroundColor),
   backgroundColorSelectorTool: new ColorSelectorTool(backgroundColor),
 };
@@ -83,6 +89,9 @@ export const state: State = {
       this.previousToolId === 'zoomInitialPointSelectorTool' ||
       this.previousToolId === 'symmetryCenterSelectorTool' ||
       this.previousToolId === 'brushSelectorTool' ||
+      this.previousToolId === 'brushStretchTool' ||
+      this.previousToolId === 'brushShearTool' ||
+      this.previousToolId === 'brushRotateTool' ||
       this.previousToolId === 'foregroundColorSelectorTool' ||
       this.previousToolId === 'backgroundColorSelectorTool'
     ) {

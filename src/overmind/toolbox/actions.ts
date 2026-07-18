@@ -1,5 +1,8 @@
-import { Context } from '../../overmind'
+import { Context } from '../../overmind';
 import { DrawingToolId } from './state';
+import { brushHistory } from '../../brush/BrushHistory';
+import { CustomBrush } from '../../brush/CustomBrush';
+import { isBuiltInBrush } from '../brush/state';
 
 export const setSelectedDrawingTool = (context: Context, toolId: DrawingToolId): void => {
   context.actions.toolbox.setActiveToPreviousTool();
@@ -28,6 +31,25 @@ export const toggleBrushSelectionMode = (context: Context): void => {
   context.actions.toolbox.setActiveToPreviousTool();
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'brushSelectorTool';
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'brushSelectorTool';
+};
+
+// The interactive brush transforms (docs/brush-transforms.md): modal drags
+// on the canvas, so they ride the selector-tool slot like brush selection
+// does. Custom brushes only, like every transform. Toggling one while the
+// other is armed switches directly.
+export const toggleBrushTransformMode = (
+  context: Context,
+  tool: 'brushStretchTool' | 'brushShearTool' | 'brushRotateTool'
+): void => {
+  const isSelected = context.state.toolbox.selectedSelectorToolId === tool;
+  if (
+    !isSelected &&
+    (!(brushHistory.current instanceof CustomBrush) || isBuiltInBrush(brushHistory.current))
+  ) {
+    return;
+  }
+  context.actions.toolbox.setActiveToPreviousTool();
+  context.state.toolbox.selectedSelectorToolId = isSelected ? null : tool;
 };
 
 export const toggleForegroundColorSelectionMode = (context: Context): void => {
