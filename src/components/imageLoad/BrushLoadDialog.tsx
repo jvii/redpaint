@@ -118,7 +118,7 @@ function BrushLoadDialogOpen(): JSX.Element {
       colorIndex = BrushColorIndex.fromRemappedImageData(image, remapToIndexByColor(image, palette));
     }
 
-    brushHistory.set(new CustomBrush(colorIndex, image.width, image.height));
+    brushHistory.setCustom(new CustomBrush(colorIndex, image.width, image.height));
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
     // DPaint switches to (dotted) freehand after loading a brush — matches

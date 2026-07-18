@@ -13,7 +13,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../overmind/palette/state';
-import { usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode';
+import { Mode, usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode';
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
@@ -174,6 +174,15 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
   }
 
+  // Returns a new transformed brush rather than mutating: the caller swaps it
+  // in via brushHistory.setTransformed, which keeps lastChanged-based texture
+  // caching correct and the pre-transform original recallable. Transforms
+  // always read the matte (source-of-truth) bitmap, never a colorized variant.
+  public transform(fn: (index: BrushColorIndex) => BrushColorIndex): CustomBrush {
+    const transformed = fn(this.brushColorIndexMatte);
+    return new CustomBrush(transformed, transformed.width, transformed.height);
+  }
+
   private adjustHandle(point: Point): Point {
     return { x: point.x - this.width / 2, y: point.y - this.heigth / 2 }; // center handle to brush
   }
@@ -183,6 +192,28 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       canvas.effectDraw(points, this, 0);
     } else {
       canvas.drawImage(points, this);
+    }
+  }
+
+  // Sets up the bitmap variants a paint mode needs and switches to that
+  // mode's resting bitmap — the single place encoding which modes show the
+  // colorized brush vs the matte one (used by the setMode action and by
+  // transform previews on temporary brushes).
+  public applyMode(mode: Mode): void {
+    if (usesColorizedBrush(mode)) {
+      // Color, Cycle and the canvas-reading effects all show (and Color/
+      // Cycle paint) the FG-colorized bitmap — the effects only ever read
+      // its alpha as a shape mask, but the colorized version is the more
+      // useful overlay cursor.
+      this.setFGColor();
+      this.setBGColor();
+      this.toFGColor();
+    } else {
+      // Matte previews the brush's own transparency; Repl stamps that same
+      // pristine bitmap with holes filled from BG — both need the matte
+      // bitmap as their resting state, not a colorized one.
+      this.setBGColor();
+      this.toMatte();
     }
   }
 

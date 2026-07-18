@@ -32,7 +32,7 @@ export class BrushSelector implements Tool {
     const height = Math.abs(mousePos.y - start.y) + 1;
 
     const customBrush = CustomBrush.fromCanvasArea(topLeft, width, height);
-    brushHistory.set(customBrush);
+    brushHistory.setCustom(customBrush);
     overmind.actions.brush.clearBuiltInBrushSelection();
     overmind.actions.brush.setMode('Matte');
 
