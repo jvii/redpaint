@@ -9,6 +9,7 @@ import { BrushSelector } from '../../tools/BrushSelector';
 import { StretchBrushTool } from '../../tools/StretchBrushTool';
 import { ShearBrushTool } from '../../tools/ShearBrushTool';
 import { RotateBrushTool } from '../../tools/RotateBrushTool';
+import { BendBrushTool } from '../../tools/BendBrushTool';
 import { CircleTool } from '../../tools/CircleTool';
 import { CurveTool } from '../../tools/CurveTool';
 import { EllipseTool } from '../../tools/EllipseTool';
@@ -50,6 +51,8 @@ const selectorTools = {
   brushStretchTool: new StretchBrushTool(),
   brushShearTool: new ShearBrushTool(),
   brushRotateTool: new RotateBrushTool(),
+  brushBendHorizontalTool: new BendBrushTool(true),
+  brushBendVerticalTool: new BendBrushTool(false),
   foregroundColorSelectorTool: new ColorSelectorTool(foregroundColor),
   backgroundColorSelectorTool: new ColorSelectorTool(backgroundColor),
 };
@@ -92,6 +95,8 @@ export const state: State = {
       this.previousToolId === 'brushStretchTool' ||
       this.previousToolId === 'brushShearTool' ||
       this.previousToolId === 'brushRotateTool' ||
+      this.previousToolId === 'brushBendHorizontalTool' ||
+      this.previousToolId === 'brushBendVerticalTool' ||
       this.previousToolId === 'foregroundColorSelectorTool' ||
       this.previousToolId === 'backgroundColorSelectorTool'
     ) {

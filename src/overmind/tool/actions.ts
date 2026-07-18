@@ -146,3 +146,7 @@ export const brushRotateStart = (
 export const brushRotateAngle = (context: Context, angle: number): void => {
   context.state.tool.brushRotateTool.angle = angle;
 };
+
+export const brushBendStart = (context: Context, origin: Point | null): void => {
+  context.state.tool.brushBendTool.origin = origin;
+};

@@ -135,6 +135,90 @@ export function shearHorizontal(brush: BrushColorIndex, dx: number): BrushColorI
   return new BrushColorIndex(newWidth, height, result);
 }
 
+// A bend's control offsets: one quadratic Bezier from `start` (offset of the
+// first row/column) through the `control` point (offset `middle`, sitting at
+// row/column `middleAt`) to `end` (offset of the last row/column). In a
+// DPaint bend drag exactly one of the three is nonzero — the pointer's
+// region picks which — but the math is uniform.
+export type BendControls = {
+  start: number;
+  middle: number;
+  middleAt: number;
+  end: number;
+};
+
+// Per-row (or per-column) integer offsets along the bend curve, first sample
+// per cell winning like DPaint's hBendOp, gaps filled from the previous cell.
+// Exported for the bend tools, which need the same numbers for preview
+// placement and the bent outline.
+export function bendOffsets(count: number, bend: BendControls): number[] {
+  const controlAt = Math.min(count - 1, Math.max(0, bend.middleAt));
+  const offsets: (number | null)[] = new Array(count).fill(null);
+  // the ends anchor exactly on their controls — sampling alone would let a
+  // mid-curve value claim an end cell first
+  offsets[0] = Math.round(bend.start);
+  offsets[count - 1] = Math.round(bend.end);
+  const steps = Math.max(64, count * 4);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const a = (1 - t) * (1 - t);
+    const b = 2 * t * (1 - t);
+    const c = t * t;
+    const cell = Math.round(b * controlAt + c * (count - 1));
+    if (cell >= 0 && cell < count && offsets[cell] === null) {
+      offsets[cell] = Math.round(a * bend.start + b * bend.middle + c * bend.end);
+    }
+  }
+  let previous = offsets.find((offset) => offset !== null) ?? 0;
+  return offsets.map((offset) => {
+    previous = offset ?? previous;
+    return previous;
+  });
+}
+
+// Bend horizontally, DPaint's BMBendH (BEND.C): every row shifts sideways by
+// its position on the bend curve — a shear whose offset follows a quadratic
+// instead of a line. The output widens to fit the extremes; uncovered pixels
+// stay transparent. Controls run visually top to bottom.
+export function bendHorizontal(brush: BrushColorIndex, bend: BendControls): BrushColorIndex {
+  const { width, height, indexArray } = brush;
+  const offsets = bendOffsets(height, bend);
+  const minOffset = Math.min(0, ...offsets);
+  const maxOffset = Math.max(0, ...offsets);
+  const newWidth = width + maxOffset - minOffset;
+  const result = new Uint8Array(newWidth * height * STRIDE);
+  const rowBytes = width * STRIDE;
+  for (let v = 0; v < height; v++) {
+    const y = height - v - 1; // rows are stored bottom-up
+    result.set(
+      indexArray.subarray(y * rowBytes, (y + 1) * rowBytes),
+      (y * newWidth + offsets[v] - minOffset) * STRIDE
+    );
+  }
+  return new BrushColorIndex(newWidth, height, result);
+}
+
+// Bend vertically (BMBendV): the transpose — every column shifts up or down
+// along the curve, the output growing in height. Controls run left to right.
+export function bendVertical(brush: BrushColorIndex, bend: BendControls): BrushColorIndex {
+  const { width, height, indexArray } = brush;
+  const offsets = bendOffsets(width, bend);
+  const minOffset = Math.min(0, ...offsets);
+  const maxOffset = Math.max(0, ...offsets);
+  const newHeight = height + maxOffset - minOffset;
+  const result = new Uint8Array(width * newHeight * STRIDE);
+  for (let x = 0; x < width; x++) {
+    // a positive offset moves the column visually down: in bottom-up storage
+    // that lowers the row index
+    const drop = offsets[x] - minOffset;
+    for (let y = 0; y < height; y++) {
+      const targetY = y + (newHeight - height) - drop;
+      copyPixel(indexArray, (y * width + x) * STRIDE, result, (targetY * width + x) * STRIDE);
+    }
+  }
+  return new BrushColorIndex(width, newHeight, result);
+}
+
 // Nearest-neighbor resize (no filtering — pixel art). Both dimensions are
 // clamped to at least 1. Halve/Double and the interactive Stretch are all
 // this function with computed target dimensions.

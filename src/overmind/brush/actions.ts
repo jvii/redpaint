@@ -12,6 +12,9 @@ import {
   rotate,
   resize,
   shearHorizontal,
+  bendHorizontal,
+  bendVertical,
+  BendControls,
 } from '../../algorithm/brushTransform';
 
 // DPaint switches away to (dotted) freehand when a built-in brush is picked
@@ -189,4 +192,17 @@ export const rotateBrushBy = (context: Context, degrees: number): void => {
     return;
   }
   transformBrush(context, (b) => rotate(b, degrees));
+};
+
+export const bendBrushBy = (
+  context: Context,
+  payload: { horizontal: boolean; controls: BendControls }
+): void => {
+  const { start, middle, end } = payload.controls;
+  if (start === 0 && middle === 0 && end === 0) {
+    return;
+  }
+  transformBrush(context, (b) =>
+    payload.horizontal ? bendHorizontal(b, payload.controls) : bendVertical(b, payload.controls)
+  );
 };

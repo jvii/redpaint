@@ -188,7 +188,10 @@ export function Menubar(): JSX.Element {
           ? state.tool.brushRotateTool.center
             ? `Rotate ${state.tool.brushRotateTool.angle}°`
             : 'Rotate'
-          : null;
+          : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool' ||
+              state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
+            ? 'Bend'
+            : null;
   // Flood Fill targets whatever pixel is under the cursor rather than a
   // fixed FG/BG color, so a hover swatch previews what the fill would hit.
   const floodFillHoverColor = state.tool.floodFillTool.hoverColor;
@@ -249,9 +252,9 @@ export function Menubar(): JSX.Element {
         // fixed height, not a viewport percentage: the status strip made the
         // content tall enough that a short window would clip it (overflow is
         // hidden). The markup's height is constant, so a constant fits it.
-        // 504px clears the Brush column's 11 entries (Open..Restore, now the
-        // tallest at ~495px); each menu row adds 28px (16px label + 12px
-        // margin).
+        // 504px clears the Transform column's 11 entries (Flip Horiz..
+        // Restore, the tallest at ~495px); each menu row adds 28px (16px
+        // label + 12px margin).
         style={{ height: state.app.menuOpen ? '504px' : '0px' }}
         onMouseLeave={close}
         onContextMenu={close}
@@ -340,11 +343,15 @@ export function Menubar(): JSX.Element {
                 onSave={handleBrushSave}
                 disabled={!isSaveableBrush(brushHistory.current)}
               ></MenuItemSave>
+            </div>
+            <div className="menu__transform">
               {/* Brush transforms (docs/brush-transforms.md) — custom brushes
-                  only, like DPaint. Double Horiz/Vert exist too but are
+                  only, like DPaint (its Brush menu's Size/Flip/Rotate/Bend
+                  submenus, flattened). Double Horiz/Vert exist too but are
                   keyboard-only (Shift-X/Y), matching the original. The menu
                   closes on selection so the reshaped brush cursor shows at
                   once. */}
+              <div className="menu__header">Transform</div>
               <MenuItem
                 label="Flip Horiz"
                 shortcut="x"
@@ -420,6 +427,24 @@ export function Menubar(): JSX.Element {
                 isSelected={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
                 onClick={(): void => {
                   actions.toolbox.toggleBrushTransformMode('brushShearTool');
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Bend Horiz"
+                disabled={usingBuiltInBrush}
+                isSelected={state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'}
+                onClick={(): void => {
+                  actions.toolbox.toggleBrushTransformMode('brushBendHorizontalTool');
+                  close();
+                }}
+              ></MenuItem>
+              <MenuItem
+                label="Bend Vert"
+                disabled={usingBuiltInBrush}
+                isSelected={state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'}
+                onClick={(): void => {
+                  actions.toolbox.toggleBrushTransformMode('brushBendVerticalTool');
                   close();
                 }}
               ></MenuItem>

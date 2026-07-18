@@ -37,10 +37,14 @@ export const toggleBrushSelectionMode = (context: Context): void => {
 // on the canvas, so they ride the selector-tool slot like brush selection
 // does. Custom brushes only, like every transform. Toggling one while the
 // other is armed switches directly.
-export const toggleBrushTransformMode = (
-  context: Context,
-  tool: 'brushStretchTool' | 'brushShearTool' | 'brushRotateTool'
-): void => {
+export type BrushTransformToolId =
+  | 'brushStretchTool'
+  | 'brushShearTool'
+  | 'brushRotateTool'
+  | 'brushBendHorizontalTool'
+  | 'brushBendVerticalTool';
+
+export const toggleBrushTransformMode = (context: Context, tool: BrushTransformToolId): void => {
   const isSelected = context.state.toolbox.selectedSelectorToolId === tool;
   if (
     !isSelected &&

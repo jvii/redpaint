@@ -214,8 +214,6 @@ A modal drag on the canvas, DPaint-style:
 
 ### Explicitly deferred
 
-- **Bend** (Horiz/Vert) — same row-offset family as shear, add later if
-  wanted.
 - **Perspective** — a whole subsystem in DPaint (own keypad UI, 3-axis state);
   out of scope.
 
@@ -239,4 +237,13 @@ A modal drag on the canvas, DPaint-style:
   corner) matching the center-anchored stamps, and it previews the actual
   rotated bitmap live (not an XOR outline), with a live angle readout in the
   menubar mode slot and Shift snapping to 15° steps.
-- **Phase D (maybe) — Bend; icon-button widget row / menu redesign.**
+- **Phase D — Bend.** ✅ Done. `bendOffsets`/`bendHorizontal`/`bendVertical`
+  port BMBendH/V: rows (or columns) shift along a quadratic Bezier whose one
+  moving control the pointer's region picks, DPaint-style — past the near end
+  bends that end, past the far, the other, between them the middle bulge
+  rides the pointer (its position placing the bulge). The drag previews the
+  actual bent bitmap plus its curved outline via `selectionPolygon` (DPaint
+  showed only the XOR curves). Menu-only + Esc, like the original (it had no
+  bend keys). The transform items also moved into their own **Transform**
+  menu column at this point — the Brush column had outgrown short windows.
+- **Phase E (maybe) — icon-button widget row / menu redesign.**

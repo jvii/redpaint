@@ -155,7 +155,9 @@ function useBrushTransformHotkeys(): void {
         if (
           armed === 'brushStretchTool' ||
           armed === 'brushShearTool' ||
-          armed === 'brushRotateTool'
+          armed === 'brushRotateTool' ||
+          armed === 'brushBendHorizontalTool' ||
+          armed === 'brushBendVerticalTool'
         ) {
           actions.toolbox.toggleBrushTransformMode(armed);
         }

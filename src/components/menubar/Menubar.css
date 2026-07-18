@@ -145,8 +145,10 @@
 /* Position the content inside the overlay */
 .menu__content {
   display: grid;
-  grid-template-columns: repeat(3, max-content);
-  column-gap: 72px;
+  grid-template-columns: repeat(4, max-content);
+  /* four columns since the Transform column split out of Brush — a tighter
+     gap keeps the row within a typical window width */
+  column-gap: 48px;
 }
 
 /* A segmented readout of the current screen where each segment is also the

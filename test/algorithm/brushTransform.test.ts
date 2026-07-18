@@ -6,6 +6,8 @@ import {
   rotate,
   resize,
   shearHorizontal,
+  bendHorizontal,
+  bendVertical,
 } from '../../src/algorithm/brushTransform';
 import { BrushColorIndex } from '../../src/domain/BrushColorIndex';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../../src/domain/CanvasColorIndex';
@@ -165,6 +167,62 @@ describe('shearHorizontal', () => {
   test('rows keep their content, only offset changes', () => {
     const sheared = shearHorizontal(brushFrom(['12', '34']), 2);
     expect(visualRowsOf(sheared)).toEqual(['12..', '.34.']);
+  });
+});
+
+describe('bendHorizontal', () => {
+  test('zero controls are a plain copy', () => {
+    const bent = bendHorizontal(brushFrom(lShape), { start: 0, middle: 0, middleAt: 1, end: 0 });
+    expect(visualRowsOf(bent)).toEqual(lShape);
+  });
+
+  test('a middle bulge arcs the rows, ends anchored', () => {
+    const bent = bendHorizontal(brushFrom(['1', '2', '3']), {
+      start: 0,
+      middle: 2,
+      middleAt: 1,
+      end: 0,
+    });
+    // quadratic Bezier peaks at half the control offset
+    expect(visualRowsOf(bent)).toEqual(['1.', '.2', '3.']);
+  });
+
+  test('dragging the top end curves toward it', () => {
+    const bent = bendHorizontal(brushFrom(['1', '2', '3']), {
+      start: 2,
+      middle: 0,
+      middleAt: 1,
+      end: 0,
+    });
+    expect(bent.width).toBe(3);
+    expect(visualRowsOf(bent)).toEqual(['..1', '.2.', '3..']);
+  });
+
+  test('rows keep their content, only offsets change', () => {
+    const bent = bendHorizontal(brushFrom(['12', '34']), {
+      start: 0,
+      middle: 0,
+      middleAt: 0,
+      end: 3,
+    });
+    const rows = visualRowsOf(bent);
+    expect(rows[0].replace(/\./g, '')).toBe('12');
+    expect(rows[1].replace(/\./g, '')).toBe('34');
+  });
+});
+
+describe('bendVertical', () => {
+  test('is the transpose of the horizontal bend', () => {
+    const bent = bendVertical(brushFrom(['123']), { start: 0, middle: 2, middleAt: 1, end: 0 });
+    expect(bent.width).toBe(3);
+    expect(bent.height).toBe(2);
+    // positive offsets bend downward: the middle column drops, ends anchored
+    expect(visualRowsOf(bent)).toEqual(['1.3', '.2.']);
+  });
+
+  test('zero controls are a plain copy', () => {
+    const bent = bendVertical(brushFrom(lShape), { start: 0, middle: 0, middleAt: 1, end: 0 });
+    expect(visualRowsOf(bent)).toEqual(lShape);
   });
 });
 

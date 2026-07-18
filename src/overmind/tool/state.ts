@@ -40,6 +40,9 @@ export type State = {
   // center = rotation pivot (null while not dragging); startAngle = the
   // pointer's angle at press; angle = live readout in whole degrees
   brushRotateTool: { center: Point | null; startAngle: number; angle: number };
+  // shared by the horizontal and vertical bend tools (never active together);
+  // origin = the press point, which held the bending edge's middle
+  brushBendTool: { origin: Point | null };
   floodFillTool: { hoverColor: PaintColor | null };
   activePaintColor: PaintColor;
   // +1 while painting with the left button (FG), -1 with the right (BG) —
@@ -66,6 +69,7 @@ export const state: State = {
   brushStretchTool: { anchor: null },
   brushShearTool: { anchor: null },
   brushRotateTool: { center: null, startAngle: 0, angle: 0 },
+  brushBendTool: { origin: null },
   floodFillTool: { hoverColor: null },
   activePaintColor: { kind: 'index', colorNumber: 1 },
   shadeDirection: 1,

@@ -157,7 +157,11 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         ? 'ew-resize'
         : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
           ? ROTATE_CURSOR
-          : null;
+          : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'
+            ? 'ew-resize'
+            : state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
+              ? 'ns-resize'
+              : null;
   const canvasStyle = {
     ...CSSZoom,
     ...(state.app.isLoading
