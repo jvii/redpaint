@@ -46,9 +46,15 @@ These rules are absolute — they, not icon style, make the app read retro:
 ## Typography
 
 - Press Start 2P for every piece of UI text, `-webkit-font-smoothing: none`.
-- **16px minimum.** Small text sizes (8px captions) are banned — they were
-  tried and dropped. Larger sizes stay on multiples of 8 (16/24/32) so the
-  bitmap glyphs stay crisp.
+- **16px minimum for Press Start 2P.** The bitmap glyphs only read crisply
+  at multiples of 8, so its sizes stay on 16/24/32 — 8px captions were
+  tried and dropped.
+- **Below 16px, use the plain monospace stack** —
+  `ui-monospace, 'SF Mono', Menlo, Consolas, monospace` — for small
+  supporting text: the caption labels above status values (11px,
+  uppercase, letter-spaced), slider value readouts, and similar fine print.
+  Small monospace beside the bitmap face is itself a period pairing
+  (system console text next to chunky title text).
 - Two heading treatments in panels: _section heads_ (white, 2px white
   underline — Mode, Brush) and _sub-heads_ (dimmed white, letter-spaced, no
   rule — File/Size/Flip/Rotate/Bend). One rule per section, not per
