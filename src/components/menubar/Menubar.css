@@ -424,6 +424,14 @@
   font-size: 16px;
 }
 
+/* stacked variant (the transform gadgets): icon above the label, centered.
+   Same fixed row height as every other gadget; only the axis flips. */
+.wb-gadget--stacked {
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
 /* Section heads (Mode, Brush): one rule per drawer state, not one per
    cluster — these are the only headings that get the underline treatment. */
 .wb-cluster__head {

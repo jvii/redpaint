@@ -23,6 +23,8 @@ type GadgetProps = {
   disabled?: boolean;
   // pressed-in (armed/open) state
   on?: boolean;
+  // icon above the label instead of beside it (the transform gadgets)
+  stacked?: boolean;
 };
 
 export function Gadget({
@@ -32,10 +34,13 @@ export function Gadget({
   onClick,
   disabled = false,
   on = false,
+  stacked = false,
 }: GadgetProps): JSX.Element {
   return (
     <button
-      className={'wb-gadget' + (on ? ' wb-gadget--on' : '')}
+      className={
+        'wb-gadget' + (on ? ' wb-gadget--on' : '') + (stacked ? ' wb-gadget--stacked' : '')
+      }
       type="button"
       title={title}
       aria-label={title}

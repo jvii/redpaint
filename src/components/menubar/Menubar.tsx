@@ -449,6 +449,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<StretchIcon />}
                     label="Stretch"
+                    stacked
                     title="Stretch (drag on canvas) — Z"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushStretchTool'}
@@ -457,6 +458,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<HalveIcon />}
                     label="Halve"
+                    stacked
                     title="Halve — h"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.halveBrush)}
@@ -464,6 +466,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<DoubleIcon />}
                     label="Double"
+                    stacked
                     title="Double — H"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.doubleBrush)}
@@ -473,6 +476,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<FlipHIcon />}
                     label="Horizontal"
+                    stacked
                     title="Flip horizontally — x"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.flipBrushHorizontal)}
@@ -480,6 +484,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<FlipVIcon />}
                     label="Vertical"
+                    stacked
                     title="Flip vertically — y"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.flipBrushVertical)}
@@ -489,6 +494,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<Rotate90Icon />}
                     label="90°"
+                    stacked
                     title="Rotate 90 degrees — z"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.rotateBrush90)}
@@ -496,6 +502,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<RotateAnyIcon />}
                     label="Any Angle"
+                    stacked
                     title="Rotate any angle (drag on canvas) — R"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
@@ -504,6 +511,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<ShearIcon />}
                     label="Shear"
+                    stacked
                     title="Shear (drag on canvas) — S"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
@@ -514,6 +522,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<BendHIcon />}
                     label="Horizontal"
+                    stacked
                     title="Bend horizontally (drag on canvas)"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'}
@@ -522,6 +531,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<BendVIcon />}
                     label="Vertical"
+                    stacked
                     title="Bend vertically (drag on canvas)"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'}
@@ -535,6 +545,7 @@ export function Menubar(): JSX.Element {
                   <Gadget
                     icon={<RestoreIcon />}
                     label="Restore"
+                    stacked
                     title="Restore original brush — B"
                     disabled={
                       usingBuiltInBrush

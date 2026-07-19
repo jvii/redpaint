@@ -101,9 +101,9 @@ export function DoubleIcon({ size = 24 }: IconProps): JSX.Element {
 export function StretchIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <line x1="5" y1="19" x2="19" y2="5" />
-      <polyline points="9,5 19,5 19,15" />
-      <polyline points="15,19 5,19 5,9" />
+      <line x1="4" y1="20" x2="20" y2="4" />
+      <polyline points="10,4 20,4 20,14" />
+      <polyline points="14,20 4,20 4,10" />
     </svg>
   );
 }
@@ -113,11 +113,11 @@ export function StretchIcon({ size = 24 }: IconProps): JSX.Element {
 export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M10 7h10l-4 10H6z" />
-      <line x1="7" y1="2.5" x2="13" y2="2.5" />
-      <polyline points="12,1 14,2.5 12,4" />
-      <line x1="17" y1="21.5" x2="11" y2="21.5" />
-      <polyline points="12,20 10,21.5 12,23" />
+      <path d="M10 8h10l-4 8H6z" />
+      <line x1="6" y1="4" x2="14" y2="4" />
+      <polyline points="12,1.5 14.5,4 12,6.5" />
+      <line x1="18" y1="20" x2="10" y2="20" />
+      <polyline points="12,17.5 9.5,20 12,22.5" />
     </svg>
   );
 }
@@ -128,12 +128,12 @@ export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
 export function BendHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M4 3c4 6 4 12 0 18" />
-      <path d="M13 3c4 6 4 12 0 18" />
-      <line x1="4" y1="3" x2="13" y2="3" />
-      <line x1="4" y1="21" x2="13" y2="21" />
-      <line x1="17" y1="12" x2="22" y2="12" />
-      <polyline points="19,9 22,12 19,15" />
+      <path d="M3 3c4 6 4 12 0 18" />
+      <path d="M12 3c4 6 4 12 0 18" />
+      <line x1="3" y1="3" x2="12" y2="3" />
+      <line x1="3" y1="21" x2="12" y2="21" />
+      <line x1="16.5" y1="12" x2="21" y2="12" />
+      <polyline points="18.5,8.5 22,12 18.5,15.5" />
     </svg>
   );
 }
@@ -141,12 +141,12 @@ export function BendHIcon({ size = 24 }: IconProps): JSX.Element {
 export function BendVIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M3 4c6 4 12 4 18 0" />
-      <path d="M3 13c6 4 12 4 18 0" />
-      <line x1="3" y1="4" x2="3" y2="13" />
-      <line x1="21" y1="4" x2="21" y2="13" />
-      <line x1="12" y1="17" x2="12" y2="22" />
-      <polyline points="9,19 12,22 15,19" />
+      <path d="M3 3c6 4 12 4 18 0" />
+      <path d="M3 12c6 4 12 4 18 0" />
+      <line x1="3" y1="3" x2="3" y2="12" />
+      <line x1="21" y1="3" x2="21" y2="12" />
+      <line x1="12" y1="16.5" x2="12" y2="21" />
+      <polyline points="8.5,18.5 12,22 15.5,18.5" />
     </svg>
   );
 }
