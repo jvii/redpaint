@@ -388,7 +388,7 @@ export function Menubar(): JSX.Element {
             {/* image disk I/O, one click from the rail */}
             <GadgetGroup>
               <GadgetOpen
-                icon={<PixelIcon map={icons.disk} scale={3} />}
+                icon={<PixelIcon map={icons.image} scale={1} />}
                 label="Open"
                 title="Open image..."
                 handleFile={handleImageFileOpen}
