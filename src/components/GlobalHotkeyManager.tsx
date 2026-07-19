@@ -84,7 +84,11 @@ function useMenuHotkey(): void {
 // showing the transformed brush immediately.
 let lastPointerPos: { x: number; y: number } | null = null;
 
-function refreshBrushPreview(): void {
+// Exported for callers outside this file that arm a transform tool while the
+// pointer isn't over the canvas at all — the menu's transform gadgets, whose
+// click leaves the mouse over a gadget the closing menu panel is about to
+// uncover. Same fix, same reasoning as the doc comment above.
+export function refreshBrushPreview(): void {
   if (!lastPointerPos) {
     return;
   }
@@ -160,13 +164,20 @@ function useBrushTransformHotkeys(): void {
           armed === 'brushBendVerticalTool'
         ) {
           actions.toolbox.toggleBrushTransformMode(armed);
+        } else {
+          return;
         }
-        return;
+        break;
       }
       default:
         return;
     }
-    refreshBrushPreview();
+    // Z/S/R and Escape arm or disarm a transform tool, which switches the
+    // active tool — its onExit/onInit effects only run once React re-renders
+    // (async), so an immediate refresh would hit the outgoing tool's handler
+    // and then get wiped by its onExitOverlay cleanup. Deferring a tick lets
+    // the switch land first.
+    setTimeout(refreshBrushPreview, 0);
   }
 
   useEffect((): void => {

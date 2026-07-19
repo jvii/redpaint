@@ -80,7 +80,11 @@ export class ShearBrushTool implements Tool {
       [{ x: topLeft.x + preview.width / 2, y: topLeft.y + preview.heigth / 2 }],
       overlayCanvasController
     );
-    drawBoundsBox(topLeft, preview.width, preview.heigth);
+    // the parallelogram the sheared brush actually fills — top row anchored,
+    // bottom row slid by dx — not the wider axis-aligned box around it
+    overlayCanvasController.selectionPolygon(
+      shearedCorners(anchor, brush.width, brush.heigth, dx)
+    );
   }
 
   public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -97,6 +101,17 @@ function drawBoundsBox(topLeft: Point, width: number, height: number): void {
     x: topLeft.x + width - 1,
     y: topLeft.y + height - 1,
   });
+}
+
+// the brush's entry w x h rectangle with its bottom edge slid by dx — the
+// top row is anchored (shear's pivot), the bottom row is where it lands
+function shearedCorners(anchor: Point, width: number, height: number, dx: number): Point[] {
+  return [
+    { x: anchor.x, y: anchor.y },
+    { x: anchor.x + width, y: anchor.y },
+    { x: anchor.x + width + dx, y: anchor.y + height },
+    { x: anchor.x + dx, y: anchor.y + height },
+  ];
 }
 
 // Horizontal distance dragged past the brush's bottom-right corner (the
