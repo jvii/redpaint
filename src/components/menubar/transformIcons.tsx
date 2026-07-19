@@ -47,12 +47,16 @@ export function FlipVIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// a quarter-turn: arc through the corner, arrowhead on the leading end
+// a right angle (the two legs, plus the small square notch that marks it as
+// exactly 90°) with a quarter-circle arrow sweeping between the legs' ends,
+// so the glyph reads as "turn by this exact corner"
 export function Rotate90Icon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M4 20v-6a10 10 0 0 1 10-10h2" />
-      <polyline points="13,1 16,4 13,7" />
+      <path d="M22 22H3V3" />
+      <path d="M3 16h6v6" />
+      <path d="M7 3A19 19 0 0 1 22 18" />
+      <polyline points="18,15 22,18 24,14" />
     </svg>
   );
 }

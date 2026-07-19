@@ -472,14 +472,14 @@ export function Menubar(): JSX.Element {
                 <GadgetCluster head="Flip">
                   <Gadget
                     icon={<FlipHIcon />}
-                    label="Flip H"
+                    label="Horizontal"
                     title="Flip horizontally — x"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.flipBrushHorizontal)}
                   />
                   <Gadget
                     icon={<FlipVIcon />}
-                    label="Flip V"
+                    label="Vertical"
                     title="Flip vertically — y"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.flipBrushVertical)}
@@ -488,14 +488,14 @@ export function Menubar(): JSX.Element {
                 <GadgetCluster head="Rotate">
                   <Gadget
                     icon={<Rotate90Icon />}
-                    label="Rot 90"
+                    label="90°"
                     title="Rotate 90 degrees — z"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.rotateBrush90)}
                   />
                   <Gadget
                     icon={<RotateAnyIcon />}
-                    label="Rotate"
+                    label="Any Angle"
                     title="Rotate any angle (drag on canvas) — R"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
@@ -513,7 +513,7 @@ export function Menubar(): JSX.Element {
                 <GadgetCluster head="Bend">
                   <Gadget
                     icon={<BendHIcon />}
-                    label="Bend H"
+                    label="Horizontal"
                     title="Bend horizontally (drag on canvas)"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'}
@@ -521,7 +521,7 @@ export function Menubar(): JSX.Element {
                   />
                   <Gadget
                     icon={<BendVIcon />}
-                    label="Bend V"
+                    label="Vertical"
                     title="Bend vertically (drag on canvas)"
                     disabled={usingBuiltInBrush}
                     on={state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'}

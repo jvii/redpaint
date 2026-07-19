@@ -17,7 +17,7 @@ The Workbench 1.3 four, plus bookkeeping colors:
 | Workbench orange (accent: hover, selected labels, armed states) | `#ff8800`                                        |
 | Paper / gadget face                                             | `#ffffff` / `rgb(242, 242, 242)`                 |
 | Ink (borders, shadows, labels)                                  | `#000000`                                        |
-| Disabled / dim label                                            | `#8888aa` (on blue), `rgba(0,0,0,0.3)` (on face) |
+| Disabled / dim label                                            | `#8888aa` (on blue), `rgb(130,130,130)` group-disabled / `rgba(130,130,130,0.45)` single-segment-disabled (on face) |
 | Icon navy (pixel-icon outlines/bodies)                          | `#0a0a28`                                        |
 
 Semantic exceptions, deliberately scarce:
