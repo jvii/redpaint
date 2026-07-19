@@ -7,6 +7,7 @@ import { isBuiltInBrush, Mode } from '../../overmind/brush/state';
 import { screenFormats } from '../../overmind/canvas/state';
 import { colorToRGBString } from '../../tools/util/util';
 import { RetroToggle } from '../ui/RetroToggle';
+import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { Gadget, GadgetGroup, GadgetOpen, GadgetCluster } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import {
@@ -236,14 +237,23 @@ export function Menubar(): JSX.Element {
   const openCanvasSize = openScreenFormat;
 
   // gadget click helpers: an instant transform applies and closes the menu;
-  // a drag transform arms its modal tool and closes so the drag can start
+  // a drag transform arms its modal tool and closes so the drag can start.
+  // Both need the same brush-cursor refresh (see armTransform's comment) —
+  // an instant transform changes the bitmap under a cursor that otherwise
+  // won't repaint until the mouse actually moves.
   const instant = (action: () => void) => (): void => {
     action();
     close();
+    setTimeout(refreshBrushPreview, 150);
   };
   const armTransform = (tool: BrushTransformToolId) => (): void => {
     actions.toolbox.toggleBrushTransformMode(tool);
     close();
+    // the pointer is over the gadget that was just clicked, not the canvas —
+    // once the menu's close transition (Menubar.css, 0.12s) finishes
+    // uncovering it, replay a mousemove there so the armed tool's cursor
+    // preview shows up without waiting for the mouse to actually move
+    setTimeout(refreshBrushPreview, 150);
   };
 
   // The panel's open height is measured from its content rather than a

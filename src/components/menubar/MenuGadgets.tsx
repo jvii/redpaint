@@ -47,7 +47,7 @@ export function Gadget({
       onClick={onClick}
       disabled={disabled}
     >
-      {icon}
+      {stacked ? <span className="wb-gadget__icon">{icon}</span> : icon}
       {label && <span className="wb-gadget__label">{label}</span>}
     </button>
   );

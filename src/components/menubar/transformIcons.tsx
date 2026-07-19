@@ -27,10 +27,10 @@ export function FlipHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
       <line x1="12" y1="2" x2="12" y2="22" strokeDasharray="3 3" />
-      <line x1="9" y1="12" x2="4" y2="12" />
-      <polyline points="7,9 4,12 7,15" />
-      <line x1="15" y1="12" x2="20" y2="12" />
-      <polyline points="17,9 20,12 17,15" />
+      <line x1="10.5" y1="12" x2="2" y2="12" />
+      <polyline points="6,7 2,12 6,17" />
+      <line x1="13.5" y1="12" x2="22" y2="12" />
+      <polyline points="18,7 22,12 18,17" />
     </svg>
   );
 }
@@ -39,10 +39,10 @@ export function FlipVIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
       <line x1="2" y1="12" x2="22" y2="12" strokeDasharray="3 3" />
-      <line x1="12" y1="9" x2="12" y2="4" />
-      <polyline points="9,7 12,4 15,7" />
-      <line x1="12" y1="15" x2="12" y2="20" />
-      <polyline points="9,17 12,20 15,17" />
+      <line x1="12" y1="10.5" x2="12" y2="2" />
+      <polyline points="7,6 12,2 17,6" />
+      <line x1="12" y1="13.5" x2="12" y2="22" />
+      <polyline points="7,18 12,22 17,18" />
     </svg>
   );
 }
@@ -109,15 +109,24 @@ export function StretchIcon({ size = 24 }: IconProps): JSX.Element {
 }
 
 // the box plus what the drag does to it: the top edge slides one way, the
-// bottom the other
+// bottom the other — the box runs the full icon height; the viewBox is
+// widened (not square, unlike the other transform icons) so the arrows
+// flagging each edge's direction can sit clear of the box, out at the sides
 export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M10 8h10l-4 8H6z" />
-      <line x1="6" y1="4" x2="14" y2="4" />
-      <polyline points="12,1.5 14.5,4 12,6.5" />
-      <line x1="18" y1="20" x2="10" y2="20" />
-      <polyline points="12,17.5 9.5,20 12,22.5" />
+    <svg
+      width={(size * 42) / 24}
+      height={size}
+      {...base}
+      viewBox="-4 0 42 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M13 2h12l-4 20H9z" />
+      <line x1="28" y1="7" x2="36.5" y2="7" />
+      <polyline points="32.5,2 36.5,7 32.5,12" />
+      <line x1="6" y1="17" x2="-2.5" y2="17" />
+      <polyline points="1.5,22 -2.5,17 1.5,12" />
     </svg>
   );
 }
@@ -127,26 +136,40 @@ export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
 // the bulge follows
 export function BendHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M3 3c4 6 4 12 0 18" />
-      <path d="M12 3c4 6 4 12 0 18" />
-      <line x1="3" y1="3" x2="12" y2="3" />
-      <line x1="3" y1="21" x2="12" y2="21" />
-      <line x1="16.5" y1="12" x2="21" y2="12" />
-      <polyline points="18.5,8.5 22,12 18.5,15.5" />
+    <svg
+      width={(size * 38) / 24}
+      height={size}
+      {...base}
+      viewBox="0 0 38 24"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M4 2c7 7 7 13 0 20" />
+      <path d="M18 2c7 7 7 13 0 20" />
+      <line x1="4" y1="2" x2="18" y2="2" />
+      <line x1="4" y1="22" x2="18" y2="22" />
+      <line x1="28" y1="12" x2="36.5" y2="12" />
+      <polyline points="32.5,7 36.5,12 32.5,17" />
     </svg>
   );
 }
 
 export function BendVIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path d="M3 3c6 4 12 4 18 0" />
-      <path d="M3 12c6 4 12 4 18 0" />
-      <line x1="3" y1="3" x2="3" y2="12" />
-      <line x1="21" y1="3" x2="21" y2="12" />
-      <line x1="12" y1="16.5" x2="12" y2="21" />
-      <polyline points="8.5,18.5 12,22 15.5,18.5" />
+    <svg
+      width={(size * 30) / 24}
+      height={(size * 38) / 24}
+      {...base}
+      viewBox="0 0 30 38"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M2 4c9 7 17 7 26 0" />
+      <path d="M2 18c9 7 17 7 26 0" />
+      <line x1="2" y1="4" x2="2" y2="18" />
+      <line x1="28" y1="4" x2="28" y2="18" />
+      <line x1="15" y1="28" x2="15" y2="36.5" />
+      <polyline points="10,32.5 15,36.5 20,32.5" />
     </svg>
   );
 }
