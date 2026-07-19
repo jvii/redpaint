@@ -8,7 +8,20 @@ import { screenFormats } from '../../overmind/canvas/state';
 import { colorToRGBString } from '../../tools/util/util';
 import { RetroToggle } from '../ui/RetroToggle';
 import { Gadget, GadgetGroup, GadgetOpen, GadgetCluster } from './MenuGadgets';
-import { icons } from './pixelIcons';
+import { icons, PixelIcon } from './pixelIcons';
+import {
+  FlipHIcon,
+  FlipVIcon,
+  Rotate90Icon,
+  RotateAnyIcon,
+  HalveIcon,
+  DoubleIcon,
+  StretchIcon,
+  ShearIcon,
+  BendHIcon,
+  BendVIcon,
+  RestoreIcon,
+} from './transformIcons';
 import { BrushTransformToolId } from '../../overmind/toolbox/actions';
 import './Menubar.css';
 
@@ -365,13 +378,13 @@ export function Menubar(): JSX.Element {
             {/* image disk I/O, one click from the rail */}
             <GadgetGroup>
               <GadgetOpen
-                icon={icons.disk}
+                icon={<PixelIcon map={icons.disk} scale={3} />}
                 label="Open"
                 title="Open image..."
                 handleFile={handleImageFileOpen}
               />
               <Gadget
-                icon={icons.disk}
+                icon={<PixelIcon map={icons.disk} scale={3} />}
                 label="Save"
                 title="Save image..."
                 onClick={handleImageSave}
@@ -380,7 +393,7 @@ export function Menubar(): JSX.Element {
             {/* everything brush lives behind this: transforms + brush disk */}
             <GadgetGroup>
               <Gadget
-                icon={icons.brush}
+                icon={<PixelIcon map={icons.brush} scale={3} />}
                 label="Brush"
                 title="Brush tools"
                 on={state.app.brushDrawerOpen}
@@ -415,13 +428,13 @@ export function Menubar(): JSX.Element {
               <div className="menu__brush-drawer-row">
                 <GadgetCluster head="File">
                   <GadgetOpen
-                    icon={icons.disk}
+                    icon={<PixelIcon map={icons.disk} scale={3} />}
                     label="Open"
                     title="Open brush..."
                     handleFile={handleBrushFileOpen}
                   />
                   <Gadget
-                    icon={icons.disk}
+                    icon={<PixelIcon map={icons.disk} scale={3} />}
                     label="Save"
                     title="Save brush..."
                     onClick={handleBrushSave}
@@ -434,7 +447,7 @@ export function Menubar(): JSX.Element {
               <div className="menu__brush-drawer-row">
                 <GadgetCluster head="Size">
                   <Gadget
-                    icon={icons.stretch}
+                    icon={<StretchIcon />}
                     label="Stretch"
                     title="Stretch (drag on canvas) — Z"
                     disabled={usingBuiltInBrush}
@@ -442,14 +455,14 @@ export function Menubar(): JSX.Element {
                     onClick={armTransform('brushStretchTool')}
                   />
                   <Gadget
-                    icon={icons.halve}
+                    icon={<HalveIcon />}
                     label="Halve"
                     title="Halve — h"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.halveBrush)}
                   />
                   <Gadget
-                    icon={icons.double}
+                    icon={<DoubleIcon />}
                     label="Double"
                     title="Double — H"
                     disabled={usingBuiltInBrush}
@@ -458,14 +471,14 @@ export function Menubar(): JSX.Element {
                 </GadgetCluster>
                 <GadgetCluster head="Flip">
                   <Gadget
-                    icon={icons.flipH}
+                    icon={<FlipHIcon />}
                     label="Flip H"
                     title="Flip horizontally — x"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.flipBrushHorizontal)}
                   />
                   <Gadget
-                    icon={icons.flipV}
+                    icon={<FlipVIcon />}
                     label="Flip V"
                     title="Flip vertically — y"
                     disabled={usingBuiltInBrush}
@@ -474,14 +487,14 @@ export function Menubar(): JSX.Element {
                 </GadgetCluster>
                 <GadgetCluster head="Rotate">
                   <Gadget
-                    icon={icons.rot90}
+                    icon={<Rotate90Icon />}
                     label="Rot 90"
                     title="Rotate 90 degrees — z"
                     disabled={usingBuiltInBrush}
                     onClick={instant(actions.brush.rotateBrush90)}
                   />
                   <Gadget
-                    icon={icons.rotAny}
+                    icon={<RotateAnyIcon />}
                     label="Rotate"
                     title="Rotate any angle (drag on canvas) — R"
                     disabled={usingBuiltInBrush}
@@ -489,7 +502,7 @@ export function Menubar(): JSX.Element {
                     onClick={armTransform('brushRotateTool')}
                   />
                   <Gadget
-                    icon={icons.shear}
+                    icon={<ShearIcon />}
                     label="Shear"
                     title="Shear (drag on canvas) — S"
                     disabled={usingBuiltInBrush}
@@ -499,7 +512,7 @@ export function Menubar(): JSX.Element {
                 </GadgetCluster>
                 <GadgetCluster head="Bend">
                   <Gadget
-                    icon={icons.bendH}
+                    icon={<BendHIcon />}
                     label="Bend H"
                     title="Bend horizontally (drag on canvas)"
                     disabled={usingBuiltInBrush}
@@ -507,7 +520,7 @@ export function Menubar(): JSX.Element {
                     onClick={armTransform('brushBendHorizontalTool')}
                   />
                   <Gadget
-                    icon={icons.bendV}
+                    icon={<BendVIcon />}
                     label="Bend V"
                     title="Bend vertically (drag on canvas)"
                     disabled={usingBuiltInBrush}
@@ -520,7 +533,7 @@ export function Menubar(): JSX.Element {
                   transformed custom brush it undoes the transforms */}
                 <GadgetCluster>
                   <Gadget
-                    icon={icons.restore}
+                    icon={<RestoreIcon />}
                     label="Restore"
                     title="Restore original brush — B"
                     disabled={

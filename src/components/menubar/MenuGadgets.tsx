@@ -1,5 +1,4 @@
 import React, { JSX, ReactNode, useRef } from 'react';
-import { PixelIcon } from './pixelIcons';
 import './Menubar.css';
 
 // The menu's icon gadgets (the screen-status segment language: 2px black
@@ -12,8 +11,10 @@ export function GadgetGroup({ children }: { children: ReactNode }): JSX.Element 
 }
 
 type GadgetProps = {
-  icon?: string;
-  iconScale?: number;
+  // the caller supplies a ready-to-render icon element - PixelIcon for the
+  // disk/brush glyphs, a transformIcons.tsx component for the drawer's
+  // transform row - so this component stays icon-style agnostic
+  icon?: ReactNode;
   // rendered icon-left, text-right, the same shape everywhere in the menu -
   // the rail (Open/Save/Brush) and the drawer's transform gadgets alike
   label?: string;
@@ -26,7 +27,6 @@ type GadgetProps = {
 
 export function Gadget({
   icon,
-  iconScale = 3,
   label,
   title,
   onClick,
@@ -42,7 +42,7 @@ export function Gadget({
       onClick={onClick}
       disabled={disabled}
     >
-      {icon && <PixelIcon map={icon} scale={iconScale} />}
+      {icon}
       {label && <span className="wb-gadget__label">{label}</span>}
     </button>
   );
@@ -87,11 +87,13 @@ export function GadgetCluster({
 }): JSX.Element {
   return (
     <div className={'wb-cluster' + (className ? ' ' + className : '')}>
-      {/* a lone space collapses to zero height (whitespace-only block content
-          is removed), which threw the blank row's gadgets out of alignment
-          with its siblings' real headings - a non-breaking space doesn't */}
+      {/* the JSX entity renders a non-breaking space for headless clusters: a
+          plain ' ' is whitespace-only block content, which CSS collapses to
+          zero height, dropping the blank row's gadgets out of alignment with
+          its siblings' real headings (the entity survives file rewrites,
+          where a literal invisible NBSP character was twice lost) */}
       <div className={'wb-cluster__subhead' + (head ? '' : ' wb-cluster__subhead--blank')}>
-        {head ?? ' '}
+        {head ?? <>&nbsp;</>}
       </div>
       <GadgetGroup>{children}</GadgetGroup>
     </div>
