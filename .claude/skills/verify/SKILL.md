@@ -34,8 +34,9 @@ Gotchas that cost time:
 - Locate toolbox buttons by class (`toolbox__button--freehand`,
   `--brushselect`, ...) via `getBoundingClientRect`, not hardcoded pixels.
   Built-in brush dots are the unlabeled top rows around y=61-100.
-- The menu (spacebar toggles) exists collapsed at height 0 — its items report
-  positions even when closed. Open it before clicking/screenshotting them.
+- The menu (spacebar toggles) unmounts its content while closed (`.menu__main`
+  etc. aren't in the DOM at all) — open it first, or selectors for its items
+  will just come back empty/null.
 - Real keyboard hotkeys: dispatch both keyDown (with `text`) and keyUp;
   modifiers bitmask: alt=1 ctrl=2 meta=4 shift=8.
 - Zoomed evidence: `Page.captureScreenshot` with `clip: {x,y,width,height,

@@ -3,8 +3,13 @@
    language lives in MenuGadgets.css; the screen readout in ScreenStatus.css;
    the brush drawer in BrushMenu.css. */
 
+/* Collapses via the grid-template-rows 0fr/1fr trick: a single-row grid
+   whose row track animates between "collapsed" and "sized to content"
+   without ever needing to know the content's pixel height in JS. This is
+   what lets Menu.tsx unmount the content entirely while closed instead of
+   keeping it mounted (at height: 0) just to keep a scrollHeight measurement
+   warm for the old JS-driven height animation. */
 .menu {
-  height: 0%;
   width: 100%;
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
@@ -13,13 +18,28 @@
   font-family: 'Press Start 2P';
   background-color: rgb(201, 201, 201); /* fallback color */
   background-color: rgba(0, 85, 170, 0.9);
-  overflow-y: hidden; /* Disable vertical scroll */
-  transition: height 0.12s ease-out;
-  display: flex;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.12s ease-out;
   margin: 0 auto;
   /* gadget labels and status text are UI chrome, not copy — without this a
      drag across the panel leaves text-selection highlights everywhere */
   user-select: none;
+}
+
+.menu--open {
+  grid-template-rows: 1fr;
+}
+
+/* The grid row's own content: needs min-height: 0 to actually shrink past
+   its content's intrinsic height (grid items default to min-height: auto,
+   which would block the collapse), and overflow: hidden to clip that
+   content while collapsed. Flex layout here (not on .menu) lays out
+   .menu__main beside .menu__close, same as before. */
+.menu__collapse {
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
 }
 
 /* Everything but the close button: the screen status strip above the columns */
@@ -31,11 +51,8 @@
      (the gadget clusters) wrap against that width, same as before */
   flex: 1;
   min-width: 0;
-  /* height from its own content, not stretched to match .menu's cross-axis
-     size (the default). .menu's height is a JS-measured px value driven by
-     this element's scrollHeight (Menu.tsx) — if the parent's height could
-     stretch this element, closing the menu would shrink it, corrupting the
-     very measurement that height is read from. */
+  /* height from its own content, not stretched to match .menu__collapse's
+     cross-axis size (the default) */
   align-self: flex-start;
 }
 
