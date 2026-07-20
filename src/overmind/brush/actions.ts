@@ -131,9 +131,8 @@ export const restoreOriginalBrush = (context: Context): void => {
     if (original === null) {
       return;
     }
-    brushRecall.setCustom(original); // drops the snapshot: nothing left to restore
+    brushRecall.restore(original); // drops the snapshot: nothing left to restore
     context.state.brush.hasOriginalBrush = false;
-    context.actions.brush.refreshPreviousBrushSlot();
   }
   context.actions.brush.setMode(context.state.brush.mode);
 };

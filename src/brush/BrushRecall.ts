@@ -26,9 +26,11 @@ class BrushRecall {
   lastCustomBrush: BrushInterface | null;
   // Whatever custom brush setCustom is about to replace — the Previous slot
   // (docs/brush-slots.md): captures a brush the moment a different one
-  // (capture, load, slot recall, restore) takes over, so switching custom
-  // brushes never silently loses the one you were just using. Built-ins are
-  // excluded — they're one click away in the built-in row already.
+  // (capture, load, slot recall) takes over, so switching custom brushes
+  // never silently loses the one you were just using. Restore goes through
+  // the separate restore() method instead, since reverting to a brush you
+  // already had isn't a "switch". Built-ins are excluded from banking —
+  // they're one click away in the built-in row already.
   previousBrush: CustomBrush | null;
 
   // A new custom brush (captured, loaded, restored) becomes current
@@ -66,6 +68,17 @@ class BrushRecall {
     if (this.lastCustomBrush !== null) {
       this.current = this.lastCustomBrush;
     }
+  }
+
+  // Restore / Shift-B reverting a transformed custom brush to its
+  // pre-transform original: unlike setCustom, this doesn't bank the
+  // transformed brush into previousBrush. It's not a switch to a different
+  // brush — it's undoing back to one you already had, so surfacing it in
+  // Previous would be surprising rather than useful.
+  restore(original: BrushInterface): void {
+    this.current = original;
+    this.lastCustomBrush = original;
+    this.originalBrush = null;
   }
 }
 
