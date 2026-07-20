@@ -121,7 +121,7 @@ export function BrushMenu(): JSX.Element {
           <Gadget
             icon={<PixelIcon map={icons.disk} scale={3} />}
             label="Save"
-            title="Save brush..."
+            title={usingBuiltInBrush ? 'Cannot save a built-in brush' : 'Save brush...'}
             onClick={handleBrushSave}
             disabled={!isSaveableBrush(brushRecall.current)}
           />
