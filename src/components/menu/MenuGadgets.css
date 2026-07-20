@@ -1,0 +1,104 @@
+/* ---- icon gadgets (menu rail + brush drawer) ----------------------------
+   The screen-status segment language: 2px black borders, neighbours sharing
+   a single seam, one hard drop shadow per group, orange hover, pressed-in
+   blue when on. Every gadget is the same fixed height so rows line up. */
+
+.wb-gadget-group {
+  display: inline-flex;
+  box-shadow: 4px 4px 0 0 black;
+  vertical-align: top;
+}
+
+.wb-gadget {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 64px;
+  background-color: rgb(242, 242, 242);
+  color: black;
+  border: 2px solid black;
+  border-radius: 0;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 12px;
+  padding: 8px 8px;
+  cursor: pointer;
+}
+
+.wb-gadget + .wb-gadget {
+  border-left: none;
+}
+
+.wb-gadget:hover {
+  background-color: #ff8800;
+  color: white;
+}
+
+.wb-gadget:disabled,
+.wb-gadget:disabled:hover {
+  background-color: rgb(242, 242, 242);
+  color: rgba(0, 0, 0, 0.3);
+  cursor: default;
+}
+
+/* pressed-in: the open/armed gadget, like RetroToggle's selected segment */
+.wb-gadget--on,
+.wb-gadget--on:hover {
+  background-color: rgb(0, 85, 170);
+  color: #ff8800;
+  box-shadow: inset 3px 3px 0 0 rgb(0, 51, 102);
+}
+
+.wb-gadget__label {
+  font-size: 16px;
+}
+
+/* stacked variant (the transform gadgets): icon above the label, centered.
+   Taller than the base gadget height — Bend's icons run past the standard
+   24-unit viewBox (the box needs the full height, the arrow sits clear
+   below it), and without the extra room flexbox has nowhere to shrink but
+   the icon, coming out smaller than every sibling gadget's. Every stacked
+   gadget takes the same height so labels stay aligned across Size / Flip /
+   Rotate / Bend, even though only Bend actually needs the room. */
+.wb-gadget--stacked {
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px;
+  height: 76px;
+}
+
+/* a fixed-height slot above the label, sized to whatever's left once the
+   label and gap are accounted for — icons shorter than that (everything
+   but Bend) center inside it instead of sitting flush against the label */
+.wb-gadget--stacked .wb-gadget__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+}
+
+/* Section heads (Mode, Brush): one rule per drawer state, not one per
+   cluster — these are the only headings that get the underline treatment. */
+.wb-cluster__head {
+  font-size: 16px;
+  color: white;
+  border-bottom: 2px solid white;
+  padding-bottom: 10px;
+  margin: 0 0 20px;
+}
+
+/* Sub-heads inside the drawer (File / Size / Flip / Rotate / Bend): a quiet
+   label, no rule — the drawer already reads as one group under "Brush", so
+   five more underlines were noise, not structure. */
+.wb-cluster__subhead {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 1px;
+  margin: 0 0 10px;
+}
+
+.wb-cluster__subhead--blank {
+  visibility: hidden;
+}

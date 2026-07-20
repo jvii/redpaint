@@ -1,7 +1,8 @@
 import React, { JSX } from 'react';
 import MainCanvas from './canvas/MainCanvas';
 import ZoomCanvas from './canvas/ZoomCanvas';
-import { Menubar } from './menubar/Menubar';
+import { Menubar } from './menu/Menubar';
+import { Menu } from './menu/Menu';
 import { Toolbox } from './toolbox/Toolbox';
 import Palette from './palette/Palette';
 import ColorIndicator from './palette/ColorIndicator';
@@ -20,6 +21,7 @@ function App(): JSX.Element {
   return (
     <div className="app">
       <Menubar />
+      <Menu />
       <div className="canvas-toolbox-container">
         <div className="canvas-container">
           <MainCanvas />

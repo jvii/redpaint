@@ -1,0 +1,153 @@
+/* A segmented readout of the current screen where each segment is also the
+   button that changes it. Same gadget language as RetroToggle — 2px black
+   borders, neighbours sharing a single seam, one drop shadow for the whole
+   group, the hovered segment picking up the Workbench orange. */
+.screen-status {
+  display: inline-flex;
+  box-shadow: 4px 4px 0 0 black;
+}
+
+.screen-status__segment {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+  text-align: left;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  line-height: 1.25;
+  color: black;
+  background-color: rgb(242, 242, 242);
+  border: 2px solid black;
+  border-radius: 0;
+  padding: 11px 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+/* single 2px seam between neighbouring segments */
+.screen-status__segment:not(:first-child) {
+  border-left: 0;
+}
+
+/* the value reads in Workbench blue against the black label */
+.screen-status__segment b {
+  color: rgb(0, 85, 170);
+  font-weight: normal;
+  transition: color 0.2s;
+}
+
+/* hovering a segment shows it is the way into its requester: the whole label,
+   value and caption go white on the Workbench orange, as RetroToggle does */
+.screen-status__segment:hover {
+  background-color: #ff8800;
+  color: white;
+}
+
+.screen-status__segment:hover b,
+.screen-status__segment:hover .screen-status__label {
+  color: white;
+}
+
+/* one label+value pair; the screen segment carries two of them */
+.screen-status__field {
+  display: block;
+}
+
+/* the color count reads in orange, setting the palette depth apart from the
+   two pixel dimensions (the hover rule still whitens it) */
+.screen-status__field--colors b {
+  color: #ff8800;
+}
+
+/* True Color ON earns the full spectrum: the gradient painted through the
+   glyphs top to bottom (background-clip: text). On hover it whitens like any
+   other value. OFF reads plain black, the switched-off state. */
+.screen-status__segment .screen-status__rainbow {
+  /* four bright bands, red to blue. The yellow is amber (#fb0), not pure
+     (#fe0): yellow's luminance lives in its green channel, and at full it is
+     nearly the paper background's — invisible. Amber keeps the hue with
+     three times the contrast distance. */
+  background-image: linear-gradient(180deg, #f00, #fb0, #0a0, #00f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.screen-status__segment:hover .screen-status__rainbow {
+  background-image: none;
+  color: white;
+}
+
+.screen-status__segment .screen-status__truecolor-off {
+  color: black;
+}
+
+/* Press Start 2P only reads crisply at multiples of 8, so the small caption
+   above each value uses the plain monospace face instead. */
+.screen-status__label {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(106, 106, 106);
+  margin-bottom: 5px;
+  transition: color 0.2s;
+}
+
+/* View scaling: a toggle gadget sitting right beside the screen readout it
+   applies to, matching its height, so it reads as part of that group rather
+   than a stray control. Pressed in means the screen stretches to fill. */
+.view-scaling {
+  /* the readout's segments set the strip's height; match them */
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  background-color: rgb(242, 242, 242);
+  border: 2px solid black;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 0 black;
+  padding: 0 8px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+/* 48px over a 12-unit grid: one drawn pixel is 4 css pixels, the same size the
+   bitmap font paints at the close gadget's 32px */
+.view-scaling__icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+.view-scaling:hover {
+  background-color: #ff8800;
+  color: white;
+}
+
+/* Darker than the menu it sits on, not the requesters' Workbench blue: that
+   blue is this menu's own background, so an active gadget would vanish into it.
+   Recessed instead — sunk into the panel, orange label. */
+.view-scaling--on {
+  background-color: rgb(0, 51, 102);
+  color: #ff8800;
+  box-shadow:
+    inset 3px 3px 0 0 rgb(0, 30, 61),
+    4px 4px 0 0 black;
+}
+
+/* the active state keeps its colors on hover — the shadow already reads pressed */
+.view-scaling--on:hover {
+  background-color: rgb(0, 51, 102);
+  color: #ff8800;
+}

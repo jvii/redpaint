@@ -1,5 +1,5 @@
 import React, { JSX, ReactNode, useRef } from 'react';
-import './Menubar.css';
+import './MenuGadgets.css';
 
 // The menu's icon gadgets (the screen-status segment language: 2px black
 // borders, shared seams inside a group, one hard drop shadow per group,

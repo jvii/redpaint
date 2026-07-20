@@ -1,0 +1,25 @@
+/* a plain vertical stack of full-width rows (File; the transforms) — each
+   row wraps its own clusters independently, so a transform row never shares
+   a line with the file gadgets above it */
+.brush-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 44px;
+}
+
+/* the drawer's own Brush head — its underline doubles as the divider between
+   the always-visible strip and the drawer. Its own 20px margin-bottom
+   (.wb-cluster__head) plus the drawer's 28px row gap would stack to more
+   space than Mode gets before its toggle, so this negative margin nets the
+   two out to the same 20px. */
+.brush-menu__head {
+  margin-bottom: -8px;
+}
+
+.brush-menu__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px 32px;
+  align-items: flex-start;
+}

@@ -1,0 +1,102 @@
+.menubar {
+  border-bottom: 1px solid black;
+  background-color: white;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  display: grid;
+  grid-template-areas: 'title modeIndicator floodFillSwatch';
+  /* title/mode columns are sized to their own content only (not stretched
+     to fill leftover space) so the flood fill indicator appearing/disappearing
+     in the third column can't shove them around; the row is pinned to the
+     bar's own height so a taller item in that column can't grow the row and
+     shift "redpaint" vertically */
+  grid-template-columns: max-content max-content 1fr;
+  grid-template-rows: 50px;
+  column-gap: 180px;
+  font-size: 24px;
+  user-select: none;
+  height: 50px; /* helps with Firefox pointer hotspot issues */
+  flex-shrink: 0; /* helps with Firefox pointer hotspot issues */
+  align-items: center;
+}
+
+.menubar__title {
+  grid-area: title;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+}
+
+.menubar__title::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 129px;
+  width: 6px;
+  height: 6px;
+  background-color: #ff0000;
+  border-radius: 0;
+  transform: rotate(70deg);
+  pointer-events: none;
+}
+
+.menubar__mode-indicator {
+  grid-area: modeIndicator;
+  margin: 10px;
+}
+
+/* an armed modal brush transform (Stretch) replaces the mode text — accent
+   color so the armed state is unmissable at a glance */
+.menubar__mode-indicator--transform {
+  color: #ff8800;
+}
+
+.menubar__floodfill-indicator {
+  grid-area: floodFillSwatch;
+  margin: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  /* fits the fixed 50px row exactly (10px margin top/bottom + 30px content) */
+  height: 30px;
+}
+
+.menubar__floodfill-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+
+.menubar__floodfill-swatch {
+  width: 26px;
+  height: 26px;
+  border: 2px solid black;
+  box-sizing: border-box;
+}
+
+.menubar__loading-indicator {
+  font-size: 24px;
+  animation: pulse 0.5s infinite;
+  opacity: 0;
+  transition: opacity 0.1s;
+  line-height: 1;
+  margin-top: -12px;
+}
+
+.menubar__loading-indicator.visible {
+  opacity: 1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
