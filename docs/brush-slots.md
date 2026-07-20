@@ -123,13 +123,18 @@ brush with another silently drops the one you were just using, with the
 get it back from.
 
 The Previous slot plugs this without a new UI language: a ninth, always-
-present cell next to the curated eight, automatically managed —
-`BrushRecall.setCustom` itself banks the outgoing brush into
-`previousBrush` whenever a genuinely different custom brush (not a built-in)
-takes over. No store/clear controls; the user doesn't curate this one.
-Recalling it goes through the same `setCustom` path, so it's a two-way swap
-— recall Previous again and you're back where you started, one press each
-way, DPaint-style.
+present cell next to the curated eight, automatically managed — a shared
+`bankCurrentAsPrevious` step in `BrushRecall` banks the outgoing brush into
+`previousBrush` whenever it's a genuine custom brush (not a built-in) and
+something else — a genuinely different custom brush, or a built-in — takes
+over. No store/clear controls; the user doesn't curate this one. Recalling
+it goes through the same `setCustom` path, so it's a two-way swap — recall
+Previous again and you're back where you started, one press each way,
+DPaint-style. Selecting a built-in also banks (added once Restore's
+built-in-detour was removed, docs/brush-transforms.md — Previous became the
+only way back to a custom brush after that), but the *incoming* built-in
+itself never becomes `previousBrush`: it's one click away in the built-in
+row already.
 
 ## Explicitly not doing
 

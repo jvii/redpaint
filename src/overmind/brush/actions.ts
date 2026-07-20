@@ -32,8 +32,9 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
 
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.state.brush.selectedBuiltInBrushId = brushNumber;
-  // a detour: the custom brush and its pre-transform original stay recallable
+  // banks the outgoing custom brush into Previous (docs/brush-slots.md)
   brushRecall.setBuiltIn(builtInBrushes[brushNumber]);
+  context.actions.brush.refreshPreviousBrushSlot();
   // Matte and Repl are custom-brush-only (disabled in the menu for built-ins,
   // since a built-in shape has no inherent captured color) — falling back to
   // Color there matches the old single-Matte/Color world. Every other mode

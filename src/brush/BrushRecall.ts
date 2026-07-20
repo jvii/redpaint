@@ -21,31 +21,40 @@ class BrushRecall {
   // while a built-in brush is active (BrushMenu.tsx), so this is never read
   // in that state — no need to track it across a built-in detour.
   originalBrush: BrushInterface | null;
-  // Whatever custom brush setCustom is about to replace — the Previous slot
-  // (docs/brush-slots.md): captures a brush the moment a different one
-  // (capture, load, slot recall) takes over, so switching custom brushes
-  // never silently loses the one you were just using. Restore goes through
-  // the separate restore() method instead, since reverting to a brush you
-  // already had isn't a "switch". Built-ins are excluded from banking —
-  // they're one click away in the built-in row already.
+  // Whatever custom brush was active before the current one took over — the
+  // Previous slot (docs/brush-slots.md): banked the moment a different one
+  // (capture, load, slot recall, built-in selection) takes over, so
+  // switching away from a custom brush never silently loses it. Restore
+  // goes through the separate restore() method instead, since reverting to
+  // a brush you already had isn't a "switch". The *incoming* brush being a
+  // built-in is fine to bank away from (bankCurrentAsPrevious) — it's the
+  // built-in itself that's excluded from ever becoming previousBrush, since
+  // it's one click away in the built-in row already.
   previousBrush: CustomBrush | null;
+
+  // The brush a switch is about to leave behind survives in previousBrush,
+  // as long as it's a genuine custom brush and not a built-in (built-ins
+  // don't need a way back — see previousBrush's comment)
+  private bankCurrentAsPrevious(): void {
+    if (this.current instanceof CustomBrush && !isBuiltInBrush(this.current)) {
+      this.previousBrush = this.current;
+    }
+  }
 
   // A new custom brush (captured, loaded, restored) becomes current
   setCustom(newBrush: BrushInterface): void {
-    if (
-      this.current instanceof CustomBrush &&
-      !isBuiltInBrush(this.current) &&
-      this.current !== newBrush
-    ) {
-      this.previousBrush = this.current;
+    if (this.current !== newBrush) {
+      this.bankCurrentAsPrevious();
     }
     this.current = newBrush;
     this.originalBrush = null;
   }
 
-  // A built-in brush becomes current: a detour, so the pre-transform
-  // snapshot survives it (moot in practice — see originalBrush's comment)
+  // A built-in brush becomes current: banks the outgoing custom brush into
+  // Previous same as setCustom, since Restore no longer offers a way back
+  // to it from a built-in (docs/brush-transforms.md)
   setBuiltIn(newBrush: BrushInterface): void {
+    this.bankCurrentAsPrevious();
     this.current = newBrush;
   }
 
