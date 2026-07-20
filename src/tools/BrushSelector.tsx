@@ -2,7 +2,7 @@ import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { brushHistory } from '../brush/BrushHistory';
+import { brushRecall } from '../brush/BrushRecall';
 import { CustomBrush } from '../brush/CustomBrush';
 
 export class BrushSelector implements Tool {
@@ -32,9 +32,10 @@ export class BrushSelector implements Tool {
     const height = Math.abs(mousePos.y - start.y) + 1;
 
     const customBrush = CustomBrush.fromCanvasArea(topLeft, width, height);
-    brushHistory.setCustom(customBrush);
+    brushRecall.setCustom(customBrush);
     overmind.actions.brush.clearBuiltInBrushSelection();
     overmind.actions.brush.setMode('Matte');
+    overmind.actions.brush.refreshPreviousBrushSlot();
 
     // exit brush selection tool
     overmind.actions.toolbox.toggleBrushSelectionMode();

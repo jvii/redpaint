@@ -2,7 +2,7 @@ import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { brushHistory } from '../brush/BrushHistory';
+import { brushRecall } from '../brush/BrushRecall';
 import { CustomBrush } from '../brush/CustomBrush';
 import { resize } from '../algorithm/brushTransform';
 import { Point } from '../types';
@@ -24,7 +24,7 @@ export class StretchBrushTool implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }
@@ -52,7 +52,7 @@ export class StretchBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }
@@ -118,7 +118,7 @@ function dragSize(
 ): { width: number; height: number } {
   let width = Math.max(1, mousePos.x - anchor.x);
   let height = Math.max(1, mousePos.y - anchor.y);
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (keepAspect && brush instanceof CustomBrush) {
     const dx = mousePos.x - anchor.x;
     const dy = mousePos.y - anchor.y;

@@ -116,7 +116,7 @@ brush texture. A transform:
 4. bumps `lastChanged`.
 
 Rather than mutating in place, `transform(fn)` returns a **new `CustomBrush`**
-pushed via `brushHistory.set(...)` — that keeps `lastChanged`-based texture
+pushed via `brushRecall.set(...)` — that keeps `lastChanged`-based texture
 caching trivially correct and gives brush history for free.
 
 **Handle:** dxpaint always stamps center-anchored (`CustomBrush.tsx:178`), so
@@ -124,12 +124,12 @@ DPaint's handle bookkeeping (flip/rot90 remapping `xoffs/yoffs`) disappears:
 the center is invariant under flips and rot90, and resized/rotated brushes
 just re-center. A real win from the simpler model.
 
-**Original snapshot:** `brushHistory.originalBrush`, captured when a custom
+**Original snapshot:** `brushRecall.originalBrush`, captured when a custom
 brush is first transformed (`setTransformed`), with a reactive mirror
 `state.brush.hasOriginalBrush` for the menu item's disabled state. Semantics:
 
 - interactive transforms (Phase C) re-derive from it every frame;
-- capturing/loading/selecting any brush clears it (`brushHistory.set`) —
+- capturing/loading/selecting any brush clears it (`brushRecall.set`) —
   docs/brush-slots.md Phase A refines this so a built-in detour no longer
   drops it;
 - a **Restore** menu item / `Shift-B` swaps it back in.
@@ -142,7 +142,7 @@ brush is first transformed (`setTransformed`), with a reactive mirror
 
 One action per instant transform (`flipBrushHorizontal`, `rotateBrush90`,
 `halveBrush`, …). Each guards like DPaint did: no-op unless
-`brushHistory.current instanceof CustomBrush` **and** it is not a built-in
+`brushRecall.current instanceof CustomBrush` **and** it is not a built-in
 (`!isBuiltInBrush(...)`). Built-in brushes are never transformed — same as
 DPaint (`curpen == USERBRUSH` guard); the menu items and hotkeys are inert
 while one is selected, and the menu items render disabled.

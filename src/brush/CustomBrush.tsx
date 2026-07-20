@@ -175,7 +175,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   // Returns a new transformed brush rather than mutating: the caller swaps it
-  // in via brushHistory.setTransformed, which keeps lastChanged-based texture
+  // in via brushRecall.setTransformed, which keeps lastChanged-based texture
   // caching correct and the pre-transform original recallable. Transforms
   // always read the matte (source-of-truth) bitmap, never a colorized variant.
   public transform(fn: (index: BrushColorIndex) => BrushColorIndex): CustomBrush {

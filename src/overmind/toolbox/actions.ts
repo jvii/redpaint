@@ -1,6 +1,6 @@
 import { Context } from '../../overmind';
 import { DrawingToolId } from './state';
-import { brushHistory } from '../../brush/BrushHistory';
+import { brushRecall } from '../../brush/BrushRecall';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { isBuiltInBrush } from '../brush/state';
 
@@ -48,7 +48,7 @@ export const toggleBrushTransformMode = (context: Context, tool: BrushTransformT
   const isSelected = context.state.toolbox.selectedSelectorToolId === tool;
   if (
     !isSelected &&
-    (!(brushHistory.current instanceof CustomBrush) || isBuiltInBrush(brushHistory.current))
+    (!(brushRecall.current instanceof CustomBrush) || isBuiltInBrush(brushRecall.current))
   ) {
     return;
   }

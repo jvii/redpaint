@@ -1,5 +1,6 @@
 import { PixelBrush } from '../../brush/PixelBrush';
 import { createBuiltInBrush } from '../../brush/BuiltInBrushFactory';
+import { BRUSH_SLOT_COUNT } from '../../brush/BrushSlots';
 
 import type { Mode } from './mode';
 export type { Mode } from './mode';
@@ -26,15 +27,30 @@ export function isBuiltInBrush(brush: unknown): boolean {
   return Object.values(builtInBrushes).includes(brush as never);
 }
 
+// Reactive mirror of one brushSlots entry (docs/brush-slots.md Phase B) —
+// the class instance itself stays out of Overmind state, like brushRecall.
+export type BrushSlotState = {
+  occupied: boolean;
+  thumbnail: string | null;
+  // the brush's own pixel dimensions, captioned onto the thumbnail — a
+  // scaled-to-fit thumbnail can't show actual size, and this is cheaper
+  // than reading it back out of the rendered image
+  size: { width: number; height: number } | null;
+};
+
 export type State = {
   // null when a custom (captured or loaded) brush is active
   selectedBuiltInBrushId: BuiltInBrushId | null;
   mode: Mode;
-  // reactive mirrors of brushHistory's recall references (the class itself
+  // reactive mirrors of brushRecall's recall references (the class itself
   // is not observable state) — they drive the Restore menu item's disabled
   // state; see docs/brush-slots.md for the recall chain
   hasOriginalBrush: boolean;
   hasLastCustomBrush: boolean;
+  slots: BrushSlotState[];
+  // mirror of brushRecall.previousBrush (docs/brush-slots.md) — the
+  // automatically-managed companion to the curated slots above
+  previousSlot: BrushSlotState;
 };
 
 export const state: State = {
@@ -42,4 +58,10 @@ export const state: State = {
   mode: 'Color',
   hasOriginalBrush: false,
   hasLastCustomBrush: false,
+  slots: Array.from({ length: BRUSH_SLOT_COUNT }, () => ({
+    occupied: false,
+    thumbnail: null,
+    size: null,
+  })),
+  previousSlot: { occupied: false, thumbnail: null, size: null },
 };

@@ -2,7 +2,7 @@ import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { brushHistory } from '../brush/BrushHistory';
+import { brushRecall } from '../brush/BrushRecall';
 import { CustomBrush } from '../brush/CustomBrush';
 import { shearHorizontal } from '../algorithm/brushTransform';
 import { Point } from '../types';
@@ -23,7 +23,7 @@ export class ShearBrushTool implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }
@@ -50,7 +50,7 @@ export class ShearBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }
@@ -82,9 +82,7 @@ export class ShearBrushTool implements Tool {
     );
     // the parallelogram the sheared brush actually fills — top row anchored,
     // bottom row slid by dx — not the wider axis-aligned box around it
-    overlayCanvasController.selectionPolygon(
-      shearedCorners(anchor, brush.width, brush.heigth, dx)
-    );
+    overlayCanvasController.selectionPolygon(shearedCorners(anchor, brush.width, brush.heigth, dx));
   }
 
   public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -117,7 +115,7 @@ function shearedCorners(anchor: Point, width: number, height: number, dx: number
 // Horizontal distance dragged past the brush's bottom-right corner (the
 // anchored top-left plus the entry width) — DPaint's dx = mx - bpl.x - w.
 function shearAmount(anchor: Point, mousePos: Point): number {
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   const width = brush instanceof CustomBrush ? brush.width : 0;
   return mousePos.x - anchor.x - width;
 }

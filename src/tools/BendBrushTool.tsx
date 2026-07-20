@@ -2,7 +2,7 @@ import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { brushHistory } from '../brush/BrushHistory';
+import { brushRecall } from '../brush/BrushRecall';
 import { CustomBrush } from '../brush/CustomBrush';
 import {
   BendControls,
@@ -36,14 +36,14 @@ export class BendBrushTool implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    if (brushHistory.current instanceof CustomBrush) {
+    if (brushRecall.current instanceof CustomBrush) {
       overmind.actions.tool.brushBendStart(getMousePos(event));
     }
   }
 
   public onMouseUp(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const origin = overmind.state.tool.brushBendTool.origin;
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!origin || !(brush instanceof CustomBrush)) {
       return;
     }
@@ -58,7 +58,7 @@ export class BendBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }

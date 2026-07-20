@@ -1,7 +1,7 @@
-import { Context } from '../../overmind'
+import { Context } from '../../overmind';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
-import { brushHistory } from '../../brush/BrushHistory';
+import { brushRecall } from '../../brush/BrushRecall';
 import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
 
@@ -57,7 +57,7 @@ export const setForegroundColor = (context: Context, key: string): void => {
   context.state.palette.foregroundColorId = key;
   context.state.palette.foregroundRgb = null;
   context.actions.tool.activeToolToFGFillStyle();
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (brush instanceof CustomBrush) {
     brush.setFGColor();
   }
@@ -68,7 +68,7 @@ export const setForegroundColor = (context: Context, key: string): void => {
 export const setForegroundRgb = (context: Context, color: Color): void => {
   context.state.palette.foregroundRgb = { ...color };
   context.actions.tool.activeToolToFGFillStyle();
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (brush instanceof CustomBrush) {
     brush.setFGColor();
   }
@@ -76,7 +76,7 @@ export const setForegroundRgb = (context: Context, color: Color): void => {
 
 export const setBackgroundColor = (context: Context, key: string): void => {
   context.state.palette.backgroundColorId = key;
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (brush instanceof CustomBrush) {
     brush.setBGColor();
   }

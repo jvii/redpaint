@@ -1,0 +1,149 @@
+/* The brush-slot strip: a row of plain thumbnail cells (wb-gadget's 2px
+   black border, orange hover, shared seams — GadgetCluster wraps this in
+   the group's drop shadow), no permanently visible controls. An empty cell
+   shows only the download glyph ("store here"); an occupied cell is a bare
+   thumbnail, with the size caption and Clear revealed as a hover overlay —
+   deliberately no way to overwrite an occupied slot without clearing it
+   first. See docs/brush-slots.md for the design this settled on and why. */
+
+.brush-slot-strip {
+  display: flex;
+}
+
+.brush-slot {
+  width: 140px;
+}
+
+.brush-slot__cell {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 140px;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.brush-slot + .brush-slot .brush-slot__cell {
+  border-left: none;
+}
+
+/* the load-preview checker (LoadPreview.css), only once a brush is stored:
+   transparency in the brush itself needs to read against something other
+   than flat white, or a transparent-background brush looks identical to
+   the (also white) empty slot. An empty slot stays plain white — the
+   checker is specifically the "this is transparent" signal, not a generic
+   empty-cell texture. */
+.brush-slot__cell.is-occupied {
+  background-color: #e8e8e8;
+  background-image:
+    linear-gradient(45deg, #cfcfcf 25%, transparent 25%),
+    linear-gradient(135deg, #cfcfcf 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #cfcfcf 75%),
+    linear-gradient(135deg, transparent 75%, #cfcfcf 75%);
+  background-size: 12px 12px;
+  background-position:
+    0 0,
+    6px 0,
+    6px -6px,
+    0 6px;
+}
+
+.brush-slot__cell:hover {
+  background-color: #ff8800;
+  background-image: none;
+}
+
+/* an empty, disabled (nothing to store from a built-in) slot reads as a
+   plain dimmed well — no checker, no hover reaction */
+.brush-slot__cell.is-disabled {
+  cursor: default;
+  background-color: rgb(242, 242, 242);
+  background-image: none;
+}
+
+.brush-slot__cell.is-disabled:hover {
+  background-color: rgb(242, 242, 242);
+}
+
+.brush-slot__thumbnail {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+}
+
+/* the download glyph standing in for an empty slot's Store affordance —
+   plain black at rest, the same weight as the transform gadgets' icons
+   (wb-gadget's default color: black), white on the cell's own orange hover;
+   only actually dimmed when there's nothing to store (is-disabled), matching
+   wb-gadget:disabled's same rgba(0,0,0,0.3) */
+.brush-slot__store-icon {
+  color: black;
+}
+
+.brush-slot__cell:hover .brush-slot__store-icon {
+  color: white;
+}
+
+.brush-slot__cell.is-disabled .brush-slot__store-icon {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+/* the hover-only overlay bar: size caption + Clear, top of the cell, over
+   the thumbnail rather than pushing it down — revealed only on hover so an
+   occupied slot reads as calm until you're about to act on it */
+.brush-slot__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  padding: 0 0 0 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+
+.brush-slot__cell:hover .brush-slot__overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.brush-slot__overlay-size {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: white;
+}
+
+.brush-slot__overlay-clear {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: transparent;
+  border: none;
+  border-left: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 0;
+  padding: 0;
+  font-family: 'Press Start 2P';
+  font-size: 14px;
+  line-height: 1;
+  color: white;
+  cursor: pointer;
+}
+
+.brush-slot__overlay-clear:hover {
+  background-color: #ff8800;
+}

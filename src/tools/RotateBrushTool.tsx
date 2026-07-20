@@ -2,7 +2,7 @@ import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { brushHistory } from '../brush/BrushHistory';
+import { brushRecall } from '../brush/BrushRecall';
 import { CustomBrush } from '../brush/CustomBrush';
 import { rotate } from '../algorithm/brushTransform';
 import { Point } from '../types';
@@ -25,7 +25,7 @@ export class RotateBrushTool implements Tool {
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }
@@ -53,7 +53,7 @@ export class RotateBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!(brush instanceof CustomBrush)) {
       return;
     }

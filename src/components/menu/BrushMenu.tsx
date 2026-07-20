@@ -1,11 +1,13 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { brushHistory } from '../../brush/BrushHistory';
+import { brushRecall } from '../../brush/BrushRecall';
 import { isBuiltInBrush } from '../../overmind/brush/state';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { BrushTransformToolId } from '../../overmind/toolbox/actions';
 import { Gadget, GadgetCluster, GadgetOpen } from './MenuGadgets';
+import { BrushSlotStrip } from './BrushSlotStrip';
+import { PreviousBrushSlot } from './PreviousBrushSlot';
 import { icons, PixelIcon } from './pixelIcons';
 import {
   FlipHIcon,
@@ -50,7 +52,7 @@ export function BrushMenu(): JSX.Element {
   };
 
   const handleBrushSave = (): void => {
-    const brush = brushHistory.current;
+    const brush = brushRecall.current;
     if (!isSaveableBrush(brush) || !(brush instanceof CustomBrush)) {
       return;
     }
@@ -98,7 +100,7 @@ export function BrushMenu(): JSX.Element {
             label="Save"
             title="Save brush..."
             onClick={handleBrushSave}
-            disabled={!isSaveableBrush(brushHistory.current)}
+            disabled={!isSaveableBrush(brushRecall.current)}
           />
         </GadgetCluster>
       </div>
@@ -213,6 +215,13 @@ export function BrushMenu(): JSX.Element {
             onClick={instant(actions.brush.restoreOriginalBrush)}
           />
         </GadgetCluster>
+      </div>
+      {/* the deliberate stash (docs/brush-slots.md), its own row below the
+          transforms — recall isn't a transform, and a click here should
+          never trigger the instant-transform's "close the menu" behavior */}
+      <div className="brush-menu__row">
+        <BrushSlotStrip />
+        <PreviousBrushSlot />
       </div>
     </div>
   );

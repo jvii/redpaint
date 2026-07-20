@@ -6,7 +6,7 @@ import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { distinctOpaqueColorsByFrequency } from '../../algorithm/imageColors';
 import { remapColorsGreedy } from '../../algorithm/quantize';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { brushHistory } from '../../brush/BrushHistory';
+import { brushRecall } from '../../brush/BrushRecall';
 import { Color } from '../../types';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
@@ -115,12 +115,16 @@ function BrushLoadDialogOpen(): JSX.Element {
       colorIndex = BrushColorIndex.fromImageData(image);
     } else {
       const palette = state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b }));
-      colorIndex = BrushColorIndex.fromRemappedImageData(image, remapToIndexByColor(image, palette));
+      colorIndex = BrushColorIndex.fromRemappedImageData(
+        image,
+        remapToIndexByColor(image, palette)
+      );
     }
 
-    brushHistory.setCustom(new CustomBrush(colorIndex, image.width, image.height));
+    brushRecall.setCustom(new CustomBrush(colorIndex, image.width, image.height));
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
+    actions.brush.refreshPreviousBrushSlot();
     // DPaint switches to (dotted) freehand after loading a brush — matches
     // the brush selector tool's own switch after capturing one.
     actions.toolbox.setSelectedDrawingTool('dottedFreehand');

@@ -5,7 +5,7 @@ import { DrawTarget } from '../canvas/CanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { DrawCallBuffer } from './DrawCallBuffer';
 import { symmetryCopies, SymmetryCopy } from '../algorithm/symmetry';
-import { brushHistory } from './BrushHistory';
+import { brushRecall } from './BrushRecall';
 import { isBuiltInBrush } from '../overmind/brush/state';
 import { overmind } from '../index';
 
@@ -257,4 +257,4 @@ function rectForCopy(start: Point, end: Point, copy: SymmetryCopy): [Point, Poin
 }
 
 // Singleton wrapping whatever brush is currently selected.
-export const symmetryBrush = new SymmetryBrush((): BrushInterface => brushHistory.current);
+export const symmetryBrush = new SymmetryBrush((): BrushInterface => brushRecall.current);

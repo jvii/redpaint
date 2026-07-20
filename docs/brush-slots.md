@@ -6,7 +6,7 @@ Companion to docs/brush-transforms.md, which owns the transform snapshot.
 
 ## Where this starts from
 
-`brushHistory` (`src/brush/BrushHistory.ts`) currently keeps:
+`brushRecall` (`src/brush/BrushRecall.ts`) currently keeps:
 
 - `current` — the active brush;
 - `originalBrush` — the pre-transform snapshot for Restore / `Shift-B`;
@@ -38,7 +38,7 @@ slots as the feature; keep the automatic layer tiny and named.
 
 ## Phase A — slim the automatic layer
 
-`BrushHistory` becomes named single references, no array:
+`BrushRecall` becomes named single references, no array:
 
 - `current` — as now.
 - `originalBrush` — as now, **but no longer dropped when a built-in brush is
@@ -69,20 +69,33 @@ Overmind state).
 
 A fixed row of **8 slots**, each holding one unsaved `CustomBrush`.
 
-- **Model:** `brushSlots: (CustomBrush | null)[]` module-level alongside
-  `brushHistory` (class instances stay out of Overmind state; a reactive
-  mirror carries what the UI needs — per-slot occupied flag + a thumbnail
-  data-URL + a version stamp).
-- **Actions:** `storeBrushInSlot(i)` (current brush; no-op for built-ins),
-  `recallBrushFromSlot(i)` (activates a *copy* — transforming a recalled
-  brush must not mutate the stored one), `clearSlot(i)`.
-- **UI:** a thumbnail strip in the menu panel, in the `screen-status__segment`
-  visual style (this is where the icon-button/status-widget direction from
-  brush-transforms.md lands first). Slots are visual by nature — a text menu
-  cannot show which brush is which. Interactions: click an occupied slot to
-  recall; store/clear via right-click or a small store button; empty slots
-  show a dimmed placeholder. Thumbnails render via `CustomBrush.toImageData`
-  scaled into a fixed box (nearest-neighbor, letterboxed).
+- **Model:** `brushSlots` (`src/brush/BrushSlots.ts`), a `(CustomBrush | null)[]`
+  module-level alongside `brushRecall` (class instances stay out of Overmind
+  state). A reactive mirror, `state.brush.slots: BrushSlotState[]`, carries
+  what the UI needs per slot: `occupied`, a rendered `thumbnail` data-URL, and
+  `size` (the brush's own width/height, captioned on since a scaled-to-fit
+  thumbnail can't show it).
+- **Actions** (`src/overmind/brush/actions.ts`): `storeBrushInSlot(i)`
+  (current brush; no-op for built-ins), `recallBrushFromSlot(i)` (activates a
+  *copy* — transforming a recalled brush must not mutate the stored one, via
+  `BrushSlots.recall`'s identity-transform clone), `clearBrushSlot(i)`.
+  Thumbnails render via `src/brush/brushThumbnail.ts`
+  (`CustomBrush.toImageData` scaled into a fixed square, nearest-neighbor,
+  letterboxed by `src/algorithm/thumbnail.ts#fitLetterboxed`, the one part of
+  this that's pure and tested).
+- **UI** (`BrushSlotStrip.tsx`, its own `GadgetCluster` next to Previous):
+  landed on a deliberately calm style after a few rounds — no permanently
+  visible controls. An empty slot is a plain white cell with a dimmed-black
+  download-glyph (`BrushSlotIcons.tsx#StoreIcon`, a line icon like the
+  transform gadgets — click anywhere to store the current brush); an
+  occupied slot is a bare thumbnail (the checker background now appears only
+  when occupied, since it signals the *brush's* transparency, not "this cell
+  is empty"). The size caption and a Clear button only appear as a hover
+  overlay across the top — so overwriting an occupied slot means clearing it
+  first, deliberately, rather than by accident. An earlier iteration kept
+  small store/clear buttons and a size caption permanently visible on every
+  cell; it worked but read as busier than the rest of the menu, hence the
+  hover-reveal version.
 - **Keyboard:** deferred until the strip exists — digit keys are attractive
   but likely wanted for palette/tool shortcuts; decide with real usage.
 
@@ -100,6 +113,24 @@ serialized (width/height + base64 index array). Two things to respect:
   localStorage caps around 5. Either cap what persists (skip slots over ~256²)
   or move to IndexedDB. Decide when it hurts.
 
+## Phase B addendum — the Previous slot
+
+A gap the recall chain (Phase A) didn't cover: swapping between two *custom*
+brushes has no way back. Restore/Shift-B only handles built-in↔custom and
+pre/post-transform; a capture, load, or slot recall that replaces one custom
+brush with another silently drops the one you were just using, with the
+`history` array gone (Phase A deleted it on purpose) there's nothing left to
+get it back from.
+
+The Previous slot plugs this without a new UI language: a ninth, always-
+present cell next to the curated eight, automatically managed —
+`BrushRecall.setCustom` itself banks the outgoing brush into
+`previousBrush` whenever a genuinely different custom brush (not a built-in)
+takes over. No store/clear controls; the user doesn't curate this one.
+Recalling it goes through the same `setCustom` path, so it's a two-way swap
+— recall Previous again and you're back where you started, one press each
+way, DPaint-style.
+
 ## Explicitly not doing
 
 - **History as selectable UI** — a recency wall of near-duplicate bitmaps;
@@ -113,7 +144,8 @@ serialized (width/height + base64 index array). Two things to respect:
 
 - **Phase A — recall chain.** ✅ Done. `lastCustomBrush`, snapshot survives
   built-in detours, `Shift-B`/Restore walks the chain, `history` array
-  deleted (`BrushHistory` now has intent-named setters: `setCustom`,
+  deleted (`BrushRecall` now has intent-named setters: `setCustom`,
   `setBuiltIn`, `setTransformed`, `reactivateLastCustom`).
-- **Phase B — slots.** Model + actions + thumbnail strip in the menu.
+- **Phase B — slots.** ✅ Done. Model + actions + thumbnail strip in the
+  menu, plus the automatic Previous slot (addendum above).
 - **Phase C (maybe) — persistence** once slots prove out.

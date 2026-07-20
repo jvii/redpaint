@@ -1,15 +1,18 @@
 import { BrushInterface } from './Brush';
 import { PixelBrush } from './PixelBrush';
+import { CustomBrush } from './CustomBrush';
+import { isBuiltInBrush } from '../overmind/brush/state';
 
 // The automatic brush-recall layer (docs/brush-slots.md): a few named
 // references, deliberately not a history list. The class is not observable
 // state — reactive mirrors of "is there something to recall" live in
 // overmind state.brush (hasOriginalBrush, hasLastCustomBrush).
-class BrushHistory {
+class BrushRecall {
   constructor() {
     this.current = new PixelBrush();
     this.originalBrush = null;
     this.lastCustomBrush = null;
+    this.previousBrush = null;
   }
   current: BrushInterface;
   // The pre-transform brush, restorable via Restore / Shift-B
@@ -21,9 +24,22 @@ class BrushHistory {
   // transformed state — what Shift-B re-activates from a built-in brush
   // (DPaint's UserBr). Goes stale by replacement, never cleared.
   lastCustomBrush: BrushInterface | null;
+  // Whatever custom brush setCustom is about to replace — the Previous slot
+  // (docs/brush-slots.md): captures a brush the moment a different one
+  // (capture, load, slot recall, restore) takes over, so switching custom
+  // brushes never silently loses the one you were just using. Built-ins are
+  // excluded — they're one click away in the built-in row already.
+  previousBrush: CustomBrush | null;
 
   // A new custom brush (captured, loaded, restored) becomes current
   setCustom(newBrush: BrushInterface): void {
+    if (
+      this.current instanceof CustomBrush &&
+      !isBuiltInBrush(this.current) &&
+      this.current !== newBrush
+    ) {
+      this.previousBrush = this.current;
+    }
     this.current = newBrush;
     this.lastCustomBrush = newBrush;
     this.originalBrush = null;
@@ -53,4 +69,4 @@ class BrushHistory {
   }
 }
 
-export const brushHistory = new BrushHistory();
+export const brushRecall = new BrushRecall();

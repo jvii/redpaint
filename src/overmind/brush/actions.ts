@@ -2,7 +2,9 @@ import { Context } from '../../overmind';
 import { Mode, BuiltInBrushId, builtInBrushes, isBuiltInBrush } from './state';
 import { usesColorizedBrush } from './mode';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { brushHistory } from '../../brush/BrushHistory';
+import { brushRecall } from '../../brush/BrushRecall';
+import { brushSlots } from '../../brush/BrushSlots';
+import { renderBrushThumbnail } from '../../brush/brushThumbnail';
 import { DrawingToolId } from '../toolbox/state';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import {
@@ -31,7 +33,7 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.state.brush.selectedBuiltInBrushId = brushNumber;
   // a detour: the custom brush and its pre-transform original stay recallable
-  brushHistory.setBuiltIn(builtInBrushes[brushNumber]);
+  brushRecall.setBuiltIn(builtInBrushes[brushNumber]);
   // Matte and Repl are custom-brush-only (disabled in the menu for built-ins,
   // since a built-in shape has no inherent captured color) — falling back to
   // Color there matches the old single-Matte/Color world. Every other mode
@@ -50,7 +52,7 @@ export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId
 };
 
 // Called when a new custom (captured or loaded) brush becomes the current
-// brush (the brushHistory.setCustom that installed it dropped the snapshot)
+// brush (the brushRecall.setCustom that installed it dropped the snapshot)
 export const clearBuiltInBrushSelection = (context: Context): void => {
   context.state.brush.selectedBuiltInBrushId = null;
   context.state.brush.hasOriginalBrush = false;
@@ -59,14 +61,14 @@ export const clearBuiltInBrushSelection = (context: Context): void => {
 
 export const setMode = (context: Context, mode: Mode): void => {
   context.state.brush.mode = mode;
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (brush instanceof CustomBrush) {
     brush.applyMode(mode); // which modes get the colorized vs matte bitmap
   }
 };
 
 export const toFGBrush = (context: Context): void => {
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush)) {
     return;
   }
@@ -78,7 +80,7 @@ export const toFGBrush = (context: Context): void => {
 };
 
 export const toBGBrush = (context: Context): void => {
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (brush instanceof CustomBrush) {
     brush.toBGColor();
   }
@@ -98,12 +100,12 @@ const transformBrush = (
   context: Context,
   fn: (index: BrushColorIndex) => BrushColorIndex
 ): void => {
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush) || isBuiltInBrush(brush)) {
     return;
   }
   // setTransformed keeps the pre-transform original for Restore / Shift-B
-  brushHistory.setTransformed(brush.transform(fn));
+  brushRecall.setTransformed(brush.transform(fn));
   context.state.brush.hasOriginalBrush = true;
   // re-derive the new brush's colorized variants and resting bitmap
   context.actions.brush.setMode(context.state.brush.mode);
@@ -119,18 +121,19 @@ const transformBrush = (
 //    flip is one keypress to redo.
 export const restoreOriginalBrush = (context: Context): void => {
   if (context.state.brush.selectedBuiltInBrushId !== null) {
-    if (brushHistory.lastCustomBrush === null) {
+    if (brushRecall.lastCustomBrush === null) {
       return;
     }
-    brushHistory.reactivateLastCustom();
+    brushRecall.reactivateLastCustom();
     context.state.brush.selectedBuiltInBrushId = null;
   } else {
-    const original = brushHistory.originalBrush;
+    const original = brushRecall.originalBrush;
     if (original === null) {
       return;
     }
-    brushHistory.setCustom(original); // drops the snapshot: nothing left to restore
+    brushRecall.setCustom(original); // drops the snapshot: nothing left to restore
     context.state.brush.hasOriginalBrush = false;
+    context.actions.brush.refreshPreviousBrushSlot();
   }
   context.actions.brush.setMode(context.state.brush.mode);
 };
@@ -152,7 +155,7 @@ export const halveBrush = (context: Context): void => {
 };
 
 const doubleBrushBy = (context: Context, scaleX: number, scaleY: number): void => {
-  const brush = brushHistory.current;
+  const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush)) {
     return;
   }
@@ -206,3 +209,72 @@ export const bendBrushBy = (
     payload.horizontal ? bendHorizontal(b, payload.controls) : bendVertical(b, payload.controls)
   );
 };
+
+// Brush slots (docs/brush-slots.md Phase B): a deliberate, bounded stash the
+// user curates, separate from the automatic recall chain above. Fixed size
+// matching BRUSH_SLOT_COUNT.
+const BRUSH_SLOT_THUMBNAIL_SIZE = 140;
+
+export const storeBrushInSlot = (context: Context, index: number): void => {
+  const brush = brushRecall.current;
+  if (!(brush instanceof CustomBrush) || isBuiltInBrush(brush)) {
+    return; // nothing to store from a built-in or the pixel brush
+  }
+  brushSlots.store(index, brush);
+  context.state.brush.slots[index] = {
+    occupied: true,
+    thumbnail: renderBrushThumbnail(brush, BRUSH_SLOT_THUMBNAIL_SIZE),
+    size: { width: brush.width, height: brush.heigth },
+  };
+};
+
+export const recallBrushFromSlot = (context: Context, index: number): void => {
+  const brush = brushSlots.recall(index);
+  if (!brush) {
+    return;
+  }
+  activateCustomBrush(context, brush);
+};
+
+export const clearBrushSlot = (context: Context, index: number): void => {
+  brushSlots.clear(index);
+  context.state.brush.slots[index] = { occupied: false, thumbnail: null, size: null };
+};
+
+// The Previous slot (docs/brush-slots.md): the automatic companion to the
+// curated slots above, populated by BrushRecall.setCustom itself whenever a
+// different custom brush takes over. No store/clear — the user doesn't
+// curate this one.
+export const refreshPreviousBrushSlot = (context: Context): void => {
+  const previous = brushRecall.previousBrush;
+  context.state.brush.previousSlot = previous
+    ? {
+        occupied: true,
+        thumbnail: renderBrushThumbnail(previous, BRUSH_SLOT_THUMBNAIL_SIZE),
+        size: { width: previous.width, height: previous.heigth },
+      }
+    : { occupied: false, thumbnail: null, size: null };
+};
+
+export const recallPreviousBrush = (context: Context): void => {
+  const previous = brushRecall.previousBrush;
+  if (!previous) {
+    return;
+  }
+  // a copy, independent of the stored reference — same reasoning as
+  // BrushSlots.recall. setCustom below then banks the brush this replaces
+  // as the new previousBrush, so recalling Previous is a two-way swap.
+  const brush = previous.transform((matte) => matte);
+  activateCustomBrush(context, brush);
+};
+
+// Shared tail of every "a different custom brush becomes current" flow that
+// isn't a fresh capture/load (those go through brushRecall.setCustom
+// directly in BrushSelector.tsx / BrushLoadDialog.tsx, since they also need
+// to open dialogs / decode files first).
+function activateCustomBrush(context: Context, brush: CustomBrush): void {
+  brushRecall.setCustom(brush);
+  context.actions.brush.clearBuiltInBrushSelection();
+  context.actions.brush.setMode(context.state.brush.mode);
+  context.actions.brush.refreshPreviousBrushSlot();
+}
