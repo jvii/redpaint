@@ -43,6 +43,11 @@ export function BrushMenu(): JSX.Element {
 
   // transforms are custom-brush-only
   const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
+  // swaps the keyboard-shortcut title for an explanation while a built-in
+  // brush makes the gadget a no-op, instead of leaving a disabled button
+  // with a tooltip that doesn't say why
+  const transformTitle = (enabledTitle: string): string =>
+    usingBuiltInBrush ? 'Cannot transform built-in brush' : enabledTitle;
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
@@ -112,7 +117,7 @@ export function BrushMenu(): JSX.Element {
             icon={<StretchIcon />}
             label="Stretch"
             stacked
-            title="Stretch (drag on canvas) — Z"
+            title={transformTitle('Stretch (drag on canvas) — Z')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushStretchTool'}
             onClick={armTransform('brushStretchTool')}
@@ -121,7 +126,7 @@ export function BrushMenu(): JSX.Element {
             icon={<HalveIcon />}
             label="Halve"
             stacked
-            title="Halve — h"
+            title={transformTitle('Halve — h')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.halveBrush)}
           />
@@ -129,7 +134,7 @@ export function BrushMenu(): JSX.Element {
             icon={<DoubleIcon />}
             label="Double"
             stacked
-            title="Double — H"
+            title={transformTitle('Double — H')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.doubleBrush)}
           />
@@ -139,7 +144,7 @@ export function BrushMenu(): JSX.Element {
             icon={<FlipHIcon />}
             label="Horizontal"
             stacked
-            title="Flip horizontally — x"
+            title={transformTitle('Flip horizontally — x')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.flipBrushHorizontal)}
           />
@@ -147,7 +152,7 @@ export function BrushMenu(): JSX.Element {
             icon={<FlipVIcon />}
             label="Vertical"
             stacked
-            title="Flip vertically — y"
+            title={transformTitle('Flip vertically — y')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.flipBrushVertical)}
           />
@@ -157,7 +162,7 @@ export function BrushMenu(): JSX.Element {
             icon={<Rotate90Icon />}
             label="90°"
             stacked
-            title="Rotate 90 degrees — z"
+            title={transformTitle('Rotate 90 degrees — z')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.rotateBrush90)}
           />
@@ -165,7 +170,7 @@ export function BrushMenu(): JSX.Element {
             icon={<RotateAnyIcon />}
             label="Any Angle"
             stacked
-            title="Rotate any angle (drag on canvas) — R"
+            title={transformTitle('Rotate any angle (drag on canvas) — R')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
             onClick={armTransform('brushRotateTool')}
@@ -174,7 +179,7 @@ export function BrushMenu(): JSX.Element {
             icon={<ShearIcon />}
             label="Shear"
             stacked
-            title="Shear (drag on canvas) — S"
+            title={transformTitle('Shear (drag on canvas) — S')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
             onClick={armTransform('brushShearTool')}
@@ -185,7 +190,7 @@ export function BrushMenu(): JSX.Element {
             icon={<BendHIcon />}
             label="Horizontal"
             stacked
-            title="Bend horizontally (drag on canvas)"
+            title={transformTitle('Bend horizontally (drag on canvas)')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'}
             onClick={armTransform('brushBendHorizontalTool')}
@@ -194,7 +199,7 @@ export function BrushMenu(): JSX.Element {
             icon={<BendVIcon />}
             label="Vertical"
             stacked
-            title="Bend vertically (drag on canvas)"
+            title={transformTitle('Bend vertically (drag on canvas)')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'}
             onClick={armTransform('brushBendVerticalTool')}

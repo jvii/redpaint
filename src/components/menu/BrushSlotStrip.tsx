@@ -58,12 +58,16 @@ export function BrushSlotStrip(): JSX.Element {
               title={
                 slot.occupied
                   ? `Recall brush ${index + 1}`
-                  : `Store current brush in slot ${index + 1}`
+                  : usingBuiltInBrush
+                    ? 'Cannot store a built-in brush'
+                    : `Store current brush in slot ${index + 1}`
               }
               aria-label={
                 slot.occupied
                   ? `Recall brush ${index + 1}`
-                  : `Store current brush in slot ${index + 1}`
+                  : usingBuiltInBrush
+                    ? 'Cannot store a built-in brush'
+                    : `Store current brush in slot ${index + 1}`
               }
               onClick={slot.occupied ? recall(index) : store(index)}
               onKeyDown={(event): void => {
