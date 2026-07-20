@@ -8,9 +8,16 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* purely a flex-centering wrapper for .modal__window, not a backdrop —
+     nothing here has a click handler (no click-outside-to-close), so
+     without this it silently ate clicks across the entire viewport,
+     including places nowhere near the visible window once the window had
+     been dragged away from center */
+  pointer-events: none;
 }
 
 .modal__window {
+  pointer-events: auto;
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   color: white;
