@@ -52,7 +52,7 @@ export type State = {
 export const state: State = {
   palette: createPalette(32),
   paletteArray: derived((state: State) => Object.values(state.palette)),
-  foregroundColorId: '20',
+  foregroundColorId: '2',
   backgroundColorId: '1',
   foregroundRgb: null,
   // Range 1 defaults to the grey ramp (the default 32-color palette's last
