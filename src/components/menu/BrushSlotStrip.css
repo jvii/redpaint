@@ -70,6 +70,16 @@
   background-color: rgb(242, 242, 242);
 }
 
+/* Previous's empty state: no icon (nothing to click into it, unlike a
+   curated slot's Store affordance), just a quiet label so the cell doesn't
+   read as a rendering glitch before anything's been captured */
+.brush-slot__empty-label {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.3);
+}
+
 .brush-slot__thumbnail {
   display: block;
   max-width: 100%;

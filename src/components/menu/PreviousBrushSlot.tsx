@@ -34,7 +34,7 @@ export function PreviousBrushSlot(): JSX.Element {
             disabled={!slot.occupied}
             onClick={recall}
           >
-            {slot.occupied && slot.thumbnail && (
+            {slot.occupied && slot.thumbnail ? (
               <>
                 <img className="brush-slot__thumbnail" src={slot.thumbnail} alt="" />
                 <div className="brush-slot__overlay">
@@ -47,6 +47,8 @@ export function PreviousBrushSlot(): JSX.Element {
                   </span>
                 </div>
               </>
+            ) : (
+              <span className="brush-slot__empty-label">N/A</span>
             )}
           </button>
         </div>
