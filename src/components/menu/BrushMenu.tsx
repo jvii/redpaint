@@ -31,6 +31,21 @@ function isSaveableBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && !isBuiltInBrush(brush);
 }
 
+// A one-line "what's active" readout next to the drawer's own head. Safe to
+// read brushRecall.current directly with no extra reactive plumbing: every
+// action that changes it (transform, capture, load, slot/Previous recall,
+// Restore) also closes the menu, so BrushMenu always remounts fresh the
+// next time it's opened rather than needing to track a live change while
+// mounted.
+function describeCurrentBrush(usingBuiltInBrush: boolean): string {
+  const brush = brushRecall.current;
+  const kind = usingBuiltInBrush ? 'Built-in' : 'Custom';
+  // the pixel brush (built-in 1, DPaint's default dot) has no bitmap/size of
+  // its own — it always draws a single pixel
+  const size = brush instanceof CustomBrush ? `${brush.width}×${brush.heigth}` : '1×1';
+  return `${kind} ${size}`;
+}
+
 // The brush drawer: brush disk I/O plus the brush transforms
 // (docs/brush-transforms.md) — custom brushes only, like DPaint, grouped as
 // its Size/Flip/Rotate/Bend submenus. Double Horiz/Vert exist too but are
@@ -91,7 +106,10 @@ export function BrushMenu(): JSX.Element {
 
   return (
     <div className="brush-menu">
-      <div className="wb-cluster__head brush-menu__head">Brush</div>
+      <div className="wb-cluster__head brush-menu__head">
+        Brush
+        <span className="brush-menu__current">{describeCurrentBrush(usingBuiltInBrush)}</span>
+      </div>
       <div className="brush-menu__row">
         <GadgetCluster head="File">
           <GadgetOpen

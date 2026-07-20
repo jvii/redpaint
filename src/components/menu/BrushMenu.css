@@ -17,6 +17,18 @@
   margin-bottom: -8px;
 }
 
+/* the active brush's kind + size, read off brushRecall.current at render
+   time (see describeCurrentBrush) — small and monospace so it reads as a
+   status readout, not a second heading */
+.brush-menu__current {
+  margin-left: 12px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: normal;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .brush-menu__row {
   display: flex;
   flex-wrap: wrap;
