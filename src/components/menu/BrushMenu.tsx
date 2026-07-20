@@ -47,7 +47,7 @@ export function BrushMenu(): JSX.Element {
   // brush makes the gadget a no-op, instead of leaving a disabled button
   // with a tooltip that doesn't say why
   const transformTitle = (enabledTitle: string): string =>
-    usingBuiltInBrush ? 'Cannot transform built-in brush' : enabledTitle;
+    usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
