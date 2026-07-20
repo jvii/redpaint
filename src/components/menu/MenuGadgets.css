@@ -82,6 +82,8 @@
 /* Section heads (Mode, Brush): one rule per drawer state, not one per
    cluster — these are the only headings that get the underline treatment. */
 .wb-cluster__head {
+  display: flex;
+  align-items: center;
   font-size: 16px;
   color: white;
   border-bottom: 2px solid white;
