@@ -11,6 +11,14 @@
      edge (see ColorButton.tsx) and needs to be able to paint past the
      grid's own edge too, rather than getting clipped there */
   overflow: visible;
+  /* contains the selected swatch's z-index: 2 (ColorButton.tsx) to this
+     grid. Without a stacking context here, that z-index isn't scoped to
+     its siblings the way it looks — it escapes all the way up to the
+     nearest ancestor that IS one, competing directly with unrelated
+     positioned UI elsewhere on the page (the open menu panel, an open
+     modal's window) instead of just the neighboring swatch it's meant to
+     paint over. */
+  isolation: isolate;
 }
 
 /* Toolbox usage: stretch to fill the sidebar's remaining height instead of
