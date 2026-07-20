@@ -10,14 +10,7 @@
    keeping it mounted (at height: 0) just to keep a scrollHeight measurement
    warm for the old JS-driven height animation. */
 .menu {
-  /* stops short of the toolbox sidebar (App.css's .toolbox-container: 81px
-     + 1px border) rather than running the full window width. The panel used
-     to span under the toolbox too — translucent, so it read as a harmless
-     blue wash over the tool icons, but its .menu__close wrapper (a flex
-     child stretched to the panel's full height by flex's default
-     align-items: stretch) sat invisibly on top of the entire toolbox
-     column, swallowing clicks meant for it. */
-  width: calc(100% - 82px);
+  width: 100%;
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
   left: 0;
