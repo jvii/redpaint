@@ -223,18 +223,19 @@ export function BrushMenu(): JSX.Element {
             onClick={armTransform('brushBendVerticalTool')}
           />
         </GadgetCluster>
-        {/* enabled when the recall chain has a step to take: on a
-            built-in it re-activates the last custom brush, on a
-            transformed custom brush it undoes the transforms */}
+        {/* strictly "undo a transform" — disabled on a built-in (nothing to
+            undo there; getting back to a custom brush is Previous's job) */}
         <GadgetCluster>
           <Gadget
             icon={<RestoreIcon />}
             label="Restore"
             stacked
-            title="Restore original brush — B"
-            disabled={
-              usingBuiltInBrush ? !state.brush.hasLastCustomBrush : !state.brush.hasOriginalBrush
+            title={
+              usingBuiltInBrush
+                ? 'Cannot restore a built-in brush'
+                : 'Restore original brush — B'
             }
+            disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
             onClick={instant(actions.brush.restoreOriginalBrush)}
           />
         </GadgetCluster>

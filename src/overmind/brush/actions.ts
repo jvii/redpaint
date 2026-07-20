@@ -56,7 +56,6 @@ export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId
 export const clearBuiltInBrushSelection = (context: Context): void => {
   context.state.brush.selectedBuiltInBrushId = null;
   context.state.brush.hasOriginalBrush = false;
-  context.state.brush.hasLastCustomBrush = true;
 };
 
 export const setMode = (context: Context, mode: Mode): void => {
@@ -111,29 +110,21 @@ const transformBrush = (
   context.actions.brush.setMode(context.state.brush.mode);
 };
 
-// Restore / Shift-B walks the recall chain (docs/brush-slots.md), one step
-// per press, DPaint-style:
-// 1. on a built-in brush — re-activate the last custom brush as it was left
-//    (DPaint's UserBr), keeping its pre-transform original for a second press;
-// 2. on a transformed custom brush — back to the brush as it was captured or
-//    loaded. A simplification of DPaint (which kept flips through its
-//    revert): every transform is undone, the easier rule to predict — and a
-//    flip is one keypress to redo.
+// Restore / Shift-B undoes a transformed custom brush back to the brush as
+// it was captured or loaded. A simplification of DPaint (which kept flips
+// through its revert): every transform is undone, the easier rule to
+// predict — and a flip is one keypress to redo. Disabled outright on a
+// built-in brush (BrushMenu.tsx) — DPaint's Shift-B also re-activated the
+// last custom brush from a built-in (UserBr), but that's the Previous
+// slot's job now (docs/brush-slots.md); Restore stays strictly "undo a
+// transform", not "switch to a different brush".
 export const restoreOriginalBrush = (context: Context): void => {
-  if (context.state.brush.selectedBuiltInBrushId !== null) {
-    if (brushRecall.lastCustomBrush === null) {
-      return;
-    }
-    brushRecall.reactivateLastCustom();
-    context.state.brush.selectedBuiltInBrushId = null;
-  } else {
-    const original = brushRecall.originalBrush;
-    if (original === null) {
-      return;
-    }
-    brushRecall.restore(original); // drops the snapshot: nothing left to restore
-    context.state.brush.hasOriginalBrush = false;
+  const original = brushRecall.originalBrush;
+  if (original === null) {
+    return;
   }
+  brushRecall.restore(original); // drops the snapshot: nothing left to restore
+  context.state.brush.hasOriginalBrush = false;
   context.actions.brush.setMode(context.state.brush.mode);
 };
 

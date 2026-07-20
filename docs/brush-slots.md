@@ -142,10 +142,15 @@ way, DPaint-style.
 
 ## Phases
 
-- **Phase A — recall chain.** ✅ Done. `lastCustomBrush`, snapshot survives
-  built-in detours, `Shift-B`/Restore walks the chain, `history` array
-  deleted (`BrushRecall` now has intent-named setters: `setCustom`,
-  `setBuiltIn`, `setTransformed`, `reactivateLastCustom`).
+- **Phase A — recall chain.** ✅ Done. `history` array deleted (`BrushRecall`
+  now has intent-named setters: `setCustom`, `setBuiltIn`, `setTransformed`,
+  `restore`). Originally also gave `Shift-B`/Restore a built-in-detour step
+  (DPaint's `UserBr`, re-activating the last custom brush from a built-in)
+  via a `lastCustomBrush` reference — removed once the Previous slot
+  (Phase B) made it redundant and, worse, confusing: Restore reactivating a
+  brush wasn't "restoring" anything, it was switching brushes, which is
+  Previous's job. Restore is strictly transform-undo now, disabled outright
+  on a built-in.
 - **Phase B — slots.** ✅ Done. Model + actions + thumbnail strip in the
   menu, plus the automatic Previous slot (addendum above).
 - **Phase C (maybe) — persistence** once slots prove out.

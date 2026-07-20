@@ -129,10 +129,11 @@ brush is first transformed (`setTransformed`), with a reactive mirror
 `state.brush.hasOriginalBrush` for the menu item's disabled state. Semantics:
 
 - interactive transforms (Phase C) re-derive from it every frame;
-- capturing/loading/selecting any brush clears it (`brushRecall.set`) —
-  docs/brush-slots.md Phase A refines this so a built-in detour no longer
-  drops it;
-- a **Restore** menu item / `Shift-B` swaps it back in.
+- capturing/loading/selecting any brush clears it (`brushRecall.set`);
+- a **Restore** menu item / `Shift-B` swaps it back in — disabled outright
+  on a built-in brush (there's nothing to undo there; DPaint's Shift-B also
+  re-activated the last custom brush from a built-in detour, `UserBr`, but
+  that's the Previous slot's job now, docs/brush-slots.md).
 - **Deviation from DPaint:** DPaint applied flips to the snapshot too, so its
   revert kept them. Here Restore undoes *every* transform, returning to the
   brush as captured/loaded — the easier rule to predict, and a flip is one

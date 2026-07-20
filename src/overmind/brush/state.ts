@@ -42,11 +42,9 @@ export type State = {
   // null when a custom (captured or loaded) brush is active
   selectedBuiltInBrushId: BuiltInBrushId | null;
   mode: Mode;
-  // reactive mirrors of brushRecall's recall references (the class itself
-  // is not observable state) — they drive the Restore menu item's disabled
-  // state; see docs/brush-slots.md for the recall chain
+  // reactive mirror of brushRecall.originalBrush (the class itself is not
+  // observable state) — drives the Restore menu item's disabled state
   hasOriginalBrush: boolean;
-  hasLastCustomBrush: boolean;
   slots: BrushSlotState[];
   // mirror of brushRecall.previousBrush (docs/brush-slots.md) — the
   // automatically-managed companion to the curated slots above
@@ -57,7 +55,6 @@ export const state: State = {
   selectedBuiltInBrushId: 1,
   mode: 'Color',
   hasOriginalBrush: false,
-  hasLastCustomBrush: false,
   slots: Array.from({ length: BRUSH_SLOT_COUNT }, () => ({
     occupied: false,
     thumbnail: null,

@@ -6,24 +6,21 @@ import { isBuiltInBrush } from '../overmind/brush/state';
 // The automatic brush-recall layer (docs/brush-slots.md): a few named
 // references, deliberately not a history list. The class is not observable
 // state — reactive mirrors of "is there something to recall" live in
-// overmind state.brush (hasOriginalBrush, hasLastCustomBrush).
+// overmind state.brush (hasOriginalBrush).
 class BrushRecall {
   constructor() {
     this.current = new PixelBrush();
     this.originalBrush = null;
-    this.lastCustomBrush = null;
     this.previousBrush = null;
   }
   current: BrushInterface;
   // The pre-transform brush, restorable via Restore / Shift-B
   // (docs/brush-transforms.md): captured on the first transform, kept across
-  // further ones and across built-in detours, dropped only when a new custom
-  // brush arrives — a fresh capture/load makes the old original moot.
+  // further ones, dropped only when a new custom brush arrives — a fresh
+  // capture/load makes the old original moot. Restore is disabled outright
+  // while a built-in brush is active (BrushMenu.tsx), so this is never read
+  // in that state — no need to track it across a built-in detour.
   originalBrush: BrushInterface | null;
-  // The most recent custom (captured or loaded) brush, in its latest
-  // transformed state — what Shift-B re-activates from a built-in brush
-  // (DPaint's UserBr). Goes stale by replacement, never cleared.
-  lastCustomBrush: BrushInterface | null;
   // Whatever custom brush setCustom is about to replace — the Previous slot
   // (docs/brush-slots.md): captures a brush the moment a different one
   // (capture, load, slot recall) takes over, so switching custom brushes
@@ -43,11 +40,11 @@ class BrushRecall {
       this.previousBrush = this.current;
     }
     this.current = newBrush;
-    this.lastCustomBrush = newBrush;
     this.originalBrush = null;
   }
 
-  // A built-in brush becomes current: a detour, so both recalls survive it
+  // A built-in brush becomes current: a detour, so the pre-transform
+  // snapshot survives it (moot in practice — see originalBrush's comment)
   setBuiltIn(newBrush: BrushInterface): void {
     this.current = newBrush;
   }
@@ -59,15 +56,6 @@ class BrushRecall {
       this.originalBrush = this.current;
     }
     this.current = newBrush;
-    this.lastCustomBrush = newBrush;
-  }
-
-  // Shift-B from a built-in: back to the custom brush as it was left,
-  // preserving its pre-transform original for a second Shift-B
-  reactivateLastCustom(): void {
-    if (this.lastCustomBrush !== null) {
-      this.current = this.lastCustomBrush;
-    }
   }
 
   // Restore / Shift-B reverting a transformed custom brush to its
@@ -77,7 +65,6 @@ class BrushRecall {
   // Previous would be surprising rather than useful.
   restore(original: BrushInterface): void {
     this.current = original;
-    this.lastCustomBrush = original;
     this.originalBrush = null;
   }
 }
