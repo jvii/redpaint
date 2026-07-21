@@ -5,7 +5,7 @@ import { brushRecall } from '../../brush/BrushRecall';
 import { isBuiltInBrush } from '../../overmind/brush/state';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { BrushTransformToolId } from '../../overmind/toolbox/actions';
-import { Gadget, GadgetCluster, GadgetOpen } from './MenuGadgets';
+import { Gadget, GadgetCluster } from './MenuGadgets';
 import { BrushSlotStrip } from './BrushSlotStrip';
 import { PreviousBrushSlot } from './PreviousBrushSlot';
 import { icons, PixelIcon } from './pixelIcons';
@@ -52,7 +52,7 @@ function describeCurrentBrush(usingBuiltInBrush: boolean): string {
 // keyboard-only (Shift-X/Y), matching the original. Instant transforms and the
 // modal drags close the menu on selection so the reshaped brush cursor (or the
 // armed drag) shows at once.
-export function BrushMenu(): JSX.Element {
+export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const actions = useActions();
   const state = useAppState();
 
@@ -63,18 +63,6 @@ export function BrushMenu(): JSX.Element {
   // with a tooltip that doesn't say why
   const transformTitle = (enabledTitle: string): string =>
     usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
-
-  const handleBrushFileOpen = (input: HTMLInputElement): void => {
-    if (input.files?.[0]) {
-      // every dialog-opening action closes the menu first (see
-      // ScreenStatus's openScreenFormat) — beginBrushLoad's requester opens
-      // asynchronously (after decode), so without this the still-open menu
-      // (z-index above the modal) hides it once it appears
-      actions.app.closeMenu();
-      // decodes, then opens the load requester (color treatment)
-      actions.app.beginBrushLoad(URL.createObjectURL(input.files[0]));
-    }
-  };
 
   const handleBrushSave = (): void => {
     const brush = brushRecall.current;
@@ -117,11 +105,11 @@ export function BrushMenu(): JSX.Element {
       </div>
       <div className="brush-menu__row">
         <GadgetCluster head="File">
-          <GadgetOpen
+          <Gadget
             icon={<PixelIcon map={icons.disk} scale={3} />}
             label="Open"
             title="Open brush..."
-            handleFile={handleBrushFileOpen}
+            onClick={onOpenFile}
           />
           <Gadget
             icon={<PixelIcon map={icons.disk} scale={3} />}

@@ -53,21 +53,36 @@ export function Gadget({
   );
 }
 
-// A gadget fronting a hidden file input (value reset so re-opening the same
-// file fires). `accept` defaults to images; the image-open usage widens it to
-// also admit IFF ILBM files, which no browser recognizes under image/* — it
-// can't decode them, we do.
-export function GadgetOpen(
-  props: Omit<GadgetProps, 'onClick'> & {
-    handleFile: (input: HTMLInputElement) => void;
-    accept?: string;
-  }
-): JSX.Element {
-  const { handleFile, accept = 'image/*', ...gadgetProps } = props;
+export type FileOpener = {
+  // wire this to whatever button should trigger the OS file picker
+  open: () => void;
+  // render this once, somewhere that stays mounted regardless of menu/drawer
+  // open state (see the comment on useFileOpener for why that matters)
+  input: JSX.Element;
+};
+
+// A hidden file input decoupled from its trigger button's own mount
+// lifetime. The button lives inside the menu's collapsible content (unmounted
+// while the menu is closed, by design — see Menu.tsx's own comment on that),
+// but opening the OS file picker moves the mouse cursor off-page into a
+// separate native window, which fires a real mouseleave on .menu and closes
+// it (and unmounts the collapsible content) *while the OS dialog is still
+// open*. If the <input> lived in that content, React would tear it down
+// mid-flight, and the 'change' event the OS dialog fires on file selection
+// would have nowhere to land — file picked, nothing happens, no error either
+// (confirmed via CDP: this never reproduces under automation, since nothing
+// simulates the cursor actually leaving the page for a native window).
+// The caller renders `input` somewhere that survives that close — e.g.
+// directly under the top-level .menu div, a sibling of the collapsible
+// content rather than inside it — and wires a plain button's onClick to `open`.
+export function useFileOpener(
+  handleFile: (input: HTMLInputElement) => void,
+  accept = 'image/*'
+): FileOpener {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  return (
-    <>
-      <Gadget {...gadgetProps} onClick={(): void => fileInputRef.current?.click()} />
+  return {
+    open: (): void => fileInputRef.current?.click(),
+    input: (
       <input
         ref={fileInputRef}
         type="file"
@@ -78,8 +93,8 @@ export function GadgetOpen(
         }}
         style={{ display: 'none' }}
       />
-    </>
-  );
+    ),
+  };
 }
 
 // A headed gadget cluster (the drawer's File / Size / Flip / Rotate / Bend

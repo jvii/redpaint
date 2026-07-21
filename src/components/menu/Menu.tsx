@@ -3,7 +3,7 @@ import { useActions, useAppState } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { Mode } from '../../overmind/brush/state';
 import { RetroToggle } from '../ui/RetroToggle';
-import { Gadget, GadgetGroup, GadgetOpen } from './MenuGadgets';
+import { Gadget, GadgetGroup, useFileOpener } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
@@ -67,6 +67,23 @@ export function Menu(): JSX.Element {
       }
     })();
   };
+
+  const handleBrushFileOpen = (input: HTMLInputElement): void => {
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+    actions.app.closeMenu();
+    // decodes, then opens the load requester (color treatment)
+    actions.app.beginBrushLoad(URL.createObjectURL(file));
+  };
+
+  // Both file inputs render once below, outside the menu's collapsible
+  // content (see the mount-location comment on useFileOpener) — the trigger
+  // buttons stay wherever they visually belong (the rail here, the drawer's
+  // File cluster for the brush one, via the `open` passed down to BrushMenu).
+  const imageOpener = useFileOpener(handleImageFileOpen);
+  const brushOpener = useFileOpener(handleBrushFileOpen);
 
   const handleImageSave = (): void => {
     // preserveDrawingBuffer is on, but render once to be sure the buffer is current
@@ -132,12 +149,11 @@ export function Menu(): JSX.Element {
                 <ScreenStatus />
                 {/* image disk I/O, one click from the rail */}
                 <GadgetGroup>
-                  <GadgetOpen
+                  <Gadget
                     icon={<PixelIcon map={icons.image} scale={1} />}
                     label="Open"
                     title="Open image..."
-                    handleFile={handleImageFileOpen}
-                    accept="image/*,.iff,.ilbm,.lbm"
+                    onClick={imageOpener.open}
                   />
                   <Gadget
                     icon={<PixelIcon map={icons.disk} scale={3} />}
@@ -178,7 +194,7 @@ export function Menu(): JSX.Element {
                   }))}
                 />
               </div>
-              {state.app.brushDrawerOpen && <BrushMenu />}
+              {state.app.brushDrawerOpen && <BrushMenu onOpenFile={brushOpener.open} />}
             </div>
             <div className="menu__close">
               <button
@@ -193,6 +209,8 @@ export function Menu(): JSX.Element {
           </>
         )}
       </div>
+      {imageOpener.input}
+      {brushOpener.input}
     </div>
   );
 }
