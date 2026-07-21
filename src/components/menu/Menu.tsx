@@ -82,7 +82,7 @@ export function Menu(): JSX.Element {
   // content (see the mount-location comment on useFileOpener) — the trigger
   // buttons stay wherever they visually belong (the rail here, the drawer's
   // File cluster for the brush one, via the `open` passed down to BrushMenu).
-  const imageOpener = useFileOpener(handleImageFileOpen);
+  const imageOpener = useFileOpener(handleImageFileOpen, 'image/*,.iff,.ilbm,.lbm');
   const brushOpener = useFileOpener(handleBrushFileOpen);
 
   const handleImageSave = (): void => {
