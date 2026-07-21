@@ -53,12 +53,17 @@ export function Gadget({
   );
 }
 
-// A gadget fronting a hidden file input (same contract as the old
-// MenuItemOpen: image filter, value reset so re-opening the same file fires).
+// A gadget fronting a hidden file input (value reset so re-opening the same
+// file fires). `accept` defaults to images; the image-open usage widens it to
+// also admit IFF ILBM files, which no browser recognizes under image/* — it
+// can't decode them, we do.
 export function GadgetOpen(
-  props: Omit<GadgetProps, 'onClick'> & { handleFile: (input: HTMLInputElement) => void }
+  props: Omit<GadgetProps, 'onClick'> & {
+    handleFile: (input: HTMLInputElement) => void;
+    accept?: string;
+  }
 ): JSX.Element {
-  const { handleFile, ...gadgetProps } = props;
+  const { handleFile, accept = 'image/*', ...gadgetProps } = props;
   const fileInputRef = useRef<HTMLInputElement>(null);
   return (
     <>
@@ -66,7 +71,7 @@ export function GadgetOpen(
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={accept}
         onChange={(event): void => {
           handleFile(event.target);
           event.target.value = '';

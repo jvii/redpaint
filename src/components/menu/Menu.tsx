@@ -7,12 +7,25 @@ import { Gadget, GadgetGroup, GadgetOpen } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
-import { saveCanvasAsPng } from './saveAsPng';
+import { saveCanvasAsPng, saveFile } from './saveAsPng';
+import { encodeIlbm } from '../../fileformat/ilbm';
 import './Menu.css';
 
 // rail mode-toggle order: two rows of four, reading order matching the old
 // Mode column
 const MODE_ORDER: Mode[] = ['Matte', 'Color', 'Repl', 'Smear', 'Shade', 'Blend', 'Cycle', 'Smooth'];
+
+// IFF is recognized by content, not extension — 'FORM' + a form type we can
+// decode. Extensions in the wild vary (.iff, .lbm, .ilbm) and lie.
+async function isIffFile(file: File): Promise<boolean> {
+  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (head.length < 12) {
+    return false;
+  }
+  const id = (o: number): string =>
+    String.fromCharCode(head[o], head[o + 1], head[o + 2], head[o + 3]);
+  return id(0) === 'FORM' && (id(8) === 'ILBM' || id(8) === 'PBM ');
+}
 
 // The drop-down menu panel under the menubar: the screen status strip and
 // gadget rail, the always-visible mode row, and the brush drawer.
@@ -36,16 +49,64 @@ export function Menu(): JSX.Element {
   };
 
   const handleImageFileOpen = (input: HTMLInputElement): void => {
-    if (input.files?.[0]) {
-      // decodes, then opens the load requester (color treatment)
-      actions.app.beginImageLoad(URL.createObjectURL(input.files[0]));
+    const file = input.files?.[0];
+    if (!file) {
+      return;
     }
+    void (async (): Promise<void> => {
+      if (await isIffFile(file)) {
+        actions.app.beginIlbmLoad(file);
+      } else {
+        // decodes, then opens the load requester (color treatment)
+        actions.app.beginImageLoad(URL.createObjectURL(file));
+      }
+    })();
   };
 
   const handleImageSave = (): void => {
     // preserveDrawingBuffer is on, but render once to be sure the buffer is current
     paintingCanvasController.render();
     saveCanvasAsPng(paintingCanvasController.mainCanvas, 'redpaint.png');
+  };
+
+  const handleImageSaveIlbm = (): void => {
+    const colorIndex = paintingCanvasController.getCanvasColorIndex();
+    const pixels = colorIndex?.toIndexedPixels();
+    if (!colorIndex || !pixels) {
+      alert(
+        'The image has True Color pixels — IFF ILBM stores palette-indexed pixels only. ' +
+          'Turn True Color off in Screen Format first.'
+      );
+      return;
+    }
+    // plain copies: proxied state objects don't belong in a tight encode loop
+    const palette = state.palette.palette;
+    const colors = Object.values(palette).map((c) => ({ r: c.r, g: c.g, b: c.b }));
+    const cycleRanges = state.palette.ranges.flatMap((range) =>
+      range
+        ? [
+            {
+              low: Number(range.start) - 1,
+              high: Number(range.end) - 1,
+              rate: 8192, // 30 steps/s, a mild DPaint-ish default until cycling is real
+              active: true,
+              reverse: false,
+            },
+          ]
+        : []
+    );
+    const bytes = encodeIlbm({
+      width: colorIndex.width,
+      height: colorIndex.height,
+      palette: colors,
+      pixels,
+      cycleRanges,
+    });
+    void saveFile(async () => new Blob([bytes], { type: 'image/x-ilbm' }), 'redpaint.iff', {
+      description: 'IFF ILBM image',
+      mime: 'image/x-ilbm',
+      extension: '.iff',
+    });
   };
 
   // for disabling Matte mode selection when using a built-in brush
@@ -71,12 +132,19 @@ export function Menu(): JSX.Element {
                     label="Open"
                     title="Open image..."
                     handleFile={handleImageFileOpen}
+                    accept="image/*,.iff,.ilbm,.lbm"
                   />
                   <Gadget
                     icon={<PixelIcon map={icons.disk} scale={3} />}
                     label="Save"
                     title="Save image..."
                     onClick={handleImageSave}
+                  />
+                  <Gadget
+                    icon={<PixelIcon map={icons.disk} scale={3} />}
+                    label="Save ILBM"
+                    title="Save as IFF ILBM..."
+                    onClick={handleImageSaveIlbm}
                   />
                 </GadgetGroup>
                 {/* everything brush lives behind this: transforms + brush disk */}
