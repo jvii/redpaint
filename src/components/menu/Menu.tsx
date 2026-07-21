@@ -2,6 +2,7 @@ import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { Mode } from '../../overmind/brush/state';
+import { MODE_ORDER } from '../../overmind/brush/mode';
 import { RetroToggle } from '../ui/RetroToggle';
 import { Gadget, GadgetGroup, useFileOpener } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
@@ -9,11 +10,8 @@ import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
 import { saveCanvasAsPng, saveFile } from './saveAsPng';
 import { encodeIlbm, isIlbmHeader } from '../../fileformat/ilbm';
+import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import './Menu.css';
-
-// rail mode-toggle order: two rows of four, reading order matching the old
-// Mode column
-const MODE_ORDER: Mode[] = ['Matte', 'Color', 'Repl', 'Smear', 'Shade', 'Blend', 'Cycle', 'Smooth'];
 
 // IFF is recognized by content, not extension — extensions in the wild vary
 // (.iff, .lbm, .ilbm) and lie; isIlbmHeader knows what content qualifies.
@@ -131,8 +129,24 @@ export function Menu(): JSX.Element {
   return (
     <div
       className={'menu' + (state.app.menuOpen ? ' menu--open' : '')}
-      onMouseLeave={close}
-      onContextMenu={close}
+      onMouseLeave={(event): void => {
+        // The menubar sits directly above the drop-down panel, so leaving
+        // upward onto it fires this same as leaving out to the canvas — but
+        // the menubar's own onClick already owns toggling, so don't race it.
+        const related = event.relatedTarget as Node | null;
+        if (related instanceof Element && related.closest('.menubar')) {
+          return;
+        }
+        close();
+      }}
+      onContextMenu={(event): void => {
+        event.preventDefault(); // right-click closes the menu, not the browser's own menu
+        close();
+        // Closing uncovers the canvas under the pointer, but the overlay
+        // cursor only repaints on mousemove — replay one so it's visible
+        // immediately instead of only after the mouse next moves.
+        setTimeout(refreshBrushPreview, 0);
+      }}
     >
       <div className="menu__collapse">
         {state.app.menuOpen && (
@@ -183,10 +197,19 @@ export function Menu(): JSX.Element {
                   onChange={(value): void => {
                     actions.brush.setMode(value as Mode);
                     close();
+                    // Matte/Repl swap the overlay cursor between the matte and
+                    // colorized brush bitmap; without this it stays stale until
+                    // the mouse next moves over the canvas.
+                    setTimeout(refreshBrushPreview, 0);
                   }}
-                  options={MODE_ORDER.map((m) => ({
+                  options={MODE_ORDER.map((m, i) => ({
                     value: m,
-                    label: m,
+                    label: (
+                      <span className="menu__mode-label">
+                        {m}
+                        <kbd className="wb-gadget__keycap menu__mode-keycap">{`F${i + 1}`}</kbd>
+                      </span>
+                    ),
                     disabled: (m === 'Matte' || m === 'Repl') && usingBuiltInBrush,
                   }))}
                 />

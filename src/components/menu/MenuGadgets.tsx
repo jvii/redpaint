@@ -25,6 +25,10 @@ type GadgetProps = {
   on?: boolean;
   // icon above the label instead of beside it (the transform gadgets)
   stacked?: boolean;
+  // the single key that triggers this action (shown as a keycap beside the
+  // label, stacked gadgets only — see docs/style-guide.md's "Text on
+  // controls" section). Omit for gadgets with no hotkey (Bend H/V).
+  shortcut?: string;
 };
 
 export function Gadget({
@@ -35,6 +39,7 @@ export function Gadget({
   disabled = false,
   on = false,
   stacked = false,
+  shortcut,
 }: GadgetProps): JSX.Element {
   return (
     <button
@@ -48,7 +53,14 @@ export function Gadget({
       disabled={disabled}
     >
       {stacked ? <span className="wb-gadget__icon">{icon}</span> : icon}
-      {label && <span className="wb-gadget__label">{label}</span>}
+      {stacked ? (
+        <span className="wb-gadget__labelrow">
+          {label && <span className="wb-gadget__label">{label}</span>}
+          {shortcut && <kbd className="wb-gadget__keycap">{shortcut}</kbd>}
+        </span>
+      ) : (
+        label && <span className="wb-gadget__label">{label}</span>
+      )}
     </button>
   );
 }

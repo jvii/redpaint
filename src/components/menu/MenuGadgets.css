@@ -79,6 +79,35 @@
   height: 32px;
 }
 
+/* label + keycap on one line, so the hotkey hint costs horizontal room
+   (gadgets already vary in width with label length) rather than adding a
+   row's worth of vertical space to every stacked gadget. */
+.wb-gadget__labelrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* monospace keycap per the style guide's "below 16px, plain monospace"
+   rule — deliberately paired against the gadget's Press Start 2P label.
+   `color: inherit` + `border-color: currentColor` means it tracks the
+   gadget's own state (white on hover, orange when pressed-in, dimmed when
+   disabled) with no extra rules. Square corners, no native kbd chrome, to
+   stay inside the "no border-radius" chrome rule. */
+.wb-gadget__keycap {
+  display: inline-block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1;
+  color: inherit;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 3px 6px;
+}
+
 /* Section heads (Mode, Brush): one rule per drawer state, not one per
    cluster — these are the only headings that get the underline treatment. */
 .wb-cluster__head {

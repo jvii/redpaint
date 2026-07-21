@@ -39,8 +39,10 @@ These rules are absolute — they, not icon style, make the app read retro:
 - Pressed-in = Workbench blue fill, orange label, inset `3px 3px 0 0` deep
   blue. Hover = orange fill, white label. Disabled = dimmed label, no hover
   feedback.
-- No border-radius. No gradients (see the rainbow rule). No transparency
-  except the menu panel's ground and the deliberate dim-label colors.
+- No border-radius (the transform gadgets' keycap hint is the one
+  exception — see "Text on controls" below). No gradients (see the
+  rainbow rule). No transparency except the menu panel's ground and the
+  deliberate dim-label colors.
 - Gadgets on a row share one fixed height so seams and shadows line up.
 
 ## Typography
@@ -106,9 +108,33 @@ Consistency is judged within each control type, not across them:
   gadgets, giving them the classic toolbar-button silhouette and, with
   longer labels, a narrower footprint). One layout per group, never mixed
   within one.
-- **RetroToggle**: always text-only segments.
+- **RetroToggle**: text-only segments, plus the Mode toggle's own keycap
+  exception below.
 - **Toolbox**: always icon-only (it is a compact palette).
-- Keyboard shortcuts live in gadget `title` tooltips, not in labels.
+- Keyboard shortcuts live in gadget `title` tooltips, plus a monospace
+  keycap on two controls that get one, styled with a shared base class
+  (`.wb-gadget__keycap`, `MenuGadgets.css`) so they read as one system: a
+  bordered, 3px-`border-radius`ed single letter — the radius is a
+  deliberate, scoped exception to the Chrome section's "no border-radius"
+  rule, the only rounded corner in the app, there because a keycap needs to
+  read as a keycap rather than another squared-off gadget.
+  `color`/`border-color: currentColor` on both so the cap always tracks its
+  button's own hover/pressed/disabled state for free, no extra rules.
+  - **Stacked transform gadgets** (`Gadget`'s `shortcut` prop): after the
+    label, same line, at the label's own 16px rather than the smaller
+    supporting-text sizes the Typography section otherwise reserves
+    monospace for — inline so the hint costs width (gadgets already vary in
+    width with label length) instead of height. `⇧`-prefixed when the
+    actual chord is Shift+key (e.g. Stretch's key is `Z`, shown as `⇧z`, not
+    `z`). Gadgets with no hotkey (Bend H/V) just omit it.
+  - **The Mode toggle's segments** (`Menu.tsx`, F1-F8): below the label
+    (`.menu__mode-label`, a column stack), one size step down at 14px
+    (`.menu__mode-keycap`) — 8 segments packed into one row, each already
+    inside RetroToggle's roomier segment padding, reads more spacious than a
+    transform cluster's 2-3 gadgets, so the same 16px here felt oversized
+    next to the label.
+  - Horizontal-layout gadgets (rail, drawer File row) don't get a keycap —
+    that layout has no stacked/columnar slot to put one in.
 
 ## Interaction
 

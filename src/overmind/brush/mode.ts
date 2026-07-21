@@ -1,5 +1,18 @@
 export type Mode = 'Matte' | 'Color' | 'Repl' | 'Smear' | 'Shade' | 'Blend' | 'Cycle' | 'Smooth';
 
+// DPaint's F1-F8 order, reused by the rail's Mode toggle (Menu.tsx) and its
+// hotkeys (GlobalHotkeyManager.tsx) so the two never drift apart.
+export const MODE_ORDER: readonly Mode[] = [
+  'Matte',
+  'Color',
+  'Repl',
+  'Smear',
+  'Shade',
+  'Blend',
+  'Cycle',
+  'Smooth',
+];
+
 // Modes whose strokes go through EffectIndexer's order-dependent per-point
 // path (the canvas-reading effects, plus Cycle which needs per-point colors).
 const EFFECT_DRAW_MODES: readonly Mode[] = ['Smear', 'Shade', 'Blend', 'Smooth', 'Cycle'];

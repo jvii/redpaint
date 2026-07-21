@@ -78,6 +78,27 @@
   background-color: rgb(242, 242, 242);
 }
 
+/* the F1-F8 hint sits below each mode's label rather than beside it (unlike
+   the transform gadgets' inline keycap, MenuGadgets.css) — RetroToggle
+   segments have no icon slot competing for vertical room, and a row of 8
+   already reads left-to-right, so stacking reads as "this button, this key"
+   without widening every segment. */
+.menu__mode-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* the Mode row has 8 segments to the transform gadgets' 2-3 per cluster, and
+   its own bigger gadget-face padding around each label already reads more
+   spacious — a size step down from the shared .wb-gadget__keycap keeps the
+   hint feeling like a caption, not a rival to the label above it. */
+.menu__mode-keycap {
+  font-size: 14px;
+  padding: 2px 5px;
+}
+
 .menu__close {
   width: auto;
   margin-right: 10px;

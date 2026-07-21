@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useRef } from 'react';
 import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
-import { getEventHandler } from '../../tools/util/util';
+import { getEventHandler, isMiddleMouseButton } from '../../tools/util/util';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from '../../types';
@@ -187,10 +187,16 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           getEventHandler(tool, 'onClickOverlay')(event);
         }}
         onMouseDown={(event): void => {
+          if (isMiddleMouseButton(event)) {
+            return; // reserved app-wide for the menu toggle, not a paint tool
+          }
           getEventHandler(tool, 'onMouseDown')(event);
           getEventHandler(tool, 'onMouseDownOverlay')(event);
         }}
         onMouseUp={(event): void => {
+          if (isMiddleMouseButton(event)) {
+            return;
+          }
           getEventHandler(tool, 'onMouseUp')(event);
           getEventHandler(tool, 'onMouseUpOverlay')(event);
         }}

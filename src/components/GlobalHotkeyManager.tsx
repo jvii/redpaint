@@ -1,12 +1,15 @@
 import { useEffect } from 'react';
 import { useActions } from '../overmind';
 import { overmind } from '../index';
+import { MODE_ORDER } from '../overmind/brush/mode';
 
 // A non-rendering logic component for managing hotkeys and copy/paste
 export function GlobalHotKeyManager(): null {
   usePaste();
   useMenuHotkey();
+  useMiddleClickMenuToggle();
   useBrushTransformHotkeys();
+  useModeHotkeys();
 
   return null;
 }
@@ -33,10 +36,11 @@ function isImageFile(file: File): boolean {
   return file.type.search(/^image\//i) === 0;
 }
 
-// Hotkeys belong to the canvas: they are suspended whenever keystrokes mean
-// something else — a text field has focus, a dialog/requester is open, or the
-// text tool is capturing keys.
-function hotkeysSuspended(event: KeyboardEvent): boolean {
+// Hotkeys belong to the canvas: they are suspended whenever keystrokes (or,
+// for the middle-click menu toggle below, clicks) mean something else — a
+// text field has focus, a dialog/requester is open, or the text tool is
+// capturing keys. Takes just the `target` so it works for mouse events too.
+function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
   const target = event.target as HTMLElement | null;
   if (
     target &&
@@ -70,6 +74,66 @@ function useMenuHotkey(): void {
     }
     event.preventDefault(); // keep the page from scrolling
     actions.app.toggleMenu();
+    // Closing uncovers the canvas under the pointer, but the overlay cursor
+    // only repaints on mousemove — replay one so it's visible immediately.
+    setTimeout(refreshBrushPreview, 0);
+  }
+
+  useEffect((): void => {
+    document.addEventListener('keydown', handleKey);
+  }, []);
+}
+
+// Middle-click toggles the menu from anywhere — canvas, toolbox, palette,
+// the menubar/menu itself — same as spacebar (useMenuHotkey above).
+function useMiddleClickMenuToggle(): void {
+  const actions = useActions();
+
+  function handleMouseDown(event: MouseEvent): void {
+    if (event.button === 1 && !hotkeysSuspended(event)) {
+      event.preventDefault(); // middle-click toggles the menu, not autoscroll
+    }
+  }
+
+  function handleAuxClick(event: MouseEvent): void {
+    if (event.button !== 1 || hotkeysSuspended(event)) {
+      return;
+    }
+    actions.app.toggleMenu();
+    // Closing uncovers whatever was under the pointer, but the overlay
+    // cursor only repaints on mousemove — replay one so it's visible
+    // immediately.
+    setTimeout(refreshBrushPreview, 0);
+  }
+
+  useEffect((): void => {
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('auxclick', handleAuxClick);
+  }, []);
+}
+
+// DPaint's F1-F8 brush-mode keys, in the same MODE_ORDER the Mode toggle
+// renders (Menu.tsx). Matte/Repl are custom-brush-only, same as the toggle's
+// own disabled segments — the hotkey mirrors that instead of quietly setting
+// a mode a built-in brush can't use.
+function useModeHotkeys(): void {
+  const actions = useActions();
+
+  function handleKey(event: KeyboardEvent): void {
+    if (hotkeysSuspended(event)) {
+      return;
+    }
+    const match = /^F([1-8])$/.exec(event.key);
+    if (!match) {
+      return;
+    }
+    const mode = MODE_ORDER[Number(match[1]) - 1];
+    if ((mode === 'Matte' || mode === 'Repl') && overmind.state.brush.selectedBuiltInBrushId !== null) {
+      return;
+    }
+    event.preventDefault(); // F1 opens the browser's own help otherwise
+    actions.brush.setMode(mode);
+    refreshBrushPreview();
   }
 
   useEffect((): void => {

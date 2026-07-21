@@ -64,6 +64,12 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   const transformTitle = (enabledTitle: string): string =>
     usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
 
+  // the keycap shown under each transform gadget: Shift-modified keys
+  // (uppercase in GlobalHotkeyManager's handleKey) are rendered as ⇧+letter
+  // so the cap reads as the actual chord you press, not a bare capital.
+  const shortcutCap = (key: string): string =>
+    key.length === 1 && key >= 'A' && key <= 'Z' ? `⇧${key.toLowerCase()}` : key;
+
   const handleBrushSave = (): void => {
     const brush = brushRecall.current;
     if (!isSaveableBrush(brush) || !(brush instanceof CustomBrush)) {
@@ -129,6 +135,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Stretch"
             stacked
             title={transformTitle('Stretch (drag on canvas) — Z')}
+            shortcut={shortcutCap('Z')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushStretchTool'}
             onClick={armTransform('brushStretchTool')}
@@ -138,6 +145,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Halve"
             stacked
             title={transformTitle('Halve — h')}
+            shortcut={shortcutCap('h')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.halveBrush)}
           />
@@ -146,6 +154,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Double"
             stacked
             title={transformTitle('Double — H')}
+            shortcut={shortcutCap('H')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.doubleBrush)}
           />
@@ -156,6 +165,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Horizontal"
             stacked
             title={transformTitle('Flip horizontally — x')}
+            shortcut={shortcutCap('x')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.flipBrushHorizontal)}
           />
@@ -164,6 +174,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Vertical"
             stacked
             title={transformTitle('Flip vertically — y')}
+            shortcut={shortcutCap('y')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.flipBrushVertical)}
           />
@@ -174,6 +185,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="90°"
             stacked
             title={transformTitle('Rotate 90 degrees — z')}
+            shortcut={shortcutCap('z')}
             disabled={usingBuiltInBrush}
             onClick={instant(actions.brush.rotateBrush90)}
           />
@@ -182,6 +194,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Any Angle"
             stacked
             title={transformTitle('Rotate any angle (drag on canvas) — R')}
+            shortcut={shortcutCap('R')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
             onClick={armTransform('brushRotateTool')}
@@ -191,6 +204,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Shear"
             stacked
             title={transformTitle('Shear (drag on canvas) — S')}
+            shortcut={shortcutCap('S')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushShearTool'}
             onClick={armTransform('brushShearTool')}
@@ -228,6 +242,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
                 ? 'Cannot restore a built-in brush'
                 : 'Restore original brush — B'
             }
+            shortcut={shortcutCap('B')}
             disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
             onClick={instant(actions.brush.restoreOriginalBrush)}
           />

@@ -1,6 +1,7 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
+import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import './Menubar.css';
 
 // The flood fill bucket glyph, lifted from the toolbox sprite's
@@ -62,7 +63,18 @@ export function Menubar(): JSX.Element {
       : null;
 
   return (
-    <div className="menubar" onClick={(): void => actions.app.toggleMenu()}>
+    <div
+      className="menubar"
+      onClick={(): void => actions.app.toggleMenu()}
+      onContextMenu={(event): void => {
+        event.preventDefault(); // right-click toggles the menu, not the browser's own menu
+        actions.app.toggleMenu();
+        // Closing uncovers the canvas under the pointer, but the overlay
+        // cursor only repaints on mousemove — replay one so it's visible
+        // immediately instead of only after the mouse next moves.
+        setTimeout(refreshBrushPreview, 0);
+      }}
+    >
       <div className="menubar__title">
         redpaint
         <div className={`menubar__loading-indicator ${state.app.isLoading ? 'visible' : ''}`}>
