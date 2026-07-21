@@ -32,3 +32,16 @@ export function activeRangeIndices(
   }
   return wholePalette;
 }
+
+// DPaint's CRNG ranges (an IFF ILBM concept, see src/fileformat/ilbm.ts)
+// map onto the palette's fixed four Range slots (color ids are 1-based
+// where CRNG positions are 0-based). Rate and direction have no home yet —
+// they return once color cycling is a feature.
+export function cycleRangesToPaletteRanges(
+  cycleRanges: { low: number; high: number }[]
+): ({ start: string; end: string } | null)[] {
+  const usable = cycleRanges.filter((r) => r.low < r.high).slice(0, 4);
+  return [0, 1, 2, 3].map((i) =>
+    usable[i] ? { start: String(usable[i].low + 1), end: String(usable[i].high + 1) } : null
+  );
+}

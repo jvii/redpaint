@@ -8,23 +8,17 @@ import { icons, PixelIcon } from './pixelIcons';
 import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
 import { saveCanvasAsPng, saveFile } from './saveAsPng';
-import { encodeIlbm } from '../../fileformat/ilbm';
+import { encodeIlbm, isIlbmHeader } from '../../fileformat/ilbm';
 import './Menu.css';
 
 // rail mode-toggle order: two rows of four, reading order matching the old
 // Mode column
 const MODE_ORDER: Mode[] = ['Matte', 'Color', 'Repl', 'Smear', 'Shade', 'Blend', 'Cycle', 'Smooth'];
 
-// IFF is recognized by content, not extension — 'FORM' + a form type we can
-// decode. Extensions in the wild vary (.iff, .lbm, .ilbm) and lie.
+// IFF is recognized by content, not extension — extensions in the wild vary
+// (.iff, .lbm, .ilbm) and lie; isIlbmHeader knows what content qualifies.
 async function isIffFile(file: File): Promise<boolean> {
-  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
-  if (head.length < 12) {
-    return false;
-  }
-  const id = (o: number): string =>
-    String.fromCharCode(head[o], head[o + 1], head[o + 2], head[o + 3]);
-  return id(0) === 'FORM' && (id(8) === 'ILBM' || id(8) === 'PBM ');
+  return isIlbmHeader(new Uint8Array(await file.slice(0, 12).arrayBuffer()));
 }
 
 // The drop-down menu panel under the menubar: the screen status strip and

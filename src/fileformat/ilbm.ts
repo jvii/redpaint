@@ -37,6 +37,19 @@ export class IlbmError extends Error {
   }
 }
 
+// Content-sniffs a FORM ILBM/PBM header from just the first 12 bytes (no
+// full readForm parse needed) — for detecting an IFF file by content rather
+// than extension, which in the wild varies (.iff, .lbm, .ilbm) and lies.
+// Safe to call on a short/partial read, e.g. a File.slice(0, 12).
+export function isIlbmHeader(head: Uint8Array): boolean {
+  if (head.length < 12) {
+    return false;
+  }
+  const id = (o: number): string =>
+    String.fromCharCode(head[o], head[o + 1], head[o + 2], head[o + 3]);
+  return id(0) === 'FORM' && (id(8) === 'ILBM' || id(8) === 'PBM ');
+}
+
 export function decodeIlbm(bytes: Uint8Array): IlbmImage {
   let form;
   try {

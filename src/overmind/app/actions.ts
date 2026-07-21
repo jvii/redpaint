@@ -2,13 +2,13 @@ import { Context } from '../../overmind';
 import { countDistinctColors, distinctOpaqueColorsByFrequency } from '../../algorithm/imageColors';
 import { setPendingImage } from '../../canvas/pendingImage';
 import { setPendingBrush } from '../../canvas/pendingBrush';
-import { decodeIlbm, IlbmCycleRange, IlbmError } from '../../fileformat/ilbm';
+import { decodeIlbm, IlbmError } from '../../fileformat/ilbm';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { PaletteRange } from '../palette/state';
 import { findMatchingScreenFormat } from '../canvas/state';
+import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 
 export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
   context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
@@ -70,7 +70,7 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
     context.actions.canvas.setTrueColorEnabled(false);
     context.actions.palette.replacePalette(image.palette);
     // after replacePalette — it clamps/keeps the previous document's ranges
-    context.state.palette.ranges = toPaletteRanges(image.cycleRanges);
+    context.state.palette.ranges = cycleRangesToPaletteRanges(image.cycleRanges);
     // the GL palette textures don't watch Overmind — push the new palette
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
@@ -103,16 +103,6 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
     context.actions.app.setLoading(false);
   }
 };
-
-// DPaint's CRNG ranges map onto the palette's fixed four Range slots (color
-// ids are 1-based where CRNG positions are 0-based). Rate and direction have
-// no home yet — they return once color cycling is a feature.
-function toPaletteRanges(cycleRanges: IlbmCycleRange[]): (PaletteRange | null)[] {
-  const usable = cycleRanges.filter((r) => r.low < r.high).slice(0, 4);
-  return [0, 1, 2, 3].map((i) =>
-    usable[i] ? { start: String(usable[i].low + 1), end: String(usable[i].high + 1) } : null
-  );
-}
 
 // Same as beginImageLoad, for brushes: Brush > Open... and "Paste as brush"
 // both come through this. colorCount excludes transparent pixels (see

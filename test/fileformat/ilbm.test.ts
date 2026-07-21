@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { decodeIlbm, encodeIlbm, IlbmError } from '../../src/fileformat/ilbm';
+import { decodeIlbm, encodeIlbm, IlbmError, isIlbmHeader } from '../../src/fileformat/ilbm';
 import { writeForm, IffChunk } from '../../src/fileformat/iff';
 
 // BMHD builder: only the fields the tests vary
@@ -25,6 +25,40 @@ function camg(mode: number): IffChunk {
   new DataView(data.buffer).setUint32(0, mode);
   return { id: 'CAMG', data };
 }
+
+describe('isIlbmHeader', () => {
+  function ascii(s: string): number[] {
+    return [...s].map((c) => c.charCodeAt(0));
+  }
+
+  test('accepts an ILBM header', () => {
+    expect(isIlbmHeader(new Uint8Array([...ascii('FORM'), 0, 0, 0, 0, ...ascii('ILBM')]))).toBe(
+      true
+    );
+  });
+
+  test('accepts a PBM header', () => {
+    expect(isIlbmHeader(new Uint8Array([...ascii('FORM'), 0, 0, 0, 0, ...ascii('PBM ')]))).toBe(
+      true
+    );
+  });
+
+  test('rejects a non-FORM header (e.g. a PNG signature)', () => {
+    expect(isIlbmHeader(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0, 0, 0, 0, 0]))).toBe(
+      false
+    );
+  });
+
+  test('rejects an unrelated FORM type', () => {
+    expect(isIlbmHeader(new Uint8Array([...ascii('FORM'), 0, 0, 0, 0, ...ascii('8SVX')]))).toBe(
+      false
+    );
+  });
+
+  test('rejects a short/partial read', () => {
+    expect(isIlbmHeader(new Uint8Array([...ascii('FORM')]))).toBe(false);
+  });
+});
 
 describe('decodeIlbm', () => {
   test('decodes an uncompressed 4x1 2-plane ILBM built byte-by-byte', () => {

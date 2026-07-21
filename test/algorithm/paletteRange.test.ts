@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { activeRangeIndices } from '../../src/algorithm/paletteRange';
+import { activeRangeIndices, cycleRangesToPaletteRanges } from '../../src/algorithm/paletteRange';
 
 describe('activeRangeIndices', () => {
   const ranges = [
@@ -55,5 +55,39 @@ describe('activeRangeIndices', () => {
       end: 15,
       wholePalette: true,
     });
+  });
+});
+
+describe('cycleRangesToPaletteRanges', () => {
+  it('converts 0-based CRNG low/high to 1-based start/end strings', () => {
+    expect(cycleRangesToPaletteRanges([{ low: 3, high: 11 }])).toEqual([
+      { start: '4', end: '12' },
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it('drops degenerate ranges (low >= high)', () => {
+    expect(cycleRangesToPaletteRanges([{ low: 5, high: 5 }, { low: 5, high: 5 }])).toEqual([
+      null,
+      null,
+      null,
+      null,
+    ]);
+  });
+
+  it('keeps only the first 4, in order', () => {
+    const ranges = [0, 1, 2, 3, 4].map((i) => ({ low: i, high: i + 1 }));
+    expect(cycleRangesToPaletteRanges(ranges)).toEqual([
+      { start: '1', end: '2' },
+      { start: '2', end: '3' },
+      { start: '3', end: '4' },
+      { start: '4', end: '5' },
+    ]);
+  });
+
+  it('returns all nulls for an empty input', () => {
+    expect(cycleRangesToPaletteRanges([])).toEqual([null, null, null, null]);
   });
 });
