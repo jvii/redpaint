@@ -28,13 +28,34 @@ describe('readForm', () => {
     expect(() => readForm(new Uint8Array(ascii('FORM')))).toThrow(); // too short
   });
 
-  test('throws on a chunk whose stored size overruns the file', () => {
+  test('clamps a chunk whose stored size overruns the file instead of throwing', () => {
+    // some vintage IFF writers recorded a bogus (too-large) size for their
+    // final chunk — seen in the wild on ByteRun1-compressed BODY chunks
+    // (confirmed against real samples: P01504.lbm, PLAYCAAD, teapot2.lbm).
+    // Reading should still succeed, with the chunk's data clamped to
+    // whatever bytes are actually present.
     const bytes = new Uint8Array([
       ...ascii('FORM'), 0, 0, 0, 16,
       ...ascii('TEST'),
       ...ascii('AAAA'), 0, 0, 0, 99, 1, 2, 3, 4,
     ]);
-    expect(() => readForm(bytes)).toThrow(/truncated/i);
+    const form = readForm(bytes);
+    expect(form.chunks).toHaveLength(1);
+    expect(form.chunks[0].id).toBe('AAAA');
+    expect([...form.chunks[0].data]).toEqual([1, 2, 3, 4]);
+  });
+
+  test('stops after clamping an overrunning chunk, ignoring anything past it', () => {
+    // a well-formed chunk following an overrunning one is unreachable —
+    // there's no trustworthy size to skip past the bad chunk with
+    const bytes = new Uint8Array([
+      ...ascii('FORM'), 0, 0, 0, 26,
+      ...ascii('TEST'),
+      ...ascii('AAAA'), 0, 0, 0, 99, 1, 2, 3, 4,
+      ...ascii('BBBB'), 0, 0, 0, 2, 9, 8,
+    ]);
+    const form = readForm(bytes);
+    expect(form.chunks.map((c) => c.id)).toEqual(['AAAA']);
   });
 });
 

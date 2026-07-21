@@ -28,7 +28,17 @@ export function readForm(bytes: Uint8Array): IffForm {
     const id = readId(bytes, offset);
     const size = view.getUint32(offset + 4);
     if (offset + 8 + size > bytes.length) {
-      throw new Error(`Truncated IFF chunk ${id}`);
+      // Some vintage writers recorded a bogus (too-large) size for their
+      // final chunk — seen in the wild on ByteRun1-compressed BODY chunks,
+      // where the size looks like it was computed from the uncompressed
+      // length instead of the packed one. Rather than reject the file,
+      // clamp to whatever bytes are actually there and stop: a chunk
+      // reader (e.g. ByteRun1) only consumes as many bytes as it needs to
+      // reconstruct the known content, so a "short" chunk still decodes
+      // fully, and there's no reliable way to locate a next chunk without
+      // a trustworthy size.
+      chunks.push({ id, data: bytes.subarray(offset + 8, bytes.length) });
+      break;
     }
     chunks.push({ id, data: bytes.subarray(offset + 8, offset + 8 + size) });
     offset += 8 + size + (size & 1); // skip the pad byte after odd-sized chunks
