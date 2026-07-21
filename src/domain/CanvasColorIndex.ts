@@ -88,6 +88,26 @@ export class CanvasColorIndex {
     return new CanvasColorIndex(width, height, indexArray);
   }
 
+  // The export-side mirror of fromIndexedPixels: per-pixel 0-based palette
+  // positions in top-down row order (texture rows are stored bottom-up, so
+  // rows are flipped here). Returns null if any pixel is true color — an
+  // indexed export has no representation for those; the caller decides what
+  // to tell the user.
+  toIndexedPixels(): Uint8Array | null {
+    const out = new Uint8Array(this.width * this.height);
+    for (let y = 0; y < this.height; y++) {
+      const sourceRow = (this.height - 1 - y) * this.width * 4;
+      const targetRow = y * this.width;
+      for (let x = 0; x < this.width; x++) {
+        if (this.indexArray[sourceRow + x * 4 + 3] === ALPHA_TRUECOLOR) {
+          return null;
+        }
+        out[targetRow + x] = this.indexArray[sourceRow + x * 4];
+      }
+    }
+    return out;
+  }
+
   // Packs an indexed-pixel value for whole-pixel (32-bit) comparisons.
   // Typed arrays are little-endian in practice, so RGBA bytes read as
   // R | G<<8 | B<<16 | A<<24.
