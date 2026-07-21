@@ -180,7 +180,10 @@ export function Menu(): JSX.Element {
                 <RetroToggle
                   variant="row"
                   value={state.brush.mode}
-                  onChange={(value): void => actions.brush.setMode(value as Mode)}
+                  onChange={(value): void => {
+                    actions.brush.setMode(value as Mode);
+                    close();
+                  }}
                   options={MODE_ORDER.map((m) => ({
                     value: m,
                     label: m,
