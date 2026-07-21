@@ -55,6 +55,17 @@ These rules are absolute — they, not icon style, make the app read retro:
   uppercase, letter-spaced), slider value readouts, and similar fine print.
   Small monospace beside the bitmap face is itself a period pairing
   (system console text next to chunky title text).
+- **`-webkit-font-smoothing: none` is inherited — every monospace-stack
+  element needs its own `-webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;`, even if no ancestor sets `none`
+  today.** A monospace label nested inside a Press Start 2P container (a
+  gadget, a cluster head, a modal window) silently inherits that `none`
+  otherwise — the bitmap face wants it, the system font doesn't, and
+  Safari (unlike Chrome) actually renders the difference: unsmoothed
+  system-font text comes out visibly thinner/blurrier there, not crisper.
+  Never rely on inheriting `antialiased` from `body` — the nearest
+  ancestor's `none` always wins, and that ancestor changes as the
+  component tree is refactored.
 - Two heading treatments in panels: _section heads_ (white, 2px white
   underline — Mode, Brush) and _sub-heads_ (dimmed white, letter-spaced, no
   rule — File/Size/Flip/Rotate/Bend). One rule per section, not per
@@ -67,8 +78,11 @@ thumbnails. Multicolor WB 1.3-style pixel art (`pixelIcons.tsx`, ASCII maps
 rendered to crispEdges rects). Few, decorative, memorable. Workbench itself
 paired austere gadget chrome with lavish multicolor disk icons — this mix
 is period-authentic. Mind the grounds an icon sits on: a pressed gadget is
-Workbench blue and hover is orange, so those exact colors vanish there
-(the brush got white bristles for this reason).
+Workbench blue and hover is orange, so those exact colors risk vanishing
+there. A full 1-2px outline around every fill color (the brush's navy
+outline around its blue handle) is what keeps a same-hue fill readable on
+a same-hue ground — an unoutlined fill in the gadget's own pressed/hover
+color would still vanish.
 
 **Action glyphs (verbs)** — transforms, toolbox tools. Single-color line
 drawings: `currentColor` stroke so they follow the gadget's

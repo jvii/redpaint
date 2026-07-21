@@ -22,10 +22,13 @@
 .load-preview__info-label {
   display: block;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgb(106, 106, 106);
+  color: black;
   margin-bottom: 5px;
 }
 

@@ -95,6 +95,7 @@
   padding: 0;
   cursor: pointer;
   font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
 }
 
 .menu__closebtn:hover {

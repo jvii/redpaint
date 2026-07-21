@@ -28,6 +28,13 @@ for the actual painting).
 `tsconfig.json` has `strict: false`. There are `paths` overrides pointing `react`/`react-dom` at
 `node_modules` — leave these alone, they exist to work around a local linked-package setup.
 
+## UI style guide
+
+Before making any UI change (new components, CSS, icons, colors, typography), read
+`docs/style-guide.md` — the app's retro look is held together by a small set of hard rules
+(palette, chrome, typography, icon registers) that aren't otherwise derivable from the existing
+code. When a change deliberately breaks one of those rules, update the guide alongside it.
+
 ## Architecture
 
 ### Rendering: two WebGL canvases, color-index pipeline

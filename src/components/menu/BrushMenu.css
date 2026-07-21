@@ -23,6 +23,8 @@
 .brush-menu__current {
   margin-left: 12px;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-size: 12px;
   font-weight: normal;
   letter-spacing: 0.04em;
