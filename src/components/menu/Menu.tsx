@@ -53,6 +53,11 @@ export function Menu(): JSX.Element {
     if (!file) {
       return;
     }
+    // every dialog-opening action closes the menu first (see ScreenStatus's
+    // openScreenFormat) — beginImageLoad's requester opens asynchronously
+    // (after decode), so without this the still-open menu (z-index above the
+    // modal) hides it once it appears
+    actions.app.closeMenu();
     void (async (): Promise<void> => {
       if (await isIffFile(file)) {
         actions.app.beginIlbmLoad(file);

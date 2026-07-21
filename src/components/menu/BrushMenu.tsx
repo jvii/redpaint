@@ -66,6 +66,11 @@ export function BrushMenu(): JSX.Element {
 
   const handleBrushFileOpen = (input: HTMLInputElement): void => {
     if (input.files?.[0]) {
+      // every dialog-opening action closes the menu first (see
+      // ScreenStatus's openScreenFormat) — beginBrushLoad's requester opens
+      // asynchronously (after decode), so without this the still-open menu
+      // (z-index above the modal) hides it once it appears
+      actions.app.closeMenu();
       // decodes, then opens the load requester (color treatment)
       actions.app.beginBrushLoad(URL.createObjectURL(input.files[0]));
     }
