@@ -163,8 +163,8 @@ export function Menu(): JSX.Element {
                   />
                   <Gadget
                     icon={<PixelIcon map={icons.disk} scale={3} />}
-                    label="Save ILBM"
-                    title="Save as IFF ILBM..."
+                    label="Save IFF"
+                    title="Save as IFF..."
                     onClick={handleImageSaveIlbm}
                   />
                 </GadgetGroup>
