@@ -4,6 +4,7 @@ import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { brushRecall } from '../brush/BrushRecall';
 import { CustomBrush } from '../brush/CustomBrush';
+import { refreshBrushPreview } from '../components/GlobalHotkeyManager';
 
 export class BrushSelector implements Tool {
   public onInit(): void {
@@ -41,6 +42,11 @@ export class BrushSelector implements Tool {
     overmind.actions.toolbox.toggleBrushSelectionMode();
     // switch to Dotted Freehand tool after selection
     overmind.actions.toolbox.setSelectedDrawingTool('dottedFreehand');
+    // the tool switch above only takes effect once Canvas.tsx re-renders and
+    // rebinds its onMouseMove closure to the new tool, so a refresh called
+    // synchronously here would still hit the outgoing tool's stale handler —
+    // same reasoning as the keyboard hotkey path in GlobalHotkeyManager.tsx
+    setTimeout(refreshBrushPreview, 0);
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
