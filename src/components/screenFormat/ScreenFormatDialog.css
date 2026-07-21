@@ -10,11 +10,24 @@
   text-align: left;
 }
 
+.screen-format__left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .screen-format__right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 24px;
+}
+
+/* untitled, unlike its RetroFieldset siblings — sits right under the
+   Resolution list it governs, so no legend is needed to explain it */
+.screen-format__standard .retro-toggle__segment {
+  padding: 12px 0;
+  text-align: center;
 }
 
 /* Layout (vertical / grid) and border seams are handled by RetroToggle's

@@ -142,18 +142,18 @@ function ScreenFormatDialogOpen(): JSX.Element {
   return (
     <Modal header="Screen Format" width={840}>
       <div className="screen-format__body">
-        <RetroFieldset legend="Resolution" className="screen-format__formats">
-          <RetroToggle
-            variant="column"
-            options={formatOptions(videoStandard)}
-            value={formatId}
-            onChange={(value): void => setFormatId(value as FormatChoice)}
-          />
-        </RetroFieldset>
-        <div className="screen-format__right">
-          <RetroFieldset legend="TV Standard" className="screen-format__standard">
-            {/* which broadcast standard the 4 named formats above resolve
-                to — a real Amiga only ran one at a time */}
+        <div className="screen-format__left">
+          <RetroFieldset legend="Resolution" className="screen-format__formats">
+            <RetroToggle
+              variant="column"
+              options={formatOptions(videoStandard)}
+              value={formatId}
+              onChange={(value): void => setFormatId(value as FormatChoice)}
+            />
+          </RetroFieldset>
+          {/* which broadcast standard the 4 named formats above resolve
+              to — a real Amiga only ran one at a time */}
+          <div className="screen-format__standard">
             <RetroToggle
               variant="grid"
               columns={2}
@@ -164,7 +164,9 @@ function ScreenFormatDialogOpen(): JSX.Element {
               value={videoStandard}
               onChange={(value): void => setVideoStandard(value as VideoStandard)}
             />
-          </RetroFieldset>
+          </div>
+        </div>
+        <div className="screen-format__right">
           <RetroFieldset legend="Indexed palette size" className="screen-format__colors">
             <RetroToggle
               variant="grid"
