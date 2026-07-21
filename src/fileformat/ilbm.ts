@@ -4,9 +4,9 @@
 // needs the true-color load path and is future work.
 
 import { Color } from '../types';
-import { IffChunk, readForm } from './iff';
-import { unpackByteRun1 } from './byteRun1';
-import { bytesPerPlaneRow, planarRowToChunky } from './planar';
+import { IffChunk, readForm, writeForm } from './iff';
+import { packByteRun1, unpackByteRun1 } from './byteRun1';
+import { bytesPerPlaneRow, chunkyRowToPlanar, planarRowToChunky } from './planar';
 
 const CAMG_HAM = 0x800;
 const CAMG_EHB = 0x80;
@@ -181,4 +181,78 @@ function decodePbmBody(
     pixels.set(unpacked.subarray(y * rowBytes, y * rowBytes + width), y * width);
   }
   return pixels;
+}
+
+// Encodes an indexed image as a ByteRun1-compressed ILBM. The plane count
+// covers the highest pixel index actually present (dropped palette slots
+// keep their index in redpaint), and the CMAP is padded to a full 2^nPlanes
+// registers, which is what period software expects.
+export function encodeIlbm(
+  image: Omit<IlbmImage, 'cycleRanges'> & { cycleRanges?: IlbmCycleRange[] }
+): Uint8Array {
+  const { width, height, palette, pixels } = image;
+  let maxIndex = 0;
+  for (let i = 0; i < pixels.length; i++) {
+    if (pixels[i] > maxIndex) {
+      maxIndex = pixels[i];
+    }
+  }
+  const registers = Math.max(2, palette.length, maxIndex + 1);
+  const nPlanes = Math.ceil(Math.log2(registers));
+
+  const bmhd = new Uint8Array(20);
+  const header = new DataView(bmhd.buffer);
+  header.setUint16(0, width);
+  header.setUint16(2, height);
+  bmhd[8] = nPlanes;
+  bmhd[9] = 0; // no mask
+  bmhd[10] = 1; // ByteRun1
+  header.setUint16(12, 0); // transparentColor
+  bmhd[14] = 1; // xAspect — square pixels (no screen-mode simulation on export)
+  bmhd[15] = 1; // yAspect
+  header.setInt16(16, width); // pageWidth/Height: the image is its own page
+  header.setInt16(18, height);
+
+  const cmap = new Uint8Array(3 * (1 << nPlanes)); // pad to full registers, black
+  palette.forEach((color, i) => {
+    cmap[i * 3] = color.r;
+    cmap[i * 3 + 1] = color.g;
+    cmap[i * 3 + 2] = color.b;
+  });
+
+  const rowBytes = bytesPerPlaneRow(width);
+  const packedRows: Uint8Array[] = [];
+  let bodyLength = 0;
+  for (let y = 0; y < height; y++) {
+    const planarRow = chunkyRowToPlanar(pixels.subarray(y * width, (y + 1) * width), nPlanes);
+    for (let p = 0; p < nPlanes; p++) {
+      // per plane-row compression, as the spec prescribes
+      const packed = packByteRun1(planarRow.subarray(p * rowBytes, (p + 1) * rowBytes));
+      packedRows.push(packed);
+      bodyLength += packed.length;
+    }
+  }
+  const body = new Uint8Array(bodyLength);
+  let offset = 0;
+  for (const row of packedRows) {
+    body.set(row, offset);
+    offset += row.length;
+  }
+
+  const chunks: IffChunk[] = [
+    { id: 'BMHD', data: bmhd },
+    { id: 'CMAP', data: cmap },
+  ];
+  for (const range of image.cycleRanges ?? []) {
+    const crng = new Uint8Array(8);
+    const v = new DataView(crng.buffer);
+    v.setUint16(2, range.rate);
+    v.setUint16(4, (range.active ? 1 : 0) | (range.reverse ? 2 : 0));
+    crng[6] = range.low;
+    crng[7] = range.high;
+    chunks.push({ id: 'CRNG', data: crng });
+  }
+  chunks.push({ id: 'BODY', data: body });
+
+  return writeForm('ILBM', chunks);
 }

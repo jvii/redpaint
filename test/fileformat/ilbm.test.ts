@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { decodeIlbm, IlbmError } from '../../src/fileformat/ilbm';
+import { decodeIlbm, encodeIlbm, IlbmError } from '../../src/fileformat/ilbm';
 import { writeForm, IffChunk } from '../../src/fileformat/iff';
 
 // BMHD builder: only the fields the tests vary
@@ -126,5 +126,55 @@ describe('decodeIlbm', () => {
 
   test('rejects non-IFF bytes with an IlbmError', () => {
     expect(() => decodeIlbm(new Uint8Array(100))).toThrow(IlbmError);
+  });
+});
+
+describe('encodeIlbm', () => {
+  test('round-trips pixels, palette and cycle ranges through decodeIlbm', () => {
+    const width = 37; // odd width exercises row padding
+    const height = 23;
+    const palette = Array.from({ length: 32 }, (_, i) => ({
+      r: (i * 8 + 1) & 0xff, // low nibbles nonzero so the 4-bit heuristic stays off
+      g: (255 - i * 7) | 1,
+      b: ((i * 13) & 0xff) | 1,
+    }));
+    const pixels = new Uint8Array(width * height);
+    for (let i = 0; i < pixels.length; i++) {
+      pixels[i] = (i * 7) % 32;
+    }
+    const cycleRanges = [{ low: 4, high: 15, rate: 8192, active: true, reverse: false }];
+
+    const decoded = decodeIlbm(encodeIlbm({ width, height, palette, pixels, cycleRanges }));
+
+    expect(decoded.width).toBe(width);
+    expect(decoded.height).toBe(height);
+    expect([...decoded.pixels]).toEqual([...pixels]);
+    expect(decoded.palette).toEqual(palette); // 32 colors = 5 planes = no padding needed
+    expect(decoded.cycleRanges).toEqual(cycleRanges);
+  });
+
+  test('sizes the plane count to the highest pixel index, not just the palette', () => {
+    // 4-color palette but a stray index 200 (dropped-slot pixels keep their
+    // index in redpaint) must still round-trip
+    const pixels = new Uint8Array([0, 1, 2, 200]);
+    const palette = [
+      { r: 1, g: 1, b: 1 },
+      { r: 255, g: 255, b: 255 },
+      { r: 255, g: 1, b: 1 },
+      { r: 1, g: 1, b: 255 },
+    ];
+    const decoded = decodeIlbm(encodeIlbm({ width: 4, height: 1, palette, pixels }));
+    expect([...decoded.pixels]).toEqual([0, 1, 2, 200]);
+    expect(decoded.palette).toHaveLength(256); // padded to 2^8
+  });
+
+  test('compresses: a flat image encodes far smaller than raw', () => {
+    const width = 320;
+    const height = 200;
+    const pixels = new Uint8Array(width * height).fill(3);
+    const palette = Array.from({ length: 16 }, (_, i) => ({ r: i | 1, g: i | 1, b: i | 1 }));
+    const bytes = encodeIlbm({ width, height, palette, pixels });
+    expect(bytes.length).toBeLessThan((width * height) / 8);
+    expect([...decodeIlbm(bytes).pixels]).toEqual([...pixels]);
   });
 });
