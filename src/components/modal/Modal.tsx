@@ -11,7 +11,7 @@ interface Props {
 // move a modal back once it's lost) must stay reachable on screen. Without
 // this, dragging toward an edge could push the header fully out of the
 // viewport with no way to grab it again.
-const HEADER_MIN_VISIBLE = 40;
+const HEADER_MIN_VISIBLE = 100;
 
 export function Modal({ header, children, width }: Props): JSX.Element | null {
   // Offset from the centered position, driven by dragging the header
