@@ -1,36 +1,93 @@
 import { derived } from 'overmind';
 import { Point } from '../../types';
 
-// The Amiga screen formats of DPaint's Choose Screen Format requester.
+// The Amiga screen formats of DPaint's Choose Screen Format requester. A real
+// Amiga only ever ran one broadcast standard at a time, so DPaint itself
+// never showed both sets of numbers together — here the video standard is a
+// switch (see VideoStandard/videoStandard below) rather than doubling the
+// format list to 8 entries: same 4 named formats, PAL or NTSC picks which
+// actual pixel dimensions they mean.
 // aspectX/aspectY describe the pixel's display shape relative to a square
 // Lo-Res pixel: Med-Res doubles the horizontal resolution on the same
 // physical screen (half-wide pixels), Interlace doubles the vertical
-// (half-tall), Hi-Res both — so every format fills the same screen shape,
-// 320x256 Lo-Res units.
+// (half-tall), Hi-Res both. This holds within either standard's own frame —
+// a format's pixel is always half as wide/tall as that *same standard's*
+// Lo-Res pixel — so, unlike width/height, it needs no PAL/NTSC split.
 export type ScreenFormatId = 'loRes' | 'medRes' | 'interlace' | 'hiRes';
+
+export type VideoStandard = 'PAL' | 'NTSC';
+
+type ScreenFormatDimensions = { width: number; height: number };
 
 export type ScreenFormat = {
   id: ScreenFormatId;
   name: string;
-  width: number;
-  height: number;
   aspectX: number;
   aspectY: number;
+  dimensions: { [standard in VideoStandard]: ScreenFormatDimensions };
 };
 
 export const screenFormats: { [id in ScreenFormatId]: ScreenFormat } = {
-  loRes: { id: 'loRes', name: 'Amiga Lo-Res', width: 320, height: 256, aspectX: 1, aspectY: 1 },
-  medRes: { id: 'medRes', name: 'Amiga Med-Res', width: 640, height: 256, aspectX: 0.5, aspectY: 1 },
+  loRes: {
+    id: 'loRes',
+    name: 'Amiga Lo-Res',
+    aspectX: 1,
+    aspectY: 1,
+    dimensions: { PAL: { width: 320, height: 256 }, NTSC: { width: 320, height: 200 } },
+  },
+  medRes: {
+    id: 'medRes',
+    name: 'Amiga Med-Res',
+    aspectX: 0.5,
+    aspectY: 1,
+    dimensions: { PAL: { width: 640, height: 256 }, NTSC: { width: 640, height: 200 } },
+  },
   interlace: {
     id: 'interlace',
     name: 'Amiga Interlace',
-    width: 320,
-    height: 512,
     aspectX: 1,
     aspectY: 0.5,
+    dimensions: { PAL: { width: 320, height: 512 }, NTSC: { width: 320, height: 400 } },
   },
-  hiRes: { id: 'hiRes', name: 'Amiga Hi-Res', width: 640, height: 512, aspectX: 0.5, aspectY: 0.5 },
+  hiRes: {
+    id: 'hiRes',
+    name: 'Amiga Hi-Res',
+    aspectX: 0.5,
+    aspectY: 0.5,
+    dimensions: { PAL: { width: 640, height: 512 }, NTSC: { width: 640, height: 400 } },
+  },
 };
+
+// A format's actual pixel size depends on the active video standard; every
+// caller that needs the current width/height goes through this instead of
+// reading screenFormats[id] directly.
+export function resolveScreenFormat(
+  id: ScreenFormatId,
+  standard: VideoStandard
+): ScreenFormat & ScreenFormatDimensions {
+  const format = screenFormats[id];
+  return { ...format, ...format.dimensions[standard] };
+}
+
+// Finds the standard format (if any) whose exact pixel dimensions match —
+// used to auto-select a screen format when an image's own size happens to be
+// a standard Amiga one (see beginIlbmLoad). Checks both standards: an
+// NTSC-sized image should select NTSC, not silently import as a same-count
+// but wrong-standard PAL format.
+export function findMatchingScreenFormat(
+  width: number,
+  height: number
+): { id: ScreenFormatId; standard: VideoStandard } | null {
+  for (const format of Object.values(screenFormats)) {
+    for (const standard of ['PAL', 'NTSC'] as const) {
+      const dims = format.dimensions[standard];
+      if (dims.width === width && dims.height === height) {
+        return { id: format.id, standard };
+      }
+    }
+  }
+  return null;
+}
 
 // How the simulated screen is scaled to the browser window:
 //  - 'stretch': fill the window exactly on both axes with a fractional scale;
@@ -49,6 +106,9 @@ export type State = {
   // the main canvas is scaled so one screenful of the canvas fills the
   // window, and a canvas larger than the screen scrolls.
   screenFormatId: ScreenFormatId | null;
+  // which broadcast standard's pixel dimensions the 4 formats above resolve
+  // to (see resolveScreenFormat) — a real Amiga only ran one at a time
+  videoStandard: VideoStandard;
   scaleMode: ScaleMode;
   // the active format's pixel display shape ({1,1} when no format): every
   // CSS size derived from the resolution gets multiplied by this so e.g.
@@ -76,6 +136,7 @@ export type State = {
 
 export type PendingScreenFormat = {
   formatId: ScreenFormatId | null;
+  videoStandard: VideoStandard;
   colors: number;
   trueColorEnabled: boolean;
   paletteSource: 'current' | 'image';
@@ -86,6 +147,7 @@ export type PendingScreenFormat = {
 export const state: State = {
   resolution: { width: 0, height: 0 },
   screenFormatId: null,
+  videoStandard: 'PAL',
   scaleMode: 'stretch',
   pixelAspect: derived((state: State) =>
     state.screenFormatId

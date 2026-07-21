@@ -35,6 +35,7 @@ export function DialogManager(): JSX.Element | null {
     if (pending) {
       const conformed = actions.canvas.applyScreenFormat({
         formatId: pending.formatId,
+        videoStandard: pending.videoStandard,
         colors: pending.colors,
         trueColorEnabled: pending.trueColorEnabled,
         paletteSource: pending.paletteSource,

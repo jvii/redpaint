@@ -10,7 +10,7 @@ import {
 import { countDistinctColors } from '../../algorithm/imageColors';
 import { Color } from '../../types';
 import { Point } from '../../types';
-import { PendingScreenFormat, ScaleMode, ScreenFormatId, screenFormats } from './state';
+import { PendingScreenFormat, ScaleMode, ScreenFormatId, VideoStandard } from './state';
 
 type Resolution = { width: number; height: number };
 
@@ -86,6 +86,15 @@ export const setScreenFormat = (
   context.state.canvas.screenFormatId = formatId;
 };
 
+// Which broadcast standard the 4 named formats' dimensions resolve to. Set
+// directly (not through applyScreenFormat) by an ILBM load auto-matching a
+// standard Amiga size — that's cosmetic-only, the canvas is already that
+// exact size. The Screen Format requester instead commits it as part of the
+// same choice as the format itself (see applyScreenFormat's videoStandard).
+export const setVideoStandard = (context: Context, standard: VideoStandard): void => {
+  context.state.canvas.videoStandard = standard;
+};
+
 // How the simulated screen fills the window. Independent of the format, and
 // meaningless for Native (which is always 1:1), so it lives outside the
 // Screen Format requester.
@@ -112,6 +121,7 @@ export const setTrueColorEnabled = (context: Context, enabled: boolean): void =>
 export type PaletteSource = 'current' | 'image';
 
 export interface ApplyScreenFormatParams extends SetScreenFormatParams {
+  videoStandard: VideoStandard;
   colors: number;
   trueColorEnabled: boolean;
   paletteSource: PaletteSource;
@@ -126,7 +136,7 @@ export interface ApplyScreenFormatParams extends SetScreenFormatParams {
 // through here, so a deferred change applies exactly like an immediate one.
 export const applyScreenFormat = (
   context: Context,
-  { formatId, colors, trueColorEnabled, paletteSource }: ApplyScreenFormatParams
+  { formatId, videoStandard, colors, trueColorEnabled, paletteSource }: ApplyScreenFormatParams
 ): boolean => {
   const oldPalette = context.state.palette.paletteArray.map((c) => ({
     r: c.r,
@@ -158,6 +168,7 @@ export const applyScreenFormat = (
     context.actions.palette.setNumberOfColors(colors);
   }
   context.actions.canvas.setScreenFormat({ formatId });
+  context.state.canvas.videoStandard = videoStandard;
   context.state.canvas.trueColorEnabled = trueColorEnabled;
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();

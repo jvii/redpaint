@@ -8,6 +8,7 @@ import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { PaletteRange } from '../palette/state';
+import { findMatchingScreenFormat } from '../canvas/state';
 
 export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
   context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
@@ -83,6 +84,17 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
       height: image.height,
       recordUndoPoint: false,
     });
+
+    // If the image happens to be an exact standard Amiga screen size, select
+    // that screen format (cosmetic only — the canvas is already that exact
+    // size, so no resize/palette conform is needed, unlike the requester's
+    // own OK). A non-matching size (or an arbitrary previous document's
+    // format) falls back to Native rather than leaving a stale format set.
+    const match = findMatchingScreenFormat(image.width, image.height);
+    context.actions.canvas.setScreenFormat({ formatId: match?.id ?? null });
+    if (match) {
+      context.actions.canvas.setVideoStandard(match.standard);
+    }
   } catch (error) {
     alert(
       error instanceof IlbmError ? `Failed to open IFF file: ${error.message}` : 'Failed to open file!'

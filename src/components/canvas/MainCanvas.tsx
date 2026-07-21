@@ -2,7 +2,7 @@ import React, { JSX, useEffect, useRef, useState } from 'react';
 import { Canvas } from './Canvas';
 import { useCanvasContentUpload, useDevicePixelRatio, useScrollToFocusPoint } from './hooks';
 import { useActions, useAppState } from '../../overmind';
-import { screenFormats } from '../../overmind/canvas/state';
+import { resolveScreenFormat } from '../../overmind/canvas/state';
 import { Point } from '../../types';
 import './Canvas.css';
 
@@ -30,13 +30,14 @@ export function MainCanvas(): JSX.Element {
   // Window resizes recompute the scale; the page and painting are untouched.
   const formatId = state.canvas.screenFormatId;
   const scaleMode = state.canvas.scaleMode;
+  const videoStandard = state.canvas.videoStandard;
   const [displayScale, setDisplayScale] = useState<Point>({ x: 1, y: 1 });
   useEffect((): (() => void) | void => {
     if (formatId === null) {
       setDisplayScale({ x: 1 / dpr, y: 1 / dpr });
       return;
     }
-    const format = screenFormats[formatId];
+    const format = resolveScreenFormat(formatId, videoStandard);
     const compute = (): void => {
       const div = canvasDivRef.current;
       // offsetWidth/Height (border box), not clientWidth/Height (content box):
@@ -63,7 +64,7 @@ export function MainCanvas(): JSX.Element {
     compute();
     window.addEventListener('resize', compute);
     return (): void => window.removeEventListener('resize', compute);
-  }, [formatId, scaleMode, dpr]);
+  }, [formatId, scaleMode, videoStandard, dpr]);
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);
   useCanvasContentUpload();

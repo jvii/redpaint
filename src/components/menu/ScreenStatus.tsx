@@ -1,6 +1,6 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
-import { screenFormats } from '../../overmind/canvas/state';
+import { resolveScreenFormat } from '../../overmind/canvas/state';
 import './ScreenStatus.css';
 
 // Four arrows radiating to the corners: the standard "expand to fill" glyph.
@@ -51,7 +51,7 @@ export function ScreenStatus(): JSX.Element {
 
   // null while no screen is simulated (Native): the canvas is shown 1:1
   const screenFormat = state.canvas.screenFormatId
-    ? screenFormats[state.canvas.screenFormatId]
+    ? resolveScreenFormat(state.canvas.screenFormatId, state.canvas.videoStandard)
     : null;
   const openScreenFormat = (): void => {
     actions.dialog.open('SCREEN_FORMAT');

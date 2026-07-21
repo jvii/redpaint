@@ -1,7 +1,7 @@
 import { JSX, useState } from 'react';
 import './ScreenFormatDialog.css';
 import { useActions, useAppState } from '../../overmind';
-import { ScreenFormatId, screenFormats } from '../../overmind/canvas/state';
+import { ScreenFormatId, VideoStandard, resolveScreenFormat, screenFormats } from '../../overmind/canvas/state';
 import { PaletteSource } from '../../overmind/canvas/actions';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
@@ -13,22 +13,30 @@ import { RetroFieldset } from '../ui/RetroFieldset';
 const NATIVE = 'native';
 type FormatChoice = ScreenFormatId | typeof NATIVE;
 
-const FORMAT_OPTIONS = [
-  { value: NATIVE, label: 'Native' },
-  ...Object.values(screenFormats).map((format) => ({
-    value: format.id,
-    // name on the left, resolution right-aligned on the same row (the segment
-    // is laid out as a flex row in CSS)
-    label: (
-      <>
-        <span className="screen-format__format-name">{format.name}</span>
-        <span className="screen-format__format-res">
-          {format.width}x{format.height}
-        </span>
-      </>
-    ),
-  })),
-];
+// Depends on the draft videoStandard (PAL/NTSC), so it's a function of it
+// rather than a static list — the same 4 formats mean different pixel sizes
+// per standard (see resolveScreenFormat).
+function formatOptions(videoStandard: VideoStandard) {
+  return [
+    { value: NATIVE, label: 'Native' },
+    ...Object.values(screenFormats).map((format) => {
+      const { width, height } = resolveScreenFormat(format.id, videoStandard);
+      return {
+        value: format.id,
+        // name on the left, resolution right-aligned on the same row (the
+        // segment is laid out as a flex row in CSS)
+        label: (
+          <>
+            <span className="screen-format__format-name">{format.name}</span>
+            <span className="screen-format__format-res">
+              {width}x{height}
+            </span>
+          </>
+        ),
+      };
+    }),
+  ];
+}
 
 // DPaint II offered 2..32 (the Amiga's bitplane depths); 64/128/256 are ours
 const COLOR_OPTIONS = [2, 4, 8, 16, 32, 64, 128, 256].map((colors) => ({
@@ -55,6 +63,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
     state.canvas.screenFormatId ?? NATIVE
   );
   const isNative = formatId === NATIVE;
+  const [videoStandard, setVideoStandard] = useState<VideoStandard>(state.canvas.videoStandard);
   const [colors, setColors] = useState(
     COLOR_OPTIONS.some((option) => Number(option.value) === state.palette.paletteArray.length)
       ? state.palette.paletteArray.length
@@ -78,6 +87,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
     if (isNative) {
       const conformed = actions.canvas.applyScreenFormat({
         formatId: null,
+        videoStandard,
         colors,
         trueColorEnabled,
         paletteSource,
@@ -94,8 +104,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
     // commit straight away. Shrinking in either dimension would crop, so hold
     // the *whole* change unapplied and ask; that way Cancel undoes nothing
     // (reverting a narrowed palette would lose the dropped colors for good).
-    const format = screenFormats[formatId as ScreenFormatId];
-    const target = { width: format.width, height: format.height };
+    const target = resolveScreenFormat(formatId as ScreenFormatId, videoStandard);
     const current = state.canvas.resolution;
     const sameSize = target.width === current.width && target.height === current.height;
     const wouldShrink = target.width < current.width || target.height < current.height;
@@ -103,6 +112,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
     if (wouldShrink) {
       actions.canvas.setPendingScreenFormat({
         formatId: resolvedFormatId,
+        videoStandard,
         colors,
         trueColorEnabled,
         paletteSource,
@@ -114,6 +124,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
 
     const conformed = actions.canvas.applyScreenFormat({
       formatId: resolvedFormatId,
+      videoStandard,
       colors,
       trueColorEnabled,
       paletteSource,
@@ -134,12 +145,26 @@ function ScreenFormatDialogOpen(): JSX.Element {
         <RetroFieldset legend="Resolution" className="screen-format__formats">
           <RetroToggle
             variant="column"
-            options={FORMAT_OPTIONS}
+            options={formatOptions(videoStandard)}
             value={formatId}
             onChange={(value): void => setFormatId(value as FormatChoice)}
           />
         </RetroFieldset>
         <div className="screen-format__right">
+          <RetroFieldset legend="TV Standard" className="screen-format__standard">
+            {/* which broadcast standard the 4 named formats above resolve
+                to — a real Amiga only ran one at a time */}
+            <RetroToggle
+              variant="grid"
+              columns={2}
+              options={[
+                { value: 'PAL', label: 'PAL' },
+                { value: 'NTSC', label: 'NTSC' },
+              ]}
+              value={videoStandard}
+              onChange={(value): void => setVideoStandard(value as VideoStandard)}
+            />
+          </RetroFieldset>
           <RetroFieldset legend="Indexed palette size" className="screen-format__colors">
             <RetroToggle
               variant="grid"
