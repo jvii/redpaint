@@ -5,6 +5,9 @@ import { brushRecall } from '../../brush/BrushRecall';
 import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
 import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
+import { cycleDriver } from '../../canvas/CycleDriver';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
 // Resizes the palette to exactly `colors` entries (the screen format's
 // Number of Colors). Existing colors are kept up to the new count; growing
@@ -245,4 +248,19 @@ export const spread = (context: Context, { fromId, toId }: SpreadParams): void =
 // cycling step; all zeros whenever cycling is off.
 export const setCycleOffsets = (context: Context, offsets: number[]): void => {
   context.state.palette.cycleOffsets = offsets;
+};
+
+// DPaint's Tab: starts/stops the cycling animation. Off zeroes the offsets
+// and repaints, snapping every range back to its base colors.
+export const toggleCycling = (context: Context): void => {
+  const on = !context.state.palette.cyclingOn;
+  context.state.palette.cyclingOn = on;
+  if (on) {
+    cycleDriver.start();
+  } else {
+    cycleDriver.stop();
+    context.state.palette.cycleOffsets = context.state.palette.ranges.map(() => 0);
+    paintingCanvasController.updatePalette();
+    overlayCanvasController.updatePalette();
+  }
 };
