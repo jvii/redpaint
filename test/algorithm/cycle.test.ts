@@ -75,12 +75,12 @@ describe('advanceCycleSteps', () => {
 
 describe('cycleOffsetsOf', () => {
   it('wraps whole steps to the range span', () => {
-    // span 3 (ids 2..4): 5.9 steps -> floor 5 -> offset 2
-    expect(cycleOffsetsOf([5.9], [range('2', '4')])).toEqual([2]);
+    // span 3 (ids 2..4): 5.9 steps -> floor 5 -> offset (3 - 5%3) = 1
+    expect(cycleOffsetsOf([5.9], [range('2', '4')])).toEqual([1]);
   });
 
   it('reverse runs the offset the other way around the span', () => {
-    expect(cycleOffsetsOf([5.9], [range('2', '4', { reverse: true })])).toEqual([1]);
+    expect(cycleOffsetsOf([5.9], [range('2', '4', { reverse: true })])).toEqual([2]);
     // a whole number of laps is offset 0 in either direction
     expect(cycleOffsetsOf([3], [range('2', '4', { reverse: true })])).toEqual([0]);
   });

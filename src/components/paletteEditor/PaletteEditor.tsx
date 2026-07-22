@@ -217,7 +217,11 @@ export function PaletteEditor(): JSX.Element | null {
 
         {/* Cycling settings ride on the selected range slot: speed shown in
             steps/second (stored as raw CRNG units for lossless IFF
-            round-trip), plus DPaint's active and direction flags. */}
+            round-trip), plus DPaint's active and direction flags. Speed gets
+            its own row — a horizontal slider needs the width, or its track
+            is too cramped to drag precisely. Active and direction (as
+            up/down arrows: forward walks start->end, reverse the opposite)
+            share the second row. */}
         <div className="palette-editor__range-cycling">
           <RetroLabeledSlider
             label="Speed"
@@ -235,38 +239,40 @@ export function PaletteEditor(): JSX.Element | null {
               }
             }}
           />
-          <RetroToggle
-            options={[
-              { value: 'on', label: 'Cycle' },
-              { value: 'off', label: 'Off' },
-            ]}
-            value={activeRange?.active ? 'on' : 'off'}
-            disabled={!activeRange}
-            onChange={(value): void => {
-              if (activeRangeIndex !== null) {
-                actions.palette.setRangeSettings({
-                  rangeIndex: activeRangeIndex,
-                  active: value === 'on',
-                });
-              }
-            }}
-          />
-          <RetroToggle
-            options={[
-              { value: 'forward', label: 'Fwd' },
-              { value: 'reverse', label: 'Rev' },
-            ]}
-            value={activeRange?.reverse ? 'reverse' : 'forward'}
-            disabled={!activeRange}
-            onChange={(value): void => {
-              if (activeRangeIndex !== null) {
-                actions.palette.setRangeSettings({
-                  rangeIndex: activeRangeIndex,
-                  reverse: value === 'reverse',
-                });
-              }
-            }}
-          />
+          <div className="palette-editor__range-cycling-toggles">
+            <RetroToggle
+              options={[
+                { value: 'on', label: 'Cycle' },
+                { value: 'off', label: 'Off' },
+              ]}
+              value={activeRange?.active ? 'on' : 'off'}
+              disabled={!activeRange}
+              onChange={(value): void => {
+                if (activeRangeIndex !== null) {
+                  actions.palette.setRangeSettings({
+                    rangeIndex: activeRangeIndex,
+                    active: value === 'on',
+                  });
+                }
+              }}
+            />
+            <RetroToggle
+              options={[
+                { value: 'forward', label: '↓' },
+                { value: 'reverse', label: '↑' },
+              ]}
+              value={activeRange?.reverse ? 'reverse' : 'forward'}
+              disabled={!activeRange}
+              onChange={(value): void => {
+                if (activeRangeIndex !== null) {
+                  actions.palette.setRangeSettings({
+                    rangeIndex: activeRangeIndex,
+                    reverse: value === 'reverse',
+                  });
+                }
+              }}
+            />
+          </div>
         </div>
       </RetroFieldset>
 

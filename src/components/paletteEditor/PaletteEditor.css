@@ -184,11 +184,13 @@
 
 .palette-editor__range-cycling {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
   margin-top: 8px;
 }
 
-.palette-editor__range-cycling > :first-child {
-  flex: 1;
+.palette-editor__range-cycling-toggles {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

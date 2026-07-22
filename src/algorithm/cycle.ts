@@ -55,7 +55,7 @@ export function cycleOffsetsOf(accumulators: number[], ranges: (CycleRange | nul
       return 0;
     }
     const steps = Math.floor(accumulators[i] ?? 0) % span;
-    return range.reverse ? (span - steps) % span : steps;
+    return range.reverse ? steps : (span - steps) % span;
   });
 }
 
