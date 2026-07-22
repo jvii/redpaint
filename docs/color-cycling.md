@@ -11,11 +11,18 @@ already implemented); the two share the `PaletteRange` model and nothing else.
   `GlobalHotkeyManager` like the other canvas hotkeys. Cycling keeps running
   while painting, zooming, in menus, and in the palette editor — it is
   display-only (see below), so there is nothing it can corrupt.
-- Each of the four ranges cycles independently, controlled by three new
-  per-range properties: **rate** (speed), **active** (does this range
-  participate when cycling is on), **reverse** (direction). Edited in the
-  palette editor's Range fieldset: a speed slider presented as **steps/second
-  (0–60)** plus Active and Reverse toggles.
+- Each range cycles independently, controlled by three new per-range
+  properties: **rate** (speed), **active** (does this range participate when
+  cycling is on), **reverse** (direction). Edited in the palette editor's
+  Range fieldset: a speed slider presented as **steps/second (0–60)** plus
+  Active and Reverse toggles.
+- The range list is no longer capped at four. CRNG is a repeatable chunk and
+  real files carry more than four ranges (Mark Ferrari-style cycling scenes
+  especially) — the ILBM plan's future-work note called this out
+  (docs/superpowers/plans/2026-07-19-ilbm-load-save.md, "Color cycling
+  playback"). Four slots remain the floor so the hand-editing UX stays
+  DPaint-shaped; loading a file with more usable CRNGs grows the list and
+  the palette editor's range selector shows them all.
 - The **palette strip and FG/BG indicators animate** along with the canvas,
   driven by the same rotation offsets — direct feedback for tuning ranges.
 - **IFF CRNG round-trip**: `rate`/`active`/`reverse` survive load and save
@@ -71,8 +78,9 @@ CycleDriver (rAF singleton, alongside the canvas controllers)
 ```
 
 New Overmind state (`palette` module): `cyclingOn: boolean` and
-`cycleOffsets: number[]` (length 4, all zero when off). Toggling cycling off
-zeroes the offsets, which recomposes and re-renders the base palette.
+`cycleOffsets: number[]` (same length as `ranges`, all zero when off).
+Toggling cycling off zeroes the offsets, which recomposes and re-renders the
+base palette.
 
 ### Pure core (`src/algorithm/cycle.ts`)
 
@@ -80,7 +88,7 @@ Next to the existing `cycleColorIndex`:
 
 - `cycledPalette(base, ranges, offsets)` — rotate each active range's span by
   its offset. Each range reads from the *base* palette and ranges apply in
-  slot order 1→4, so on overlap the later slot wins. Spans of length ≤ 1 and
+  slot order 1→N, so on overlap the later slot wins. Spans of length ≤ 1 and
   inactive/null ranges are no-ops.
 - `advanceCycle(accumulators, ranges, elapsedMs)` — advances fractional step
   accumulators at the CRNG rate (`16384 = 60 steps/s`) and returns the new
@@ -124,10 +132,18 @@ user-created ranges (and the built-in grey-ramp Range 1): `rate: 8192`
 (30 steps/s — the value the save path already hardcodes today),
 `active: true`, `reverse: false`.
 
+`state.palette.ranges` becomes variable-length: `(PaletteRange | null)[]`
+with a **minimum of four slots** (padded with `null`), no upper cap. The
+palette editor's range selector lists every slot; clearing an extra slot
+above the first four prunes it. All existing consumers (`activeRangeIndices`,
+the gradient-fill range picker, Shade/Blend/Cycle paint modes, the ILBM save
+`flatMap`) already iterate the array and are length-agnostic.
+
 File format changes:
 
-- `cycleRangesToPaletteRanges` keeps its `low < high` filter and first-4 cap
-  but preserves `rate`/`active`/`reverse`. A loaded CRNG with `rate > 0` but
+- `cycleRangesToPaletteRanges` keeps its `low < high` filter but **drops the
+  `.slice(0, 4)` cap** — every usable CRNG becomes a range slot — and
+  preserves `rate`/`active`/`reverse`. A loaded CRNG with `rate > 0` but
   the active bit clear becomes an inactive range — kept, editable, silent
   until activated (matching DPaint files that ship gradient-only ranges).
 - The ILBM save path in `Menu.tsx` writes each range's own
@@ -167,7 +183,8 @@ All in the pure layer, per repo convention (`test/` mirrors `src/`):
   overlap precedence, span-1 and inactive no-ops, wholesale offset-0
   identity; `advanceCycle` — rate→steps timing with injected elapsed time,
   fractional accumulation, wrap-around, reverse sign.
-- CRNG↔`PaletteRange` mapping round-trip (rate/active/reverse preservation)
+- CRNG↔`PaletteRange` mapping round-trip (rate/active/reverse preservation,
+  more than four ranges surviving load, minimum-four `null` padding)
   alongside the existing `paletteRange`/ilbm tests.
 
 `CycleDriver` (rAF plumbing) and the palette-editor UI stay untested, like
@@ -176,7 +193,7 @@ the rest of the UI layer.
 ## Out of scope
 
 - Animation export (GIF/APNG of the cycle).
-- Rates above 60 steps/s or more than the four fixed range slots.
+- Rates above 60 steps/s.
 - DPaint's later ping-pong/"flash" modes — standard CRNG cannot encode
   ping-pong; DRNG/CCRT chunks are a possible future note.
 - Any change to the Cycle paint mode.

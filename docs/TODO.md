@@ -46,7 +46,8 @@ Effects design and status: docs/effects.md — the full DPaint II Mode set
   Cycle now steps through them per stamp; this is the separate feature of
   animating a range's colors over time regardless of painting. Designed:
   docs/color-cycling.md (display-only rotation, Tab toggle, per-range
-  rate/active/reverse with CRNG round-trip).
+  rate/active/reverse with CRNG round-trip, range list uncapped beyond the
+  four default slots).
 
 ## Images and palettes
 
