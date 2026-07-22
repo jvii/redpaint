@@ -44,8 +44,9 @@ Effects design and status: docs/effects.md — the full DPaint II Mode set
 - [ ] **Color cycling animation** — palette ranges already exist
   (`PaletteRange`, used by Gradient Fill, and by the Cycle paint mode), and
   Cycle now steps through them per stamp; this is the separate feature of
-  animating a range's colors over time regardless of painting, not
-  designed yet.
+  animating a range's colors over time regardless of painting. Designed:
+  docs/color-cycling.md (display-only rotation, Tab toggle, per-range
+  rate/active/reverse with CRNG round-trip).
 
 ## Images and palettes
 
