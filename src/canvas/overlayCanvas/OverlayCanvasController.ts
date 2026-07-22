@@ -21,28 +21,35 @@ class OverlayCanvasController implements CanvasController {
     textureCoordBuffer: null,
   };
 
-  // The overlay is immediate-mode (drawn once per mouse event, never
-  // continuously re-rendered), so a palette rotation doesn't show up on
-  // whatever's currently displayed — the brush cursor, an in-progress shape
-  // — until the next mouse move redraws it. Remembering every color-bearing
-  // draw call made since the last beginFrame()/clear() lets CycleDriver
-  // replay all of them every tick: a solid-color preview is one call, but a
+  // The overlay is WebGL with preserveDrawingBuffer: false, so it isn't
+  // actually persistent: any draw call made outside the original mouse
+  // event's synchronous run (e.g. from CycleDriver's rAF tick) composites as
+  // its own fresh frame, and anything not re-issued as part of *that* call
+  // sequence is gone — not just stale, genuinely absent from what's on
+  // screen. So a palette rotation doesn't show up on whatever's currently
+  // displayed until the next mouse move redraws it, and replaying only the
+  // color-bearing draws (to pick up the new palette) would erase anything
+  // drawn alongside them that didn't get replayed too — e.g. the Circle
+  // tool's edge-to-edge selectionCrosshair, drawn in the same mouse event as
+  // the symmetry-indicator dots but not itself color-dependent, would
+  // vanish the moment cycling's replay redrew just the dots. So this
+  // remembers *every* overlay draw call made since the last
+  // beginFrame()/clear() — color-bearing or not — and CycleDriver replays
+  // the whole frame every tick. Solid-color previews are one call, but a
   // gradient-filled shape preview is one call *per color band*
-  // (fillStyleDraw.ts buckets by color) plus one per symmetry copy merged in
-  // — all of them need replaying, not just the last, or every band but one
-  // would freeze. Canvas.tsx calls beginFrame() before dispatching each
-  // overlay handler, so calls from a single mouse event accumulate together
-  // and calls from the next event start a fresh list. Selection
-  // indicators/crosshairs don't route through this — they sample the main
-  // canvas and invert, independent of the palette.
-  private colorDraws: Array<() => void> = [];
+  // (fillStyleDraw.ts buckets by color); all of them need replaying, not
+  // just the last, or every band but one would freeze. Canvas.tsx calls
+  // beginFrame() before dispatching each overlay handler, so calls from a
+  // single mouse event accumulate together and calls from the next event
+  // start a fresh list instead of growing forever.
+  private frameDraws: Array<() => void> = [];
   // Guards against redrawForCycling()'s replay re-recording itself into
-  // colorDraws (each draw method records unconditionally otherwise).
+  // frameDraws (each draw method records unconditionally otherwise).
   private replayingForCycling = false;
 
-  private recordColorDraw(replay: () => void): void {
+  private recordFrameDraw(replay: () => void): void {
     if (!this.replayingForCycling) {
-      this.colorDraws.push(replay);
+      this.frameDraws.push(replay);
     }
   }
 
@@ -50,7 +57,7 @@ class OverlayCanvasController implements CanvasController {
   // handler, so the draws that handler makes are grouped as one replayable
   // "frame" instead of accumulating forever across every mouse event.
   beginFrame(): void {
-    this.colorDraws = [];
+    this.frameDraws = [];
   }
 
   attachMainCanvas(mainCanvasOverlay: HTMLCanvasElement): void {
@@ -80,25 +87,25 @@ class OverlayCanvasController implements CanvasController {
   }
 
   points(points: Point[], color: PaintColor): void {
-    this.recordColorDraw(() => this.points(points, color));
+    this.recordFrameDraw(() => this.points(points, color));
     this.mainCanvasRenderer?.points(points, color);
     this.renderZoomCanvas();
   }
 
   lines(lines: Line[], color: PaintColor): void {
-    this.recordColorDraw(() => this.lines(lines, color));
+    this.recordFrameDraw(() => this.lines(lines, color));
     this.mainCanvasRenderer?.lines(lines, color);
     this.renderZoomCanvas();
   }
 
   quad(start: Point, end: Point, color: PaintColor): void {
-    this.recordColorDraw(() => this.quad(start, end, color));
+    this.recordFrameDraw(() => this.quad(start, end, color));
     this.mainCanvasRenderer?.quad(start, end, color);
     this.renderZoomCanvas();
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
-    this.recordColorDraw(() => this.drawImage(points, brush));
+    this.recordFrameDraw(() => this.drawImage(points, brush));
     this.mainCanvasRenderer?.drawImage(points, brush);
     this.renderZoomCanvas();
   }
@@ -124,16 +131,19 @@ class OverlayCanvasController implements CanvasController {
   }
 
   selectionBox(start: Point, end: Point): void {
+    this.recordFrameDraw(() => this.selectionBox(start, end));
     this.mainCanvasRenderer?.selectionBox(start, end);
     this.renderZoomCanvas();
   }
 
   selectionCrosshair(point: Point): void {
+    this.recordFrameDraw(() => this.selectionCrosshair(point));
     this.mainCanvasRenderer?.selectionCrosshair(point);
     this.renderZoomCanvas();
   }
 
   selectionPolygon(points: Point[]): void {
+    this.recordFrameDraw(() => this.selectionPolygon(points));
     this.mainCanvasRenderer?.selectionPolygon(points);
     this.renderZoomCanvas();
   }
@@ -153,24 +163,25 @@ class OverlayCanvasController implements CanvasController {
   } */
 
   clear(): void {
-    this.colorDraws = [];
+    this.frameDraws = [];
     this.mainCanvasRenderer?.clear();
     this.zoomCanvasRenderer?.clear();
   }
 
   // Called by CycleDriver after updatePalette() re-uploads the rotated
-  // texture: replays every color-bearing draw from the current frame (a
-  // brush cursor, an in-progress shape — possibly several calls, e.g. one
-  // per gradient-fill color band) so it all animates along with the canvas
-  // instead of only catching up on the next mouse move. A no-op when the
-  // overlay is empty.
+  // texture: replays every draw from the current frame (a brush cursor, an
+  // in-progress shape, a selection crosshair — possibly several calls, e.g.
+  // one per gradient-fill color band) so color-bearing content animates
+  // along with the canvas and everything else stays on screen instead of
+  // being dropped by the partial redraw (see the frameDraws comment above).
+  // A no-op when the overlay is empty.
   redrawForCycling(): void {
-    if (this.colorDraws.length === 0) {
+    if (this.frameDraws.length === 0) {
       return;
     }
     this.replayingForCycling = true;
     try {
-      for (const draw of this.colorDraws) {
+      for (const draw of this.frameDraws) {
         draw();
       }
     } finally {

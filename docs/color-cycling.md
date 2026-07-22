@@ -69,25 +69,32 @@ adds per-frame uniform plumbing to avoid a trivial 1 KB upload.
 
 **The overlay animates too** (a DPaint touch: the brush cursor and any
 in-progress shape preview cycle live, not just committed pixels). The overlay
-is immediate-mode — drawn once per mouse event, never on a render loop — so
-re-uploading its palette texture alone doesn't repaint what's already on
-screen. `OverlayCanvasController` remembers every color-bearing draw call
-(`points`/`lines`/`quad`/`drawImage` — not the selection-indicator calls,
-which sample the main canvas and invert, independent of the palette) made
-since `beginFrame()` was last called, and `CycleDriver` replays all of them
-every tick after the texture upload, and once more when cycling stops (so the
-preview snaps back to base color instead of freezing on its last cycled
-frame). A single call isn't enough to remember: a solid-color preview is one
-draw, but a gradient-filled shape preview is one call _per color band_
-(`fillStyleDraw.ts` buckets by color) — replaying only the last would leave
-every band but one frozen. `Canvas.tsx` calls `beginFrame()` right before
-dispatching each `*Overlay` tool handler, so one mouse event's draws
-accumulate together and the next event starts a fresh list instead of
-growing forever. The replay itself is cheap: it's the same tiny draws the
-mouse event already paid for, not a new render pass — the point/line/quad
-path resolves color from `displayPalette` at call time, and `drawImage`
-already samples the palette texture by index, so both just pick up whatever
-CycleDriver most recently uploaded.
+is WebGL with `preserveDrawingBuffer: false`, so it isn't actually
+persistent: a draw call made outside the mouse event that originally drew it
+(e.g. from `CycleDriver`'s rAF tick) composites as its own fresh frame, and
+anything not re-issued as part of _that_ call is genuinely gone, not just
+stale. `OverlayCanvasController` remembers _every_ overlay draw call —
+`points`/`lines`/`quad`/`drawImage` and the selection-indicator calls
+(`selectionBox`/`selectionCrosshair`/`selectionPolygon`) alike — made since
+`beginFrame()` was last called, and `CycleDriver` replays the whole frame
+every tick after the texture upload, and once more when cycling stops (so
+color-bearing content snaps back to base color instead of freezing on its
+last cycled frame). Replaying only the color-bearing calls was tried first
+and broke two things: a gradient-filled shape preview issues one call _per
+color band_ (`fillStyleDraw.ts` buckets by color), so replaying just the
+last band froze the rest; and anything drawn alongside a color-bearing call
+but not itself color-dependent — the Circle tool's edge-to-edge
+`selectionCrosshair`, drawn in the same mouse event as the symmetry-indicator
+dots — would vanish the instant cycling's replay redrew the dots without it.
+`Canvas.tsx` calls `beginFrame()` right before dispatching each `*Overlay`
+tool handler, so one mouse event's draws accumulate together and the next
+event starts a fresh list instead of growing forever. The replay itself is
+cheap: it's the same tiny draws the mouse event already paid for, not a new
+render pass — the point/line/quad path resolves color from `displayPalette`
+at call time, and `drawImage` already samples the palette texture by index,
+so both just pick up whatever `CycleDriver` most recently uploaded; the
+selection-indicator calls don't depend on the palette at all but still need
+replaying to stay on screen.
 
 Data flow:
 
