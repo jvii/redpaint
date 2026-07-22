@@ -11,6 +11,7 @@ import { BrushMenu } from './BrushMenu';
 import { saveCanvasAsPng, saveFile } from './saveAsPng';
 import { encodeIlbm, isIlbmHeader } from '../../fileformat/ilbm';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
+import { cycleDriver } from '../../canvas/CycleDriver';
 import './Menu.css';
 
 // IFF is recognized by content, not extension — extensions in the wild vary
@@ -78,9 +79,14 @@ export function Menu(): JSX.Element {
   const brushOpener = useFileOpener(handleBrushFileOpen);
 
   const handleImageSave = (): void => {
-    // preserveDrawingBuffer is on, but render once to be sure the buffer is current
-    paintingCanvasController.render();
-    saveCanvasAsPng(paintingCanvasController.mainCanvas, 'redpaint.png');
+    // The PNG is read straight off the drawing buffer, which would bake a
+    // mid-cycle palette rotation into the file — hold the base colors until
+    // the capture (which happens after the async save picker) completes.
+    void cycleDriver.withBaseColors(async (): Promise<void> => {
+      // preserveDrawingBuffer is on, but render once to be sure the buffer is current
+      paintingCanvasController.render();
+      await saveCanvasAsPng(paintingCanvasController.mainCanvas, 'redpaint.png');
+    });
   };
 
   const handleImageSaveIlbm = (): void => {
