@@ -215,48 +215,50 @@ export function PaletteEditor(): JSX.Element | null {
           </span>
         </div>
 
-        {/* Cycling settings ride on the selected range slot: On/Off (the
-            CRNG active bit) first, then speed in steps/second (stored as
-            raw CRNG units for lossless IFF round-trip) on its own row — a
-            horizontal slider needs the width, or its track is too cramped
-            to drag precisely — then direction (up/down arrows: forward
-            walks start->end, reverse the opposite) with its own label. */}
+        {/* Cycling settings ride on the selected range slot, two rows:
+            On/Off (the CRNG active bit) with its own Press Start 2P label
+            like Speed's, then speed (steps/second, stored as raw CRNG units
+            for lossless IFF round-trip) sharing a row with direction
+            (up/down arrows: forward walks start->end, reverse the
+            opposite — no label of its own, the arrows read on their own and
+            the row's too tight for one). */}
         <div className="palette-editor__range-cycling">
-          <span className="palette-editor__range-cycling-title">Color cycling</span>
-          <RetroToggle
-            options={[
-              { value: 'on', label: 'On' },
-              { value: 'off', label: 'Off' },
-            ]}
-            value={activeRange?.active ? 'on' : 'off'}
-            disabled={!activeRange}
-            onChange={(value): void => {
-              if (activeRangeIndex !== null) {
-                actions.palette.setRangeSettings({
-                  rangeIndex: activeRangeIndex,
-                  active: value === 'on',
-                });
-              }
-            }}
-          />
-          <RetroLabeledSlider
-            label="Speed"
-            vertical={false}
-            value={activeRange ? Math.round(rateToStepsPerSecond(activeRange.rate)) : 0}
-            min={0}
-            max={60}
-            disabled={!activeRange}
-            onChange={(value): void => {
-              if (activeRangeIndex !== null) {
-                actions.palette.setRangeSettings({
-                  rangeIndex: activeRangeIndex,
-                  rate: stepsPerSecondToRate(value),
-                });
-              }
-            }}
-          />
-          <div className="palette-editor__range-cycling-direction">
-            <span className="palette-editor__range-cycling-label">Direction</span>
+          <div className="palette-editor__range-cycling-row">
+            <span className="palette-editor__range-cycling-label">Color cycling</span>
+            <RetroToggle
+              options={[
+                { value: 'on', label: 'On' },
+                { value: 'off', label: 'Off' },
+              ]}
+              value={activeRange?.active ? 'on' : 'off'}
+              disabled={!activeRange}
+              onChange={(value): void => {
+                if (activeRangeIndex !== null) {
+                  actions.palette.setRangeSettings({
+                    rangeIndex: activeRangeIndex,
+                    active: value === 'on',
+                  });
+                }
+              }}
+            />
+          </div>
+          <div className="palette-editor__range-cycling-row">
+            <RetroLabeledSlider
+              label="Speed"
+              vertical={false}
+              value={activeRange ? Math.round(rateToStepsPerSecond(activeRange.rate)) : 0}
+              min={0}
+              max={60}
+              disabled={!activeRange}
+              onChange={(value): void => {
+                if (activeRangeIndex !== null) {
+                  actions.palette.setRangeSettings({
+                    rangeIndex: activeRangeIndex,
+                    rate: stepsPerSecondToRate(value),
+                  });
+                }
+              }}
+            />
             <RetroToggle
               options={[
                 { value: 'forward', label: '↓' },

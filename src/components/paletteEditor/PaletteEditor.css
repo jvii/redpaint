@@ -185,31 +185,29 @@
 .palette-editor__range-cycling {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 8px;
   margin-top: 8px;
 }
 
-.palette-editor__range-cycling-title {
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  font-weight: 500;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 13px;
-  color: black;
-}
-
-.palette-editor__range-cycling-direction {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* matches .retro-labeled-slider__label (Speed, above) so the two row labels
-   in this group read as a pair */
+/* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
+   label reads as a pair with it */
 .palette-editor__range-cycling-label {
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   font-size: 16px;
   color: black;
+}
+
+.palette-editor__range-cycling-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Speed takes whatever width the direction toggle leaves behind so its
+   track stays draggable */
+.palette-editor__range-cycling-row .retro-labeled-slider {
+  flex: 1;
+  min-width: 0;
 }
