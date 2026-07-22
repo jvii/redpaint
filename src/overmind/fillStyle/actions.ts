@@ -10,7 +10,7 @@ export const setAxis = (context: Context, axis: GradientAxis): void => {
   context.state.fillStyle.axis = axis;
 };
 
-export const setRangeIndex = (context: Context, rangeIndex: 0 | 1 | 2 | 3): void => {
+export const setRangeIndex = (context: Context, rangeIndex: number): void => {
   context.state.fillStyle.rangeIndex = rangeIndex;
 };
 

@@ -4,6 +4,7 @@ import { Color } from '../../types';
 import { brushRecall } from '../../brush/BrushRecall';
 import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
+import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
 
 // Resizes the palette to exactly `colors` entries (the screen format's
 // Number of Colors). Existing colors are kept up to the new count; growing
@@ -49,7 +50,7 @@ function clampColorReferences(context: Context, colors: number): void {
     if (Number(range.start) > colors) {
       return null; // entirely outside the new palette
     }
-    return { start: range.start, end: clampId(range.end) };
+    return { ...range, end: clampId(range.end) };
   });
 }
 
@@ -101,11 +102,57 @@ export interface SetRangeParams {
 // low..high regardless of which endpoint was set first.
 export const setRange = (context: Context, { rangeIndex, start, end }: SetRangeParams): void => {
   const [lo, hi] = Number(start) <= Number(end) ? [start, end] : [end, start];
-  context.state.palette.ranges[rangeIndex] = { start: lo, end: hi };
+  const existing = context.state.palette.ranges[rangeIndex];
+  context.state.palette.ranges[rangeIndex] = {
+    start: lo,
+    end: hi,
+    rate: existing?.rate ?? DEFAULT_CYCLE_RATE,
+    active: existing?.active ?? true,
+    reverse: existing?.reverse ?? false,
+  };
 };
 
+// Prunes empty slots above the six defaults — a slot that only existed
+// because a loaded file carried it disappears once cleared — and keeps the
+// editor's selection in bounds.
 export const clearRange = (context: Context, rangeIndex: number): void => {
-  context.state.palette.ranges[rangeIndex] = null;
+  const ranges = context.state.palette.ranges;
+  ranges[rangeIndex] = null;
+  while (ranges.length > MIN_RANGE_SLOTS && ranges[ranges.length - 1] === null) {
+    ranges.pop();
+  }
+  const active = context.state.paletteEditor.activeRangeIndex;
+  if (active !== null && active >= ranges.length) {
+    context.state.paletteEditor.activeRangeIndex = ranges.length - 1;
+  }
+};
+
+export interface SetRangeSettingsParams {
+  rangeIndex: number;
+  rate?: number;
+  active?: boolean;
+  reverse?: boolean;
+}
+
+// Updates a range slot's cycling settings in place. No-op on an unset slot —
+// settings ride on a range, they don't create one.
+export const setRangeSettings = (
+  context: Context,
+  { rangeIndex, rate, active, reverse }: SetRangeSettingsParams
+): void => {
+  const range = context.state.palette.ranges[rangeIndex];
+  if (!range) {
+    return;
+  }
+  if (rate !== undefined) {
+    range.rate = rate;
+  }
+  if (active !== undefined) {
+    range.active = active;
+  }
+  if (reverse !== undefined) {
+    range.reverse = reverse;
+  }
 };
 
 export interface CopyColorParams {

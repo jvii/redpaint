@@ -12,13 +12,6 @@ import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 
-const RANGE_OPTIONS = [
-  { value: '0', label: '1' },
-  { value: '1', label: '2' },
-  { value: '2', label: '3' },
-  { value: '3', label: '4' },
-];
-
 export function PaletteEditor(): JSX.Element | null {
   const state = useAppState();
   const actions = useActions();
@@ -64,6 +57,10 @@ export function PaletteEditor(): JSX.Element | null {
 
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
+  const rangeOptions = state.palette.ranges.map((_, index) => ({
+    value: String(index),
+    label: String(index + 1),
+  }));
 
   return (
     <Modal header="Color palette" width={600}>
@@ -132,7 +129,8 @@ export function PaletteEditor(): JSX.Element | null {
             <span className="palette-editor__callout">
               {state.paletteEditor.armedAction === 'copy' && 'Select the color to copy to'}
               {state.paletteEditor.armedAction === 'swap' && 'Select the color to swap with'}
-              {state.paletteEditor.armedAction === 'spread' && 'Select the last color of the spread'}
+              {state.paletteEditor.armedAction === 'spread' &&
+                'Select the last color of the spread'}
               {state.paletteEditor.armedAction === 'range' && 'Select the last color of the range'}
             </span>
           )}
@@ -170,7 +168,7 @@ export function PaletteEditor(): JSX.Element | null {
 
       <RetroFieldset legend="Range" bordered className="palette-editor__ranges">
         <RetroToggle
-          options={RANGE_OPTIONS}
+          options={rangeOptions}
           value={activeRangeIndex !== null ? String(activeRangeIndex) : ''}
           onChange={(value): void => actions.paletteEditor.selectRange(Number(value))}
         />
@@ -190,12 +188,16 @@ export function PaletteEditor(): JSX.Element | null {
               <>
                 <span
                   className="palette-editor__range-swatch"
-                  style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]) }}
+                  style={{
+                    backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]),
+                  }}
                 ></span>
                 <span className="palette-editor__range-arrow"></span>
                 <span
                   className="palette-editor__range-swatch"
-                  style={{ backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]) }}
+                  style={{
+                    backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]),
+                  }}
                 ></span>
               </>
             )}

@@ -102,9 +102,9 @@ export function Menu(): JSX.Element {
             {
               low: Number(range.start) - 1,
               high: Number(range.end) - 1,
-              rate: 8192, // 30 steps/s, a mild DPaint-ish default until cycling is real
-              active: true,
-              reverse: false,
+              rate: range.rate,
+              active: range.active,
+              reverse: range.reverse,
             },
           ]
         : []

@@ -127,9 +127,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               <RetroToggle
                 options={rangeOptions}
                 value={String(state.fillStyle.rangeIndex)}
-                onChange={(value): void =>
-                  actions.fillStyle.setRangeIndex(Number(value) as 0 | 1 | 2 | 3)
-                }
+                onChange={(value): void => actions.fillStyle.setRangeIndex(Number(value))}
                 disabled={!isGradient}
               />
             ) : (
@@ -149,8 +147,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               disabled={!isGradient}
             />
             <span className="fill-style-settings__hint">
-              How much adjacent bands randomly blend at their boundary. 0 = hard
-              edges
+              How much adjacent bands randomly blend at their boundary. 0 = hard edges
             </span>
           </RetroFieldset>
           <RetroFieldset legend="Jitter" className="fill-style-settings__dither">

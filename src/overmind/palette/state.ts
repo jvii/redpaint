@@ -1,6 +1,7 @@
 import { Color, PaintColor } from '../../types';
 import { createPalette } from '../../components/palette/util';
 import { derived } from 'overmind';
+import { CycleRange, DEFAULT_CYCLE_RATE } from '../../algorithm/paletteRange';
 
 // Pure helper shared by the derived below and by actions. NOTE: reading
 // derived state from inside Overmind actions returns undefined with the
@@ -11,7 +12,10 @@ export function foregroundPaintColorOf(state: {
   foregroundColorId: string;
 }): PaintColor {
   return state.foregroundRgb
-    ? { kind: 'rgb', color: { r: state.foregroundRgb.r, g: state.foregroundRgb.g, b: state.foregroundRgb.b } }
+    ? {
+        kind: 'rgb',
+        color: { r: state.foregroundRgb.r, g: state.foregroundRgb.g, b: state.foregroundRgb.b },
+      }
     : { kind: 'index', colorNumber: Number(state.foregroundColorId) };
 }
 
@@ -19,15 +23,10 @@ export function backgroundPaintColorOf(state: { backgroundColorId: string }): Pa
   return { kind: 'index', colorNumber: Number(state.backgroundColorId) };
 }
 
-// A contiguous span of palette slots (inclusive, by color id). DPaint's
-// Palette Window defines up to four of these; Color Cycling, Gradient Fill
-// and the Blend/Shade painting modes all key off "the range containing
-// color X". Cycling and gradient fill are future features — this is just
-// the shared data model, editable from the palette editor.
-export type PaletteRange = {
-  start: string;
-  end: string;
-};
+// A contiguous span of palette slots with cycling settings (see
+// src/algorithm/paletteRange.ts). Color Cycling, Gradient Fill and the
+// Blend/Shade painting modes all key off "the range containing color X".
+export type PaletteRange = CycleRange;
 
 export type State = {
   palette: {
@@ -41,7 +40,7 @@ export type State = {
   // clears it. The background stays palette-indexed (it doubles as the clear
   // color and the brush transparency marker).
   foregroundRgb: Color | null;
-  // Fixed 4 slots (DPaint's Range 1..4), unset slots are null.
+  // Range slots, minimum six, uncapped (see the initial value below).
   ranges: (PaletteRange | null)[];
   readonly foregroundColor: Color;
   readonly backgroundColor: Color;
@@ -55,10 +54,18 @@ export const state: State = {
   foregroundColorId: '2',
   backgroundColorId: '1',
   foregroundRgb: null,
-  // Range 1 defaults to the grey ramp (the default 32-color palette's last
-  // 12 entries), matching DPaint's own default range — a sensible starting
-  // point for Shade/Blend/Cycle before the user defines their own ranges.
-  ranges: [{ start: '21', end: '32' }, null, null, null],
+  // Range slots (DPaint's Range 1..4, ours defaults to six), unset slots are
+  // null. The list grows past six when a loaded IFF carries more CRNG
+  // chunks. Range 1 defaults to the grey ramp (the default 32-color
+  // palette's last 12 entries), matching DPaint's own default range.
+  ranges: [
+    { start: '21', end: '32', rate: DEFAULT_CYCLE_RATE, active: true, reverse: false },
+    null,
+    null,
+    null,
+    null,
+    null,
+  ],
   foregroundColor: derived(
     (state: State) => state.foregroundRgb ?? state.palette[state.foregroundColorId]
   ),

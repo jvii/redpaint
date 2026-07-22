@@ -33,15 +33,42 @@ export function activeRangeIndices(
   return wholePalette;
 }
 
+// A contiguous span of palette slots plus its color-cycling settings.
+// DPaint's Palette Window had four of these; ours defaults to six
+// (MIN_RANGE_SLOTS) and grows past that when a loaded IFF carries more CRNG
+// chunks — the chunk is repeatable and real files exceed four. Gradient
+// Fill and the Shade/Blend/Cycle paint modes key off start/end only;
+// rate/active/reverse belong to color cycling (docs/color-cycling.md).
+export interface CycleRange {
+  start: string; // 1-based color id, inclusive
+  end: string; // 1-based color id, inclusive
+  rate: number; // raw CRNG units: 16384 = 60 steps/second, 0 = holds still
+  active: boolean; // participates when cycling is on
+  reverse: boolean; // cycles end -> start instead of start -> end
+}
+
+export const MIN_RANGE_SLOTS = 6;
+export const DEFAULT_CYCLE_RATE = 8192; // 30 steps/second
+
 // DPaint's CRNG ranges (an IFF ILBM concept, see src/fileformat/ilbm.ts)
-// map onto the palette's fixed four Range slots (color ids are 1-based
-// where CRNG positions are 0-based). Rate and direction have no home yet —
-// they return once color cycling is a feature.
+// become range slots (color ids are 1-based where CRNG positions are
+// 0-based). Every usable chunk is kept — no cap — and the list is padded to
+// the six default slots. DPaint writes unset slots as degenerate low >= high
+// entries; those are dropped.
 export function cycleRangesToPaletteRanges(
-  cycleRanges: { low: number; high: number }[]
-): ({ start: string; end: string } | null)[] {
-  const usable = cycleRanges.filter((r) => r.low < r.high).slice(0, 4);
-  return [0, 1, 2, 3].map((i) =>
-    usable[i] ? { start: String(usable[i].low + 1), end: String(usable[i].high + 1) } : null
-  );
+  cycleRanges: { low: number; high: number; rate: number; active: boolean; reverse: boolean }[]
+): (CycleRange | null)[] {
+  const slots: (CycleRange | null)[] = cycleRanges
+    .filter((r) => r.low < r.high)
+    .map((r) => ({
+      start: String(r.low + 1),
+      end: String(r.high + 1),
+      rate: r.rate,
+      active: r.active,
+      reverse: r.reverse,
+    }));
+  while (slots.length < MIN_RANGE_SLOTS) {
+    slots.push(null);
+  }
+  return slots;
 }

@@ -59,35 +59,52 @@ describe('activeRangeIndices', () => {
 });
 
 describe('cycleRangesToPaletteRanges', () => {
-  it('converts 0-based CRNG low/high to 1-based start/end strings', () => {
-    expect(cycleRangesToPaletteRanges([{ low: 3, high: 11 }])).toEqual([
-      { start: '4', end: '12' },
-      null,
-      null,
-      null,
-    ]);
+  const crng = (
+    low: number,
+    high: number,
+    extra: Partial<{ rate: number; active: boolean; reverse: boolean }> = {}
+  ): { low: number; high: number; rate: number; active: boolean; reverse: boolean } => ({
+    low,
+    high,
+    rate: 8192,
+    active: true,
+    reverse: false,
+    ...extra,
   });
 
-  it('drops degenerate ranges (low >= high)', () => {
-    expect(cycleRangesToPaletteRanges([{ low: 5, high: 5 }, { low: 5, high: 5 }])).toEqual([
-      null,
-      null,
-      null,
-      null,
-    ]);
+  it('maps CRNG positions to 1-based color ids and keeps rate/active/reverse', () => {
+    const ranges = cycleRangesToPaletteRanges([crng(2, 5, { rate: 16384, reverse: true })]);
+    expect(ranges[0]).toEqual({
+      start: '3',
+      end: '6',
+      rate: 16384,
+      active: true,
+      reverse: true,
+    });
   });
 
-  it('keeps only the first 4, in order', () => {
-    const ranges = [0, 1, 2, 3, 4].map((i) => ({ low: i, high: i + 1 }));
-    expect(cycleRangesToPaletteRanges(ranges)).toEqual([
-      { start: '1', end: '2' },
-      { start: '2', end: '3' },
-      { start: '3', end: '4' },
-      { start: '4', end: '5' },
-    ]);
+  it('pads with nulls up to the six default slots', () => {
+    const ranges = cycleRangesToPaletteRanges([crng(0, 3)]);
+    expect(ranges).toHaveLength(6);
+    expect(ranges.slice(1)).toEqual([null, null, null, null, null]);
   });
 
-  it('returns all nulls for an empty input', () => {
-    expect(cycleRangesToPaletteRanges([])).toEqual([null, null, null, null]);
+  it('keeps every usable range — no cap at the default slot count', () => {
+    const eight = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => crng(i * 2, i * 2 + 1));
+    const ranges = cycleRangesToPaletteRanges(eight);
+    expect(ranges).toHaveLength(8);
+    expect(ranges.every((r) => r !== null)).toBe(true);
+  });
+
+  it('drops degenerate ranges (DPaint writes unset slots as low >= high)', () => {
+    const ranges = cycleRangesToPaletteRanges([crng(0, 0), crng(5, 3), crng(1, 2)]);
+    expect(ranges[0]).toMatchObject({ start: '2', end: '3' });
+    expect(ranges).toHaveLength(6);
+    expect(ranges[1]).toBeNull();
+  });
+
+  it('keeps an inactive range (gradient-only CRNG) as data', () => {
+    const ranges = cycleRangesToPaletteRanges([crng(1, 4, { active: false })]);
+    expect(ranges[0]).toMatchObject({ active: false });
   });
 });
