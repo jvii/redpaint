@@ -23,7 +23,10 @@ import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 export class DrawCallBuffer implements DrawTarget {
   private pointBatches = new Map<number, { color: PaintColor; points: Point[] }>();
   private lineBatches = new Map<number, { color: PaintColor; lines: (LineH | LineV)[] }>();
-  private quadBatches = new Map<number, { color: PaintColor; quads: { start: Point; end: Point }[] }>();
+  private quadBatches = new Map<
+    number,
+    { color: PaintColor; quads: { start: Point; end: Point }[] }
+  >();
   private imagePointBuffer: Point[] = [];
   private imageBrush: CustomBrush | null = null;
   private effectBatches: { points: Point[]; brush: CustomBrush }[] = [];
@@ -93,5 +96,37 @@ export class DrawCallBuffer implements DrawTarget {
     this.effectBatches.forEach((batch, copyId) => {
       target.effectDraw(batch.points, batch.brush, copyId);
     });
+  }
+
+  // Like replayTo, but every coordinate is shifted by delta first. Used by
+  // SymmetryBrush to reuse one filled shape's rasterize-and-bucket work
+  // (the expensive part of a gradient fill) across every symmetry copy: a
+  // circle/ellipse/rect stays unrotated under symmetry (only its center
+  // moves — see SymmetryBrush's comments), so translating the already-
+  // bucketed points is equivalent to re-rasterizing at the copy's own
+  // position, and every copy ends up with byte-identical relative dither
+  // instead of its own independent random jitter. Only points/lines/quads
+  // are translated — filled shapes never produce image/effect draws, so
+  // those batches are left for replayTo to handle on the untranslated buffer.
+  public translateTo(target: DrawTarget, delta: Point): void {
+    const shift = (p: Point): Point => ({ x: p.x + delta.x, y: p.y + delta.y });
+    for (const { color, points } of this.pointBatches.values()) {
+      target.points(points.map(shift), color);
+    }
+    for (const { color, lines } of this.lineBatches.values()) {
+      target.lines(
+        lines.map((line) =>
+          line instanceof LineH
+            ? new LineH(shift(line.p1), shift(line.p2))
+            : new LineV(shift(line.p1), shift(line.p2))
+        ),
+        color
+      );
+    }
+    for (const { color, quads } of this.quadBatches.values()) {
+      for (const q of quads) {
+        target.quad(shift(q.start), shift(q.end), color);
+      }
+    }
   }
 }

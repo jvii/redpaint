@@ -79,25 +79,27 @@ export function bucketPointsByGradient(
   style: GradientFillStyle,
   random: () => number = Math.random
 ): Map<number, Point[]> {
-  const buckets = new Map<number, Point[]>();
-  const add = (colorId: number, point: Point): void => {
-    const bucket = buckets.get(colorId);
-    if (bucket) {
-      bucket.push(point);
-    } else {
-      buckets.set(colorId, [point]);
-    }
-  };
-
   const bandCount = style.rangeHigh - style.rangeLow;
   if (bandCount <= 0) {
     // a degenerate (single-color) range: nothing to gradient, everything
     // gets that one color
-    for (const point of points) {
-      add(style.rangeLow, point);
-    }
-    return buckets;
+    return new Map([[style.rangeLow, points]]);
   }
+
+  // Bucketed by a plain array indexed by (colorId - rangeLow) rather than a
+  // Map: bandCount+1 is small and bounded (a palette range), so this avoids
+  // hashing/boxing overhead in the classification loop below, which is the
+  // hot path for a large filled shape (one call per pixel).
+  const bucketArray: (Point[] | undefined)[] = new Array(bandCount + 1);
+  const add = (colorId: number, point: Point): void => {
+    const index = colorId - style.rangeLow;
+    const bucket = bucketArray[index];
+    if (bucket) {
+      bucket.push(point);
+    } else {
+      bucketArray[index] = [point];
+    }
+  };
 
   if (style.axis === 'horizontalLine') {
     const rows = new Map<number, Point[]>();
@@ -117,32 +119,42 @@ export function bucketPointsByGradient(
           const minX = sorted[runStart].x;
           const maxX = sorted[i - 1].x;
           for (let j = runStart; j < i; j++) {
-            add(colorIdForPosition(sorted[j].x, minX, maxX - minX, style, bandCount, random), sorted[j]);
+            add(
+              colorIdForPosition(sorted[j].x, minX, maxX - minX, style, bandCount, random),
+              sorted[j]
+            );
           }
           runStart = i;
         }
       }
     }
-    return buckets;
+  } else {
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const p of points) {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    }
+
+    for (const point of points) {
+      const colorId =
+        style.axis === 'vertical'
+          ? colorIdForPosition(point.y, minY, maxY - minY, style, bandCount, random)
+          : colorIdForPosition(point.x, minX, maxX - minX, style, bandCount, random);
+      add(colorId, point);
+    }
   }
 
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
-  for (const p of points) {
-    minX = Math.min(minX, p.x);
-    maxX = Math.max(maxX, p.x);
-    minY = Math.min(minY, p.y);
-    maxY = Math.max(maxY, p.y);
-  }
-
-  for (const point of points) {
-    const colorId =
-      style.axis === 'vertical'
-        ? colorIdForPosition(point.y, minY, maxY - minY, style, bandCount, random)
-        : colorIdForPosition(point.x, minX, maxX - minX, style, bandCount, random);
-    add(colorId, point);
+  const buckets = new Map<number, Point[]>();
+  for (let index = 0; index < bucketArray.length; index++) {
+    const bucket = bucketArray[index];
+    if (bucket) {
+      buckets.set(style.rangeLow + index, bucket);
+    }
   }
   return buckets;
 }

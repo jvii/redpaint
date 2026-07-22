@@ -78,10 +78,13 @@ export class SymmetryBrush implements BrushInterface {
       this.inner.drawFilledRect(start, end, canvas);
       return;
     }
-    this.collect(canvas, copies, (inner, copy, target) => {
-      const [s, e] = rectForCopy(start, end, copy);
-      inner.drawFilledRect(s, e, target);
-    });
+    const center = {
+      x: Math.round((start.x + end.x) / 2),
+      y: Math.round((start.y + end.y) / 2),
+    };
+    this.collectFilledByReferencePoint(canvas, copies, center, (inner, target) =>
+      inner.drawFilledRect(start, end, target)
+    );
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
@@ -101,8 +104,8 @@ export class SymmetryBrush implements BrushInterface {
       this.inner.drawFilledCircle(center, radius, canvas);
       return;
     }
-    this.collect(canvas, copies, (inner, copy, target) =>
-      inner.drawFilledCircle(copy.point(center), radius, target)
+    this.collectFilledByReferencePoint(canvas, copies, center, (inner, target) =>
+      inner.drawFilledCircle(center, radius, target)
     );
   }
 
@@ -137,8 +140,8 @@ export class SymmetryBrush implements BrushInterface {
       this.inner.drawFilledEllipse(center, radiusX, radiusY, rotationAngle, canvas);
       return;
     }
-    this.collect(canvas, copies, (inner, copy, target) =>
-      inner.drawFilledEllipse(copy.point(center), radiusX, radiusY, rotationAngle, target)
+    this.collectFilledByReferencePoint(canvas, copies, center, (inner, target) =>
+      inner.drawFilledEllipse(center, radiusX, radiusY, rotationAngle, target)
     );
   }
 
@@ -233,6 +236,37 @@ export class SymmetryBrush implements BrushInterface {
     const buffer = new DrawCallBuffer();
     for (const copy of copies) {
       drawOne(this.inner, copy, buffer);
+    }
+    buffer.replayTo(canvas);
+  }
+
+  // Filled rect/circle/ellipse never rotate under symmetry — only their
+  // reference point (corner-derived center, or center) is kaleidoscoped;
+  // the shape itself stays axis-aligned (see rectForCopy and the comment on
+  // drawFilledEllipse above). So every copy is a pure translation of the
+  // same shape, and gradient fill's expensive part — rasterizing the shape
+  // into points and bucketing them by color, see fillStyleDraw.ts — only
+  // needs to happen once: draw the unmoved shape into a scratch buffer,
+  // then translate its already-drawn (and, in gradient mode, already-
+  // bucketed) primitives by each copy's delta instead of re-rasterizing
+  // and re-bucketing from scratch per copy. This also makes copies truly
+  // symmetric — byte-identical relative dither — instead of each getting
+  // its own independent random jitter. Solid-color fills go through the
+  // same path: translating one quad/lines() call costs no more than
+  // drawing it fresh, so there's no need to special-case solid mode.
+  private collectFilledByReferencePoint(
+    canvas: DrawTarget,
+    copies: SymmetryCopy[],
+    referencePoint: Point,
+    drawBase: (inner: BrushInterface, target: DrawTarget) => void
+  ): void {
+    const scratch = new DrawCallBuffer();
+    drawBase(this.inner, scratch);
+
+    const buffer = new DrawCallBuffer();
+    for (const copy of copies) {
+      const moved = copy.point(referencePoint);
+      scratch.translateTo(buffer, { x: moved.x - referencePoint.x, y: moved.y - referencePoint.y });
     }
     buffer.replayTo(canvas);
   }
