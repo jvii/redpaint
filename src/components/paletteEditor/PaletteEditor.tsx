@@ -223,7 +223,15 @@ export function PaletteEditor(): JSX.Element | null {
             IFF round-trip) gets its own row — a horizontal slider needs the
             width, or its track is too cramped to drag precisely. */}
         <div className="palette-editor__range-cycling">
-          <span className="palette-editor__range-cycling-label">Color cycling</span>
+          <span className="palette-editor__range-cycling-label">
+            Color cycling
+            {activeRangeIndex !== null && (
+              <span className="palette-editor__range-cycling-subtitle">
+                {' '}
+                Range {activeRangeIndex + 1}
+              </span>
+            )}
+          </span>
           <div className="palette-editor__range-cycling-row">
             <RetroToggle
               options={[

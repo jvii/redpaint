@@ -204,6 +204,17 @@
   color: black;
 }
 
+/* which slot these settings belong to — a small supporting readout beside
+   the bitmap title, same treatment as .fill-style-settings__hint */
+.palette-editor__range-cycling-subtitle {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 13px;
+  color: rgb(106, 106, 106);
+}
+
 .palette-editor__range-cycling-row {
   display: flex;
   align-items: center;
