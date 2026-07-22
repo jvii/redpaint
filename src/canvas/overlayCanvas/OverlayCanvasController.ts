@@ -3,6 +3,7 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { Line, PaintColor, Point } from '../../types';
 import { CanvasController } from '../CanvasController';
 import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
+import { shiftPoint } from '../util/util';
 import { OverlayMainCanvasRenderer } from './OverlayMainCanvasRenderer';
 
 // OverlayController is a singleton responsible for controlling
@@ -67,8 +68,18 @@ class OverlayCanvasController implements CanvasController {
 
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
     // effects cannot be previewed without applying them; show the brush
-    // shape as the cursor, like DPaint did
-    this.drawImage(points, brush);
+    // shape as the cursor, like DPaint did. Re-derive EffectIndexer's own
+    // stamp origin (see EffectIndexer.effectDraw) rather than feeding points
+    // straight to drawImage's quad math, which assumes CustomBrush's
+    // adjustHandle centering - PixelBrush's effect-mode stamp calls this
+    // with raw, uncentered cursor points, so without this the preview quad
+    // lands half a pixel off and rounds into the wrong cell.
+    const origins = points.map((point) => {
+      const shifted = shiftPoint(point);
+      const origin = { x: Math.round(shifted.x) - 1, y: Math.round(shifted.y) - 1 };
+      return { x: origin.x - 0.5, y: origin.y - 0.5 };
+    });
+    this.drawImage(origins, brush);
   }
 
   endEffectStroke(): void {

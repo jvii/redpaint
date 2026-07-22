@@ -36,6 +36,11 @@ function pixelShape(): CustomBrush {
       1
     );
   }
+  // EffectIndexer only reads this brush's alpha as a shape mask when
+  // committing to the real canvas, but the overlay preview (which has no
+  // equivalent effect logic) just draws its stored color directly - so keep
+  // it colorized to FG/BG like any other brush's cursor.
+  pixelShapeInstance.applyMode(overmind.state.brush.mode);
   return pixelShapeInstance;
 }
 
