@@ -195,6 +195,15 @@
   align-self: stretch;
 }
 
+/* the bitmap title and its monospace subtitle have different line metrics,
+   so they're laid out as flex siblings (not inline text) and centered on
+   the cross axis rather than relying on baseline alignment */
+.palette-editor__range-cycling-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
    label reads as a pair with it */
 .palette-editor__range-cycling-label {
@@ -212,7 +221,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 13px;
-  color: rgb(106, 106, 106);
+  color: black;
 }
 
 .palette-editor__range-cycling-row {
