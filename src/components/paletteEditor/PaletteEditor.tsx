@@ -215,16 +215,16 @@ export function PaletteEditor(): JSX.Element | null {
           </span>
         </div>
 
-        {/* Cycling settings ride on the selected range slot, two rows:
-            On/Off (the CRNG active bit) with its own Press Start 2P label
-            like Speed's, then speed (steps/second, stored as raw CRNG units
-            for lossless IFF round-trip) sharing a row with direction
-            (up/down arrows: forward walks start->end, reverse the
-            opposite — no label of its own, the arrows read on their own and
-            the row's too tight for one). */}
+        {/* Cycling settings ride on the selected range slot, under a shared
+            title: On/Off (the CRNG active bit) on its own row, then speed
+            (steps/second, stored as raw CRNG units for lossless IFF
+            round-trip) sharing a row with direction (up/down arrows:
+            forward walks start->end, reverse the opposite — no label of
+            its own, the arrows read on their own and the row's too tight
+            for one). */}
         <div className="palette-editor__range-cycling">
+          <span className="palette-editor__range-cycling-label">Color cycling</span>
           <div className="palette-editor__range-cycling-row">
-            <span className="palette-editor__range-cycling-label">Color cycling</span>
             <RetroToggle
               options={[
                 { value: 'on', label: 'On' },

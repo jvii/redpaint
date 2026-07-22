@@ -188,6 +188,11 @@
   align-items: stretch;
   gap: 8px;
   margin-top: 8px;
+  /* the fieldset's other children (align-items: flex-start) size to their
+     own content, so without an explicit self-stretch this block would too —
+     collapsing the Speed row's width down to whatever "Color cycling" or
+     On/Off happen to measure, and crushing the slider track with it */
+  align-self: stretch;
 }
 
 /* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
