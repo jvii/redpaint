@@ -5,6 +5,7 @@ import { CanvasController } from '../CanvasController';
 import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { shiftPoint } from '../util/util';
 import { OverlayMainCanvasRenderer } from './OverlayMainCanvasRenderer';
+import { paletteTextureData } from '../../algorithm/cycle';
 
 // OverlayController is a singleton responsible for controlling
 // the two overlay canvases in the app for MainCanvas and ZoomCanvas.
@@ -126,14 +127,10 @@ class OverlayCanvasController implements CanvasController {
       throw new Error('No webgl');
     }
 
-    const paletteTexture = new Uint8Array(256 * 4);
-    const palette = overmind.state.palette.paletteArray;
-    for (let i = 0; i < palette.length; i++) {
-      paletteTexture[i * 4 + 0] = palette[i].r;
-      paletteTexture[i * 4 + 1] = palette[i].g;
-      paletteTexture[i * 4 + 2] = palette[i].b;
-      paletteTexture[i * 4 + 3] = 255;
-    }
+    // Compose rotation from the raw fields, not the displayPalette derived —
+    // this runs inside actions (undo, resize), where deriveds read undefined.
+    const { palette, ranges, cycleOffsets } = overmind.state.palette;
+    const paletteTexture = paletteTextureData(palette, ranges, cycleOffsets);
     gl.activeTexture(gl.TEXTURE1);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, paletteTexture);
   }
@@ -144,14 +141,10 @@ class OverlayCanvasController implements CanvasController {
       throw new Error('No webgl');
     }
 
-    const paletteTexture = new Uint8Array(256 * 4);
-    const palette = overmind.state.palette.paletteArray;
-    for (let i = 0; i < palette.length; i++) {
-      paletteTexture[i * 4 + 0] = palette[i].r;
-      paletteTexture[i * 4 + 1] = palette[i].g;
-      paletteTexture[i * 4 + 2] = palette[i].b;
-      paletteTexture[i * 4 + 3] = 255;
-    }
+    // Compose rotation from the raw fields, not the displayPalette derived —
+    // this runs inside actions (undo, resize), where deriveds read undefined.
+    const { palette, ranges, cycleOffsets } = overmind.state.palette;
+    const paletteTexture = paletteTextureData(palette, ranges, cycleOffsets);
 
     // We store the palette as a source texture in texture unit 1 so we
     // call gl.activeTexture before gl.bindTexture

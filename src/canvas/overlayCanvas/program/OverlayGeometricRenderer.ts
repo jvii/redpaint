@@ -26,7 +26,11 @@ export class OverlayGeometricRenderer {
     const rgb =
       paintColor.kind === 'rgb'
         ? paintColor.color
-        : overmind.state.palette.palette[String(paintColor.colorNumber)] ?? { r: 0, g: 0, b: 0 };
+        : (overmind.state.palette.displayPalette[String(paintColor.colorNumber)] ?? {
+            r: 0,
+            g: 0,
+            b: 0,
+          });
     this.gl.uniform4f(this.u_color, rgb.r / 255, rgb.g / 255, rgb.b / 255, 1);
   }
 
