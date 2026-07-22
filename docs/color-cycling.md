@@ -20,9 +20,10 @@ already implemented); the two share the `PaletteRange` model and nothing else.
   real files carry more than four ranges (Mark Ferrari-style cycling scenes
   especially) — the ILBM plan's future-work note called this out
   (docs/superpowers/plans/2026-07-19-ilbm-load-save.md, "Color cycling
-  playback"). Four slots remain the floor so the hand-editing UX stays
-  DPaint-shaped; loading a file with more usable CRNGs grows the list and
-  the palette editor's range selector shows them all.
+  playback"). The palette editor offers **six slots by default** — more
+  headroom than DPaint's four for authoring scenes with several
+  independently cycling elements — and loading a file with more usable
+  CRNGs grows the list beyond that; the range selector shows them all.
 - The **palette strip and FG/BG indicators animate** along with the canvas,
   driven by the same rotation offsets — direct feedback for tuning ranges.
 - **IFF CRNG round-trip**: `rate`/`active`/`reverse` survive load and save
@@ -133,11 +134,14 @@ user-created ranges (and the built-in grey-ramp Range 1): `rate: 8192`
 `active: true`, `reverse: false`.
 
 `state.palette.ranges` becomes variable-length: `(PaletteRange | null)[]`
-with a **minimum of four slots** (padded with `null`), no upper cap. The
+with a **minimum of six slots** (padded with `null`), no upper cap. The
 palette editor's range selector lists every slot; clearing an extra slot
-above the first four prunes it. All existing consumers (`activeRangeIndices`,
+above the first six prunes it. All existing consumers (`activeRangeIndices`,
 the gradient-fill range picker, Shade/Blend/Cycle paint modes, the ILBM save
-`flatMap`) already iterate the array and are length-agnostic.
+`flatMap`) already iterate the array and are length-agnostic. Save keeps
+writing **only the non-null slots** as CRNG chunks (the existing `flatMap`
+behavior): an image authored with three ranges round-trips as three CRNGs,
+not six — don't "fix" this into DPaint's always-four emulation.
 
 File format changes:
 
@@ -184,7 +188,7 @@ All in the pure layer, per repo convention (`test/` mirrors `src/`):
   identity; `advanceCycle` — rate→steps timing with injected elapsed time,
   fractional accumulation, wrap-around, reverse sign.
 - CRNG↔`PaletteRange` mapping round-trip (rate/active/reverse preservation,
-  more than four ranges surviving load, minimum-four `null` padding)
+  more than six ranges surviving load, minimum-six `null` padding)
   alongside the existing `paletteRange`/ilbm tests.
 
 `CycleDriver` (rAF plumbing) and the palette-editor UI stay untested, like
