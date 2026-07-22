@@ -71,14 +71,21 @@ adds per-frame uniform plumbing to avoid a trivial 1 KB upload.
 in-progress shape preview cycle live, not just committed pixels). The overlay
 is immediate-mode — drawn once per mouse event, never on a render loop — so
 re-uploading its palette texture alone doesn't repaint what's already on
-screen. `OverlayCanvasController` remembers the last color-bearing draw call
+screen. `OverlayCanvasController` remembers every color-bearing draw call
 (`points`/`lines`/`quad`/`drawImage` — not the selection-indicator calls,
-which sample the main canvas and invert, independent of the palette) and
-`CycleDriver` replays it every tick after the texture upload, and once more
-when cycling stops (so the preview snaps back to base color instead of
-freezing on its last cycled frame). The replay is cheap: it's the same tiny
-draw the mouse event already paid for, not a new render pass — the point/line/
-quad path resolves color from `displayPalette` at call time, and `drawImage`
+which sample the main canvas and invert, independent of the palette) made
+since `beginFrame()` was last called, and `CycleDriver` replays all of them
+every tick after the texture upload, and once more when cycling stops (so the
+preview snaps back to base color instead of freezing on its last cycled
+frame). A single call isn't enough to remember: a solid-color preview is one
+draw, but a gradient-filled shape preview is one call _per color band_
+(`fillStyleDraw.ts` buckets by color) — replaying only the last would leave
+every band but one frozen. `Canvas.tsx` calls `beginFrame()` right before
+dispatching each `*Overlay` tool handler, so one mouse event's draws
+accumulate together and the next event starts a fresh list instead of
+growing forever. The replay itself is cheap: it's the same tiny draws the
+mouse event already paid for, not a new render pass — the point/line/quad
+path resolves color from `displayPalette` at call time, and `drawImage`
 already samples the palette texture by index, so both just pick up whatever
 CycleDriver most recently uploaded.
 

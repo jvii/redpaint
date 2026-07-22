@@ -184,6 +184,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         style={canvasStyle}
         onClick={(event): void => {
           getEventHandler(tool, 'onClick')(event);
+          overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onClickOverlay')(event);
         }}
         onMouseDown={(event): void => {
@@ -191,6 +192,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
             return; // reserved app-wide for the menu toggle, not a paint tool
           }
           getEventHandler(tool, 'onMouseDown')(event);
+          overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseDownOverlay')(event);
         }}
         onMouseUp={(event): void => {
@@ -198,21 +200,29 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
             return;
           }
           getEventHandler(tool, 'onMouseUp')(event);
+          overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseUpOverlay')(event);
         }}
         onMouseEnter={(event): void => {
           updateCursorPos(event);
           getEventHandler(tool, 'onMouseEnter')(event);
+          overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseEnterOverlay')(event);
         }}
         onMouseLeave={(event): void => {
           hideCursor();
           getEventHandler(tool, 'onMouseLeave')(event);
+          overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseLeaveOverlay')(event);
         }}
         onMouseMove={(event): void => {
           updateCursorPos(event);
           getEventHandler(tool, 'onMouseMove')(event);
+          // Each mouse event's overlay draws (possibly several — a gradient
+          // fill preview issues one call per color band) replace the
+          // previous frame's, so CycleDriver's replay doesn't accumulate
+          // stale draws from earlier positions.
+          overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseMoveOverlay')(event);
         }}
         onContextMenu={(event): void => {
