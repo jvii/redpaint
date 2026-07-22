@@ -223,6 +223,7 @@ export function PaletteEditor(): JSX.Element | null {
             up/down arrows: forward walks start->end, reverse the opposite)
             share the second row. */}
         <div className="palette-editor__range-cycling">
+          <span className="palette-editor__range-cycling-title">Color cycling</span>
           <RetroLabeledSlider
             label="Speed"
             vertical={false}

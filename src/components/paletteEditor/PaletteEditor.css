@@ -189,6 +189,15 @@
   margin-top: 8px;
 }
 
+.palette-editor__range-cycling-title {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 13px;
+  color: rgb(106, 106, 106);
+}
+
 .palette-editor__range-cycling-toggles {
   display: flex;
   align-items: center;
