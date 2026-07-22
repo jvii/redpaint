@@ -49,7 +49,19 @@ export function Gadget({
       type="button"
       title={title}
       aria-label={title}
-      onClick={onClick}
+      onClick={(event): void => {
+        // Gadgets like Open/Save image synchronously trigger a native OS
+        // file dialog that steals the cursor before the button unmounts
+        // (the menu closes on mouseleave once the cursor leaves the page —
+        // see MenuGadgets.tsx's useFileOpener comment). The browser's native
+        // title-attribute tooltip isn't tied to DOM lifecycle, so it stays
+        // painted over the canvas until the next real mouse move. Clearing
+        // (and restoring) the attribute forces it to hide immediately.
+        const button = event.currentTarget;
+        button.removeAttribute('title');
+        onClick?.();
+        requestAnimationFrame(() => button.setAttribute('title', title));
+      }}
       disabled={disabled}
     >
       {stacked ? <span className="wb-gadget__icon">{icon}</span> : icon}
