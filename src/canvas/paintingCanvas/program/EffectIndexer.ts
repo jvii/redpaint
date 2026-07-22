@@ -115,10 +115,18 @@ export class EffectIndexer {
         this.smoothPass(rect);
       } else if (mode === 'Cycle') {
         this.cyclePass(rect, state);
-        state.cycleStep++;
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
+    }
+    // DPaint advances the cycle color once per paint action (CCYCLE.C's
+    // CycPaint, called once per MODES.C PaintIt/SymPts - i.e. once per mouse
+    // move, however long a line that move draws), not once per pixel: an
+    // entire dragged segment is one solid color, and the next segment gets
+    // the next color. effectDraw is called once per such segment, so advance
+    // here rather than inside the per-point loop above.
+    if (mode === 'Cycle') {
+      state.cycleStep++;
     }
   }
 
