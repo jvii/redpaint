@@ -1,8 +1,10 @@
 # Color Cycling — design
 
-Status: designed 2026-07-22, unimplemented. Animating each palette range's
+Status: implemented 2026-07-22; direction convention verified against the
+canvascycle project's bundled TESTRAMP reference data (a faithful
+reimplementation of Amiga CRNG semantics). Animating each palette range's
 colors over time, independent of painting — DPaint's Tab cycling. Distinct
-from the Cycle *paint mode* (which steps the active range per stamp and is
+from the Cycle _paint mode_ (which steps the active range per stamp and is
 already implemented); the two share the `PaletteRange` model and nothing else.
 
 ## User-visible behavior
@@ -33,8 +35,8 @@ already implemented); the two share the `PaletteRange` model and nothing else.
 
 On the Amiga, cycling rotated the hardware palette registers — the natural
 (free) implementation, not a deliberate semantic. Since every canvas pixel
-stores only an index, painted strokes cycle automatically *whichever layer the
-rotation lives in*. So redpaint rotates colors *at display time only*: the
+stores only an index, painted strokes cycle automatically _whichever layer the
+rotation lives in_. So redpaint rotates colors _at display time only_: the
 document palette in Overmind never changes while cycling runs.
 
 What this buys, compared to rotating `state.palette` DPaint-style:
@@ -88,7 +90,7 @@ base palette.
 Next to the existing `cycleColorIndex`:
 
 - `cycledPalette(base, ranges, offsets)` — rotate each active range's span by
-  its offset. Each range reads from the *base* palette and ranges apply in
+  its offset. Each range reads from the _base_ palette and ranges apply in
   slot order 1→N, so on overlap the later slot wins. Spans of length ≤ 1 and
   inactive/null ranges are no-ops.
 - `advanceCycle(accumulators, ranges, elapsedMs)` — advances fractional step
@@ -101,17 +103,24 @@ Next to the existing `cycleColorIndex`:
 `setCycleOffsets` only when an integer offset actually changed (at typical
 DPaint rates most frames change nothing).
 
-### Direction convention — verify during implementation
+### Direction convention
 
-The ILBM spec's *forward* cycle moves the color in the highest register of
-the range to the lowest, all others shifting up — visually, colors appear to
-flow from `start` toward `end`. Offset math: displayed color of slot `i` in a
-forward-cycling range `[s..e]` at offset `k` is base color of
-`s + ((i − s + k) mod span)`; reverse negates `k`. **Pin this against a known
-cycling image** (the classic Mark Ferrari IFFs; PyDPainter as a reference
-implementation) before trusting the sign — getting it backwards is the
-classic cycling bug and unit tests can't catch a wrong convention, only an
-inconsistent one.
+The palette _registers_ rotate the other way from what the displayed slots
+show: a forward cycle physically shifts each register's value from `start`
+toward `end` (wrapping `end` back to `start`), so what a fixed slot `i`
+_displays_ is the base color that used to sit `k` positions _behind_ it.
+Offset math (`cycleOffsetsOf`): displayed color of slot `i` in a
+forward-cycling range `[s..e]` at raw step count `k` is base color of
+`s + ((i − s − k) mod span)` — implemented as offset `(span − k mod span) mod
+span` fed into `cycledPalette`'s `s + ((i − s + offset) mod span)`. Reverse
+uses `k mod span` directly (the registers shift the other way).
+
+Verified against the [canvascycle](https://github.com/jhuckaby/canvascycle)
+project's bundled `TESTRAMP.LBM.json` test data (a from-scratch
+reimplementation of Amiga CRNG semantics, `reverse: 0`/forward): tracing its
+`shiftColors` register rotation by hand confirmed the sign above. The initial
+implementation had this backwards — the classic cycling bug, and exactly why
+unit tests alone can't catch a wrong convention, only an inconsistent one.
 
 ## Data model and file format
 
