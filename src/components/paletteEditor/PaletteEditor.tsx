@@ -216,12 +216,12 @@ export function PaletteEditor(): JSX.Element | null {
         </div>
 
         {/* Cycling settings ride on the selected range slot, under a shared
-            title: On/Off (the CRNG active bit) on its own row, then speed
-            (steps/second, stored as raw CRNG units for lossless IFF
-            round-trip) sharing a row with direction (up/down arrows:
-            forward walks start->end, reverse the opposite — no label of
-            its own, the arrows read on their own and the row's too tight
-            for one). */}
+            title: On/Off (the CRNG active bit) and direction (up/down
+            arrows: forward walks start->end, reverse the opposite — no
+            label of its own, the arrows read on their own) share a row,
+            then speed (steps/second, stored as raw CRNG units for lossless
+            IFF round-trip) gets its own row — a horizontal slider needs the
+            width, or its track is too cramped to drag precisely. */}
         <div className="palette-editor__range-cycling">
           <span className="palette-editor__range-cycling-label">Color cycling</span>
           <div className="palette-editor__range-cycling-row">
@@ -241,6 +241,22 @@ export function PaletteEditor(): JSX.Element | null {
                 }
               }}
             />
+            <RetroToggle
+              options={[
+                { value: 'forward', label: '↓' },
+                { value: 'reverse', label: '↑' },
+              ]}
+              value={activeRange?.reverse ? 'reverse' : 'forward'}
+              disabled={!activeRange}
+              onChange={(value): void => {
+                if (activeRangeIndex !== null) {
+                  actions.palette.setRangeSettings({
+                    rangeIndex: activeRangeIndex,
+                    reverse: value === 'reverse',
+                  });
+                }
+              }}
+            />
           </div>
           <div className="palette-editor__range-cycling-row">
             <RetroLabeledSlider
@@ -255,22 +271,6 @@ export function PaletteEditor(): JSX.Element | null {
                   actions.palette.setRangeSettings({
                     rangeIndex: activeRangeIndex,
                     rate: stepsPerSecondToRate(value),
-                  });
-                }
-              }}
-            />
-            <RetroToggle
-              options={[
-                { value: 'forward', label: '↓' },
-                { value: 'reverse', label: '↑' },
-              ]}
-              value={activeRange?.reverse ? 'reverse' : 'forward'}
-              disabled={!activeRange}
-              onChange={(value): void => {
-                if (activeRangeIndex !== null) {
-                  actions.palette.setRangeSettings({
-                    rangeIndex: activeRangeIndex,
-                    reverse: value === 'reverse',
                   });
                 }
               }}
