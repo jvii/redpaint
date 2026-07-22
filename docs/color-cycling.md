@@ -67,6 +67,21 @@ The alternative — remapping indices in the shaders via range-bounds + offset
 uniforms — was rejected: it touches every palette-sampling program (~5) and
 adds per-frame uniform plumbing to avoid a trivial 1 KB upload.
 
+**The overlay animates too** (a DPaint touch: the brush cursor and any
+in-progress shape preview cycle live, not just committed pixels). The overlay
+is immediate-mode — drawn once per mouse event, never on a render loop — so
+re-uploading its palette texture alone doesn't repaint what's already on
+screen. `OverlayCanvasController` remembers the last color-bearing draw call
+(`points`/`lines`/`quad`/`drawImage` — not the selection-indicator calls,
+which sample the main canvas and invert, independent of the palette) and
+`CycleDriver` replays it every tick after the texture upload, and once more
+when cycling stops (so the preview snaps back to base color instead of
+freezing on its last cycled frame). The replay is cheap: it's the same tiny
+draw the mouse event already paid for, not a new render pass — the point/line/
+quad path resolves color from `displayPalette` at call time, and `drawImage`
+already samples the palette texture by index, so both just pick up whatever
+CycleDriver most recently uploaded.
+
 Data flow:
 
 ```

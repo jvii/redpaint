@@ -21,6 +21,17 @@ class OverlayCanvasController implements CanvasController {
     textureCoordBuffer: null,
   };
 
+  // The overlay is immediate-mode (drawn once per mouse event, never
+  // continuously re-rendered), so a palette rotation doesn't show up on
+  // whatever's currently displayed — the brush cursor, an in-progress shape
+  // — until the next mouse move redraws it. Remembering the last color-
+  // dependent draw call lets CycleDriver replay it every tick: the redraw
+  // lands on the exact same pixels with the freshly-rotated color, so no
+  // clear is needed first. null whenever nothing color-bearing is shown
+  // (selection indicators/crosshairs don't route through this — they
+  // sample the main canvas and invert, independent of the palette).
+  private lastColorDraw: (() => void) | null = null;
+
   attachMainCanvas(mainCanvasOverlay: HTMLCanvasElement): void {
     this.mainCanvasOverlay = mainCanvasOverlay;
 
@@ -48,21 +59,25 @@ class OverlayCanvasController implements CanvasController {
   }
 
   points(points: Point[], color: PaintColor): void {
+    this.lastColorDraw = () => this.points(points, color);
     this.mainCanvasRenderer?.points(points, color);
     this.renderZoomCanvas();
   }
 
   lines(lines: Line[], color: PaintColor): void {
+    this.lastColorDraw = () => this.lines(lines, color);
     this.mainCanvasRenderer?.lines(lines, color);
     this.renderZoomCanvas();
   }
 
   quad(start: Point, end: Point, color: PaintColor): void {
+    this.lastColorDraw = () => this.quad(start, end, color);
     this.mainCanvasRenderer?.quad(start, end, color);
     this.renderZoomCanvas();
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {
+    this.lastColorDraw = () => this.drawImage(points, brush);
     this.mainCanvasRenderer?.drawImage(points, brush);
     this.renderZoomCanvas();
   }
@@ -117,8 +132,18 @@ class OverlayCanvasController implements CanvasController {
   } */
 
   clear(): void {
+    this.lastColorDraw = null;
     this.mainCanvasRenderer?.clear();
     this.zoomCanvasRenderer?.clear();
+  }
+
+  // Called by CycleDriver after updatePalette() re-uploads the rotated
+  // texture: replays whatever color-bearing thing is currently on the
+  // overlay (a brush cursor, an in-progress shape) so it animates along
+  // with the canvas instead of only catching up on the next mouse move.
+  // A no-op when the overlay is empty.
+  redrawForCycling(): void {
+    this.lastColorDraw?.();
   }
 
   updatePalette(): void {

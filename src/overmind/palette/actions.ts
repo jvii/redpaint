@@ -262,5 +262,10 @@ export const toggleCycling = (context: Context): void => {
     context.state.palette.cycleOffsets = context.state.palette.ranges.map(() => 0);
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
+    // The overlay is immediate-mode — re-uploading the texture alone doesn't
+    // repaint whatever's currently shown (a brush cursor, an in-progress
+    // shape), so without this it would keep showing its last cycled color
+    // instead of snapping back to base like the main canvas does.
+    overlayCanvasController.redrawForCycling();
   }
 };
