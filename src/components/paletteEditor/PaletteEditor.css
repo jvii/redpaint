@@ -195,11 +195,20 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 13px;
-  color: rgb(106, 106, 106);
+  color: black;
 }
 
-.palette-editor__range-cycling-toggles {
+.palette-editor__range-cycling-direction {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* matches .retro-labeled-slider__label (Speed, above) so the two row labels
+   in this group read as a pair */
+.palette-editor__range-cycling-label {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  color: black;
 }

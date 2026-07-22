@@ -215,15 +215,30 @@ export function PaletteEditor(): JSX.Element | null {
           </span>
         </div>
 
-        {/* Cycling settings ride on the selected range slot: speed shown in
-            steps/second (stored as raw CRNG units for lossless IFF
-            round-trip), plus DPaint's active and direction flags. Speed gets
-            its own row — a horizontal slider needs the width, or its track
-            is too cramped to drag precisely. Active and direction (as
-            up/down arrows: forward walks start->end, reverse the opposite)
-            share the second row. */}
+        {/* Cycling settings ride on the selected range slot: On/Off (the
+            CRNG active bit) first, then speed in steps/second (stored as
+            raw CRNG units for lossless IFF round-trip) on its own row — a
+            horizontal slider needs the width, or its track is too cramped
+            to drag precisely — then direction (up/down arrows: forward
+            walks start->end, reverse the opposite) with its own label. */}
         <div className="palette-editor__range-cycling">
           <span className="palette-editor__range-cycling-title">Color cycling</span>
+          <RetroToggle
+            options={[
+              { value: 'on', label: 'On' },
+              { value: 'off', label: 'Off' },
+            ]}
+            value={activeRange?.active ? 'on' : 'off'}
+            disabled={!activeRange}
+            onChange={(value): void => {
+              if (activeRangeIndex !== null) {
+                actions.palette.setRangeSettings({
+                  rangeIndex: activeRangeIndex,
+                  active: value === 'on',
+                });
+              }
+            }}
+          />
           <RetroLabeledSlider
             label="Speed"
             vertical={false}
@@ -240,23 +255,8 @@ export function PaletteEditor(): JSX.Element | null {
               }
             }}
           />
-          <div className="palette-editor__range-cycling-toggles">
-            <RetroToggle
-              options={[
-                { value: 'on', label: 'Cycle' },
-                { value: 'off', label: 'Off' },
-              ]}
-              value={activeRange?.active ? 'on' : 'off'}
-              disabled={!activeRange}
-              onChange={(value): void => {
-                if (activeRangeIndex !== null) {
-                  actions.palette.setRangeSettings({
-                    rangeIndex: activeRangeIndex,
-                    active: value === 'on',
-                  });
-                }
-              }}
-            />
+          <div className="palette-editor__range-cycling-direction">
+            <span className="palette-editor__range-cycling-label">Direction</span>
             <RetroToggle
               options={[
                 { value: 'forward', label: '↓' },
