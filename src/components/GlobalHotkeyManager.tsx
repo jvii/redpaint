@@ -7,6 +7,7 @@ import { MODE_ORDER } from '../overmind/brush/mode';
 export function GlobalHotKeyManager(): null {
   usePaste();
   useMenuHotkey();
+  useCyclingHotkey();
   useMiddleClickMenuToggle();
   useBrushTransformHotkeys();
   useModeHotkeys();
@@ -84,6 +85,26 @@ function useMenuHotkey(): void {
   }, []);
 }
 
+// Tab toggles color cycling, like DPaint. preventDefault keeps the browser's
+// focus traversal from grabbing the key. Suspended with the other hotkeys
+// (dialogs, palette editor, text tool) — cycling already running keeps
+// running there; only the toggle is gated.
+function useCyclingHotkey(): void {
+  const actions = useActions();
+
+  function handleKey(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || hotkeysSuspended(event)) {
+      return;
+    }
+    event.preventDefault();
+    actions.palette.toggleCycling();
+  }
+
+  useEffect((): void => {
+    document.addEventListener('keydown', handleKey);
+  }, []);
+}
+
 // Middle-click toggles the menu from anywhere — canvas, toolbox, palette,
 // the menubar/menu itself — same as spacebar (useMenuHotkey above).
 function useMiddleClickMenuToggle(): void {
@@ -128,7 +149,10 @@ function useModeHotkeys(): void {
       return;
     }
     const mode = MODE_ORDER[Number(match[1]) - 1];
-    if ((mode === 'Matte' || mode === 'Repl') && overmind.state.brush.selectedBuiltInBrushId !== null) {
+    if (
+      (mode === 'Matte' || mode === 'Repl') &&
+      overmind.state.brush.selectedBuiltInBrushId !== null
+    ) {
       return;
     }
     event.preventDefault(); // F1 opens the browser's own help otherwise
