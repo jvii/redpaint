@@ -9,10 +9,11 @@ already implemented); the two share the `PaletteRange` model and nothing else.
 
 ## User-visible behavior
 
-- **Tab toggles cycling** on/off, guarded by `hotkeysSuspended()` in
-  `GlobalHotkeyManager` like the other canvas hotkeys. Cycling keeps running
-  while painting, zooming, in menus, and in the palette editor — it is
-  display-only (see below), so there is nothing it can corrupt.
+- **Tab toggles cycling** on/off, unconditionally — deliberately _not_ gated
+  by `hotkeysSuspended()` in `GlobalHotkeyManager` like the other canvas
+  hotkeys are. Toggling from inside the palette editor (to preview a range
+  while tuning it) is the point, and cycling is display-only (see below), so
+  there is nothing it can corrupt regardless of what has focus.
 - Each range cycles independently, controlled by three new per-range
   properties: **rate** (speed), **active** (does this range participate when
   cycling is on), **reverse** (direction). Edited in the palette editor's

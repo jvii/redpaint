@@ -85,15 +85,19 @@ function useMenuHotkey(): void {
   }, []);
 }
 
-// Tab toggles color cycling, like DPaint. preventDefault keeps the browser's
-// focus traversal from grabbing the key. Suspended with the other hotkeys
-// (dialogs, palette editor, text tool) — cycling already running keeps
-// running there; only the toggle is gated.
+// Tab toggles color cycling, like DPaint. Deliberately NOT gated by
+// hotkeysSuspended(): that guard exists to stop stray keystrokes from
+// triggering canvas/tool actions while a dialog, the palette editor, or a
+// text field has focus — but color cycling is display-only (nothing it can
+// corrupt), and the whole point of exposing it here is to toggle it from
+// inside the palette editor while tuning a range. Browser-native Tab focus
+// traversal is the thing being overridden — preventDefault every time so
+// that "normal" use never wins the key back.
 function useCyclingHotkey(): void {
   const actions = useActions();
 
   function handleKey(event: KeyboardEvent): void {
-    if (event.key !== 'Tab' || hotkeysSuspended(event)) {
+    if (event.key !== 'Tab') {
       return;
     }
     event.preventDefault();
