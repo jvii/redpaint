@@ -181,3 +181,14 @@
   border-right: none;
   border-left: 8px solid black;
 }
+
+.palette-editor__range-cycling {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.palette-editor__range-cycling > :first-child {
+  flex: 1;
+}

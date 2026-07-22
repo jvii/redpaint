@@ -11,6 +11,7 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
+import { rateToStepsPerSecond, stepsPerSecondToRate } from '../../algorithm/cycle';
 
 export function PaletteEditor(): JSX.Element | null {
   const state = useAppState();
@@ -212,6 +213,60 @@ export function PaletteEditor(): JSX.Element | null {
               Clear
             </RetroButton>
           </span>
+        </div>
+
+        {/* Cycling settings ride on the selected range slot: speed shown in
+            steps/second (stored as raw CRNG units for lossless IFF
+            round-trip), plus DPaint's active and direction flags. */}
+        <div className="palette-editor__range-cycling">
+          <RetroLabeledSlider
+            label="Speed"
+            vertical={false}
+            value={activeRange ? Math.round(rateToStepsPerSecond(activeRange.rate)) : 0}
+            min={0}
+            max={60}
+            disabled={!activeRange}
+            onChange={(value): void => {
+              if (activeRangeIndex !== null) {
+                actions.palette.setRangeSettings({
+                  rangeIndex: activeRangeIndex,
+                  rate: stepsPerSecondToRate(value),
+                });
+              }
+            }}
+          />
+          <RetroToggle
+            options={[
+              { value: 'on', label: 'Cycle' },
+              { value: 'off', label: 'Off' },
+            ]}
+            value={activeRange?.active ? 'on' : 'off'}
+            disabled={!activeRange}
+            onChange={(value): void => {
+              if (activeRangeIndex !== null) {
+                actions.palette.setRangeSettings({
+                  rangeIndex: activeRangeIndex,
+                  active: value === 'on',
+                });
+              }
+            }}
+          />
+          <RetroToggle
+            options={[
+              { value: 'forward', label: 'Fwd' },
+              { value: 'reverse', label: 'Rev' },
+            ]}
+            value={activeRange?.reverse ? 'reverse' : 'forward'}
+            disabled={!activeRange}
+            onChange={(value): void => {
+              if (activeRangeIndex !== null) {
+                actions.palette.setRangeSettings({
+                  rangeIndex: activeRangeIndex,
+                  reverse: value === 'reverse',
+                });
+              }
+            }}
+          />
         </div>
       </RetroFieldset>
 
