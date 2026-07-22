@@ -196,11 +196,13 @@
 }
 
 /* title above subtitle — side by side read too cramped next to the toggles
-   below */
+   below. Extra margin top/bottom (beyond the parent's own gap) so the pair
+   doesn't crowd the Clear row above or the On/Off row below. */
 .palette-editor__range-cycling-title-row {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
+  margin: 6px 0;
 }
 
 /* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
