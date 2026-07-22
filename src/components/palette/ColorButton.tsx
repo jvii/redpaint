@@ -33,7 +33,6 @@ export function ColorButton({
   isRangeEnd = false,
   fillCell = false,
 }: Props): JSX.Element {
-
   // Marks are painted outside the swatch's own box, into space no sibling
   // owns: the column dividers are the grid's gaps (black container
   // background showing through), so the range mark just fills the gap on
@@ -42,7 +41,7 @@ export function ColorButton({
   // where there is no gap (top/bottom, and everywhere in the gapless
   // toolbox palette). Layout rules in docs/palette-grid-marks.md.
   const buttonStyle: React.CSSProperties = {
-    backgroundColor: colorToRGBString(useAppState().palette.palette[colorId]),
+    backgroundColor: colorToRGBString(useAppState().palette.displayPalette[colorId]),
   };
   if (isSelected) {
     buttonStyle.outline = `${MARK_WIDTH}px solid white`;

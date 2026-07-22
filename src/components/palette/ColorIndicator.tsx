@@ -3,11 +3,11 @@ import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../tools/util/util';
 
 export function ColorIndicator(): JSX.Element {
-  const state = useAppState()
-  const actions = useActions()
+  const state = useAppState();
+  const actions = useActions();
 
   const background = {
-    backgroundColor: colorToRGBString(useAppState().palette.backgroundColor),
+    backgroundColor: colorToRGBString(useAppState().palette.displayBackgroundColor),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -18,7 +18,7 @@ export function ColorIndicator(): JSX.Element {
     margin: 0,
   };
   const foreground = {
-    backgroundColor: colorToRGBString(state.palette.foregroundColor),
+    backgroundColor: colorToRGBString(state.palette.displayForegroundColor),
     height: '20px',
     width: '20px',
     borderRadius: '50%',
