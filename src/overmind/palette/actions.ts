@@ -240,3 +240,9 @@ export const spread = (context: Context, { fromId, toId }: SpreadParams): void =
     });
   }
 };
+
+// Written by CycleDriver (and only it) whenever a range lands on a new whole
+// cycling step; all zeros whenever cycling is off.
+export const setCycleOffsets = (context: Context, offsets: number[]): void => {
+  context.state.palette.cycleOffsets = offsets;
+};
