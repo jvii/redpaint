@@ -61,11 +61,8 @@ function colorIdForPosition(
 }
 
 // Buckets an arbitrary point set by target color id. Only caller left is
-// FloodFillTool: circle/rect/ellipse/polygon fill through the GPU gradient
-// path instead (src/canvas/util/gradientShaderLib.ts), which computes the
-// same band math per-fragment rather than bucketing a CPU-side point list —
-// flood fill's region comes from pixel connectivity, not geometry, so it
-// has no closed form to hand a shader the way those shapes do.
+// FloodFillTool — its region comes from pixel connectivity, not geometry,
+// so it has no closed form to hand a shader (see gradientShaderLib.ts).
 // 'vertical'/'horizontal' normalize against the whole point set's own
 // bounding box; 'horizontalLine' groups points by row first and normalizes
 // each row's *contiguous runs* against their own local x-extent,
