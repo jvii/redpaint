@@ -31,6 +31,14 @@ copy becomes another draw call with a translated center — no CPU
 rasterization, no per-copy point translation, and true per-copy symmetry
 falls out for free (see below).
 
+It also fixes the worst case of color cycling's overlay replay
+(`OverlayCanvasController.redrawForCycling`): the replay re-issues the
+current preview frame's every draw call on each cycling step, so a
+gradient-filled preview under symmetry — today hundreds of per-band
+`points()` batches across all copies — repays its full draw cost up to
+60×/second while cycling. With this plan that same frame is one recorded
+`gradientFill` entry per copy.
+
 **Out of scope, staying on the existing CPU path unchanged:** flood fill and
 filled polygons. Both fill genuinely irregular/non-convex regions (flood
 fill's arbitrary blob, a polygon that can self-intersect or have concave
@@ -75,8 +83,10 @@ preview automatically animates with color cycling too, no extra work.
 Add to `src/canvas/CanvasController.ts`'s `DrawTarget` interface:
 
 ```ts
-gradientFill(shape: GradientShape, style: GradientFillStyle): void;
+gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void;
 ```
+
+(`seed`: the per-stroke dither seed — see "Seed lifecycle" in section 3.)
 
 `GradientShape` (new, in `src/algorithm/gradientFill.ts` next to
 `GradientFillStyle`): a small tagged union —
@@ -103,8 +113,18 @@ existing `effectShaderLib.ts` pattern) implementing:
 - **Band index.** Direct port of `colorIdForPosition`'s arithmetic
   (`floor((pos - min + jitter) / pointsPerColor)`, clamped to
   `[0, bandCount]`) as uniforms `u_rangeLow`, `u_bandCount`, `u_dither`,
-  `u_jitterPercent`, plus `u_axisMode` (0=vertical/1=horizontal) and the
-  span bounds. For **circle/ellipse**, `'horizontalLine'` axis reduces to a
+  `u_jitterPercent`, plus `u_axisMode`
+  (0=vertical/1=horizontal/2=horizontalLine — three modes, not two) and the
+  span bounds. **Carry the CPU path's exact span semantics and degenerate
+  guards**: span is `max - min` (the extent, *not* `+1`); `span <= 0` (a
+  1-pixel-tall/-wide shape) resolves to `u_rangeLow`; and a single-color
+  range (`rangeHigh == rangeLow`, `bandCount <= 0`) never reaches the shader
+  at all — `fillStyleDraw` takes its existing solid branch, same as
+  `bucketPointsByGradient`'s degenerate case today.
+  `u_rangeLow` is a 1-based color id on the JS side; convert to the 0-based
+  storage index **at the uniform boundary** (the `(id - 1) / 255` packing
+  `updatePixelUniform` already uses) — the shader only ever sees storage
+  indices. For **circle/ellipse**, `'horizontalLine'` axis reduces to a
   closed form — no CPU-side row/contiguous-run bookkeeping needed, since
   every row of a convex shape is exactly one run: the local x-span at a
   given `v_local.y` is `2 * sqrt(radius^2 - v_local.y^2)` (circle) or the
@@ -119,9 +139,27 @@ existing `effectShaderLib.ts` pattern) implementing:
   position, every symmetry copy — same local coordinates, same hash —
   produces **byte-identical relative dither**, satisfying "truly symmetric"
   without any shared-buffer bookkeeping on the CPU side.
+  **Add a per-stroke seed** (`u_seed`, one JS-side `Math.random()` per
+  stroke, mixed into the hash and shared by every symmetry copy and every
+  redraw of that stroke): a position-only hash is static, so filling the
+  same shape at the same spot twice would produce byte-identical speckle,
+  where `Math.random()` (and PyDPainter, the fidelity reference) re-rolls
+  every fill. The seed restores per-fill variation without breaking the
+  per-copy identity above. Two consequences are intended behavior changes,
+  both improvements: the live preview stops re-shimmering on every mouse
+  move (same seed for the whole drag), and the committed fill's dither is
+  now byte-identical to the preview the user just saw.
+- **Precision.** The existing display shaders declare `precision mediump
+  float`, and `fract(sin(x) * 43758.5453)` degrades exactly when `x` gets
+  large under limited precision. Center-relative locals keep the hash input
+  small (bounded by the shape size, not canvas position), which is the
+  assumption that makes mediump acceptable — state it in the shader comment,
+  and if Safari (the risk browser) still shows banding/patterning in the
+  dither, switch the hash to an integer-friendly one before reaching for
+  `highp`.
 
-Document the convention (0..1 hash, local-space input) once in the shared
-GLSL source comment rather than in each shader.
+Document the conventions (0..1 hash, local-space input, per-stroke seed)
+once in the shared GLSL source comment rather than in each shader.
 
 ### 3. Two new renderer classes, mirroring existing ones exactly
 
@@ -146,9 +184,24 @@ for free, since the shader samples the same `u_palette` texture
 `CycleDriver` updates, but the call still needs replaying each cycling tick
 like every other overlay draw.
 
-`DrawCallBuffer.gradientFill` just records `{shape, style}` entries and
+`DrawCallBuffer.gradientFill` just records `{shape, style, seed}` entries and
 replays them via `target.gradientFill(...)` on `replayTo` — no color-based
-merging needed (each call is already cheap; nothing to batch).
+merging needed (each call is already cheap; nothing to batch). One ordering
+note: the buffer replays batches grouped by primitive type, so a recorded
+`gradientFill` replays out of original order relative to `points`/`lines`
+calls — the same looseness the existing batching already has, harmless for
+opaque fills.
+
+**Seed lifecycle.** The per-stroke dither seed travels as a plain `number`
+parameter on `gradientFill(shape, style, seed)` so it survives
+`DrawCallBuffer` replay and the overlay's cycling replay unchanged. It lives
+as module state in `src/brush/fillStyleDraw.ts` (`currentGradientSeed()`,
+read at the point the branch chooses the gradient path — every symmetry copy
+of a stroke therefore reads the same value) and is re-rolled by a one-line
+`newGradientSeed()` call in `undo.setUndoPoint()`, the funnel every
+committed stroke already ends with. Net semantics: a fresh speckle per
+committed fill, one stable speckle across a whole drag's preview and its
+commit, identical speckle across all symmetry copies.
 
 ### 4. Wire `fillStyleDraw.ts` to the new path
 
@@ -179,8 +232,10 @@ workaround and needs no change here either.
 - `src/algorithm/gradientFill.ts` — `GradientShape` type
 - `src/canvas/paintingCanvas/program/GradientGeometricIndexer.ts` — new
 - `src/canvas/overlayCanvas/program/OverlayGradientRenderer.ts` — new
-- `src/canvas/paintingCanvas/MainCanvasRenderer.ts`,
-  `PaintingCanvasController.ts` — wire the new indexer
+- `src/canvas/paintingCanvas/PaintingCanvasController.ts` — wire the new
+  indexer (`MainCanvasRenderer` itself likely needs no change: after
+  indexing, call its existing `renderCanvas()`, exactly what `quad`/
+  `drawImage` do today)
 - `src/canvas/overlayCanvas/OverlayMainCanvasRenderer.ts`,
   `OverlayCanvasController.ts` — wire the new renderer, `recordFrameDraw`
 - `src/brush/DrawCallBuffer.ts` — `gradientFill` recording/replay (purely
@@ -189,6 +244,10 @@ workaround and needs no change here either.
   ellipse already use the plain per-copy `collect` pattern
 - `src/brush/fillStyleDraw.ts`, `PixelBrush.tsx`, `CustomBrush.tsx` — branch
   to `gradientFill` for rect/circle/ellipse when gradient mode is active
+  (single-color range excepted — that stays on the solid branch);
+  `fillStyleDraw.ts` also hosts the seed module state
+- `src/overmind/undo/actions.ts` — one-line `newGradientSeed()` in
+  `setUndoPoint`
 - `test/brush/DrawCallBuffer.test.ts` — add `gradientFill` recording/replay
   tests
 
@@ -203,17 +262,28 @@ session):
    and ellipse (each axis mode: vertical/horizontal/horizontalLine),
    compare visually against today's CPU output (same dither *look*, exact
    pixels will differ since the hash isn't `Math.random()`).
-2. **True symmetry**: gradient circle with symmetry on, screenshot two
+2. **Edge-coverage parity**: the analytic `discard` test will not match
+   `shape.ts`'s rasterized footprint pixel-for-pixel at the boundary.
+   Compare a GPU-filled circle/ellipse against `filledCircle`/
+   `filledEllipse` for the same drag (screenshot diff): decide up front
+   that ±1 px along the edge is acceptable, or adjust the inside test's
+   rounding to match the rasterizer if the mismatch is visible against the
+   unfilled variant of the same shape.
+3. **Seed semantics**: two identical fills at the same spot show different
+   speckle (fresh seed per commit); within one drag, the preview does not
+   shimmer between mouse moves and the committed pixels match the last
+   preview frame exactly.
+4. **True symmetry**: gradient circle with symmetry on, screenshot two
    copies, confirm pixel-identical relative dither (same method used this
    session).
-3. **Performance**: repeat this session's `Performance.getMetrics`
+5. **Performance**: repeat this session's `Performance.getMetrics`
    before/after measurement for a large gradient-filled circle at default
    symmetry (order 6, mirror on) — expect the cost to stop scaling with
    shape area entirely (dominant cost becomes ~constant per copy).
-4. **Cycling integration**: Tab-cycle while a gradient shape preview is
+6. **Cycling integration**: Tab-cycle while a gradient shape preview is
    showing (drag not yet released) — the preview should animate through the
    cycled palette, matching the already-working brush-cursor/crosshair
    cycling replay.
-5. **Regression**: flood fill and filled-polygon gradient fill still work
+7. **Regression**: flood fill and filled-polygon gradient fill still work
    (unchanged code path).
-6. `npm test && npm run build && npm run lint` clean throughout.
+8. `npm test && npm run build && npm run lint` clean throughout.
