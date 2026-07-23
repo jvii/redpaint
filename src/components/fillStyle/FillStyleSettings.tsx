@@ -69,7 +69,11 @@ function FillStyleSettingsOpen(): JSX.Element {
     }
     canvas.width = PREVIEW_SIZE;
     canvas.height = PREVIEW_SIZE;
-    const gl = canvas.getContext('webgl');
+    // antialias: false to match the main/overlay canvases — GL_LINES
+    // antialiasing blends adjacent scanline rows (filledCircle's fill
+    // technique) at their edges, and image-rendering: pixelated then
+    // upscales those blended edge pixels into visible dotted artifacts.
+    const gl = canvas.getContext('webgl', { antialias: false });
     if (!gl) {
       return;
     }
