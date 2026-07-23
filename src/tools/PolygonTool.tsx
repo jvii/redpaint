@@ -5,10 +5,10 @@ import { PixelBrush } from '../brush/PixelBrush';
 import { symmetryBrush, SymmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { drawSymmetryIndicator } from './util/symmetryIndicator';
 
-// The polygon outline preview always uses a pixel outline (not the current
-// custom brush), wrapped so it is mirrored under symmetry.
+// The polygon outline preview and the pre-first-vertex cursor (filled mode
+// only) always use a plain pixel brush, never the current custom brush,
+// wrapped so both are mirrored under symmetry.
 const pixelSymmetryBrush = new SymmetryBrush((): PixelBrush => new PixelBrush());
 
 export class PolygonTool implements Tool {
@@ -96,10 +96,14 @@ export class PolygonTool implements Tool {
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();
       if (this.filled) {
-        // DPaint only draws unfilled shapes with the current brush; for
-        // filled shapes the brush is not drawn (see CircleTool et al.), so
-        // show a foreground-color point at each symmetry position instead.
-        drawSymmetryIndicator(mousePos);
+        // Filled shapes don't stamp the custom brush (see CircleTool et
+        // al.), but unlike those tools polygon has no edge-to-edge
+        // selectionCrosshair to fall back on for showing the cursor
+        // position, so use the same plain pixel-outline preview the
+        // in-progress polygon's edges already use instead of
+        // drawSymmetryIndicator (a no-op with symmetry off, which would
+        // leave no cursor feedback at all before the first vertex).
+        pixelSymmetryBrush.drawPoints([mousePos], overlayCanvasController);
       } else {
         symmetryBrush.drawPoints([mousePos], overlayCanvasController);
       }
