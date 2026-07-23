@@ -73,6 +73,20 @@ These rules are absolute — they, not icon style, make the app read retro:
   rule — File/Size/Flip/Rotate/Bend). One rule per section, not per
   cluster: a panel full of underlines is noise, not structure.
 
+## Capitalization
+
+UI text defaults to Title Case — every word capitalized ("Color Palette",
+"Indexed Palette Size", "Remap To Current Palette") — across dialog
+headers, fieldset legends, and toggle/button labels alike. Exceptions are
+deliberate, not oversights:
+
+- **All-caps** where a control has its own register that calls for it —
+  e.g. the 11px letter-spaced status captions above ScreenStatus's values
+  (Typography above). Don't extend all-caps to ordinary labels.
+- **Sentence case** for hint/prose text that reads as a sentence, not a
+  title — the small supporting text under a slider, tooltips, error/warning
+  copy.
+
 ## Icons: two registers
 
 **Identity icons (nouns)** — the disk, the paintbrush, someday brush-slot
