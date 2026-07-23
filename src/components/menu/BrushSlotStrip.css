@@ -130,6 +130,8 @@
 
 .brush-slot__overlay-size {
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-size: 11px;
   letter-spacing: 0.04em;
   color: white;

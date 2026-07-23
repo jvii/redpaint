@@ -100,6 +100,8 @@
     text-overflow to kick in, it just overflows the cell instead */
   min-width: 0;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-size: 11px;
   letter-spacing: 0.04em;
   color: white;

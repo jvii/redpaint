@@ -164,7 +164,7 @@ export function PaletteEditor(): JSX.Element | null {
         </div>
       </RetroFieldset>
 
-      <RetroFieldset legend="Range" bordered className="palette-editor__ranges">
+      <RetroFieldset legend="Ranges" bordered className="palette-editor__ranges">
         {/* Same slot-strip interaction as the brush-slot strip
             (RangeSlotStrip.tsx): click an empty slot to arm a range pick
             (the currently edited color becomes the start, the next palette
