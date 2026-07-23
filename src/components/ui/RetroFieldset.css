@@ -5,6 +5,9 @@
 }
 
 .retro-fieldset__legend {
+  display: block; /* a real <legend> is block-level by default; a <span>
+    (the `as="div"` variant) isn't, so this is needed for that case and a
+    no-op for the fieldset case */
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   color: black;

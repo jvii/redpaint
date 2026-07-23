@@ -189,7 +189,11 @@ function FillStyleSettingsOpen(): JSX.Element {
               longstanding Safari bug where its auto-height doesn't always
               recompute after content changes, needing an unrelated later
               reflow to catch up (its internal anonymous content box isn't
-              reliably resized) */}
+              reliably resized). Range/Dither/Jitter below render as div
+              (RetroFieldset's `as="div"`) for the same reason: nesting a
+              real fieldset inside another fieldset's content — which no
+              other dialog in the app does — hits the same bug one level
+              deeper. */}
           <div className="fill-style-settings__gradient-box">
             <RetroToggle
               variant="column"
@@ -198,7 +202,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
               disabled={!isGradient}
             />
-            <RetroFieldset legend="Range" className="fill-style-settings__range">
+            <RetroFieldset legend="Range" className="fill-style-settings__range" as="div">
               {rangeOptions.length > 0 ? (
                 <RetroToggle
                   options={rangeOptions}
@@ -212,7 +216,7 @@ function FillStyleSettingsOpen(): JSX.Element {
                 </span>
               )}
             </RetroFieldset>
-            <RetroFieldset legend="Dither" className="fill-style-settings__dither">
+            <RetroFieldset legend="Dither" className="fill-style-settings__dither" as="div">
               <RetroLabeledSlider
                 label=""
                 vertical={false}
@@ -226,7 +230,7 @@ function FillStyleSettingsOpen(): JSX.Element {
                 How much adjacent bands randomly blend at their boundary. 0 = hard edges
               </span>
             </RetroFieldset>
-            <RetroFieldset legend="Jitter" className="fill-style-settings__dither">
+            <RetroFieldset legend="Jitter" className="fill-style-settings__dither" as="div">
               <RetroLabeledSlider
                 label=""
                 vertical={false}
