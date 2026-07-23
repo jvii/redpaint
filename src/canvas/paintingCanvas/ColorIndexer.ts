@@ -5,6 +5,7 @@ import { GradientGeometricIndexer } from './program/GradientGeometricIndexer';
 import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
+import { bindFramebuffer } from '../util/webglUtil';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
 import { overmind } from '../..';
@@ -93,10 +94,10 @@ export class ColorIndexer {
     const width = overmind.state.canvas.resolution.width;
     const height = overmind.state.canvas.resolution.height;
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.colorIndexFramebuffer);
     const indexArray = new Uint8Array(width * height * 4);
     gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, indexArray);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    bindFramebuffer(gl, null);
 
     return new CanvasColorIndex(width, height, indexArray);
   }
@@ -135,7 +136,7 @@ export class ColorIndexer {
 
     // attach the texture as the first color attachment of the framebuffer
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.colorIndexFramebuffer);
     const attachmentPoint = gl.COLOR_ATTACHMENT0;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
   }
@@ -169,7 +170,7 @@ export class ColorIndexer {
     }
 
     const pixels = new Uint8Array(Math.abs(width) * Math.abs(height) * 4);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.colorIndexFramebuffer);
     gl.readPixels(
       rectLowerLeftX,
       rectLowerLeftY,
@@ -180,7 +181,7 @@ export class ColorIndexer {
       pixels
     );
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    bindFramebuffer(gl, null);
     return pixels;
   }
 

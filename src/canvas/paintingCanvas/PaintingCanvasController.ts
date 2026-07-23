@@ -11,6 +11,7 @@ import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { paletteTextureData } from '../../algorithm/cycle';
 import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { bindFramebuffer } from '../util/webglUtil';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer | null;
@@ -267,7 +268,7 @@ export class PaintingCanvasController implements CanvasController {
 
     // attach the texture as the first color attachment of the framebuffer
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     const attachmentPoint = gl.COLOR_ATTACHMENT0;
     gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentPoint, gl.TEXTURE_2D, targetTexture, level);
   }

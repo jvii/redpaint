@@ -1,6 +1,6 @@
 import { Line, PaintColor, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
-import { createProgram, activateProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR, CanvasColorIndex } from '../../../domain/CanvasColorIndex';
 
 export class GeometricIndexer {
@@ -44,7 +44,7 @@ export class GeometricIndexer {
     activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
+    bindFramebuffer(gl, this.targetFrameBuffer);
 
     this.updatePixelUniform(color);
 
@@ -71,7 +71,7 @@ export class GeometricIndexer {
     activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
+    bindFramebuffer(gl, this.targetFrameBuffer);
 
     this.updatePixelUniform(color);
 
@@ -100,7 +100,7 @@ export class GeometricIndexer {
     activateProgram(gl, this.program);
 
     // Render to to the target framebuffer (color index texture)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
+    bindFramebuffer(gl, this.targetFrameBuffer);
 
     this.updatePixelUniform(color);
 

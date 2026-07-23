@@ -4,7 +4,7 @@ import {
   gradientFillUniforms,
 } from '../../../algorithm/gradientFill';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
-import { createProgram, activateProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
   GRADIENT_LIB,
@@ -44,7 +44,7 @@ export class GradientGeometricIndexer {
     const u = gradientFillUniforms(shape, style, seed);
 
     activateProgram(gl, this.program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
+    bindFramebuffer(gl, this.targetFrameBuffer);
 
     applyGradientUniforms(gl, this.uniforms, u);
 

@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { createProgram, activateProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 
 /**
  * DrawImageRenderer is responsible for rendering the main canvas using WebGL.
@@ -55,7 +55,7 @@ export class DrawImageRenderer {
     activateProgram(gl, this.program);
 
     // Render directly to the canvas (not to a framebuffer)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    bindFramebuffer(gl, null);
 
     // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);

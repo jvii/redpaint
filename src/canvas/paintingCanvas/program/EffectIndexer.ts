@@ -2,7 +2,7 @@ import { CustomBrush } from '../../../brush/CustomBrush';
 import { Point } from '../../../types';
 import { overmind } from '../../..';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util/util';
-import { createProgram, activateProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { stampRect, scratchSize, maskOffset, StampRect } from '../../../algorithm/effectRect';
 import { activeRangeIndices, RangeIndices } from '../../../algorithm/paletteRange';
 import { cycleColorIndex } from '../../../algorithm/cycle';
@@ -73,6 +73,7 @@ export class EffectIndexer {
     const state = this.ensureCopyState(copyId);
     const canvasW = overmind.state.canvas.resolution.width;
     const canvasH = overmind.state.canvas.resolution.height;
+    const cycleProgram = mode === 'Cycle' ? this.cycleSetup(state) : null;
 
     // Stamps are order-dependent (each reads what the previous one wrote),
     // so points are processed one by one — no batching.
@@ -114,7 +115,7 @@ export class EffectIndexer {
       } else if (mode === 'Smooth') {
         this.smoothPass(rect);
       } else if (mode === 'Cycle') {
-        this.cyclePass(rect, state);
+        this.drawStampQuad(cycleProgram as WebGLProgram, rect);
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -189,13 +190,19 @@ export class EffectIndexer {
     const gl = this.gl;
     const program = this.smearProgram as WebGLProgram;
     activateProgram(gl, program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.activeTexture(gl.TEXTURE4);
     gl.bindTexture(gl.TEXTURE_2D, state.save);
     const prev = state.prevRect as StampRect;
     gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
     gl.uniform1i(gl.getUniformLocation(program, 'u_save'), 4);
-    gl.uniform4f(gl.getUniformLocation(program, 'u_saveBounds'), prev.u0, prev.v0, prev.u1, prev.v1);
+    gl.uniform4f(
+      gl.getUniformLocation(program, 'u_saveBounds'),
+      prev.u0,
+      prev.v0,
+      prev.u1,
+      prev.v1
+    );
     this.setShapeUniforms(program);
     this.drawStampQuad(program, rect);
   }
@@ -204,15 +211,12 @@ export class EffectIndexer {
     const gl = this.gl;
     const program = this.shadeProgram as WebGLProgram;
     activateProgram(gl, program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
     gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, this.work);
-    gl.uniform1f(
-      gl.getUniformLocation(program, 'u_direction'),
-      overmind.state.tool.shadeDirection
-    );
+    gl.uniform1f(gl.getUniformLocation(program, 'u_direction'), overmind.state.tool.shadeDirection);
     this.rangeUniforms(program);
     this.maskUniforms(program, state, this.curOrigin as Point);
     this.setShapeUniforms(program);
@@ -226,7 +230,7 @@ export class EffectIndexer {
     const gl = this.gl;
     const program = this.maskProgram as WebGLProgram;
     activateProgram(gl, program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.scratchFbo);
+    bindFramebuffer(gl, this.scratchFbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, state.mask, 0);
     gl.viewport(0, 0, this.scratchW, this.scratchH);
     gl.clearColor(0, 0, 0, 0);
@@ -237,18 +241,19 @@ export class EffectIndexer {
     this.drawScratchQuad(program, rect);
     // restore global state for everyone else
     gl.viewport(
-      0, 0,
+      0,
+      0,
       overmind.state.canvas.resolution.width,
       overmind.state.canvas.resolution.height
     );
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
   }
 
   private blendPass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
     const program = this.blendProgram as WebGLProgram;
     activateProgram(gl, program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
     gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
     gl.uniform1i(gl.getUniformLocation(program, 'u_save'), 4);
@@ -258,7 +263,13 @@ export class EffectIndexer {
     gl.activeTexture(gl.TEXTURE4);
     gl.bindTexture(gl.TEXTURE_2D, state.save);
     const prev = state.prevRect as StampRect;
-    gl.uniform4f(gl.getUniformLocation(program, 'u_saveBounds'), prev.u0, prev.v0, prev.u1, prev.v1);
+    gl.uniform4f(
+      gl.getUniformLocation(program, 'u_saveBounds'),
+      prev.u0,
+      prev.v0,
+      prev.u1,
+      prev.v1
+    );
     gl.uniform1f(
       gl.getUniformLocation(program, 'u_indexedPolicy'),
       overmind.state.canvas.trueColorEnabled ? 0 : 1
@@ -273,7 +284,7 @@ export class EffectIndexer {
     const gl = this.gl;
     const program = this.smoothProgram as WebGLProgram;
     activateProgram(gl, program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
     gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
     gl.uniform1i(gl.getUniformLocation(program, 'u_palette'), 1);
@@ -288,11 +299,21 @@ export class EffectIndexer {
     this.drawStampQuad(program, rect);
   }
 
-  private cyclePass(rect: StampRect, state: CopyState): void {
+  // Cycle's whole uniform state (u_shape, u_pixel, the scratch/brush size
+  // pair) is the same for every point in one effectDraw call: the color
+  // only advances once per segment (state.cycleStep++ happens after the
+  // point loop, not inside it), and shape/brush size don't vary mid-stroke.
+  // Set it up once per call instead of once per point - only the stamp's
+  // position (drawStampQuad's rect) actually varies point to point. Fewer
+  // redundant gl.uniform*/getUniformLocation calls matters more on browsers
+  // whose WebGL implementation has higher per-call overhead (Safari's,
+  // notably): a segment with several points, times several symmetry
+  // copies, used to repeat this whole setup for every single point.
+  private cycleSetup(state: CopyState): WebGLProgram {
     const gl = this.gl;
     const program = this.cycleProgram as WebGLProgram;
     activateProgram(gl, program);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
     const palette = overmind.state.palette;
     const range = activeRangeIndices(
@@ -307,7 +328,7 @@ export class EffectIndexer {
       : cycleColorIndex(range, state.cycleStep);
     gl.uniform4f(gl.getUniformLocation(program, 'u_pixel'), idx / 255, 0, 0, 127 / 255);
     this.setShapeUniforms(program);
-    this.drawStampQuad(program, rect);
+    return program;
   }
 
   // --- shared plumbing ---
@@ -339,7 +360,13 @@ export class EffectIndexer {
       const prev = state.prevRect;
       gl.uniform1f(gl.getUniformLocation(program, 'u_hasMask'), 1);
       gl.uniform2f(gl.getUniformLocation(program, 'u_maskOffset'), off.du, off.dv);
-      gl.uniform4f(gl.getUniformLocation(program, 'u_maskBounds'), prev.u0, prev.v0, prev.u1, prev.v1);
+      gl.uniform4f(
+        gl.getUniformLocation(program, 'u_maskBounds'),
+        prev.u0,
+        prev.v0,
+        prev.u1,
+        prev.v1
+      );
     } else {
       gl.uniform1f(gl.getUniformLocation(program, 'u_hasMask'), 0);
     }
@@ -360,12 +387,32 @@ export class EffectIndexer {
 
     // two triangles; v1 is the top edge, v0 the bottom (GL v axis points up)
     const vertices = new Float32Array([
-      xLeft, yTop, xLeft, yBottom, xRight, yTop,
-      xLeft, yBottom, xRight, yTop, xRight, yBottom,
+      xLeft,
+      yTop,
+      xLeft,
+      yBottom,
+      xRight,
+      yTop,
+      xLeft,
+      yBottom,
+      xRight,
+      yTop,
+      xRight,
+      yBottom,
     ]);
     const texCoords = new Float32Array([
-      rect.u0, rect.v1, rect.u0, rect.v0, rect.u1, rect.v1,
-      rect.u0, rect.v0, rect.u1, rect.v1, rect.u1, rect.v0,
+      rect.u0,
+      rect.v1,
+      rect.u0,
+      rect.v0,
+      rect.u1,
+      rect.v1,
+      rect.u0,
+      rect.v0,
+      rect.u1,
+      rect.v1,
+      rect.u1,
+      rect.v0,
     ]);
 
     const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
@@ -392,12 +439,32 @@ export class EffectIndexer {
     const yBottom = rect.v0 * 2 - 1;
     const yTop = rect.v1 * 2 - 1;
     const vertices = new Float32Array([
-      xLeft, yTop, xLeft, yBottom, xRight, yTop,
-      xLeft, yBottom, xRight, yTop, xRight, yBottom,
+      xLeft,
+      yTop,
+      xLeft,
+      yBottom,
+      xRight,
+      yTop,
+      xLeft,
+      yBottom,
+      xRight,
+      yTop,
+      xRight,
+      yBottom,
     ]);
     const texCoords = new Float32Array([
-      rect.u0, rect.v1, rect.u0, rect.v0, rect.u1, rect.v1,
-      rect.u0, rect.v0, rect.u1, rect.v1, rect.u1, rect.v0,
+      rect.u0,
+      rect.v1,
+      rect.u0,
+      rect.v0,
+      rect.u1,
+      rect.v1,
+      rect.u0,
+      rect.v0,
+      rect.u1,
+      rect.v1,
+      rect.u1,
+      rect.v0,
     ]);
     const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
@@ -414,10 +481,19 @@ export class EffectIndexer {
 
   private copyCanvasRect(target: WebGLTexture, rect: StampRect): void {
     const gl = this.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, target);
-    gl.copyTexSubImage2D(gl.TEXTURE_2D, 0, rect.dstX, rect.dstY, rect.srcX, rect.srcY, rect.w, rect.h);
+    gl.copyTexSubImage2D(
+      gl.TEXTURE_2D,
+      0,
+      rect.dstX,
+      rect.dstY,
+      rect.srcX,
+      rect.srcY,
+      rect.w,
+      rect.h
+    );
   }
 
   // (Re)allocates the scratch textures when the brush size changes. Returns
@@ -469,7 +545,17 @@ export class EffectIndexer {
     }
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.scratchW, this.scratchH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      this.scratchW,
+      this.scratchH,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null
+    );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -492,8 +578,15 @@ export class EffectIndexer {
     }
     gl.bindTexture(gl.TEXTURE_2D, this.brushTexture);
     gl.texImage2D(
-      gl.TEXTURE_2D, 0, gl.RGBA, brush.width, brush.heigth, 0,
-      gl.RGBA, gl.UNSIGNED_BYTE, brush.brushColorIndex.indexArray
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      brush.width,
+      brush.heigth,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      brush.brushColorIndex.indexArray
     );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

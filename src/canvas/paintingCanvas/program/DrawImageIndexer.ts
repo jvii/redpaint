@@ -1,7 +1,7 @@
 import { CustomBrush } from '../../../brush/CustomBrush';
 import { Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftPoint } from '../../util/util';
-import { createProgram, activateProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { overmind } from '../../..';
 import { backgroundPaintColorOf } from '../../../overmind/palette/state';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../../../domain/CanvasColorIndex';
@@ -75,7 +75,7 @@ export class DrawImageIndexer {
     }
 
     // Render to to the target framebuffer (color index texture)
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.buffers.colorIndexFramebuffer);
+    bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
 
     if (this.currentBrushId !== brush.lastChanged) {
       this.loadBrushAsTexture(brush);

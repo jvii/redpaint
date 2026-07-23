@@ -1,6 +1,6 @@
 import { Line, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
-import { createProgram, activateProgram } from '../../util/webglUtil';
+import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 
 /* eslint-disable max-len */
 export class GeometricRenderer {
@@ -38,7 +38,7 @@ export class GeometricRenderer {
     activateProgram(gl, this.program);
 
     // render to the canvas
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    bindFramebuffer(gl, null);
 
     // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
@@ -65,7 +65,7 @@ export class GeometricRenderer {
     activateProgram(gl, this.program);
 
     // render to the canvas
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    bindFramebuffer(gl, null);
 
     // Assign the buffer object to a_position variable
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);

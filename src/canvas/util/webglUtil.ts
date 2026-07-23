@@ -10,6 +10,28 @@ export function activateProgram(gl: WebGLRenderingContext, program: WebGLProgram
   }
 }
 
+// Same idea, for gl.bindFramebuffer: every indexer/renderer in the painting
+// canvas pipeline binds either the shared color-index framebuffer or the
+// default (null, screen) one, often the same one several calls in a row
+// (e.g. every symmetry copy's effect stamp targets the color-index
+// framebuffer back to back). Skipping the redundant rebind matters more
+// than it sounds - browsers whose WebGL implementation has higher per-call
+// overhead (Safari's, notably) make that cost show up directly in how fast
+// a heavily-stamped stroke feels. A WeakMap's "no entry yet" read is
+// `undefined`, already distinct from a real `null` binding, so no separate
+// sentinel is needed to track the screen framebuffer correctly.
+const currentFramebuffer = new WeakMap<WebGLRenderingContext, WebGLFramebuffer | null>();
+
+export function bindFramebuffer(
+  gl: WebGLRenderingContext,
+  framebuffer: WebGLFramebuffer | null
+): void {
+  if (currentFramebuffer.get(gl) !== framebuffer) {
+    currentFramebuffer.set(gl, framebuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+  }
+}
+
 export function createProgram(
   gl: WebGLRenderingContext,
   vertexShaderSource: string,
