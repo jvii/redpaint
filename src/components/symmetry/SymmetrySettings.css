@@ -23,6 +23,11 @@
   min-width: 9ch;
 }
 
+/* lines the Order slider's label up with the Type row's below it */
+.symmetry-settings__container .retro-labeled-slider__label {
+  min-width: 9ch;
+}
+
 .symmetry-settings__row-buttons {
   display: flex;
   gap: 10px;

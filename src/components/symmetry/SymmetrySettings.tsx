@@ -4,7 +4,7 @@ import { useActions, useAppState } from '../../overmind';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
-import { RetroSlider } from '../ui/RetroSlider';
+import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 
 // The symmetry settings panel — redpaint's equivalent of DPaint's SymRequest
@@ -37,15 +37,14 @@ export function SymmetrySettings(): JSX.Element | null {
   return (
     <Modal header="Symmetry">
       <div className="symmetry-settings__container">
-        <div className="symmetry-settings__row">
-          <span className="symmetry-settings__label">Order: {state.symmetry.order}</span>
-          <RetroSlider
-            value={state.symmetry.order}
-            min={1}
-            max={40}
-            onChange={(value): void => actions.symmetry.setOrder(value)}
-          />
-        </div>
+        <RetroLabeledSlider
+          label="Order"
+          vertical={false}
+          value={state.symmetry.order}
+          min={1}
+          max={40}
+          onChange={(value): void => actions.symmetry.setOrder(value)}
+        />
         <div className="symmetry-settings__row">
           <span className="symmetry-settings__label">Type</span>
           <RetroToggle
