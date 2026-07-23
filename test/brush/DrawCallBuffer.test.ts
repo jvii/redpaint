@@ -15,6 +15,7 @@ const fakeBrush = { width: 3, heigth: 3 } as unknown as CustomBrush;
 class RecordingTarget implements DrawTarget {
   public effectCalls: { points: Point[]; brush: CustomBrush; copyId: number }[] = [];
   public gradientCalls: { shape: GradientShape; style: GradientFillStyle; seed: number }[] = [];
+  public flushEffectDrawCalls = 0;
   points(points: Point[], color: PaintColor): void {}
   lines(lines: (LineH | LineV)[], color: PaintColor): void {}
   quad(start: Point, end: Point, color: PaintColor): void {}
@@ -24,6 +25,9 @@ class RecordingTarget implements DrawTarget {
   drawImage(points: Point[], brush: CustomBrush): void {}
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
     this.effectCalls.push({ points, brush, copyId });
+  }
+  flushEffectDraw(): void {
+    this.flushEffectDrawCalls++;
   }
   endEffectStroke(): void {}
 }
@@ -42,6 +46,24 @@ describe('DrawCallBuffer effect draws', () => {
       { points: a, brush: fakeBrush, copyId: 0 },
       { points: b, brush: fakeBrush, copyId: 1 },
     ]);
+  });
+
+  it('flushes once for the whole batch, not once per copy', () => {
+    const buffer = new DrawCallBuffer();
+    buffer.effectDraw([{ x: 1, y: 1 }], fakeBrush, 0);
+    buffer.effectDraw([{ x: 2, y: 2 }], fakeBrush, 0);
+    buffer.effectDraw([{ x: 3, y: 3 }], fakeBrush, 0);
+    const target = new RecordingTarget();
+    buffer.replayTo(target);
+    expect(target.flushEffectDrawCalls).toBe(1);
+  });
+
+  it('does not flush when no effect draws were recorded', () => {
+    const buffer = new DrawCallBuffer();
+    buffer.points([{ x: 1, y: 1 }], { kind: 'index', colorNumber: 1 });
+    const target = new RecordingTarget();
+    buffer.replayTo(target);
+    expect(target.flushEffectDrawCalls).toBe(0);
   });
 });
 

@@ -64,6 +64,7 @@ export class PixelBrush implements BrushInterface {
     if (usesEffectDraw(overmind.state.brush.mode)) {
       const points = unfilledRectAsLines.flatMap((line) => line.asPoints());
       canvas.effectDraw(points, pixelShape(), 0);
+      canvas.flushEffectDraw();
       return;
     }
     canvas.lines(unfilledRectAsLines, overmind.state.tool.activePaintColor);
@@ -132,6 +133,7 @@ export class PixelBrush implements BrushInterface {
   private stampOrPoints(points: Point[], canvas: DrawTarget, color: PaintColor): void {
     if (usesEffectDraw(overmind.state.brush.mode)) {
       canvas.effectDraw(points, pixelShape(), 0);
+      canvas.flushEffectDraw();
     } else {
       canvas.points(points, color);
     }

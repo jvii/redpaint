@@ -23,7 +23,18 @@ export interface DrawTarget {
   // copy so each kaleidoscope copy keeps its own effect chain; plain callers
   // pass 0 and DrawCallBuffer assigns real ids on replay. endEffectStroke
   // resets the chains (previous-stamp state) at stroke end.
+  //
+  // Unlike every other DrawTarget method, effectDraw does NOT render on its
+  // own — it only writes into the color-index texture. Under N-way symmetry
+  // each copy needs its own effectDraw call (DrawCallBuffer can't merge them:
+  // each copy's stepped color, e.g. Cycle's per-copy counter, genuinely
+  // differs), so rendering per call would mean N full-canvas re-renders per
+  // stroke segment instead of 1. Callers must call flushEffectDraw() once
+  // after they're done issuing effectDraw calls for a segment (a single
+  // direct call, or a whole batch of symmetry copies) to trigger the one
+  // render they share.
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void;
+  flushEffectDraw(): void;
   endEffectStroke(): void;
 }
 

@@ -133,6 +133,13 @@ class OverlayCanvasController implements CanvasController {
     this.drawImage(origins, brush);
   }
 
+  // The overlay's effectDraw already renders eagerly (via drawImage above) —
+  // it's just showing the brush cursor, never batched across symmetry
+  // copies the way the committed painting canvas is. Nothing to flush.
+  flushEffectDraw(): void {
+    // no-op
+  }
+
   endEffectStroke(): void {
     // overlay holds no committed pixels, nothing to end
   }

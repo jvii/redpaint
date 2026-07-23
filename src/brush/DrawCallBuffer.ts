@@ -21,6 +21,13 @@ import { GradientFillStyle, GradientShape } from '../algorithm/gradientFill';
 // several colors within what SymmetryBrush treats as a single stroke — each
 // copy's own gradient buckets, across every copy, still need to survive the
 // buffer and reach the canvas as their own color.
+//
+// Effect draws (Cycle/Smear/Shade/Blend/Smooth) can't merge by color at all —
+// each copy's stepped color depends on its own per-copy counter (Cycle's
+// cycleStep), so they stay one effectDraw call per copy. What they *can*
+// share is the render: effectDraw only indexes, so replayTo issues every
+// copy's call before triggering one flushEffectDraw, rather than paying a
+// full canvas re-render per copy.
 export class DrawCallBuffer implements DrawTarget {
   private pointBatches = new Map<number, { color: PaintColor; points: Point[] }>();
   private lineBatches = new Map<number, { color: PaintColor; lines: (LineH | LineV)[] }>();
@@ -70,6 +77,10 @@ export class DrawCallBuffer implements DrawTarget {
     this.effectBatches.push({ points, brush });
   }
 
+  public flushEffectDraw(): void {
+    // no-op: the buffer never renders: replayTo flushes the real target once
+  }
+
   public endEffectStroke(): void {
     // never buffered: SymmetryBrush buffers per segment, but the stroke ends
     // at the tools' mouse-up, which reaches the controller directly
@@ -103,8 +114,13 @@ export class DrawCallBuffer implements DrawTarget {
     if (this.imagePointBuffer.length > 0 && this.imageBrush) {
       target.drawImage(this.imagePointBuffer, this.imageBrush);
     }
-    this.effectBatches.forEach((batch, copyId) => {
-      target.effectDraw(batch.points, batch.brush, copyId);
-    });
+    if (this.effectBatches.length > 0) {
+      this.effectBatches.forEach((batch, copyId) => {
+        target.effectDraw(batch.points, batch.brush, copyId);
+      });
+      // one render for every copy's effectDraw above, instead of one per
+      // copy — see the DrawTarget.effectDraw doc comment
+      target.flushEffectDraw();
+    }
   }
 }

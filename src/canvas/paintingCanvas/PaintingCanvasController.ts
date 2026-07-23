@@ -125,10 +125,15 @@ export class PaintingCanvasController implements CanvasController {
     this.renderZoomCanvas();
   }
 
+  // Index-only: see the DrawTarget.effectDraw doc comment. Callers must
+  // call flushEffectDraw() once they're done issuing effectDraw calls for a
+  // stroke segment.
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
     this.colorIndexer?.effectDraw(points, brush, copyId);
-    this.mainCanvasRenderer?.renderCanvas();
-    this.renderZoomCanvas();
+  }
+
+  flushEffectDraw(): void {
+    this.render();
   }
 
   endEffectStroke(): void {

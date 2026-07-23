@@ -204,6 +204,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   private stamp(points: Point[], canvas: DrawTarget): void {
     if (usesEffectDraw(overmind.state.brush.mode)) {
       canvas.effectDraw(points, this, 0);
+      canvas.flushEffectDraw();
     } else {
       canvas.drawImage(points, this);
     }
