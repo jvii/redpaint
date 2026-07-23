@@ -64,7 +64,7 @@ export function PaletteEditor(): JSX.Element | null {
   }));
 
   return (
-    <Modal header="Color palette" width={600}>
+    <Modal header="Color Palette" width={600}>
       <div className="palette-editor__container">
         {/* DPaint's Palette Window layout: sliders on the left, swatch grid
             on the right */}
@@ -141,7 +141,7 @@ export function PaletteEditor(): JSX.Element | null {
       {/* DPaint's Spread, Ex(change) and Copy: two-color actions — arm,
           then click the second color. The armed button becomes its own
           cancel. */}
-      <RetroFieldset legend="Edit colors" bordered className="palette-editor__edit-colors">
+      <RetroFieldset legend="Edit Colors" bordered className="palette-editor__edit-colors">
         <div className="palette-editor__actions">
           {/* DPaint's order: Spread first, then the slot-surgery pair */}
           <RetroButton
@@ -183,7 +183,7 @@ export function PaletteEditor(): JSX.Element | null {
               disabled={activeRangeIndex === null}
               onClick={(): void => actions.paletteEditor.armAction('range')}
             >
-              {state.paletteEditor.armedAction === 'range' ? 'Cancel set' : 'Set range'}
+              {state.paletteEditor.armedAction === 'range' ? 'Cancel set' : 'Set Range'}
             </RetroButton>
             {activeRange && (
               <>
@@ -224,12 +224,12 @@ export function PaletteEditor(): JSX.Element | null {
             width, or its track is too cramped to drag precisely. */}
         <div className="palette-editor__range-cycling">
           <div className="palette-editor__range-cycling-title-row">
-            <span className="palette-editor__range-cycling-label">Color cycling</span>
             {activeRangeIndex !== null && (
               <span className="palette-editor__range-cycling-subtitle">
                 Range {activeRangeIndex + 1}
               </span>
             )}
+            <span className="palette-editor__range-cycling-label">Color Cycling</span>
           </div>
           <div className="palette-editor__range-cycling-row">
             <RetroToggle

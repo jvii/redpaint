@@ -195,7 +195,7 @@
   align-self: stretch;
 }
 
-/* title above subtitle — side by side read too cramped next to the toggles
+/* subtitle above title — side by side read too cramped next to the toggles
    below. Extra margin top/bottom (beyond the parent's own gap) so the pair
    doesn't crowd the Clear row above or the On/Off row below. */
 .palette-editor__range-cycling-title-row {
