@@ -24,6 +24,13 @@ export function drawFilledLines(lines: LineH[], canvas: DrawTarget, solidColor: 
     canvas.lines(lines, solidColor);
     return;
   }
+  // a degenerate (single-color) range always resolves to rangeLow (see
+  // bucketPointsByGradient) — skip rasterizing to points and bucketing
+  // through a Map for a case that only ever produces one bucket
+  if (style.rangeHigh - style.rangeLow <= 0) {
+    canvas.lines(lines, { kind: 'index', colorNumber: style.rangeLow });
+    return;
+  }
   const points = lines.flatMap((line) => line.asPoints());
   for (const [colorNumber, bucketPoints] of bucketPointsByGradient(points, style)) {
     canvas.points(bucketPoints, { kind: 'index', colorNumber });
@@ -41,8 +48,13 @@ export function drawFilledQuad(
     canvas.quad(start, end, solidColor);
     return;
   }
-  // only rasterized into individual points when gradient is active; solid
-  // mode keeps the cheap single quad() call above
+  if (style.rangeHigh - style.rangeLow <= 0) {
+    canvas.quad(start, end, { kind: 'index', colorNumber: style.rangeLow });
+    return;
+  }
+  // only rasterized into individual points when gradient is active with a
+  // real (non-degenerate) range; solid mode and a degenerate range both
+  // keep the cheap single quad() call above
   const minX = Math.min(start.x, end.x);
   const maxX = Math.max(start.x, end.x);
   const minY = Math.min(start.y, end.y);
@@ -75,10 +87,10 @@ export function newGradientSeed(): void {
 
 // Routes a convex filled shape through the GPU gradient path. Returns false
 // when the caller should use its CPU path instead: solid mode, a
-// single-color range — bucketPointsByGradient's degenerate case already
-// paints those correctly (everything gets rangeLow, which is NOT the
-// current painting color) — or (polygon only) more vertices than the
-// shader's fixed-size loop can hold.
+// single-color range (drawFilledLines/drawFilledQuad short-circuit that
+// case to a single rangeLow-colored lines()/quad() call, same as solid
+// mode) — or (polygon only) more vertices than the shader's fixed-size
+// loop can hold.
 export function drawGradientFilledShape(shape: GradientShape, canvas: DrawTarget): boolean {
   const style = overmind.state.fillStyle.effectiveFillStyle;
   if (!style || style.rangeHigh - style.rangeLow <= 0) {
