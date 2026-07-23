@@ -10,6 +10,7 @@ import { LineH } from '../../domain/LineH';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { paletteTextureData } from '../../algorithm/cycle';
+import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer | null;
@@ -109,6 +110,12 @@ export class PaintingCanvasController implements CanvasController {
   quad(start: Point, end: Point, color: PaintColor): void {
     this.colorIndexer?.quad(start, end, color);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderQuad?
+    this.renderZoomCanvas();
+  }
+
+  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+    this.colorIndexer?.gradientFill(shape, style, seed);
+    this.mainCanvasRenderer?.renderCanvas();
     this.renderZoomCanvas();
   }
 

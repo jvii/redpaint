@@ -6,6 +6,7 @@ import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { shiftPoint } from '../util/util';
 import { OverlayMainCanvasRenderer } from './OverlayMainCanvasRenderer';
 import { paletteTextureData } from '../../algorithm/cycle';
+import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
 
 // OverlayController is a singleton responsible for controlling
 // the two overlay canvases in the app for MainCanvas and ZoomCanvas.
@@ -101,6 +102,12 @@ class OverlayCanvasController implements CanvasController {
   quad(start: Point, end: Point, color: PaintColor): void {
     this.recordFrameDraw(() => this.quad(start, end, color));
     this.mainCanvasRenderer?.quad(start, end, color);
+    this.renderZoomCanvas();
+  }
+
+  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+    this.recordFrameDraw(() => this.gradientFill(shape, style, seed));
+    this.mainCanvasRenderer?.gradientFill(shape, style, seed);
     this.renderZoomCanvas();
   }
 

@@ -1,6 +1,7 @@
 import { GeometricIndexer } from './program/GeometricIndexer';
 import { DrawImageIndexer } from './program/DrawImageIndexer';
 import { EffectIndexer } from './program/EffectIndexer';
+import { GradientGeometricIndexer } from './program/GradientGeometricIndexer';
 import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
@@ -8,6 +9,7 @@ import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
 import { overmind } from '../..';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -21,6 +23,7 @@ export class ColorIndexer {
   private geometricIndexer: GeometricIndexer;
   private drawImageIndexer: DrawImageIndexer;
   private effectIndexer: EffectIndexer;
+  private gradientIndexer: GradientGeometricIndexer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -31,6 +34,7 @@ export class ColorIndexer {
     this.geometricIndexer = new GeometricIndexer(gl, buffers.colorIndexFramebuffer);
     this.drawImageIndexer = new DrawImageIndexer(gl, buffers);
     this.effectIndexer = new EffectIndexer(gl, buffers);
+    this.gradientIndexer = new GradientGeometricIndexer(gl, buffers.colorIndexFramebuffer);
   }
 
   /**
@@ -49,6 +53,10 @@ export class ColorIndexer {
       this.effectIndexer.dispose();
       this.effectIndexer = null;
     }
+    if (this.gradientIndexer) {
+      this.gradientIndexer.dispose();
+      this.gradientIndexer = null;
+    }
   }
 
   points(points: Point[], color: PaintColor): void {
@@ -61,6 +69,10 @@ export class ColorIndexer {
 
   quad(start: Point, end: Point, color: PaintColor): void {
     this.geometricIndexer.indexQuad(start, end, color);
+  }
+
+  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+    this.gradientIndexer.indexGradientFill(shape, style, seed);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

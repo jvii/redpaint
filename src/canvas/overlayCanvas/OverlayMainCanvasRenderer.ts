@@ -3,6 +3,8 @@ import { Line, PaintColor, Point } from '../../types';
 import { OverlayDrawImageRenderer } from './program/OverlayDrawImageRenderer';
 import { OverlayGeometricRenderer } from './program/OverlayGeometricRenderer';
 import { OverlaySelectionIndicatorRenderer } from './program/OverlaySelectionIndicatorRenderer';
+import { OverlayGradientRenderer } from './program/OverlayGradientRenderer';
+import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
 
 type GLBuffers = {
   vertexBuffer: WebGLBuffer;
@@ -14,6 +16,7 @@ export class OverlayMainCanvasRenderer {
   private geometricRenderer: OverlayGeometricRenderer;
   private drawImageRenderer: OverlayDrawImageRenderer;
   private selectionIndicatorRenderer: OverlaySelectionIndicatorRenderer;
+  private gradientRenderer: OverlayGradientRenderer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -23,6 +26,7 @@ export class OverlayMainCanvasRenderer {
     this.geometricRenderer = new OverlayGeometricRenderer(gl);
     this.drawImageRenderer = new OverlayDrawImageRenderer(gl, buffers);
     this.selectionIndicatorRenderer = new OverlaySelectionIndicatorRenderer(gl);
+    this.gradientRenderer = new OverlayGradientRenderer(gl);
   }
 
   /**
@@ -41,6 +45,10 @@ export class OverlayMainCanvasRenderer {
     if (this.selectionIndicatorRenderer) {
       this.selectionIndicatorRenderer.dispose();
       this.selectionIndicatorRenderer = null;
+    }
+    if (this.gradientRenderer) {
+      this.gradientRenderer.dispose();
+      this.gradientRenderer = null;
     }
   }
 
@@ -64,6 +72,11 @@ export class OverlayMainCanvasRenderer {
   quad(start: Point, end: Point, color: PaintColor): void {
     this.updateViewport();
     this.geometricRenderer.renderQuad(start, end, color);
+  }
+
+  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+    this.updateViewport();
+    this.gradientRenderer.renderGradientFill(shape, style, seed);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

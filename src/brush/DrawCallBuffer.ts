@@ -4,6 +4,7 @@ import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
 import type { CustomBrush } from './CustomBrush';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
+import { GradientFillStyle, GradientShape } from '../algorithm/gradientFill';
 
 // A DrawTarget that records draw calls instead of drawing them, then replays
 // everything to a real target in as few calls as possible (one per distinct
@@ -23,10 +24,14 @@ import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 export class DrawCallBuffer implements DrawTarget {
   private pointBatches = new Map<number, { color: PaintColor; points: Point[] }>();
   private lineBatches = new Map<number, { color: PaintColor; lines: (LineH | LineV)[] }>();
-  private quadBatches = new Map<number, { color: PaintColor; quads: { start: Point; end: Point }[] }>();
+  private quadBatches = new Map<
+    number,
+    { color: PaintColor; quads: { start: Point; end: Point }[] }
+  >();
   private imagePointBuffer: Point[] = [];
   private imageBrush: CustomBrush | null = null;
   private effectBatches: { points: Point[]; brush: CustomBrush }[] = [];
+  private gradientFills: { shape: GradientShape; style: GradientFillStyle; seed: number }[] = [];
 
   public points(points: Point[], color: PaintColor): void {
     const batch = this.batchFor(this.pointBatches, color, () => ({ color, points: [] }));
@@ -45,6 +50,11 @@ export class DrawCallBuffer implements DrawTarget {
   public quad(start: Point, end: Point, color: PaintColor): void {
     const batch = this.batchFor(this.quadBatches, color, () => ({ color, quads: [] }));
     batch.quads.push({ start, end });
+  }
+
+  public gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+    // no batching: each call is already one cheap GPU draw per shape
+    this.gradientFills.push({ shape, style, seed });
   }
 
   public drawImage(points: Point[], brush: CustomBrush): void {
@@ -86,6 +96,9 @@ export class DrawCallBuffer implements DrawTarget {
       for (const q of quads) {
         target.quad(q.start, q.end, color);
       }
+    }
+    for (const g of this.gradientFills) {
+      target.gradientFill(g.shape, g.style, g.seed);
     }
     if (this.imagePointBuffer.length > 0 && this.imageBrush) {
       target.drawImage(this.imagePointBuffer, this.imageBrush);
