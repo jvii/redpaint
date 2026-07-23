@@ -1,12 +1,14 @@
-import { Context } from '../../overmind'
+import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Color } from '../../types';
 import { undoBuffer, UndoEntry } from './UndoBuffer';
+import { newGradientSeed } from '../../brush/fillStyleDraw';
 
 export const setUndoPoint = (context: Context): void => {
   // every committed stroke ends here — also the effect chains' reset point
   paintingCanvasController.endEffectStroke();
+  newGradientSeed(); // next gradient fill gets fresh dither speckle
   const colorIndex = paintingCanvasController.getCanvasColorIndex();
   if (!colorIndex) {
     console.log('no index');
@@ -59,7 +61,8 @@ export const redo = (context: Context): void => {
     // already at the last index
     return;
   }
-  context.state.undo.currentIndex = context.state.undo.currentIndex === null ? 0 : ++context.state.undo.currentIndex;
+  context.state.undo.currentIndex =
+    context.state.undo.currentIndex === null ? 0 : ++context.state.undo.currentIndex;
   context.state.undo.lastUndoRedoTime = Date.now();
   restoreEntryState(context);
 };
@@ -71,9 +74,7 @@ export const redo = (context: Context): void => {
 // point at missing or different colors.
 function restoreEntryState(context: Context): void {
   const entry = undoBuffer.getItem(context.state.undo.currentIndex);
-  context.state.canvas.hasTrueColorPixels = entry
-    ? entry.colorIndex.hasTrueColorPixels()
-    : false;
+  context.state.canvas.hasTrueColorPixels = entry ? entry.colorIndex.hasTrueColorPixels() : false;
   if (entry && !paletteEquals(entry.palette, context.state.palette.paletteArray)) {
     context.actions.palette.replacePalette(entry.palette);
     paintingCanvasController.updatePalette();

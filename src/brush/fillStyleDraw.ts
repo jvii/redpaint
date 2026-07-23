@@ -1,7 +1,7 @@
 import { LineH } from '../domain/LineH';
 import { PaintColor, Point } from '../types';
 import { DrawTarget } from '../canvas/CanvasController';
-import { bucketPointsByGradient } from '../algorithm/gradientFill';
+import { bucketPointsByGradient, GradientShape } from '../algorithm/gradientFill';
 import { overmind } from '..';
 
 // Draws a filled shape's already-rasterized output with the current fill
@@ -52,4 +52,29 @@ export function drawFilledQuad(
   for (const [colorNumber, bucketPoints] of bucketPointsByGradient(points, style)) {
     canvas.points(bucketPoints, { kind: 'index', colorNumber });
   }
+}
+
+// The per-stroke dither seed for GPU gradient fills. One value covers a
+// whole stroke: every symmetry copy and every preview redraw of the same
+// drag reads the same seed (identical speckle), and setUndoPoint re-rolls
+// it when the stroke commits (fresh speckle for the next fill). See
+// docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md, "Seed lifecycle".
+let gradientSeed = Math.random() * 1000;
+
+export function newGradientSeed(): void {
+  gradientSeed = Math.random() * 1000;
+}
+
+// Routes a convex filled shape through the GPU gradient path. Returns false
+// when the caller should use its CPU path instead: solid mode, or a
+// single-color range — bucketPointsByGradient's degenerate case already
+// paints those correctly (everything gets rangeLow, which is NOT the
+// current painting color).
+export function drawGradientFilledShape(shape: GradientShape, canvas: DrawTarget): boolean {
+  const style = overmind.state.fillStyle.effectiveFillStyle;
+  if (!style || style.rangeHigh - style.rangeLow <= 0) {
+    return false;
+  }
+  canvas.gradientFill(shape, style, gradientSeed);
+  return true;
 }

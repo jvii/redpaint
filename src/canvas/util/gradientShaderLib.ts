@@ -97,8 +97,8 @@ export const GRADIENT_LIB = `
         pos = pix.x; minPos = u_axisMin; span = u_axisSpan;
       } else if (u_shapeKind == 1) {
         // horizontalLine on a circle: this row's single run, closed form
-        float half = sqrt(max(u_radius.x * u_radius.x - local.y * local.y, 0.0));
-        pos = pix.x; minPos = u_center.x - half; span = 2.0 * half;
+        float halfChord = sqrt(max(u_radius.x * u_radius.x - local.y * local.y, 0.0));
+        pos = pix.x; minPos = u_center.x - halfChord; span = 2.0 * halfChord;
       } else {
         // horizontalLine on a rotated ellipse: for a fixed canvas row
         // (local.y), the implicit equation
