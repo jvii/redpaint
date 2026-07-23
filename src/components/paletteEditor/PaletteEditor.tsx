@@ -222,7 +222,7 @@ export function PaletteEditor(): JSX.Element | null {
               }}
             />
           </div>
-          <div className="palette-editor__range-cycling-row">
+          <div className="palette-editor__range-cycling-row palette-editor__range-cycling-row--speed">
             <RetroLabeledSlider
               label="Speed"
               vertical={false}

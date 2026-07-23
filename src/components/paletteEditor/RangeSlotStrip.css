@@ -46,9 +46,15 @@
   box-shadow: inset 0 0 0 5px #ff8800;
 }
 
-/* mid-pick for this slot (armed, waiting on the palette grid's next click) */
+/* mid-pick for this slot (armed, waiting on the palette grid's next click).
+   Reads as its own cancel button — black background instead of the hover
+   orange so it doesn't look like a hover state. */
 .range-slot__cell.is-armed {
-  background-color: #ff8800;
+  background-color: black;
+}
+
+.range-slot__cell.is-armed:hover {
+  background-color: black;
 }
 
 .range-slot__icon {

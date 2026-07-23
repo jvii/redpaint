@@ -31,7 +31,7 @@
 
 .palette-editor__sliders {
   display: flex;
-  gap: 20px;
+  gap: 48px;
   align-items: stretch;
 }
 
@@ -199,4 +199,10 @@
 .palette-editor__range-cycling-row .retro-labeled-slider {
   flex: 1;
   min-width: 0;
+}
+
+/* a little extra air above the Speed row so it doesn't crowd the On/Off
+   row directly above it (beyond the parent's own 8px gap) */
+.palette-editor__range-cycling-row--speed {
+  margin-top: 6px;
 }
