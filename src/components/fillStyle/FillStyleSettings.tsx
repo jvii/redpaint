@@ -1,15 +1,17 @@
 import { JSX, useEffect, useRef } from 'react';
 import './FillStyleSettings.css';
 import { useActions, useAppState } from '../../overmind';
-import { GradientAxis, bucketPointsByGradient } from '../../algorithm/gradientFill';
+import { GradientAxis } from '../../algorithm/gradientFill';
 import { filledCircle } from '../../algorithm/shape';
+import { paletteTextureData } from '../../algorithm/cycle';
 import { FillMode } from '../../overmind/fillStyle/state';
-import { Point } from '../../types';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
+import { OverlayGeometricRenderer } from '../../canvas/overlayCanvas/program/OverlayGeometricRenderer';
+import { OverlayGradientRenderer } from '../../canvas/overlayCanvas/program/OverlayGradientRenderer';
 
 const AXIS_OPTIONS: { value: GradientAxis; label: string }[] = [
   { value: 'vertical', label: 'Vertical' },
@@ -40,54 +42,109 @@ function FillStyleSettingsOpen(): JSX.Element {
   // A filled circle swatch previewing the current (uncommitted-until-OK)
   // fill style live — a circle rather than a flat rect shows the
   // Horizontal Line axis's per-row contour-hugging "3-D" look, which is
-  // otherwise easy to misjudge from the axis name alone. Solid mode
-  // previews as one flat fill of the foreground color, same as it would
-  // actually paint.
+  // otherwise easy to misjudge from the axis name alone. Renders through
+  // the exact same WebGL renderer classes the overlay canvas uses for its
+  // live drag preview (OverlayGeometricRenderer for solid,
+  // OverlayGradientRenderer for gradient) rather than a separate CPU/2D
+  // reimplementation, so this swatch can never drift out of sync with what
+  // actually gets painted (it did once: this preview used to dither via
+  // bucketPointsByGradient's Math.random(), a different algorithm from the
+  // GPU shader's deterministic hash that ships the real gradient fill).
   const previewRef = useRef<HTMLCanvasElement>(null);
-  useEffect((): void => {
+  const previewGlRef = useRef<{
+    gl: WebGLRenderingContext;
+    geometric: OverlayGeometricRenderer;
+    gradient: OverlayGradientRenderer;
+  } | null>(null);
+  const previewSeedRef = useRef(Math.random() * 8);
+
+  // One-time setup per dialog mount: WebGL context, a shared vertex buffer
+  // (bound once — every renderer's draw call assumes ARRAY_BUFFER is
+  // already bound, same as the real overlay canvas setup), and a palette
+  // texture at unit 1, mirroring OverlayCanvasController's initPaletteTexture.
+  useEffect(() => {
     const canvas = previewRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) {
+    if (!canvas) {
       return;
     }
     canvas.width = PREVIEW_SIZE;
     canvas.height = PREVIEW_SIZE;
-    const center = { x: PREVIEW_SIZE / 2, y: PREVIEW_SIZE / 2 };
-    const points = filledCircle(center, PREVIEW_SIZE / 2 - 2).flatMap((line) => line.asPoints());
+    const gl = canvas.getContext('webgl');
+    if (!gl) {
+      return;
+    }
 
-    const out = ctx.createImageData(PREVIEW_SIZE, PREVIEW_SIZE);
-    const paint = (point: Point, color: { r: number; g: number; b: number }): void => {
-      if (point.x < 0 || point.x >= PREVIEW_SIZE || point.y < 0 || point.y >= PREVIEW_SIZE) {
-        return;
-      }
-      const i = (point.y * PREVIEW_SIZE + point.x) * 4;
-      out.data[i] = color.r;
-      out.data[i + 1] = color.g;
-      out.data[i + 2] = color.b;
-      out.data[i + 3] = 255;
+    const vertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+
+    gl.activeTexture(gl.TEXTURE1);
+    const paletteTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, paletteTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    previewGlRef.current = {
+      gl,
+      geometric: new OverlayGeometricRenderer(gl),
+      gradient: new OverlayGradientRenderer(gl),
     };
 
+    return (): void => {
+      previewGlRef.current?.geometric.dispose();
+      previewGlRef.current?.gradient.dispose();
+      gl.deleteTexture(paletteTex);
+      gl.deleteBuffer(vertexBuffer);
+      previewGlRef.current = null;
+    };
+  }, []);
+
+  useEffect((): void => {
+    const ctx = previewGlRef.current;
+    if (!ctx) {
+      return;
+    }
+    const { gl, geometric, gradient } = ctx;
+
+    const { palette, ranges, cycleOffsets } = state.palette;
+    gl.activeTexture(gl.TEXTURE1);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      256,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      paletteTextureData(palette, ranges, cycleOffsets)
+    );
+
+    gl.viewport(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    const center = { x: PREVIEW_SIZE / 2, y: PREVIEW_SIZE / 2 };
+    const radius = PREVIEW_SIZE / 2 - 2;
     const style = state.fillStyle.effectiveFillStyle;
     if (!style) {
-      for (const point of points) {
-        paint(point, state.palette.foregroundColor);
-      }
+      // same call solid-mode fills make for real: filledCircle rasterized
+      // to lines, drawn with the current paint color
+      geometric.renderLines(filledCircle(center, radius), state.tool.activePaintColor);
     } else {
-      for (const [colorId, bucketPoints] of bucketPointsByGradient(points, style)) {
-        const color = state.palette.paletteArray[colorId - 1];
-        if (!color) {
-          continue;
-        }
-        for (const point of bucketPoints) {
-          paint(point, color);
-        }
-      }
+      gradient.renderGradientFill(
+        { kind: 'circle', center, radius },
+        style,
+        previewSeedRef.current
+      );
     }
-    ctx.putImageData(out, 0, 0);
   }, [
     state.fillStyle.effectiveFillStyle,
-    state.palette.paletteArray,
-    state.palette.foregroundColor,
+    state.palette.palette,
+    state.palette.ranges,
+    state.palette.cycleOffsets,
+    state.tool.activePaintColor,
   ]);
 
   const rangeOptions = state.palette.ranges
