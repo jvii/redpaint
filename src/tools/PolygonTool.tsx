@@ -5,6 +5,7 @@ import { PixelBrush } from '../brush/PixelBrush';
 import { symmetryBrush, SymmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
+import { drawSymmetryIndicator } from './util/symmetryIndicator';
 
 // The polygon outline preview always uses a pixel outline (not the current
 // custom brush), wrapped so it is mirrored under symmetry.
@@ -94,7 +95,14 @@ export class PolygonTool implements Tool {
 
     if (!overmind.state.tool.polygonTool.vertices.length) {
       overlayCanvasController.clear();
-      symmetryBrush.drawPoints([mousePos], overlayCanvasController);
+      if (this.filled) {
+        // DPaint only draws unfilled shapes with the current brush; for
+        // filled shapes the brush is not drawn (see CircleTool et al.), so
+        // show a foreground-color point at each symmetry position instead.
+        drawSymmetryIndicator(mousePos);
+      } else {
+        symmetryBrush.drawPoints([mousePos], overlayCanvasController);
+      }
       return;
     }
 
