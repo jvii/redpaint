@@ -67,8 +67,11 @@ function FillStyleSettingsOpen(): JSX.Element {
     if (!canvas) {
       return;
     }
-    canvas.width = PREVIEW_SIZE;
-    canvas.height = PREVIEW_SIZE;
+    // width/height are set as JSX attributes (not here) so the canvas never
+    // has an unset, mismatched-with-CSS intrinsic size for Safari to lay
+    // out the modal against before this effect runs — Safari doesn't always
+    // reflow an auto-height ancestor when a canvas's size changes
+    // imperatively afterward, only once some other change forces a relayout.
     // antialias: false to match the main/overlay canvases — GL_LINES
     // antialiasing blends adjacent scanline rows (filledCircle's fill
     // technique) at their edges, and image-rendering: pixelated then
@@ -162,7 +165,12 @@ function FillStyleSettingsOpen(): JSX.Element {
     <Modal header="Fill Style">
       <div className="fill-style-settings__body">
         <div className="fill-style-settings__top">
-          <canvas ref={previewRef} className="fill-style-settings__preview" />
+          <canvas
+            ref={previewRef}
+            width={PREVIEW_SIZE}
+            height={PREVIEW_SIZE}
+            className="fill-style-settings__preview"
+          />
           <RetroFieldset legend="Fill">
             <RetroToggle
               variant="column"

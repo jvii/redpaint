@@ -15,6 +15,9 @@
 /* live preview of the current fill style, on a filled-circle swatch so the
    Horizontal Line axis's per-row "3-D" look is visible, not just named */
 .fill-style-settings__preview {
+  display: block; /* canvas defaults to inline; a flex item is blockified
+    anyway, but this is cheap insurance against the classic baseline-gap
+    bug replaced elements get under inline layout */
   flex: none;
   width: 220px;
   height: 220px;
