@@ -106,10 +106,7 @@ export const selectEditedColor = (context: Context, colorId: string): void => {
 
 // Arms a two-color action (or disarms it when it's already armed — the
 // button doubles as its own cancel). Arming one action replaces the other.
-export const armAction = (
-  context: Context,
-  action: 'copy' | 'swap' | 'spread' | 'range'
-): void => {
+export const armAction = (context: Context, action: 'copy' | 'swap' | 'spread' | 'range'): void => {
   context.state.paletteEditor.armedAction =
     context.state.paletteEditor.armedAction === action ? null : action;
 };
@@ -120,12 +117,4 @@ export const selectRange = (context: Context, rangeIndex: number): void => {
   if (context.state.paletteEditor.armedAction === 'range') {
     context.state.paletteEditor.armedAction = null;
   }
-};
-
-export const clearActiveRange = (context: Context): void => {
-  const { activeRangeIndex } = context.state.paletteEditor;
-  if (activeRangeIndex === null) {
-    return;
-  }
-  context.actions.palette.clearRange(activeRangeIndex);
 };

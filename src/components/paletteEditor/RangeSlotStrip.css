@@ -1,0 +1,140 @@
+/* The range-slot strip: same visual language as the brush-slot strip
+   (BrushSlotStrip.css) — a row of plain cells, 2px black border, shared
+   seams, one hard group drop shadow, no permanently visible controls. An
+   empty cell shows only the store glyph (BrushSlotIcons.tsx's StoreIcon,
+   the same one brush slots use); an occupied cell is a bare color-swatch
+   strip, with the color count and Clear revealed as a hover overlay. */
+
+.range-slot-strip {
+  display: flex;
+  box-shadow: 4px 4px 0 0 black;
+}
+
+.range-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.range-slot__cell {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 84px;
+  background-color: white;
+  border: 2px solid black;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.range-slot + .range-slot .range-slot__cell {
+  border-left: none;
+}
+
+.range-slot__cell:hover {
+  background-color: #ff8800;
+}
+
+.range-slot__cell.is-occupied:hover {
+  background-color: transparent; /* the swatch itself already reads as hover-worthy; don't tint it */
+}
+
+/* the currently selected slot (the one the Color Cycling section below is
+   editing) gets a visible ring so it doesn't get lost among plain swatches */
+.range-slot__cell.is-active {
+  outline: 3px solid rgb(0, 85, 170);
+  outline-offset: -3px;
+}
+
+/* mid-pick for this slot (armed, waiting on the palette grid's next click) */
+.range-slot__cell.is-armed {
+  background-color: #ff8800;
+}
+
+.range-slot__icon {
+  width: 36px;
+  height: 36px;
+  color: black;
+}
+
+.range-slot__cell:hover .range-slot__icon {
+  color: white;
+}
+
+.range-slot__armed-label {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 10px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: white;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* the hover-only overlay bar: color count + Clear, top of the cell, over
+   the swatch rather than pushing it down — see BrushSlotStrip.css's
+   .brush-slot__overlay for the same treatment */
+.range-slot__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 20px;
+  padding: 0 0 0 2px;
+  background-color: rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+}
+
+.range-slot__cell:hover .range-slot__overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.range-slot__overlay-count {
+  flex: 1; /* a flex item's default min-width is its own content's natural
+    width, not 0 - without this it never actually shrinks small enough for
+    text-overflow to kick in, it just overflows the cell instead */
+  min-width: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 9px;
+  letter-spacing: 0;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.range-slot__overlay-clear {
+  box-sizing: border-box;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: transparent;
+  border: none;
+  border-left: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 0;
+  padding: 0;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 13px;
+  line-height: 1;
+  color: white;
+  cursor: pointer;
+}
+
+.range-slot__overlay-clear:hover {
+  background-color: #ff8800;
+}

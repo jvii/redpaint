@@ -4,13 +4,14 @@ import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { colorToRGBString, rgbToHsv, hsvToRgb } from '../../tools/util/util';
+import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
 import Palette from '../palette/Palette';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
+import { RangeSlotStrip } from './RangeSlotStrip';
 import { rateToStepsPerSecond, stepsPerSecondToRate } from '../../algorithm/cycle';
 
 export function PaletteEditor(): JSX.Element | null {
@@ -58,13 +59,9 @@ export function PaletteEditor(): JSX.Element | null {
 
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
-  const rangeOptions = state.palette.ranges.map((_, index) => ({
-    value: String(index),
-    label: String(index + 1),
-  }));
 
   return (
-    <Modal header="Color Palette" width={600}>
+    <Modal header="Color Palette" width={700}>
       <div className="palette-editor__container">
         {/* DPaint's Palette Window layout: sliders on the left, swatch grid
             on the right */}
@@ -168,52 +165,12 @@ export function PaletteEditor(): JSX.Element | null {
       </RetroFieldset>
 
       <RetroFieldset legend="Range" bordered className="palette-editor__ranges">
-        <RetroToggle
-          options={rangeOptions}
-          value={activeRangeIndex !== null ? String(activeRangeIndex) : ''}
-          onChange={(value): void => actions.paletteEditor.selectRange(Number(value))}
-        />
-
-        {/* DPaint's RANGE flow: the selected color is the range's first
-            color, the next palette click its last */}
-        <div className="palette-editor__range-row">
-          <span className="palette-editor__range-endpoints">
-            <RetroButton
-              variant={state.paletteEditor.armedAction === 'range' ? 'secondary' : 'basic'}
-              disabled={activeRangeIndex === null}
-              onClick={(): void => actions.paletteEditor.armAction('range')}
-            >
-              {state.paletteEditor.armedAction === 'range' ? 'Cancel set' : 'Set Range'}
-            </RetroButton>
-            {activeRange && (
-              <>
-                <span
-                  className="palette-editor__range-swatch"
-                  style={{
-                    backgroundColor: colorToRGBString(state.palette.palette[activeRange.start]),
-                  }}
-                ></span>
-                <span className="palette-editor__range-arrow"></span>
-                <span
-                  className="palette-editor__range-swatch"
-                  style={{
-                    backgroundColor: colorToRGBString(state.palette.palette[activeRange.end]),
-                  }}
-                ></span>
-              </>
-            )}
-          </span>
-          <span className="palette-editor__range-clear">
-            <RetroButton
-              variant="secondary"
-              // nothing to clear until the active range has endpoints set
-              disabled={!activeRange}
-              onClick={actions.paletteEditor.clearActiveRange}
-            >
-              Clear
-            </RetroButton>
-          </span>
-        </div>
+        {/* Same slot-strip interaction as the brush-slot strip
+            (RangeSlotStrip.tsx): click an empty slot to arm a range pick
+            (the currently edited color becomes the start, the next palette
+            click the end), click an occupied slot to select it, hover for
+            its color count and Clear. */}
+        <RangeSlotStrip />
 
         {/* Cycling settings ride on the selected range slot, under a shared
             title: On/Off (the CRNG active bit) and direction (up/down
