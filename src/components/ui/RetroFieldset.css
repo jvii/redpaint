@@ -28,3 +28,21 @@
 .retro-fieldset--bordered > .retro-fieldset__legend {
   padding: 0 8px;
 }
+
+/* The straddle above is a real <legend>'s native rendering (browsers float
+   it over the fieldset's own border, unprompted by any CSS here) — the
+   as="div" variant has no such behavior, so it's replicated by hand, only
+   for that variant (the "div." tag qualifier keeps this from touching the
+   native-fieldset case, which doesn't need it). background-color matches
+   Modal's own so the border line underneath is genuinely interrupted, not
+   just visually crossed. */
+div.retro-fieldset--bordered {
+  position: relative;
+}
+
+div.retro-fieldset--bordered > .retro-fieldset__legend {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  background-color: rgba(255, 255, 255, 0.95);
+}
