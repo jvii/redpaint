@@ -150,7 +150,11 @@ function ImageLoadDialogOpen(): JSX.Element {
     // queued content once the resize commits, and — as a fresh document —
     // resets the undo history to it
     setPendingCanvasContent(colorIndex, { freshDocument: true });
-    actions.canvas.setResolution({ width: image.width, height: image.height, recordUndoPoint: false });
+    actions.canvas.setResolution({
+      width: image.width,
+      height: image.height,
+      recordUndoPoint: false,
+    });
     actions.app.clearImageLoadInfo();
     actions.dialog.close();
   };
@@ -171,17 +175,17 @@ function ImageLoadDialogOpen(): JSX.Element {
             variant="column"
             options={[
               { value: 'true', label: 'True Color (original)' },
-              { value: 'new', label: 'New palette from image' },
+              { value: 'new', label: 'New Palette From Image' },
               {
                 value: 'current',
-                label: `Remap to current palette (${state.palette.paletteArray.length})`,
+                label: `Remap To Current Palette (${state.palette.paletteArray.length})`,
               },
             ]}
             value={mode}
             onChange={(value): void => setMode(value as ColorMode)}
           />
         </RetroFieldset>
-        <RetroFieldset legend="Indexed palette size" className="image-load__count">
+        <RetroFieldset legend="Indexed Palette Size" className="image-load__count">
           <RetroToggle
             variant="grid"
             columns={4}

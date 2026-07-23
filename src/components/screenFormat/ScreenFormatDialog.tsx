@@ -1,7 +1,12 @@
 import { JSX, useState } from 'react';
 import './ScreenFormatDialog.css';
 import { useActions, useAppState } from '../../overmind';
-import { ScreenFormatId, VideoStandard, resolveScreenFormat, screenFormats } from '../../overmind/canvas/state';
+import {
+  ScreenFormatId,
+  VideoStandard,
+  resolveScreenFormat,
+  screenFormats,
+} from '../../overmind/canvas/state';
 import { PaletteSource } from '../../overmind/canvas/actions';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
@@ -59,9 +64,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const actions = useActions();
 
   // Draft selections, applied only on OK (Cancel changes nothing).
-  const [formatId, setFormatId] = useState<FormatChoice>(
-    state.canvas.screenFormatId ?? NATIVE
-  );
+  const [formatId, setFormatId] = useState<FormatChoice>(state.canvas.screenFormatId ?? NATIVE);
   const isNative = formatId === NATIVE;
   const [videoStandard, setVideoStandard] = useState<VideoStandard>(state.canvas.videoStandard);
   const [colors, setColors] = useState(
@@ -167,7 +170,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
           </div>
         </div>
         <div className="screen-format__right">
-          <RetroFieldset legend="Indexed palette size" className="screen-format__colors">
+          <RetroFieldset legend="Indexed Palette Size" className="screen-format__colors">
             <RetroToggle
               variant="grid"
               columns={4}
@@ -190,14 +193,14 @@ function ScreenFormatDialogOpen(): JSX.Element {
               onChange={(value): void => setTrueColorEnabled(value === 'on')}
             />
           </RetroFieldset>
-          <RetroFieldset legend="Remap to" className="screen-format__remap">
+          <RetroFieldset legend="Remap To" className="screen-format__remap">
             {/* only a reduction remaps: fewer colors, or True Color going off.
                 The count is the target size — both options produce it */}
             <RetroToggle
               variant="column"
               options={[
-                { value: 'current', label: `Current palette (${colors})` },
-                { value: 'image', label: 'New palette from image' },
+                { value: 'current', label: `Current Palette (${colors})` },
+                { value: 'image', label: 'New Palette From Image' },
               ]}
               value={paletteSource}
               onChange={(value): void => setPaletteSource(value as PaletteSource)}

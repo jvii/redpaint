@@ -148,10 +148,10 @@ function BrushLoadDialogOpen(): JSX.Element {
           <RetroToggle
             variant="column"
             options={[
-              { value: 'true', label: 'True Color (original)' },
+              { value: 'true', label: 'True Color (Original)' },
               {
                 value: 'current',
-                label: `Remap to current palette (${state.palette.paletteArray.length})`,
+                label: `Remap To Current Palette (${state.palette.paletteArray.length})`,
               },
             ]}
             value={mode}
