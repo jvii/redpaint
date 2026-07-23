@@ -183,56 +183,64 @@ function FillStyleSettingsOpen(): JSX.Element {
             />
           </RetroFieldset>
         </div>
-        <RetroFieldset legend="Gradient" bordered className="fill-style-settings__gradient-box">
-          <RetroToggle
-            variant="column"
-            options={AXIS_OPTIONS}
-            value={state.fillStyle.axis}
-            onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
-            disabled={!isGradient}
-          />
-          <RetroFieldset legend="Range" className="fill-style-settings__range">
-            {rangeOptions.length > 0 ? (
-              <RetroToggle
-                options={rangeOptions}
-                value={String(state.fillStyle.rangeIndex)}
-                onChange={(value): void => actions.fillStyle.setRangeIndex(Number(value))}
+        <RetroFieldset legend="Gradient" bordered>
+          {/* the flex column lives on this plain div, not the fieldset
+              itself — a <fieldset> with display:flex directly on it has a
+              longstanding Safari bug where its auto-height doesn't always
+              recompute after content changes, needing an unrelated later
+              reflow to catch up (its internal anonymous content box isn't
+              reliably resized) */}
+          <div className="fill-style-settings__gradient-box">
+            <RetroToggle
+              variant="column"
+              options={AXIS_OPTIONS}
+              value={state.fillStyle.axis}
+              onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
+              disabled={!isGradient}
+            />
+            <RetroFieldset legend="Range" className="fill-style-settings__range">
+              {rangeOptions.length > 0 ? (
+                <RetroToggle
+                  options={rangeOptions}
+                  value={String(state.fillStyle.rangeIndex)}
+                  onChange={(value): void => actions.fillStyle.setRangeIndex(Number(value))}
+                  disabled={!isGradient}
+                />
+              ) : (
+                <span className="fill-style-settings__hint">
+                  No ranges defined — set one in the palette editor.
+                </span>
+              )}
+            </RetroFieldset>
+            <RetroFieldset legend="Dither" className="fill-style-settings__dither">
+              <RetroLabeledSlider
+                label=""
+                vertical={false}
+                value={state.fillStyle.dither}
+                min={0}
+                max={20}
+                onChange={(value): void => actions.fillStyle.setDither(value)}
                 disabled={!isGradient}
               />
-            ) : (
               <span className="fill-style-settings__hint">
-                No ranges defined — set one in the palette editor.
+                How much adjacent bands randomly blend at their boundary. 0 = hard edges
               </span>
-            )}
-          </RetroFieldset>
-          <RetroFieldset legend="Dither" className="fill-style-settings__dither">
-            <RetroLabeledSlider
-              label=""
-              vertical={false}
-              value={state.fillStyle.dither}
-              min={0}
-              max={20}
-              onChange={(value): void => actions.fillStyle.setDither(value)}
-              disabled={!isGradient}
-            />
-            <span className="fill-style-settings__hint">
-              How much adjacent bands randomly blend at their boundary. 0 = hard edges
-            </span>
-          </RetroFieldset>
-          <RetroFieldset legend="Jitter" className="fill-style-settings__dither">
-            <RetroLabeledSlider
-              label=""
-              vertical={false}
-              value={state.fillStyle.jitter}
-              min={0}
-              max={50}
-              onChange={(value): void => actions.fillStyle.setJitter(value)}
-              disabled={!isGradient}
-            />
-            <span className="fill-style-settings__hint">
-              How far dither can push a pixel, as a % of a band's width.
-            </span>
-          </RetroFieldset>
+            </RetroFieldset>
+            <RetroFieldset legend="Jitter" className="fill-style-settings__dither">
+              <RetroLabeledSlider
+                label=""
+                vertical={false}
+                value={state.fillStyle.jitter}
+                min={0}
+                max={50}
+                onChange={(value): void => actions.fillStyle.setJitter(value)}
+                disabled={!isGradient}
+              />
+              <span className="fill-style-settings__hint">
+                How far dither can push a pixel, as a % of a band's width.
+              </span>
+            </RetroFieldset>
+          </div>
         </RetroFieldset>
       </div>
       <RetroButton variant="secondary" onClick={actions.fillStyle.cancelSettings}>

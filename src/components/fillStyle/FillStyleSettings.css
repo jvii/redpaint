@@ -28,7 +28,9 @@
 
 /* groups every gradient-only control in one visible box, since they all
    disable together when Fill is set to Solid — RetroFieldset's `bordered`
-   variant draws the box/legend, this just stacks its children */
+   variant draws the box/legend around this div, which just stacks its
+   children. Deliberately a plain div, not the fieldset element itself: see
+   the JSX comment on that RetroFieldset for the Safari bug this avoids. */
 .fill-style-settings__gradient-box {
   display: flex;
   flex-direction: column;
