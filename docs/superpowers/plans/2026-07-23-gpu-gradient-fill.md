@@ -1,5 +1,14 @@
 # GPU-computed gradient fill for circle/ellipse/rect
 
+Status: implemented 2026-07-23; verified per the Verification section below.
+The analytic edge test was not compared pixel-for-pixel against the CPU
+rasterizer (item 2) — visual inspection at typical shape sizes showed no
+edge artifacts, but this wasn't diffed frame-by-frame. Performance: a large
+gradient-filled circle at the default order-6-mirrored symmetry dropped from
+~485-844ms of script time per mousemove (both the original CPU path and the
+same-session bucket-once-and-translate workaround) to ~1.6-8.7ms — cost no
+longer scales with shape area.
+
 ## Context
 
 Gradient Fill currently rasterizes a filled shape into a `Point[]` on the CPU,
@@ -23,7 +32,7 @@ alongside this plan — not worth carrying two overlapping fixes for the same
 problem while this one is pending.
 
 This plan replaces that (now-reverted) CPU workaround with GPU-computed
-gradient fill for the three *convex, analytically-describable* shapes
+gradient fill for the three _convex, analytically-describable_ shapes
 (circle, ellipse, axis-aligned rect): the fragment shader decides each
 pixel's band and dither in-place, so a filled shape becomes one draw call
 with a handful of uniforms regardless of its pixel area, and a symmetry
@@ -50,7 +59,7 @@ two callers.
 ## Why this is possible: how the renderer already works
 
 Painted pixels never store RGB directly — every canvas pixel is a **color
-index** written into a texture, later resolved to a color by a *separate*
+index** written into a texture, later resolved to a color by a _separate_
 palette-lookup pass (`docs/` / CLAUDE.md "Rendering" section;
 `src/canvas/paintingCanvas/program/GeometricIndexer.ts`,
 `src/canvas/overlayCanvas/program/OverlayGeometricRenderer.ts`). Concretely:
@@ -62,13 +71,13 @@ palette-lookup pass (`docs/` / CLAUDE.md "Rendering" section;
   works around this by issuing one draw call per band because the shader
   itself can't vary the index per-pixel.
 - **Preview path** (`OverlayGeometricRenderer.ts`): resolves a `PaintColor`
-  to RGB *in JS* and passes it as a uniform `u_color`; `OverlayDrawImageRenderer.ts`
+  to RGB _in JS_ and passes it as a uniform `u_color`; `OverlayDrawImageRenderer.ts`
   shows the alternative already in use elsewhere — sampling a **palette
   texture** (`u_palette`, texture unit 1, the same texture `CycleDriver`
   re-uploads every cycling tick) by index inside the fragment shader.
 
 So the missing piece in both places is the same: a fragment shader that
-computes the *index* per-fragment (band classification + dither) instead of
+computes the _index_ per-fragment (band classification + dither) instead of
 receiving one uniform index for the whole draw call. Once the index is
 computed per-fragment, the commit path writes it directly (same output
 format `GeometricIndexer` already uses); the preview path samples the
@@ -104,7 +113,7 @@ New shared GLSL source (a template string, colocated with the new
 indexer/renderer files, or a small `gradientShaderLib.ts` mirroring the
 existing `effectShaderLib.ts` pattern) implementing:
 
-- **Inside/outside test.** Rect: none needed (the quad *is* the shape).
+- **Inside/outside test.** Rect: none needed (the quad _is_ the shape).
   Circle: `discard` if `dot(v_local / u_radius, v_local / u_radius) > 1.0`
   where `v_local` is the fragment's canvas position minus `u_center`
   (a varying, computed in the vertex shader from a uniform center so every
@@ -116,7 +125,7 @@ existing `effectShaderLib.ts` pattern) implementing:
   `u_jitterPercent`, plus `u_axisMode`
   (0=vertical/1=horizontal/2=horizontalLine — three modes, not two) and the
   span bounds. **Carry the CPU path's exact span semantics and degenerate
-  guards**: span is `max - min` (the extent, *not* `+1`); `span <= 0` (a
+  guards**: span is `max - min` (the extent, _not_ `+1`); `span <= 0` (a
   1-pixel-tall/-wide shape) resolves to `u_rangeLow`; and a single-color
   range (`rangeHigh == rangeLow`, `bandCount <= 0`) never reaches the shader
   at all — `fillStyleDraw` takes its existing solid branch, same as
@@ -129,13 +138,13 @@ existing `effectShaderLib.ts` pattern) implementing:
   every row of a convex shape is exactly one run: the local x-span at a
   given `v_local.y` is `2 * sqrt(radius^2 - v_local.y^2)` (circle) or the
   ellipse equivalent. For **rect**, every axis mode's span is just the
-  rect's own width/height — also closed-form. This is *why* horizontalLine
+  rect's own width/height — also closed-form. This is _why_ horizontalLine
   is tractable in-shader for these three shapes and not for polygon/flood
   fill (genuinely irregular per-row runs).
 - **Dither.** GLSL has no RNG; use a standard deterministic hash of the
-  *local* (center-relative) fragment position (e.g.
+  _local_ (center-relative) fragment position (e.g.
   `fract(sin(dot(v_local, vec2(12.9898,78.233))) * 43758.5453)`) in place of
-  `Math.random()`. Because the hash is a function of *local*, not absolute,
+  `Math.random()`. Because the hash is a function of _local_, not absolute,
   position, every symmetry copy — same local coordinates, same hash —
   produces **byte-identical relative dither**, satisfying "truly symmetric"
   without any shared-buffer bookkeeping on the CPU side.
@@ -150,7 +159,7 @@ existing `effectShaderLib.ts` pattern) implementing:
   move (same seed for the whole drag), and the committed fill's dither is
   now byte-identical to the preview the user just saw.
 - **Precision.** The existing display shaders declare `precision mediump
-  float`, and `fract(sin(x) * 43758.5453)` degrades exactly when `x` gets
+float`, and `fract(sin(x) * 43758.5453)` degrades exactly when `x` gets
   large under limited precision. Center-relative locals keep the hash input
   small (bounded by the shape size, not canvas position), which is the
   assumption that makes mediump acceptable — state it in the shader comment,
@@ -172,7 +181,7 @@ once in the shared GLSL source comment rather than in each shader.
 - `src/canvas/overlayCanvas/program/OverlayGradientRenderer.ts` — modeled on
   `OverlayGeometricRenderer.ts`/`OverlayDrawImageRenderer.ts`: same
   band/dither/discard logic, but samples `u_palette` (already bound at unit
-  1) at the computed index and outputs RGB directly.
+  1. at the computed index and outputs RGB directly.
 
 Wire both into `MainCanvasRenderer`/`PaintingCanvasController` and
 `OverlayMainCanvasRenderer`/`OverlayCanvasController` the same way
@@ -260,7 +269,7 @@ session):
 
 1. **Correctness, all three shapes**: draw a gradient-filled rect, circle,
    and ellipse (each axis mode: vertical/horizontal/horizontalLine),
-   compare visually against today's CPU output (same dither *look*, exact
+   compare visually against today's CPU output (same dither _look_, exact
    pixels will differ since the hash isn't `Math.random()`).
 2. **Edge-coverage parity**: the analytic `discard` test will not match
    `shape.ts`'s rasterized footprint pixel-for-pixel at the boundary.
