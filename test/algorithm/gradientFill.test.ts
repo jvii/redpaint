@@ -298,4 +298,27 @@ describe('gradientFillUniforms', () => {
     expect(u.axisMin).toBe(2);
     expect(u.axisSpan).toBe(10);
   });
+
+  it('maps a polygon to its vertex bbox and passes the vertices through', () => {
+    const vertices = [
+      { x: 10, y: 40 },
+      { x: 30, y: 10 },
+      { x: 50, y: 40 },
+    ];
+    const u = gradientFillUniforms({ kind: 'polygon', vertices }, style, 7);
+    expect(u.shapeKind).toBe(3);
+    expect({ left: u.left, top: u.top, right: u.right, bottom: u.bottom }).toEqual({
+      left: 10,
+      top: 10,
+      right: 50,
+      bottom: 40,
+    });
+    expect(u.center).toEqual({ x: 30, y: 25 });
+    expect(u.vertices).toEqual(vertices);
+  });
+
+  it('every non-polygon shape carries an empty vertices array', () => {
+    const u = gradientFillUniforms({ kind: 'circle', center: { x: 0, y: 0 }, radius: 5 }, style, 7);
+    expect(u.vertices).toEqual([]);
+  });
 });

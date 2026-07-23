@@ -122,6 +122,9 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
+    if (drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)) {
+      return;
+    }
     const filledPolygonAsLines = filledPolygon(vertices);
     drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
   }

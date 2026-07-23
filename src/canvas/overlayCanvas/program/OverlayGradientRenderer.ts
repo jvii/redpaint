@@ -5,7 +5,12 @@ import {
 } from '../../../algorithm/gradientFill';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
-import { GRADIENT_LIB, GRADIENT_VERTEX_SHADER } from '../../util/gradientShaderLib';
+import {
+  applyGradientUniforms,
+  GRADIENT_LIB,
+  GRADIENT_UNIFORM_NAMES,
+  GRADIENT_VERTEX_SHADER,
+} from '../../util/gradientShaderLib';
 
 // The live-preview twin of GradientGeometricIndexer: same shape/band/dither
 // GLSL, but resolves the per-fragment index through the palette texture
@@ -22,21 +27,7 @@ export class OverlayGradientRenderer {
     this.program = this.createProgram();
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
     this.uniforms = {};
-    for (const name of [
-      'u_canvasHeight',
-      'u_shapeKind',
-      'u_center',
-      'u_radius',
-      'u_rotation',
-      'u_axisMode',
-      'u_axisMin',
-      'u_axisSpan',
-      'u_bandCount',
-      'u_rangeLowIndex',
-      'u_ditherJitter',
-      'u_seed',
-      'u_palette',
-    ]) {
+    for (const name of [...GRADIENT_UNIFORM_NAMES, 'u_palette']) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
   }
@@ -47,18 +38,7 @@ export class OverlayGradientRenderer {
 
     activateProgram(gl, this.program);
 
-    gl.uniform1f(this.uniforms['u_canvasHeight'], gl.drawingBufferHeight);
-    gl.uniform1i(this.uniforms['u_shapeKind'], u.shapeKind);
-    gl.uniform2f(this.uniforms['u_center'], u.center.x, u.center.y);
-    gl.uniform2f(this.uniforms['u_radius'], u.radiusX, u.radiusY);
-    gl.uniform1f(this.uniforms['u_rotation'], u.rotation);
-    gl.uniform1i(this.uniforms['u_axisMode'], u.axisMode);
-    gl.uniform1f(this.uniforms['u_axisMin'], u.axisMin);
-    gl.uniform1f(this.uniforms['u_axisSpan'], u.axisSpan);
-    gl.uniform1f(this.uniforms['u_bandCount'], u.bandCount);
-    gl.uniform1f(this.uniforms['u_rangeLowIndex'], u.rangeLowIndex);
-    gl.uniform1f(this.uniforms['u_ditherJitter'], u.ditherJitter);
-    gl.uniform1f(this.uniforms['u_seed'], u.seed);
+    applyGradientUniforms(gl, this.uniforms, u);
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);

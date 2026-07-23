@@ -5,7 +5,12 @@ import {
 } from '../../../algorithm/gradientFill';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
-import { GRADIENT_LIB, GRADIENT_VERTEX_SHADER } from '../../util/gradientShaderLib';
+import {
+  applyGradientUniforms,
+  GRADIENT_LIB,
+  GRADIENT_UNIFORM_NAMES,
+  GRADIENT_VERTEX_SHADER,
+} from '../../util/gradientShaderLib';
 import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
 
 // Writes a gradient-filled convex shape (rect/circle/ellipse) into the
@@ -29,20 +34,7 @@ export class GradientGeometricIndexer {
     this.targetFrameBuffer = targetFrameBuffer;
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
     this.uniforms = {};
-    for (const name of [
-      'u_canvasHeight',
-      'u_shapeKind',
-      'u_center',
-      'u_radius',
-      'u_rotation',
-      'u_axisMode',
-      'u_axisMin',
-      'u_axisSpan',
-      'u_bandCount',
-      'u_rangeLowIndex',
-      'u_ditherJitter',
-      'u_seed',
-    ]) {
+    for (const name of GRADIENT_UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
   }
@@ -54,18 +46,7 @@ export class GradientGeometricIndexer {
     activateProgram(gl, this.program);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.targetFrameBuffer);
 
-    gl.uniform1f(this.uniforms['u_canvasHeight'], gl.drawingBufferHeight);
-    gl.uniform1i(this.uniforms['u_shapeKind'], u.shapeKind);
-    gl.uniform2f(this.uniforms['u_center'], u.center.x, u.center.y);
-    gl.uniform2f(this.uniforms['u_radius'], u.radiusX, u.radiusY);
-    gl.uniform1f(this.uniforms['u_rotation'], u.rotation);
-    gl.uniform1i(this.uniforms['u_axisMode'], u.axisMode);
-    gl.uniform1f(this.uniforms['u_axisMin'], u.axisMin);
-    gl.uniform1f(this.uniforms['u_axisSpan'], u.axisSpan);
-    gl.uniform1f(this.uniforms['u_bandCount'], u.bandCount);
-    gl.uniform1f(this.uniforms['u_rangeLowIndex'], u.rangeLowIndex);
-    gl.uniform1f(this.uniforms['u_ditherJitter'], u.ditherJitter);
-    gl.uniform1f(this.uniforms['u_seed'], u.seed);
+    applyGradientUniforms(gl, this.uniforms, u);
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);

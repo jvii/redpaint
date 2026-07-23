@@ -150,19 +150,33 @@ export function bucketPointsByGradient(
   return buckets;
 }
 
-// A convex, analytically-describable filled shape for the GPU gradient path
-// (docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md). Flood fill and
-// polygons are deliberately NOT here — their regions have no closed form.
+// A shape for the GPU gradient path
+// (docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md). Flood fill is
+// deliberately NOT here — its region comes from pixel connectivity, not
+// geometry, so it has no closed form to hand a shader at all. Polygon *is*
+// geometry (SymmetryBrush already resolves each copy's vertices to final
+// absolute coordinates on the CPU before this ever runs), so its fragment
+// shader does a bounded-loop point-in-polygon test instead of a closed-form
+// inside test — see MAX_GRADIENT_POLYGON_VERTICES.
 export type GradientShape =
   | { kind: 'rect'; start: Point; end: Point }
   | { kind: 'circle'; center: Point; radius: number }
-  | { kind: 'ellipse'; center: Point; radiusX: number; radiusY: number; rotationAngle: number };
+  | { kind: 'ellipse'; center: Point; radiusX: number; radiusY: number; rotationAngle: number }
+  | { kind: 'polygon'; vertices: Point[] };
+
+// WebGL1 (GLSL ES 1.00) requires uniform array sizes to be compile-time
+// constants, so the polygon shader loop is bounded at this many vertices
+// (baked into GRADIENT_LIB's source text — see gradientShaderLib.ts). A
+// polygon with more vertices than this falls back to the CPU path
+// (fillStyleDraw.ts's drawGradientFilledShape checks against this same
+// constant) rather than silently truncating.
+export const MAX_GRADIENT_POLYGON_VERTICES = 64;
 
 // Everything the gradient shaders need, computed once per draw call on the
 // JS side. This is the single place where 1-based color ids become 0-based
 // storage indices and where degrees become radians.
 export interface GradientUniforms {
-  shapeKind: 0 | 1 | 2; // rect | circle | ellipse
+  shapeKind: 0 | 1 | 2 | 3; // rect | circle | ellipse | polygon
   center: Point;
   radiusX: number;
   radiusY: number;
@@ -178,6 +192,7 @@ export interface GradientUniforms {
   top: number;
   right: number;
   bottom: number;
+  vertices: Point[]; // polygon only; empty for every other shape kind
 }
 
 const AXIS_MODE: { [axis in GradientAxis]: 0 | 1 | 2 } = {
@@ -216,7 +231,7 @@ export function gradientFillUniforms(
     right = shape.center.x + shape.radius;
     top = shape.center.y - shape.radius;
     bottom = shape.center.y + shape.radius;
-  } else {
+  } else if (shape.kind === 'ellipse') {
     center = shape.center;
     radiusX = shape.radiusX;
     radiusY = shape.radiusY;
@@ -230,12 +245,19 @@ export function gradientFillUniforms(
     right = Math.ceil(shape.center.x + extentX);
     top = Math.floor(shape.center.y - extentY);
     bottom = Math.ceil(shape.center.y + extentY);
+  } else {
+    left = Math.min(...shape.vertices.map((v) => v.x));
+    right = Math.max(...shape.vertices.map((v) => v.x));
+    top = Math.min(...shape.vertices.map((v) => v.y));
+    bottom = Math.max(...shape.vertices.map((v) => v.y));
+    center = { x: (left + right) / 2, y: (top + bottom) / 2 };
   }
 
   const vertical = style.axis === 'vertical';
   const jitterPercent = style.jitter ?? DEFAULT_JITTER_PERCENT;
   return {
-    shapeKind: shape.kind === 'rect' ? 0 : shape.kind === 'circle' ? 1 : 2,
+    shapeKind:
+      shape.kind === 'rect' ? 0 : shape.kind === 'circle' ? 1 : shape.kind === 'ellipse' ? 2 : 3,
     center,
     radiusX,
     radiusY,
@@ -251,5 +273,6 @@ export function gradientFillUniforms(
     top,
     right,
     bottom,
+    vertices: shape.kind === 'polygon' ? shape.vertices : [],
   };
 }

@@ -181,6 +181,9 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
+    if (drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)) {
+      return;
+    }
     const filledPolygonAsLines = filledPolygon(vertices);
     drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
   }

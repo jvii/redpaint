@@ -1,7 +1,11 @@
 import { LineH } from '../domain/LineH';
 import { PaintColor, Point } from '../types';
 import { DrawTarget } from '../canvas/CanvasController';
-import { bucketPointsByGradient, GradientShape } from '../algorithm/gradientFill';
+import {
+  bucketPointsByGradient,
+  GradientShape,
+  MAX_GRADIENT_POLYGON_VERTICES,
+} from '../algorithm/gradientFill';
 import { overmind } from '..';
 
 // Draws a filled shape's already-rasterized output with the current fill
@@ -70,13 +74,17 @@ export function newGradientSeed(): void {
 }
 
 // Routes a convex filled shape through the GPU gradient path. Returns false
-// when the caller should use its CPU path instead: solid mode, or a
+// when the caller should use its CPU path instead: solid mode, a
 // single-color range — bucketPointsByGradient's degenerate case already
 // paints those correctly (everything gets rangeLow, which is NOT the
-// current painting color).
+// current painting color) — or (polygon only) more vertices than the
+// shader's fixed-size loop can hold.
 export function drawGradientFilledShape(shape: GradientShape, canvas: DrawTarget): boolean {
   const style = overmind.state.fillStyle.effectiveFillStyle;
   if (!style || style.rangeHigh - style.rangeLow <= 0) {
+    return false;
+  }
+  if (shape.kind === 'polygon' && shape.vertices.length > MAX_GRADIENT_POLYGON_VERTICES) {
     return false;
   }
   canvas.gradientFill(shape, style, gradientSeed);
