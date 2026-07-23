@@ -37,14 +37,10 @@
   background-color: #ff8800;
 }
 
-.range-slot__cell.is-occupied:hover {
-  background-color: transparent; /* the swatch itself already reads as hover-worthy; don't tint it */
-}
-
 /* the currently selected slot (the one the Color Cycling section below is
    editing) gets a visible ring so it doesn't get lost among plain swatches */
 .range-slot__cell.is-active {
-  outline: 3px solid rgb(0, 85, 170);
+  outline: 3px solid #ff8800;
   outline-offset: -3px;
 }
 
@@ -54,8 +50,6 @@
 }
 
 .range-slot__icon {
-  width: 36px;
-  height: 36px;
   color: black;
 }
 
@@ -87,8 +81,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 20px;
-  padding: 0 0 0 2px;
+  height: 24px;
+  padding: 0 0 0 8px;
   background-color: rgba(0, 0, 0, 0.6);
   opacity: 0;
   pointer-events: none;
@@ -106,8 +100,8 @@
     text-overflow to kick in, it just overflows the cell instead */
   min-width: 0;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 9px;
-  letter-spacing: 0;
+  font-size: 11px;
+  letter-spacing: 0.04em;
   color: white;
   white-space: nowrap;
   overflow: hidden;
@@ -120,8 +114,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   background-color: transparent;
   border: none;
   border-left: 2px solid rgba(255, 255, 255, 0.4);
@@ -129,7 +123,7 @@
   padding: 0;
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1;
   color: white;
   cursor: pointer;
