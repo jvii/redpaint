@@ -38,10 +38,12 @@
 }
 
 /* the currently selected slot (the one the Color Cycling section below is
-   editing) gets a visible ring so it doesn't get lost among plain swatches */
+   editing) gets a visible ring so it doesn't get lost among plain swatches.
+   An inset box-shadow instead of outline: it's drawn flush against the
+   border's own inner edge automatically, no offset math needed to avoid a
+   gap between the black border and the ring. */
 .range-slot__cell.is-active {
-  outline: 3px solid #ff8800;
-  outline-offset: -3px;
+  box-shadow: inset 0 0 0 5px #ff8800;
 }
 
 /* mid-pick for this slot (armed, waiting on the palette grid's next click) */
