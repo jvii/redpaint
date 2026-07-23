@@ -8,9 +8,14 @@
 // Conventions, documented once here:
 //  * gradientHash returns 0..1; its input is a LOCAL (shape-relative)
 //    position plus the per-stroke seed. Local coords are bounded by the
-//    shape size, not the canvas, which is what keeps fract(sin(...)) safe
-//    at mediump precision. Every symmetry copy of a stroke shares local
-//    coords and seed, so all copies get identical (translated) speckle.
+//    shape size, not the canvas — every symmetry copy of a stroke shares
+//    local coords and seed, so all copies get identical (translated)
+//    speckle. The hash itself applies fract() before any large
+//    multiplication (see gradientHash) rather than the classic
+//    fract(sin(dot(p, BIG))*BIG) trick, which amplifies p into a huge
+//    sin() argument that mediump can't represent precisely — visible as
+//    diagonal banding for large shapes on GPUs that actually truncate
+//    mediump to ~16 bits.
 //  * The band math is a direct port of colorIdForPosition
 //    (src/algorithm/gradientFill.ts): floor-divided bands over an extent
 //    span (max - min), signed uniform jitter of half-width
@@ -43,8 +48,17 @@ export const GRADIENT_LIB = `
     uniform float u_ditherJitter; // dither * jitterPercent / 100; 0.0 = off
     uniform float u_seed;         // per-stroke dither seed
 
+    // Small-coefficient, fract-early hash (the "hash21" pattern used widely
+    // in shader code): every intermediate value stays near [0, 1) instead
+    // of blowing up in magnitude before the final fract(), which is what
+    // made the classic fract(sin(dot(...))*43758.5453) trick unsafe here —
+    // p can be a few hundred pixels from the shape center, and the seed
+    // adds more on top, easily pushing that trick's sin() argument into the
+    // tens of thousands where mediump has no precision left.
     float gradientHash(vec2 p) {
-      return fract(sin(dot(p + u_seed, vec2(12.9898, 78.233))) * 43758.5453);
+      vec3 p3 = fract(vec3(p.xyx + u_seed) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
     }
 
     float gradientBand(float pos, float minPos, float span, vec2 hashPos) {

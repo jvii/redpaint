@@ -59,10 +59,14 @@ export function drawFilledQuad(
 // drag reads the same seed (identical speckle), and setUndoPoint re-rolls
 // it when the stroke commits (fresh speckle for the next fill). See
 // docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md, "Seed lifecycle".
-let gradientSeed = Math.random() * 1000;
+// Kept small (not e.g. *1000): gradientHash adds this straight onto a
+// shape-local pixel position before its own fract(), so a large seed
+// reintroduces the same mediump-precision blowup the hash's fract-early
+// design is built to avoid.
+let gradientSeed = Math.random() * 8;
 
 export function newGradientSeed(): void {
-  gradientSeed = Math.random() * 1000;
+  gradientSeed = Math.random() * 8;
 }
 
 // Routes a convex filled shape through the GPU gradient path. Returns false
