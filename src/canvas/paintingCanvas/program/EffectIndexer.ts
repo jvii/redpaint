@@ -14,6 +14,34 @@ type GLBuffers = {
   textureCoordBuffer: WebGLBuffer;
 };
 
+// gl.getUniformLocation/getAttribLocation are synchronous driver round-trips
+// (see GeometricIndexer's own u_pixel caching) — every pass method used to
+// call them fresh on every single stamped point, for every symmetry copy.
+// Each program's locations are looked up once here instead and referenced
+// by name after.
+type Locations = { [name: string]: WebGLUniformLocation | null };
+
+function cacheUniforms(
+  gl: WebGLRenderingContext,
+  program: WebGLProgram,
+  names: string[]
+): Locations {
+  const locations: Locations = {};
+  for (const name of names) {
+    locations[name] = gl.getUniformLocation(program, name);
+  }
+  return locations;
+}
+
+type Attribs = { position: number; texCoord: number };
+
+function cacheAttribs(gl: WebGLRenderingContext, program: WebGLProgram): Attribs {
+  return {
+    position: gl.getAttribLocation(program, 'a_position'),
+    texCoord: gl.getAttribLocation(program, 'a_texCoord'),
+  };
+}
+
 // Per-symmetry-copy chain state: each kaleidoscope copy is its own
 // smear/blend trail (see docs/effects.md).
 type CopyState = {
@@ -38,6 +66,18 @@ export class EffectIndexer {
   private blendProgram: WebGLProgram | null;
   private smoothProgram: WebGLProgram | null;
   private cycleProgram: WebGLProgram | null;
+  private smearLocations!: Locations;
+  private shadeLocations!: Locations;
+  private maskLocations!: Locations;
+  private blendLocations!: Locations;
+  private smoothLocations!: Locations;
+  private cycleLocations!: Locations;
+  private smearAttribs!: Attribs;
+  private shadeAttribs!: Attribs;
+  private maskAttribs!: Attribs;
+  private blendAttribs!: Attribs;
+  private smoothAttribs!: Attribs;
+  private cycleAttribs!: Attribs;
   private scratchFbo: WebGLFramebuffer | null;
   private brushTexture: WebGLTexture | null = null;
   private currentBrushId = 0;
@@ -59,6 +99,75 @@ export class EffectIndexer {
     this.blendProgram = createProgram(gl, EFFECT_VERTEX_SHADER, BLEND_FRAGMENT_SHADER);
     this.smoothProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMOOTH_FRAGMENT_SHADER);
     this.cycleProgram = createProgram(gl, EFFECT_VERTEX_SHADER, CYCLE_FRAGMENT_SHADER);
+
+    this.smearLocations = cacheUniforms(gl, this.smearProgram, [
+      'u_shape',
+      'u_save',
+      'u_saveBounds',
+      'u_scratchSize',
+      'u_brushSize',
+    ]);
+    this.shadeLocations = cacheUniforms(gl, this.shadeProgram, [
+      'u_shape',
+      'u_work',
+      'u_direction',
+      'u_rangeStart',
+      'u_rangeEnd',
+      'u_wholePalette',
+      'u_mask',
+      'u_hasMask',
+      'u_maskOffset',
+      'u_maskBounds',
+      'u_scratchSize',
+      'u_brushSize',
+    ]);
+    this.maskLocations = cacheUniforms(gl, this.maskProgram, [
+      'u_shape',
+      'u_scratchSize',
+      'u_brushSize',
+    ]);
+    this.blendLocations = cacheUniforms(gl, this.blendProgram, [
+      'u_shape',
+      'u_work',
+      'u_save',
+      'u_saveBounds',
+      'u_mask',
+      'u_hasMask',
+      'u_maskOffset',
+      'u_maskBounds',
+      'u_palette',
+      'u_indexedPolicy',
+      'u_rangeStart',
+      'u_rangeEnd',
+      'u_wholePalette',
+      'u_scratchSize',
+      'u_brushSize',
+    ]);
+    this.smoothLocations = cacheUniforms(gl, this.smoothProgram, [
+      'u_shape',
+      'u_work',
+      'u_palette',
+      'u_indexedPolicy',
+      'u_rangeStart',
+      'u_rangeEnd',
+      'u_wholePalette',
+      'u_scratchSize',
+      'u_brushSize',
+    ]);
+    this.cycleLocations = cacheUniforms(gl, this.cycleProgram, [
+      'u_shape',
+      'u_pixel',
+      'u_scratchSize',
+      'u_brushSize',
+    ]);
+
+    this.smearAttribs = cacheAttribs(gl, this.smearProgram);
+    this.shadeAttribs = cacheAttribs(gl, this.shadeProgram);
+    this.maskAttribs = cacheAttribs(gl, this.maskProgram);
+    this.blendAttribs = cacheAttribs(gl, this.blendProgram);
+    this.smoothAttribs = cacheAttribs(gl, this.smoothProgram);
+    this.cycleAttribs = cacheAttribs(gl, this.cycleProgram);
+
     this.scratchFbo = gl.createFramebuffer();
     console.log('Program ready (EffectIndexer: smear, shade, mask, blend, smooth, cycle)');
   }
@@ -73,7 +182,9 @@ export class EffectIndexer {
     const state = this.ensureCopyState(copyId);
     const canvasW = overmind.state.canvas.resolution.width;
     const canvasH = overmind.state.canvas.resolution.height;
-    const cycleProgram = mode === 'Cycle' ? this.cycleSetup(state) : null;
+    if (mode === 'Cycle') {
+      this.cycleSetup(state);
+    }
 
     // Stamps are order-dependent (each reads what the previous one wrote),
     // so points are processed one by one — no batching.
@@ -115,7 +226,7 @@ export class EffectIndexer {
       } else if (mode === 'Smooth') {
         this.smoothPass(rect);
       } else if (mode === 'Cycle') {
-        this.drawStampQuad(cycleProgram as WebGLProgram, rect);
+        this.drawStampQuad(this.cycleAttribs, rect);
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -189,38 +300,34 @@ export class EffectIndexer {
   private smearPass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
     const program = this.smearProgram as WebGLProgram;
+    const loc = this.smearLocations;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.activeTexture(gl.TEXTURE4);
     gl.bindTexture(gl.TEXTURE_2D, state.save);
     const prev = state.prevRect as StampRect;
-    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_save'), 4);
-    gl.uniform4f(
-      gl.getUniformLocation(program, 'u_saveBounds'),
-      prev.u0,
-      prev.v0,
-      prev.u1,
-      prev.v1
-    );
-    this.setShapeUniforms(program);
-    this.drawStampQuad(program, rect);
+    gl.uniform1i(loc.u_shape, 6);
+    gl.uniform1i(loc.u_save, 4);
+    gl.uniform4f(loc.u_saveBounds, prev.u0, prev.v0, prev.u1, prev.v1);
+    this.setShapeUniforms(loc);
+    this.drawStampQuad(this.smearAttribs, rect);
   }
 
   private shadePass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
     const program = this.shadeProgram as WebGLProgram;
+    const loc = this.shadeLocations;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
+    gl.uniform1i(loc.u_shape, 6);
+    gl.uniform1i(loc.u_work, 3);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, this.work);
-    gl.uniform1f(gl.getUniformLocation(program, 'u_direction'), overmind.state.tool.shadeDirection);
-    this.rangeUniforms(program);
-    this.maskUniforms(program, state, this.curOrigin as Point);
-    this.setShapeUniforms(program);
-    this.drawStampQuad(program, rect);
+    gl.uniform1f(loc.u_direction, overmind.state.tool.shadeDirection);
+    this.rangeUniforms(loc);
+    this.maskUniforms(loc, state, this.curOrigin as Point);
+    this.setShapeUniforms(loc);
+    this.drawStampQuad(this.shadeAttribs, rect);
   }
 
   // Renders this stamp's brush coverage into the copy's mask texture. Runs
@@ -229,16 +336,17 @@ export class EffectIndexer {
   private updateMask(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
     const program = this.maskProgram as WebGLProgram;
+    const loc = this.maskLocations;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.scratchFbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, state.mask, 0);
     gl.viewport(0, 0, this.scratchW, this.scratchH);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
-    this.setShapeUniforms(program);
+    gl.uniform1i(loc.u_shape, 6);
+    this.setShapeUniforms(loc);
     // quad over the written subrect, in scratch clip space (derived from uv)
-    this.drawScratchQuad(program, rect);
+    this.drawScratchQuad(this.maskAttribs, rect);
     // restore global state for everyone else
     gl.viewport(
       0,
@@ -252,51 +360,41 @@ export class EffectIndexer {
   private blendPass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
     const program = this.blendProgram as WebGLProgram;
+    const loc = this.blendLocations;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_save'), 4);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_palette'), 1);
+    gl.uniform1i(loc.u_shape, 6);
+    gl.uniform1i(loc.u_work, 3);
+    gl.uniform1i(loc.u_save, 4);
+    gl.uniform1i(loc.u_palette, 1);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, this.work);
     gl.activeTexture(gl.TEXTURE4);
     gl.bindTexture(gl.TEXTURE_2D, state.save);
     const prev = state.prevRect as StampRect;
-    gl.uniform4f(
-      gl.getUniformLocation(program, 'u_saveBounds'),
-      prev.u0,
-      prev.v0,
-      prev.u1,
-      prev.v1
-    );
-    gl.uniform1f(
-      gl.getUniformLocation(program, 'u_indexedPolicy'),
-      overmind.state.canvas.trueColorEnabled ? 0 : 1
-    );
-    this.rangeUniforms(program);
-    this.maskUniforms(program, state, this.curOrigin as Point);
-    this.setShapeUniforms(program);
-    this.drawStampQuad(program, rect);
+    gl.uniform4f(loc.u_saveBounds, prev.u0, prev.v0, prev.u1, prev.v1);
+    gl.uniform1f(loc.u_indexedPolicy, overmind.state.canvas.trueColorEnabled ? 0 : 1);
+    this.rangeUniforms(loc);
+    this.maskUniforms(loc, state, this.curOrigin as Point);
+    this.setShapeUniforms(loc);
+    this.drawStampQuad(this.blendAttribs, rect);
   }
 
   private smoothPass(rect: StampRect): void {
     const gl = this.gl;
     const program = this.smoothProgram as WebGLProgram;
+    const loc = this.smoothLocations;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_work'), 3);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_palette'), 1);
+    gl.uniform1i(loc.u_shape, 6);
+    gl.uniform1i(loc.u_work, 3);
+    gl.uniform1i(loc.u_palette, 1);
     gl.activeTexture(gl.TEXTURE3);
     gl.bindTexture(gl.TEXTURE_2D, this.work);
-    gl.uniform1f(
-      gl.getUniformLocation(program, 'u_indexedPolicy'),
-      overmind.state.canvas.trueColorEnabled ? 0 : 1
-    );
-    this.rangeUniforms(program);
-    this.setShapeUniforms(program);
-    this.drawStampQuad(program, rect);
+    gl.uniform1f(loc.u_indexedPolicy, overmind.state.canvas.trueColorEnabled ? 0 : 1);
+    this.rangeUniforms(loc);
+    this.setShapeUniforms(loc);
+    this.drawStampQuad(this.smoothAttribs, rect);
   }
 
   // Cycle's whole uniform state (u_shape, u_pixel, the scratch/brush size
@@ -309,12 +407,13 @@ export class EffectIndexer {
   // whose WebGL implementation has higher per-call overhead (Safari's,
   // notably): a segment with several points, times several symmetry
   // copies, used to repeat this whole setup for every single point.
-  private cycleSetup(state: CopyState): WebGLProgram {
+  private cycleSetup(state: CopyState): void {
     const gl = this.gl;
     const program = this.cycleProgram as WebGLProgram;
+    const loc = this.cycleLocations;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
-    gl.uniform1i(gl.getUniformLocation(program, 'u_shape'), 6);
+    gl.uniform1i(loc.u_shape, 6);
     const palette = overmind.state.palette;
     const range = activeRangeIndices(
       palette.ranges,
@@ -326,15 +425,17 @@ export class EffectIndexer {
     const idx = range.wholePalette
       ? Number(palette.foregroundColorId) - 1
       : cycleColorIndex(range, state.cycleStep);
-    gl.uniform4f(gl.getUniformLocation(program, 'u_pixel'), idx / 255, 0, 0, 127 / 255);
-    this.setShapeUniforms(program);
-    return program;
+    gl.uniform4f(loc.u_pixel, idx / 255, 0, 0, 127 / 255);
+    this.setShapeUniforms(loc);
   }
 
   // --- shared plumbing ---
+  // These take the calling pass's own cached Locations (each program has
+  // its own uniform location objects even where the name is shared) rather
+  // than a WebGLProgram, so they never fall back to gl.getUniformLocation.
 
   // Range restriction + policy uniforms shared by Shade/Blend/Smooth.
-  private rangeUniforms(program: WebGLProgram): void {
+  private rangeUniforms(loc: Locations): void {
     const gl = this.gl;
     const palette = overmind.state.palette;
     const range: RangeIndices = activeRangeIndices(
@@ -343,42 +444,36 @@ export class EffectIndexer {
       palette.foregroundRgb !== null,
       palette.paletteArray.length
     );
-    gl.uniform1f(gl.getUniformLocation(program, 'u_rangeStart'), range.start);
-    gl.uniform1f(gl.getUniformLocation(program, 'u_rangeEnd'), range.end);
-    gl.uniform1f(gl.getUniformLocation(program, 'u_wholePalette'), range.wholePalette ? 1 : 0);
+    gl.uniform1f(loc.u_rangeStart, range.start);
+    gl.uniform1f(loc.u_rangeEnd, range.end);
+    gl.uniform1f(loc.u_wholePalette, range.wholePalette ? 1 : 0);
   }
 
   // Overlap-mask uniforms shared by Shade/Blend: where (and whether) the
   // previous stamp's coverage mask applies.
-  private maskUniforms(program: WebGLProgram, state: CopyState, curOrigin: Point): void {
+  private maskUniforms(loc: Locations, state: CopyState, curOrigin: Point): void {
     const gl = this.gl;
-    gl.uniform1i(gl.getUniformLocation(program, 'u_mask'), 5);
+    gl.uniform1i(loc.u_mask, 5);
     gl.activeTexture(gl.TEXTURE5);
     gl.bindTexture(gl.TEXTURE_2D, state.mask);
     if (state.prevOrigin && state.prevRect) {
       const off = maskOffset(state.prevOrigin, curOrigin, this.scratchW, this.scratchH);
       const prev = state.prevRect;
-      gl.uniform1f(gl.getUniformLocation(program, 'u_hasMask'), 1);
-      gl.uniform2f(gl.getUniformLocation(program, 'u_maskOffset'), off.du, off.dv);
-      gl.uniform4f(
-        gl.getUniformLocation(program, 'u_maskBounds'),
-        prev.u0,
-        prev.v0,
-        prev.u1,
-        prev.v1
-      );
+      gl.uniform1f(loc.u_hasMask, 1);
+      gl.uniform2f(loc.u_maskOffset, off.du, off.dv);
+      gl.uniform4f(loc.u_maskBounds, prev.u0, prev.v0, prev.u1, prev.v1);
     } else {
-      gl.uniform1f(gl.getUniformLocation(program, 'u_hasMask'), 0);
+      gl.uniform1f(loc.u_hasMask, 0);
     }
   }
 
-  private setShapeUniforms(program: WebGLProgram): void {
+  private setShapeUniforms(loc: Locations): void {
     const gl = this.gl;
-    gl.uniform2f(gl.getUniformLocation(program, 'u_scratchSize'), this.scratchW, this.scratchH);
-    gl.uniform2f(gl.getUniformLocation(program, 'u_brushSize'), this.brushW, this.brushH);
+    gl.uniform2f(loc.u_scratchSize, this.scratchW, this.scratchH);
+    gl.uniform2f(loc.u_brushSize, this.brushW, this.brushH);
   }
 
-  private drawStampQuad(program: WebGLProgram, rect: StampRect): void {
+  private drawStampQuad(attribs: Attribs, rect: StampRect): void {
     const gl = this.gl;
     const xLeft = canvasToWebGLCoordX(gl, rect.quadX);
     const xRight = canvasToWebGLCoordX(gl, rect.quadX + rect.quadW);
@@ -415,16 +510,14 @@ export class EffectIndexer {
       rect.v0,
     ]);
 
-    const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
-    gl.enableVertexAttribArray(a_texCoord);
-    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribs.texCoord);
+    gl.vertexAttribPointer(attribs.texCoord, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.DYNAMIC_DRAW);
 
-    const a_position = gl.getAttribLocation(program, 'a_position');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
-    gl.enableVertexAttribArray(a_position);
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribs.position);
+    gl.vertexAttribPointer(attribs.position, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -432,7 +525,7 @@ export class EffectIndexer {
 
   // Like drawStampQuad, but positioned in the scratch texture's own clip
   // space (for the mask pass).
-  private drawScratchQuad(program: WebGLProgram, rect: StampRect): void {
+  private drawScratchQuad(attribs: Attribs, rect: StampRect): void {
     const gl = this.gl;
     const xLeft = rect.u0 * 2 - 1;
     const xRight = rect.u1 * 2 - 1;
@@ -466,15 +559,13 @@ export class EffectIndexer {
       rect.u1,
       rect.v0,
     ]);
-    const a_texCoord = gl.getAttribLocation(program, 'a_texCoord');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.textureCoordBuffer);
-    gl.enableVertexAttribArray(a_texCoord);
-    gl.vertexAttribPointer(a_texCoord, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribs.texCoord);
+    gl.vertexAttribPointer(attribs.texCoord, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, texCoords, gl.DYNAMIC_DRAW);
-    const a_position = gl.getAttribLocation(program, 'a_position');
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers.vertexBuffer);
-    gl.enableVertexAttribArray(a_position);
-    gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(attribs.position);
+    gl.vertexAttribPointer(attribs.position, 2, gl.FLOAT, false, 0, 0);
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
