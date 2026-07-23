@@ -1,12 +1,18 @@
-import { describe, expect, test, vi } from 'vitest';
-import { bucketPointsByGradient, GradientFillStyle } from '../../src/algorithm/gradientFill';
+import { describe, expect, it, test, vi } from 'vitest';
+import {
+  bucketPointsByGradient,
+  GradientFillStyle,
+  gradientFillUniforms,
+} from '../../src/algorithm/gradientFill';
 
-function bucketMap(buckets: Map<number, { x: number; y: number }[]>): Record<number, { x: number; y: number }[]> {
+function bucketMap(
+  buckets: Map<number, { x: number; y: number }[]>
+): Record<number, { x: number; y: number }[]> {
   return Object.fromEntries(buckets);
 }
 
 describe('bucketPointsByGradient', () => {
-  test('vertical axis maps color id to each point\'s y position across the bounding box', () => {
+  test("vertical axis maps color id to each point's y position across the bounding box", () => {
     const style: GradientFillStyle = { axis: 'vertical', rangeLow: 1, rangeHigh: 5, dither: 0 };
     const points = [
       { x: 0, y: 0 },
@@ -25,7 +31,7 @@ describe('bucketPointsByGradient', () => {
     });
   });
 
-  test('horizontal axis maps color id to each point\'s x position across the bounding box', () => {
+  test("horizontal axis maps color id to each point's x position across the bounding box", () => {
     const style: GradientFillStyle = { axis: 'horizontal', rangeLow: 1, rangeHigh: 5, dither: 0 };
     const points = [
       { x: 0, y: 7 },
@@ -45,7 +51,12 @@ describe('bucketPointsByGradient', () => {
   });
 
   test('horizontalLine normalizes each row against its own local x-extent, independently', () => {
-    const style: GradientFillStyle = { axis: 'horizontalLine', rangeLow: 1, rangeHigh: 3, dither: 0 };
+    const style: GradientFillStyle = {
+      axis: 'horizontalLine',
+      rangeLow: 1,
+      rangeHigh: 3,
+      dither: 0,
+    };
     const points = [
       // row 0: span 0..2 (3 points, contiguous) -> relative fractions 0, 0.5, 1
       { x: 0, y: 0 },
@@ -59,9 +70,18 @@ describe('bucketPointsByGradient', () => {
     ];
     const buckets = bucketPointsByGradient(points, style);
     expect(bucketMap(buckets)).toEqual({
-      1: [{ x: 0, y: 0 }, { x: 100, y: 10 }],
-      2: [{ x: 1, y: 0 }, { x: 101, y: 10 }],
-      3: [{ x: 2, y: 0 }, { x: 102, y: 10 }],
+      1: [
+        { x: 0, y: 0 },
+        { x: 100, y: 10 },
+      ],
+      2: [
+        { x: 1, y: 0 },
+        { x: 101, y: 10 },
+      ],
+      3: [
+        { x: 2, y: 0 },
+        { x: 102, y: 10 },
+      ],
     });
   });
 
@@ -73,7 +93,12 @@ describe('bucketPointsByGradient', () => {
     // single run) is the bug this guards against. Both runs are the same
     // relative shape (3 contiguous points), so both should land on the same
     // 1,2,3 pattern despite the second starting at x=10, not x=0.
-    const style: GradientFillStyle = { axis: 'horizontalLine', rangeLow: 1, rangeHigh: 3, dither: 0 };
+    const style: GradientFillStyle = {
+      axis: 'horizontalLine',
+      rangeLow: 1,
+      rangeHigh: 3,
+      dither: 0,
+    };
     const points = [
       { x: 0, y: 0 },
       { x: 1, y: 0 },
@@ -85,9 +110,18 @@ describe('bucketPointsByGradient', () => {
     ];
     const buckets = bucketPointsByGradient(points, style);
     expect(bucketMap(buckets)).toEqual({
-      1: [{ x: 0, y: 0 }, { x: 10, y: 0 }],
-      2: [{ x: 1, y: 0 }, { x: 11, y: 0 }],
-      3: [{ x: 2, y: 0 }, { x: 12, y: 0 }],
+      1: [
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+      ],
+      2: [
+        { x: 1, y: 0 },
+        { x: 11, y: 0 },
+      ],
+      3: [
+        { x: 2, y: 0 },
+        { x: 12, y: 0 },
+      ],
     });
   });
 
@@ -99,7 +133,10 @@ describe('bucketPointsByGradient', () => {
     ];
     const buckets = bucketPointsByGradient(points, style);
     expect(bucketMap(buckets)).toEqual({
-      4: [{ x: 0, y: 0 }, { x: 5, y: 9 }],
+      4: [
+        { x: 0, y: 0 },
+        { x: 5, y: 9 },
+      ],
     });
   });
 
@@ -108,8 +145,15 @@ describe('bucketPointsByGradient', () => {
     const points = [0, 1, 2, 3, 4].map((x) => ({ x, y: 0 }));
     const buckets = bucketPointsByGradient(points, style);
     expect(bucketMap(buckets)).toEqual({
-      1: [{ x: 0, y: 0 }, { x: 1, y: 0 }],
-      2: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }],
+      1: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+      ],
+      2: [
+        { x: 2, y: 0 },
+        { x: 3, y: 0 },
+        { x: 4, y: 0 },
+      ],
     });
   });
 
@@ -133,13 +177,125 @@ describe('bucketPointsByGradient', () => {
 
     const minJitter = bucketPointsByGradient(points, style, () => 0);
     expect(bucketMap(minJitter)).toEqual({
-      1: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
+      1: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 },
+      ],
       2: [{ x: 4, y: 0 }],
     });
 
     const maxJitter = bucketPointsByGradient(points, style, () => 1);
     expect(bucketMap(maxJitter)).toEqual({
-      2: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }],
+      2: [
+        { x: 0, y: 0 },
+        { x: 1, y: 0 },
+        { x: 2, y: 0 },
+        { x: 3, y: 0 },
+        { x: 4, y: 0 },
+      ],
     });
+  });
+});
+
+describe('gradientFillUniforms', () => {
+  const style = { axis: 'vertical' as const, rangeLow: 5, rangeHigh: 9, dither: 6, jitter: 50 };
+
+  it('maps a circle to center/radius and its inclusive pixel bounds', () => {
+    const u = gradientFillUniforms(
+      { kind: 'circle', center: { x: 50, y: 40 }, radius: 10 },
+      style,
+      7
+    );
+    expect(u.shapeKind).toBe(1);
+    expect(u.center).toEqual({ x: 50, y: 40 });
+    expect(u.radiusX).toBe(10);
+    expect(u.radiusY).toBe(10);
+    expect(u.rotation).toBe(0);
+    expect({ left: u.left, top: u.top, right: u.right, bottom: u.bottom }).toEqual({
+      left: 40,
+      top: 30,
+      right: 60,
+      bottom: 50,
+    });
+  });
+
+  it('vertical axis spans the bounds top to bottom (extent, not +1)', () => {
+    const u = gradientFillUniforms(
+      { kind: 'circle', center: { x: 50, y: 40 }, radius: 10 },
+      style,
+      7
+    );
+    expect(u.axisMode).toBe(0);
+    expect(u.axisMin).toBe(30);
+    expect(u.axisSpan).toBe(20);
+  });
+
+  it('horizontal axis spans left to right', () => {
+    const u = gradientFillUniforms(
+      { kind: 'rect', start: { x: 12, y: 3 }, end: { x: 2, y: 8 } },
+      { ...style, axis: 'horizontal' },
+      7
+    );
+    expect(u.shapeKind).toBe(0);
+    expect(u.axisMode).toBe(1);
+    // start/end normalize: bounds are min/max of the two corners
+    expect({ left: u.left, top: u.top, right: u.right, bottom: u.bottom }).toEqual({
+      left: 2,
+      top: 3,
+      right: 12,
+      bottom: 8,
+    });
+    expect(u.axisMin).toBe(2);
+    expect(u.axisSpan).toBe(10);
+    expect(u.center).toEqual({ x: 7, y: 5.5 });
+  });
+
+  it('converts the 1-based range to 0-based storage and premultiplies dither', () => {
+    const u = gradientFillUniforms(
+      { kind: 'rect', start: { x: 0, y: 0 }, end: { x: 9, y: 9 } },
+      style,
+      7
+    );
+    expect(u.bandCount).toBe(4); // 9 - 5
+    expect(u.rangeLowIndex).toBe(4); // 5 - 1
+    expect(u.ditherJitter).toBe(3); // 6 * 50 / 100
+    expect(u.seed).toBe(7);
+  });
+
+  it('defaults jitter to the module default (100/6) when omitted', () => {
+    const u = gradientFillUniforms(
+      { kind: 'rect', start: { x: 0, y: 0 }, end: { x: 9, y: 9 } },
+      { axis: 'vertical', rangeLow: 1, rangeHigh: 3, dither: 6 },
+      7
+    );
+    expect(u.ditherJitter).toBeCloseTo(1); // 6 * (100/6) / 100
+  });
+
+  it('bounds of a rotated ellipse cover the rotated extents', () => {
+    // 90 degrees: x/y extents swap
+    const u = gradientFillUniforms(
+      { kind: 'ellipse', center: { x: 100, y: 100 }, radiusX: 20, radiusY: 5, rotationAngle: 90 },
+      style,
+      7
+    );
+    expect(u.shapeKind).toBe(2);
+    expect(u.rotation).toBeCloseTo(Math.PI / 2);
+    expect(u.left).toBeLessThanOrEqual(95);
+    expect(u.right).toBeGreaterThanOrEqual(105);
+    expect(u.top).toBeLessThanOrEqual(80);
+    expect(u.bottom).toBeGreaterThanOrEqual(120);
+  });
+
+  it('horizontalLine axis still carries the bbox span (the rect rows use it)', () => {
+    const u = gradientFillUniforms(
+      { kind: 'rect', start: { x: 2, y: 3 }, end: { x: 12, y: 8 } },
+      { ...style, axis: 'horizontalLine' },
+      7
+    );
+    expect(u.axisMode).toBe(2);
+    expect(u.axisMin).toBe(2);
+    expect(u.axisSpan).toBe(10);
   });
 });

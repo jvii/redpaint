@@ -117,7 +117,10 @@ export function bucketPointsByGradient(
           const minX = sorted[runStart].x;
           const maxX = sorted[i - 1].x;
           for (let j = runStart; j < i; j++) {
-            add(colorIdForPosition(sorted[j].x, minX, maxX - minX, style, bandCount, random), sorted[j]);
+            add(
+              colorIdForPosition(sorted[j].x, minX, maxX - minX, style, bandCount, random),
+              sorted[j]
+            );
           }
           runStart = i;
         }
@@ -145,4 +148,108 @@ export function bucketPointsByGradient(
     add(colorId, point);
   }
   return buckets;
+}
+
+// A convex, analytically-describable filled shape for the GPU gradient path
+// (docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md). Flood fill and
+// polygons are deliberately NOT here — their regions have no closed form.
+export type GradientShape =
+  | { kind: 'rect'; start: Point; end: Point }
+  | { kind: 'circle'; center: Point; radius: number }
+  | { kind: 'ellipse'; center: Point; radiusX: number; radiusY: number; rotationAngle: number };
+
+// Everything the gradient shaders need, computed once per draw call on the
+// JS side. This is the single place where 1-based color ids become 0-based
+// storage indices and where degrees become radians.
+export interface GradientUniforms {
+  shapeKind: 0 | 1 | 2; // rect | circle | ellipse
+  center: Point;
+  radiusX: number;
+  radiusY: number;
+  rotation: number; // radians
+  axisMode: 0 | 1 | 2; // vertical | horizontal | horizontalLine
+  axisMin: number;
+  axisSpan: number; // extent (max - min), matching bucketPointsByGradient
+  bandCount: number;
+  rangeLowIndex: number; // 0-based
+  ditherJitter: number; // dither * jitterPercent / 100
+  seed: number;
+  left: number; // inclusive pixel bounds = the bounding quad to draw
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+const AXIS_MODE: { [axis in GradientAxis]: 0 | 1 | 2 } = {
+  vertical: 0,
+  horizontal: 1,
+  horizontalLine: 2,
+};
+
+export function gradientFillUniforms(
+  shape: GradientShape,
+  style: GradientFillStyle,
+  seed: number
+): GradientUniforms {
+  let center: Point;
+  let radiusX = 0;
+  let radiusY = 0;
+  let rotation = 0;
+  let left: number;
+  let top: number;
+  let right: number;
+  let bottom: number;
+
+  if (shape.kind === 'rect') {
+    left = Math.min(shape.start.x, shape.end.x);
+    right = Math.max(shape.start.x, shape.end.x);
+    top = Math.min(shape.start.y, shape.end.y);
+    bottom = Math.max(shape.start.y, shape.end.y);
+    center = { x: (left + right) / 2, y: (top + bottom) / 2 };
+    radiusX = (right - left) / 2;
+    radiusY = (bottom - top) / 2;
+  } else if (shape.kind === 'circle') {
+    center = shape.center;
+    radiusX = shape.radius;
+    radiusY = shape.radius;
+    left = shape.center.x - shape.radius;
+    right = shape.center.x + shape.radius;
+    top = shape.center.y - shape.radius;
+    bottom = shape.center.y + shape.radius;
+  } else {
+    center = shape.center;
+    radiusX = shape.radiusX;
+    radiusY = shape.radiusY;
+    rotation = shape.rotationAngle * (Math.PI / 180);
+    // extents of a rotated ellipse's axis-aligned bounding box
+    const c = Math.abs(Math.cos(rotation));
+    const s = Math.abs(Math.sin(rotation));
+    const extentX = radiusX * c + radiusY * s;
+    const extentY = radiusX * s + radiusY * c;
+    left = Math.floor(shape.center.x - extentX);
+    right = Math.ceil(shape.center.x + extentX);
+    top = Math.floor(shape.center.y - extentY);
+    bottom = Math.ceil(shape.center.y + extentY);
+  }
+
+  const vertical = style.axis === 'vertical';
+  const jitterPercent = style.jitter ?? DEFAULT_JITTER_PERCENT;
+  return {
+    shapeKind: shape.kind === 'rect' ? 0 : shape.kind === 'circle' ? 1 : 2,
+    center,
+    radiusX,
+    radiusY,
+    rotation,
+    axisMode: AXIS_MODE[style.axis],
+    axisMin: vertical ? top : left,
+    axisSpan: vertical ? bottom - top : right - left,
+    bandCount: style.rangeHigh - style.rangeLow,
+    rangeLowIndex: style.rangeLow - 1,
+    ditherJitter: (style.dither * jitterPercent) / 100,
+    seed,
+    left,
+    top,
+    right,
+    bottom,
+  };
 }
