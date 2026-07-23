@@ -3,7 +3,7 @@
    seams, one hard group drop shadow, no permanently visible controls. An
    empty cell shows only the store glyph (BrushSlotIcons.tsx's StoreIcon,
    the same one brush slots use); an occupied cell is a bare color-swatch
-   strip, with the color count and Clear revealed as a hover overlay. */
+   strip, with its "Range N" label and Clear revealed as a hover overlay. */
 
 .range-slot-strip {
   display: flex;
@@ -70,7 +70,7 @@
   padding: 0 4px;
 }
 
-/* the hover-only overlay bar: color count + Clear, top of the cell, over
+/* the hover-only overlay bar: slot label + Clear, top of the cell, over
    the swatch rather than pushing it down — see BrushSlotStrip.css's
    .brush-slot__overlay for the same treatment */
 .range-slot__overlay {
@@ -94,7 +94,7 @@
   pointer-events: auto;
 }
 
-.range-slot__overlay-count {
+.range-slot__overlay-label {
   flex: 1; /* a flex item's default min-width is its own content's natural
     width, not 0 - without this it never actually shrinks small enough for
     text-overflow to kick in, it just overflows the cell instead */

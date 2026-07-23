@@ -27,7 +27,7 @@ function rangeSwatchBackground(colors: Color[]): string {
 
 // Range slots, interacted with the same way as the brush-slot strip
 // (BrushSlotStrip.tsx): an empty slot has one minimal affordance, an
-// occupied slot is a plain swatch with a color-count caption and Clear
+// occupied slot is a plain swatch with a "Range N" label and Clear
 // revealed only on hover. The one departure from that parity: a range
 // genuinely needs two colors, not one, so an empty slot's click arms a
 // "pick the end color on the palette grid" flow (the currently edited
@@ -120,7 +120,7 @@ export function RangeSlotStrip(): JSX.Element {
               onKeyDown={activateOnKey(select(index))}
             >
               <div className="range-slot__overlay">
-                <span className="range-slot__overlay-count">{colors.length} Colors</span>
+                <span className="range-slot__overlay-label">Range {index + 1}</span>
                 <button
                   className="range-slot__overlay-clear"
                   type="button"
