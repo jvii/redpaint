@@ -20,12 +20,12 @@
   font-size: 16px;
   line-height: 1.5;
   white-space: nowrap;
-  min-width: 9ch;
+  min-width: 6ch;
 }
 
 /* lines the Order slider's label up with the Type row's below it */
 .symmetry-settings__container .retro-labeled-slider__label {
-  min-width: 9ch;
+  min-width: 6ch;
 }
 
 .symmetry-settings__row-buttons {
