@@ -1,40 +1,21 @@
 import { LineH } from '../domain/LineH';
 import { PaintColor, Point } from '../types';
 import { DrawTarget } from '../canvas/CanvasController';
-import {
-  bucketPointsByGradient,
-  GradientShape,
-  MAX_GRADIENT_POLYGON_VERTICES,
-} from '../algorithm/gradientFill';
+import { GradientShape, MAX_GRADIENT_POLYGON_VERTICES } from '../algorithm/gradientFill';
 import { overmind } from '..';
 
-// Draws a filled shape's already-rasterized output with the current fill
-// style. Solid mode (the default, and every fill before this feature
-// existed) paints with the given color via a single lines()/quad() call, as
-// today. Gradient mode expands the output into points, buckets them by
-// target color (see bucketPointsByGradient), and issues one points() call
-// per bucket instead — every call this makes is still an ordinary
-// single-color batch, so no changes are needed to DrawTarget,
-// CanvasController, or the WebGL layer below it. Shared by PixelBrush and
-// CustomBrush, whose filled-shape methods already reduce to the same
-// lines()/quad() calls.
+// Draws a filled shape's already-rasterized output when the GPU gradient
+// path (drawGradientFilledShape) didn't handle it: solid mode, a degenerate
+// (single-color) range, or — the only other case, polygon only — more
+// vertices than MAX_GRADIENT_POLYGON_VERTICES. That last case is rare
+// enough not to warrant a real per-pixel CPU gradient fallback (that was
+// the old bucketPointsByGradient path, deleted along with it): it's simply
+// painted flat at rangeLow, same as a degenerate range. Shared by
+// PixelBrush and CustomBrush, whose filled-shape methods already reduce to
+// the same lines()/quad() calls.
 export function drawFilledLines(lines: LineH[], canvas: DrawTarget, solidColor: PaintColor): void {
   const style = overmind.state.fillStyle.effectiveFillStyle;
-  if (!style) {
-    canvas.lines(lines, solidColor);
-    return;
-  }
-  // a degenerate (single-color) range always resolves to rangeLow (see
-  // bucketPointsByGradient) — skip rasterizing to points and bucketing
-  // through a Map for a case that only ever produces one bucket
-  if (style.rangeHigh - style.rangeLow <= 0) {
-    canvas.lines(lines, { kind: 'index', colorNumber: style.rangeLow });
-    return;
-  }
-  const points = lines.flatMap((line) => line.asPoints());
-  for (const [colorNumber, bucketPoints] of bucketPointsByGradient(points, style)) {
-    canvas.points(bucketPoints, { kind: 'index', colorNumber });
-  }
+  canvas.lines(lines, style ? { kind: 'index', colorNumber: style.rangeLow } : solidColor);
 }
 
 export function drawFilledQuad(
@@ -44,30 +25,7 @@ export function drawFilledQuad(
   solidColor: PaintColor
 ): void {
   const style = overmind.state.fillStyle.effectiveFillStyle;
-  if (!style) {
-    canvas.quad(start, end, solidColor);
-    return;
-  }
-  if (style.rangeHigh - style.rangeLow <= 0) {
-    canvas.quad(start, end, { kind: 'index', colorNumber: style.rangeLow });
-    return;
-  }
-  // only rasterized into individual points when gradient is active with a
-  // real (non-degenerate) range; solid mode and a degenerate range both
-  // keep the cheap single quad() call above
-  const minX = Math.min(start.x, end.x);
-  const maxX = Math.max(start.x, end.x);
-  const minY = Math.min(start.y, end.y);
-  const maxY = Math.max(start.y, end.y);
-  const points: Point[] = [];
-  for (let y = minY; y <= maxY; y++) {
-    for (let x = minX; x <= maxX; x++) {
-      points.push({ x, y });
-    }
-  }
-  for (const [colorNumber, bucketPoints] of bucketPointsByGradient(points, style)) {
-    canvas.points(bucketPoints, { kind: 'index', colorNumber });
-  }
+  canvas.quad(start, end, style ? { kind: 'index', colorNumber: style.rangeLow } : solidColor);
 }
 
 // The per-stroke dither seed for GPU gradient fills. One value covers a
@@ -87,10 +45,9 @@ export function newGradientSeed(): void {
 
 // Routes a convex filled shape through the GPU gradient path. Returns false
 // when the caller should use its CPU path instead: solid mode, a
-// single-color range (drawFilledLines/drawFilledQuad short-circuit that
-// case to a single rangeLow-colored lines()/quad() call, same as solid
-// mode) — or (polygon only) more vertices than the shader's fixed-size
-// loop can hold.
+// single-color range, or (polygon only) more vertices than the shader's
+// fixed-size loop can hold — see drawFilledLines/drawFilledQuad, the only
+// callers of that fallback.
 export function drawGradientFilledShape(shape: GradientShape, canvas: DrawTarget): boolean {
   const style = overmind.state.fillStyle.effectiveFillStyle;
   if (!style || style.rangeHigh - style.rangeLow <= 0) {
