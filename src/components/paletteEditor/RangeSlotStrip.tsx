@@ -22,7 +22,7 @@ function rangeSwatchBackground(colors: Color[]): string {
     const rgb = colorToRGBString(color);
     return [`${rgb} ${(i * 100) / n}%`, `${rgb} ${((i + 1) * 100) / n}%`];
   });
-  return `linear-gradient(to right, ${stops.join(', ')})`;
+  return `linear-gradient(to bottom, ${stops.join(', ')})`;
 }
 
 // Range slots, interacted with the same way as the brush-slot strip
