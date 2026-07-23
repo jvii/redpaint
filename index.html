@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -6,6 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="/manifest.json" />
+    <!-- Loaded as a real <link>, not @import'd from index.css: @import
+         defers discovery of the font stylesheet (and the font file behind
+         it) until after index.css itself is fetched and parsed, instead of
+         letting the HTML preloader fetch it immediately in parallel. That
+         extra delay widened the window where the page's Press Start 2P
+         text is still showing its fallback font (display=swap) when a
+         modal first mounts - Safari doesn't always reflow an already-laid-
+         out auto-height container when that swap's reflow happens later,
+         only once some other change forces a relayout. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap"
+    />
     <title>ReDPaint</title>
   </head>
   <body>
