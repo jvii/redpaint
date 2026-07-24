@@ -38,8 +38,16 @@
    .menu__main beside .menu__close, same as before. */
 .menu__collapse {
   display: flex;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-height: 0;
+  /* caps the open panel to the viewport below the menubar (top: 50px on
+     .menu). Below this cap, .menu__main is stretched (its default cross-axis
+     sizing — see below) to that same bounded height, which is what lets
+     BrushMenu.css's __spacer shrink itself away first on a short viewport.
+     Only once the real rows genuinely don't fit even without the spacer does
+     this overflow-y produce an actual scrollbar, as a last resort. */
+  max-height: calc(100vh - 50px);
 }
 
 /* Everything but the close button: the screen status strip above the columns */
@@ -51,9 +59,12 @@
      (the gadget clusters) wrap against that width, same as before */
   flex: 1;
   min-width: 0;
-  /* height from its own content, not stretched to match .menu__collapse's
-     cross-axis size (the default) */
-  align-self: flex-start;
+  /* stretched (the flex default) to .menu__collapse's cross-axis size, which
+     is what makes that container's height cap a real, definite height for
+     this box — the constraint BrushMenu.css's __spacer needs in order to
+     shrink itself away before the panel ever scrolls. Harmless the rest of
+     the time: when content is shorter than the viewport, the cap doesn't
+     bind, so this just matches the same intrinsic height it always had. */
 }
 
 .menu__status {

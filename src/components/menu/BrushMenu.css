@@ -6,6 +6,27 @@
   flex-direction: column;
   gap: 28px;
   margin-top: 44px;
+  /* overrides the default content-based auto minimum so this flex item can
+     actually be shrunk by .menu__main on a short viewport — without it the
+     browser freezes .brush-menu at its full natural height and reaches for
+     Menu.css's scrollbar immediately, never letting __spacer give up its
+     space first. */
+  min-height: 0;
+}
+
+/* extra buffer below the last row (brush slots/Previous) so a small
+   overshoot while using them doesn't leave the panel and trigger the
+   drop-down's onMouseLeave close. A flex item with no content of its own,
+   rather than padding on .brush-menu — its min size is near-zero, so on a
+   short viewport flexbox shrinks this away before it ever shrinks the real
+   rows above it, and Menu.css's scrollbar (a last resort for content that
+   doesn't fit at all) only ever has to reclaim space this spacer couldn't
+   give up. The min-height floor is deliberately not 0: once scrolled, the
+   last row's own edge sitting flush against the panel's bottom reads as the
+   content being cut off, so a sliver of breathing room is kept even then. */
+.brush-menu__spacer {
+  flex: 0 1 32px;
+  min-height: 12px;
 }
 
 /* the drawer's own Brush head — its underline doubles as the divider between

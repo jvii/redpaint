@@ -255,6 +255,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
         <BrushSlotStrip />
         <PreviousBrushSlot />
       </div>
+      <div className="brush-menu__spacer" />
     </div>
   );
 }
