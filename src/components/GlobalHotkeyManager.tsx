@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useActions } from '../overmind';
 import { overmind } from '../index';
 import { MODE_ORDER } from '../overmind/brush/mode';
+import { isEdge } from '../browser';
 
 // A non-rendering logic component for managing hotkeys and copy/paste
 export function GlobalHotKeyManager(): null {
@@ -149,7 +150,7 @@ function useModeHotkeys(): void {
       return;
     }
     const match = /^F([1-8])$/.exec(event.key);
-    if (!match) {
+    if (!match || event.shiftKey !== isEdge) {
       return;
     }
     const mode = MODE_ORDER[Number(match[1]) - 1];

@@ -3,6 +3,7 @@ import { useActions, useAppState } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { Mode } from '../../overmind/brush/state';
 import { MODE_ORDER } from '../../overmind/brush/mode';
+import { isEdge } from '../../browser';
 import { RetroToggle } from '../ui/RetroToggle';
 import { Gadget, GadgetGroup, useFileOpener } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
@@ -213,7 +214,9 @@ export function Menu(): JSX.Element {
                     label: (
                       <span className="menu__mode-label">
                         {m}
-                        <kbd className="wb-gadget__keycap menu__mode-keycap">{`F${i + 1}`}</kbd>
+                        <kbd className="wb-gadget__keycap menu__mode-keycap">
+                          {isEdge ? `⇧F${i + 1}` : `F${i + 1}`}
+                        </kbd>
                       </span>
                     ),
                     disabled: (m === 'Matte' || m === 'Repl') && usingBuiltInBrush,
