@@ -65,17 +65,14 @@
   color: white;
 }
 
+/* same glyph/font as .range-slot__overlay-clear's close button, so "cancel"
+   reads consistently across the strip */
 .range-slot__armed-label {
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  font-weight: 500;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 10px;
-  line-height: 1.3;
-  letter-spacing: 0.02em;
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 24px;
+  line-height: 1;
   color: white;
-  text-align: center;
-  padding: 0 4px;
 }
 
 /* the hover-only overlay bar: slot label + Clear, top of the cell, over

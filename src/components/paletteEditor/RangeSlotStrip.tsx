@@ -75,7 +75,7 @@ export function RangeSlotStrip(): JSX.Element {
 
         if (!range) {
           const isArmed = isActive && armedForRange;
-          const label = isArmed ? 'Cancel set' : `Set range ${index + 1}`;
+          const label = isArmed ? 'Cancel Set Range' : `Set range ${index + 1}`;
           return (
             <div className="range-slot" key={index}>
               <div
@@ -88,7 +88,7 @@ export function RangeSlotStrip(): JSX.Element {
                 onKeyDown={activateOnKey(selectOrArm(index))}
               >
                 {isArmed ? (
-                  <span className="range-slot__armed-label">Cancel set</span>
+                  <span className="range-slot__armed-label">&times;</span>
                 ) : (
                   <StoreIcon className="range-slot__icon" />
                 )}

@@ -145,20 +145,20 @@ export function PaletteEditor(): JSX.Element | null {
             variant={state.paletteEditor.armedAction === 'spread' ? 'secondary' : 'basic'}
             onClick={(): void => actions.paletteEditor.armAction('spread')}
           >
-            {state.paletteEditor.armedAction === 'spread' ? 'Cancel spread' : 'Spread'}
+            {state.paletteEditor.armedAction === 'spread' ? 'Cancel Spread' : 'Spread'}
           </RetroButton>
           <span className="palette-editor__action-group">
             <RetroButton
               variant={state.paletteEditor.armedAction === 'swap' ? 'secondary' : 'basic'}
               onClick={(): void => actions.paletteEditor.armAction('swap')}
             >
-              {state.paletteEditor.armedAction === 'swap' ? 'Cancel swap' : 'Swap'}
+              {state.paletteEditor.armedAction === 'swap' ? 'Cancel Swap' : 'Swap'}
             </RetroButton>
             <RetroButton
               variant={state.paletteEditor.armedAction === 'copy' ? 'secondary' : 'basic'}
               onClick={(): void => actions.paletteEditor.armAction('copy')}
             >
-              {state.paletteEditor.armedAction === 'copy' ? 'Cancel copy' : 'Copy'}
+              {state.paletteEditor.armedAction === 'copy' ? 'Cancel Copy' : 'Copy'}
             </RetroButton>
           </span>
         </div>
