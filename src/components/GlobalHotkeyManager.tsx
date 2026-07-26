@@ -154,10 +154,7 @@ function useModeHotkeys(): void {
       return;
     }
     const mode = MODE_ORDER[Number(match[1]) - 1];
-    if (
-      (mode === 'Matte' || mode === 'Repl') &&
-      overmind.state.brush.selectedBuiltInBrushId !== null
-    ) {
+    if ((mode === 'Matte' || mode === 'Repl') && overmind.state.brush.usingBuiltInBrush) {
       return;
     }
     event.preventDefault(); // F1 opens the browser's own help otherwise

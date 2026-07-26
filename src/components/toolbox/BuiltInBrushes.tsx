@@ -39,11 +39,22 @@ function BrushButton({ svg, brushId }: ButtonProps): JSX.Element {
     actions.brush.selectBuiltInBrush(brushId);
   };
 
+  // Right-click, DPaint's SizePen (docs/brush-transforms.md "Sizing a
+  // built-in brush", CTRPAN.C:penMproc): selects this preset, same as a
+  // left click, then arms the drag-to-resize tool on canvas instead of
+  // stopping at selection.
+  const onContextMenu = (event: React.MouseEvent): void => {
+    event.preventDefault();
+    actions.brush.armBuiltInBrushForSizing(brushId);
+    actions.toolbox.enterSizeBuiltInBrushMode();
+  };
+
   const isSelected = state.brush.selectedBuiltInBrushId === brushId;
   return (
     <div
       className={'built-in-brush-div' + ' built-in-brush-bg' + (isSelected ? '--selected' : '')}
       onClick={onClick}
+      onContextMenu={onContextMenu}
     >
       {svg}
     </div>

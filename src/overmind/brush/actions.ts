@@ -2,6 +2,7 @@ import { Context } from '../../overmind';
 import { Mode, BuiltInBrushId, builtInBrushes, isBuiltInBrush } from './state';
 import { usesColorizedBrush } from './mode';
 import { CustomBrush } from '../../brush/CustomBrush';
+import { createSizedBuiltInBrush } from '../../brush/BuiltInBrushFactory';
 import { brushRecall } from '../../brush/BrushRecall';
 import { brushSlots } from '../../brush/BrushSlots';
 import { renderBrushThumbnail } from '../../brush/brushThumbnail';
@@ -32,6 +33,7 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
 
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.state.brush.selectedBuiltInBrushId = brushNumber;
+  context.state.brush.usingBuiltInBrush = true;
   // banks the outgoing custom brush into Previous (docs/brush-slots.md)
   brushRecall.setBuiltIn(builtInBrushes[brushNumber]);
   context.actions.brush.refreshPreviousBrushSlot();
@@ -52,10 +54,32 @@ export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId
   }
 };
 
+// Right-click entry point for BuiltInBrushes.tsx (docs/brush-transforms.md
+// "Sizing a built-in brush") — selectBuiltInBrush plus, for the 1-pixel dot
+// specifically, swapping in a resizable size-1 round brush right after.
+// The dot (built-in 1) is a bare PixelBrush, not a CustomBrush, so it can't
+// be dragged to a new size itself — DPaint hit the same wall and had
+// SizePen(0) start a round pen at size 1 instead of trying to resize the
+// dot (MODES.C: `if ((pn==0)||(pn==USERBRUSH)) pnType = ROUND_B`).
+export const armBuiltInBrushForSizing = (context: Context, brushNumber: BuiltInBrushId): void => {
+  context.actions.brush.selectBuiltInBrush(brushNumber);
+  if (brushNumber === 1) {
+    brushRecall.setBuiltIn(createSizedBuiltInBrush('round', 1, 1));
+    // selectBuiltInBrush already ran setMode, but against the outgoing
+    // PixelBrush — this fresh CustomBrush has never been colorized, so its
+    // resting bitmap is still the raw matte (stored index 0), which renders
+    // as whatever color sits in that palette slot (typically the
+    // background) rather than the foreground color. Re-running setMode
+    // colorizes this actual instance.
+    context.actions.brush.setMode(context.state.brush.mode);
+  }
+};
+
 // Called when a new custom (captured or loaded) brush becomes the current
 // brush (the brushRecall.setCustom that installed it dropped the snapshot)
 export const clearBuiltInBrushSelection = (context: Context): void => {
   context.state.brush.selectedBuiltInBrushId = null;
+  context.state.brush.usingBuiltInBrush = false;
   context.state.brush.hasOriginalBrush = false;
 };
 
@@ -172,6 +196,34 @@ export const doubleBrushVertical = (context: Context): void => {
 // frames were temporary brushes, so these are the drags' only real transform.
 export const stretchBrushTo = (context: Context, size: { width: number; height: number }): void => {
   transformBrush(context, (b) => resize(b, size.width, size.height));
+};
+
+// Commits the right-click drag-resize of a built-in brush
+// (SizeBuiltInBrushTool, docs/brush-transforms.md "Sizing a built-in
+// brush") — DPaint's SizePen (MODES.C), a separate path from the
+// custom-brush Stretch above: regenerates the family's shape at the new
+// size rather than resampling a bitmap, and the result stays tagged as a
+// built-in (isBuiltInBrush), so Matte/Repl and Previous-banking stay
+// disabled exactly as they were before the resize.
+export const resizeBuiltInBrushTo = (
+  context: Context,
+  size: { width: number; height: number }
+): void => {
+  const brush = brushRecall.current;
+  if (!(brush instanceof CustomBrush) || brush.builtInFamily === undefined) {
+    return;
+  }
+  const resized = createSizedBuiltInBrush(brush.builtInFamily, size.width, size.height);
+  brushRecall.setBuiltIn(resized);
+  // no preset icon matches a custom-dragged size — mirrors DPaint's
+  // cpPenBox = -1 (CTRPAN.C:189) when a sized pen isn't one of the toolbar
+  // presets. usingBuiltInBrush stays true (set already by the selectBuiltInBrush
+  // that armed this drag) — that's the flag Matte/Repl and the transform menu
+  // items actually key off, precisely so it can outlive selectedBuiltInBrushId
+  // clearing here.
+  context.state.brush.selectedBuiltInBrushId = null;
+  context.state.brush.usingBuiltInBrush = true;
+  context.actions.brush.setMode(context.state.brush.mode);
 };
 
 export const shearBrushBy = (context: Context, dx: number): void => {

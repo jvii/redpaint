@@ -57,7 +57,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   const state = useAppState();
 
   // transforms are custom-brush-only
-  const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
+  const usingBuiltInBrush = state.brush.usingBuiltInBrush;
   // swaps the keyboard-shortcut title for an explanation while a built-in
   // brush makes the gadget a no-op, instead of leaving a disabled button
   // with a tooltip that doesn't say why

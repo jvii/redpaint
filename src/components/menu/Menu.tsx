@@ -131,7 +131,7 @@ export function Menu(): JSX.Element {
   };
 
   // for disabling Matte mode selection when using a built-in brush
-  const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
+  const usingBuiltInBrush = state.brush.usingBuiltInBrush;
 
   return (
     <div

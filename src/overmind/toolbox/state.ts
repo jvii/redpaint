@@ -7,6 +7,7 @@ import { ZoomInitialPointSelectorTool } from '../../tools/ZoomInitialPointSelect
 import { SymmetryCenterSelectorTool } from '../../tools/SymmetryCenterSelectorTool';
 import { BrushSelector } from '../../tools/BrushSelector';
 import { StretchBrushTool } from '../../tools/StretchBrushTool';
+import { SizeBuiltInBrushTool } from '../../tools/SizeBuiltInBrushTool';
 import { ShearBrushTool } from '../../tools/ShearBrushTool';
 import { RotateBrushTool } from '../../tools/RotateBrushTool';
 import { BendBrushTool } from '../../tools/BendBrushTool';
@@ -49,6 +50,7 @@ const selectorTools = {
   symmetryCenterSelectorTool: new SymmetryCenterSelectorTool(),
   brushSelectorTool: new BrushSelector(),
   brushStretchTool: new StretchBrushTool(),
+  sizeBuiltInBrushTool: new SizeBuiltInBrushTool(),
   brushShearTool: new ShearBrushTool(),
   brushRotateTool: new RotateBrushTool(),
   brushBendHorizontalTool: new BendBrushTool(true),
@@ -93,6 +95,7 @@ export const state: State = {
       this.previousToolId === 'symmetryCenterSelectorTool' ||
       this.previousToolId === 'brushSelectorTool' ||
       this.previousToolId === 'brushStretchTool' ||
+      this.previousToolId === 'sizeBuiltInBrushTool' ||
       this.previousToolId === 'brushShearTool' ||
       this.previousToolId === 'brushRotateTool' ||
       this.previousToolId === 'brushBendHorizontalTool' ||

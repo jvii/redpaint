@@ -130,6 +130,10 @@ export const brushStretchStart = (context: Context, anchor: Point | null): void 
   context.state.tool.brushStretchTool.anchor = anchor;
 };
 
+export const sizeBuiltInBrushStart = (context: Context, anchor: Point | null): void => {
+  context.state.tool.sizeBuiltInBrushTool.anchor = anchor;
+};
+
 export const brushShearStart = (context: Context, anchor: Point | null): void => {
   context.state.tool.brushShearTool.anchor = anchor;
 };

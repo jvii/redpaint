@@ -1,4 +1,5 @@
 import { PixelBrush } from '../../brush/PixelBrush';
+import { CustomBrush } from '../../brush/CustomBrush';
 import { createBuiltInBrush } from '../../brush/BuiltInBrushFactory';
 import { BRUSH_SLOT_COUNT } from '../../brush/BrushSlots';
 
@@ -9,22 +10,25 @@ export type BuiltInBrushId = keyof typeof builtInBrushes;
 
 export const builtInBrushes = {
   1: new PixelBrush(),
-  2: createBuiltInBrush('dot3x3'),
-  3: createBuiltInBrush('dot5x5'),
-  4: createBuiltInBrush('dot7x7'),
-  5: createBuiltInBrush('square2x2'),
-  6: createBuiltInBrush('square4x4'),
-  7: createBuiltInBrush('square6x6'),
-  8: createBuiltInBrush('square8x8'),
-  9: createBuiltInBrush('dither3x3'),
-  10: createBuiltInBrush('dither7x6'),
+  2: createBuiltInBrush('dot3x3', 'round'),
+  3: createBuiltInBrush('dot5x5', 'round'),
+  4: createBuiltInBrush('dot7x7', 'round'),
+  5: createBuiltInBrush('square2x2', 'square'),
+  6: createBuiltInBrush('square4x4', 'square'),
+  7: createBuiltInBrush('square6x6', 'square'),
+  8: createBuiltInBrush('square8x8', 'square'),
+  9: createBuiltInBrush('dither3x3', 'dither'),
+  10: createBuiltInBrush('dither7x6', 'dither'),
 };
 
 // Built-in brushes are CustomBrush instances too (except the pixel brush),
-// so "is this one of the built-ins" is an identity check against the
-// registry above.
+// tagged with the family they were built from (BuiltInBrushFactory). A
+// right-click resize (docs/brush-transforms.md) regenerates that family at a
+// new size into a *new* instance — not one of the registry singletons above,
+// so this checks the tag rather than identity, and a resized built-in keeps
+// reading as built-in (no Matte/Repl, never banked to Previous).
 export function isBuiltInBrush(brush: unknown): boolean {
-  return Object.values(builtInBrushes).includes(brush as never);
+  return brush instanceof CustomBrush && brush.builtInFamily !== undefined;
 }
 
 // Reactive mirror of one brushSlots entry (docs/brush-slots.md Phase B) —
@@ -39,8 +43,17 @@ export type BrushSlotState = {
 };
 
 export type State = {
-  // null when a custom (captured or loaded) brush is active
+  // null when a custom (captured or loaded) brush is active, or when a
+  // built-in has been right-click resized (docs/brush-transforms.md "Sizing
+  // a built-in brush") — a resized instance matches none of the toolbar
+  // presets, so this only tracks "which icon, if any, highlights", not
+  // "is the current brush built-in". Use usingBuiltInBrush for that; it's a
+  // deliberately separate flag precisely so the two can disagree.
   selectedBuiltInBrushId: BuiltInBrushId | null;
+  // reactive mirror of isBuiltInBrush(brushRecall.current) — drives Matte/
+  // Repl and the brush-transform menu items' disabled state. Stays true
+  // through a right-click resize even though selectedBuiltInBrushId clears.
+  usingBuiltInBrush: boolean;
   mode: Mode;
   // reactive mirror of brushRecall.originalBrush (the class itself is not
   // observable state) — drives the Restore menu item's disabled state
@@ -53,6 +66,7 @@ export type State = {
 
 export const state: State = {
   selectedBuiltInBrushId: 1,
+  usingBuiltInBrush: true,
   mode: 'Color',
   hasOriginalBrush: false,
   slots: Array.from({ length: BRUSH_SLOT_COUNT }, () => ({

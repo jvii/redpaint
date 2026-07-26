@@ -61,8 +61,10 @@ manual text in `docs/reference/dpaint2-manual/`):
 2. **Lossless instant transforms are applied to both** `curbr` and `origBr`
    (see `BrFlipX`), so a flip survives a later revert; lossy ones (Halve)
    reset the snapshot.
-3. Transforms only ever applied to a **custom brush** (`curpen == USERBRUSH`);
-   built-in brushes were unaffected.
+3. The Brush-menu transforms above only ever applied to a **custom brush**
+   (`curpen == USERBRUSH`); built-in brushes were unaffected by them. But
+   built-ins had a **separate** resize path of their own — see "Sizing a
+   built-in brush" below; the two never overlapped.
 4. All transforms are pure pixel-index reshuffles on the brush bitmap — no
    rendering machinery involved.
 
@@ -213,6 +215,54 @@ A modal drag on the canvas, DPaint-style:
   its only cue was the pointer changing to the text "SIZE". The box is
   better, so it stays a deliberate deviation.
 
+### Sizing a built-in brush
+
+A second, separate DPaint feature, easy to miss because it lives outside the
+Brush menu entirely: right-clicking a **built-in** pen icon in the toolbar
+(`penMproc`, `CTRPAN.C:162-174`: left click calls `CPChgPen`/select, any other
+button calls `SizePen`) drags out a new size for it on canvas (`SizePen`/
+`IMSizePen`, `MODES.C:359-421`). This is DPaint's `curpen == USERBRUSH` guard
+from the other direction — Stretch/Halve/Double never touch a built-in, and
+conversely this resize never touches a custom brush.
+
+Key differences from Stretch, all preserved in dxpaint:
+
+- **Procedural regeneration, not bitmap resampling.** DPaint's round/square
+  pens are redrawn from scratch at the new size (`RoundPen`/`SquarePen`,
+  `CURBRUSH.C`) rather than stretched, so they stay crisp at any size — the
+  opposite of Stretch's nearest-neighbor `resize()`. dxpaint mirrors this in
+  `src/algorithm/builtInBrushShapes.ts`: `roundBitmap`/`squareBitmap`
+  regenerate the shape at the dragged width/height.
+- **The dot/dither pen is special-cased**, not resized at all: DPaint's
+  `DOT_B` pen only ever snaps to one of 6 fixed hand-placed scatter bitmaps
+  (`dots10`...`dots60`, `CURBRUSH.C`/`DOTBMS.C`, sized `4s+1` for `s=1..6`).
+  Decoded from the original Amiga bitplane words (16-bit, MSB-first) into
+  `nearestDitherBitmap` — a drag snaps to whichever of the 6 is closest in
+  size rather than distorting the sparse pattern continuously.
+- **The result stays tagged as built-in.** `CustomBrush.builtInFamily`
+  (`'round' | 'square' | 'dither'`) is set on the 10 registry brushes
+  (`overmind/brush/state.ts`) and carried onto any resized instance
+  (`createSizedBuiltInBrush`, `BuiltInBrushFactory.tsx`). `isBuiltInBrush`
+  checks this tag instead of identity against the fixed registry, so a
+  resized built-in keeps behaving like one — Matte/Repl stay disabled (a
+  built-in's matte bitmap is a colorless placeholder, `BrushColorIndex.ts`,
+  never meant to be shown directly) and it's never banked into the Previous
+  slot. This was a deliberate call, not a given: it would have been just as
+  easy to let a resized built-in "graduate" into a genuine custom brush, but
+  Matte would then paint flat with whatever color sits in palette slot 0 —
+  the placeholder leaking through, not a real captured color.
+- **No preset icon highlights afterward.** `resizeBuiltInBrushTo`
+  (`overmind/brush/actions.ts`) sets `selectedBuiltInBrushId = null`, mirroring
+  `cpPenBox = -1` (`CTRPAN.C:189`) when a custom-dragged size matches none of
+  the toolbar presets.
+- **Interaction**: `SizeBuiltInBrushTool` (`src/tools/`) is structurally the
+  same anchor/drag/preview/bounds-box tool as `StretchBrushTool`, entered via
+  `BuiltInBrushes.tsx`'s `onContextMenu` (which selects the right-clicked
+  preset first, then arms the drag — same as DPaint's `SizePen` calling
+  `CPChgPen` before entering its interactive mode) rather than from a menu
+  item, since there's nothing to select in a menu — the built-in row is the
+  UI it hangs off of.
+
 ### Explicitly deferred
 
 - **Perspective** — a whole subsystem in DPaint (own keypad UI, 3-axis state);
@@ -258,3 +308,10 @@ A modal drag on the canvas, DPaint-style:
   ASCII-map-rendered SVGs (`pixelIcons.tsx`); gadgets share one 64px row
   height (`MenuGadgets.tsx`); hotkeys unchanged, hints moved into gadget
   tooltips.
+- **Phase F — sizing a built-in brush.** ✅ Done. `SizeBuiltInBrushTool`,
+  entered by right-clicking a built-in icon (`BuiltInBrushes.tsx`); regenerates
+  the family's shape (`builtInBrushShapes.ts`: `roundBitmap`/`squareBitmap`/
+  `nearestDitherBitmap`) rather than resampling, per "Sizing a built-in brush"
+  above. A separate DPaint feature from Stretch, not a variant of it — see
+  that section for why the two don't share code beyond the drag interaction
+  shape.

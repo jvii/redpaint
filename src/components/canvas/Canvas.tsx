@@ -42,6 +42,33 @@ const ROTATE_CURSOR = ((): string => {
   return `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' shape-rendering='crispEdges'%3e${rects}%3c/svg%3e") 8 8, auto`;
 })();
 
+// Diagonal double-headed arrow for the Stretch / SizeBuiltInBrushTool resize
+// indicator — a plain smooth vector glyph (the conventional OS resize-cursor
+// look), not the pixel-art style of ROTATE_CURSOR above, drawn as a
+// positioned element (.canvas-resize-cursor) rather than a native `cursor`
+// value since it needs to render offset from the pointer (see
+// RESIZE_CURSOR_OFFSET) instead of centered on it.
+const RESIZE_CURSOR_SIZE = 24;
+const RESIZE_CURSOR_ICON = ((): string => {
+  // One arrow shape, drawn pointing up-down and rotated 45 degrees about the
+  // icon's center — simpler to get symmetric than authoring the diagonal
+  // directly, and rotation keeps that symmetry exact regardless of the
+  // underlying point coordinates.
+  const arrow = 'M0,-9 4,-4 1.5,-4 1.5,4 4,4 0,9 -4,4 -1.5,4 -1.5,-4 -4,-4 Z';
+  // scale(-1,1) mirrors the rotated diagonal horizontally about the icon's
+  // own center (applied after rotate, since SVG transforms compose
+  // right-to-left) — flips the arrow from a nwse to a nesw diagonal.
+  const path = `<path d='${arrow}' transform='translate(12,12) scale(-1,1) rotate(45)' fill='%23eeeeee' stroke='%23333333' stroke-width='1'/>`;
+  return `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='${RESIZE_CURSOR_SIZE}' height='${RESIZE_CURSOR_SIZE}' viewBox='0 0 ${RESIZE_CURSOR_SIZE} ${RESIZE_CURSOR_SIZE}'%3e${path}%3c/svg%3e")`;
+})();
+
+// How far past the pointer (down-right, CSS px) the resize indicator draws —
+// the brush preview's bounding box always has the pointer sitting exactly on
+// its own bottom-right corner (both while just hovering, armed, and mid-drag:
+// the box is anchored at its opposite corner), and the box/brush content
+// always sits up-left of that corner, so any positive offset here clears it.
+const RESIZE_CURSOR_OFFSET = 16;
+
 export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): JSX.Element | null {
   const state = useAppState();
 
@@ -98,7 +125,13 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
   // exact hotspot alignment barely matters, so there it's skipped entirely —
   // no per-mousemove work at all, and the native pointer shows instead — to
   // keep dragging a big brush around (e.g. drawing a line with it) cheap.
-  const usePreciseCursor = state.brush.selectedBuiltInBrushId !== null;
+  // Suppressed while SizeBuiltInBrushTool is armed: selectedBuiltInBrushId
+  // stays set through that drag (it only clears on commit), but the resize
+  // cursor is the one that should show then, not the precise crosshair on
+  // top of it.
+  const usePreciseCursor =
+    state.brush.selectedBuiltInBrushId !== null &&
+    state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool';
   // Positioned by directly mutating the DOM through this ref, not React
   // state: the native cursor moves via the OS/browser compositor with zero
   // JS involved, and a setState here would mean a full Canvas re-render (two
@@ -136,6 +169,28 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     }
   };
 
+  // The Stretch/SizeBuiltInBrushTool resize indicator (see RESIZE_CURSOR_ICON
+  // above): unlike the precise crosshair, this doesn't need buffer-pixel
+  // snapping — it's a decorative corner indicator, not a paint-target
+  // marker — so it just follows the raw client position, offset.
+  const showResizeCursor =
+    !state.app.isLoading &&
+    (state.toolbox.selectedSelectorToolId === 'brushStretchTool' ||
+      state.toolbox.selectedSelectorToolId === 'sizeBuiltInBrushTool');
+  const resizeCursorRef = useRef<HTMLDivElement>(null);
+  const updateResizeCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    if (!showResizeCursor || !resizeCursorRef.current) {
+      return;
+    }
+    resizeCursorRef.current.style.transform = `translate(${event.clientX + RESIZE_CURSOR_OFFSET}px, ${event.clientY + RESIZE_CURSOR_OFFSET}px)`;
+    resizeCursorRef.current.style.visibility = 'visible';
+  };
+  const hideResizeCursor = (): void => {
+    if (resizeCursorRef.current) {
+      resizeCursorRef.current.style.visibility = 'hidden';
+    }
+  };
+
   // Displayed size vs drawing-buffer size: WebGL always renders at the page
   // resolution (the width/height attributes below); the browser stretches
   // that buffer to this CSS size with image-rendering: pixelated.
@@ -145,34 +200,33 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
   };
 
   // An armed brush transform shows the matching cursor — the conventional
-  // "dragging will reshape" affordance (diagonal resize for Stretch,
-  // horizontal for Shear, a circular arrow for Rotate — CSS has no rotate
-  // cursor, so it's a pixel-art data URI like the crosshair above).
-  // Transforms imply a custom brush, so they never compete with the precise
-  // (built-in-brush) crosshair.
-  const transformCursor =
-    state.toolbox.selectedSelectorToolId === 'brushStretchTool'
-      ? 'nwse-resize'
-      : state.toolbox.selectedSelectorToolId === 'brushShearTool'
-        ? 'ew-resize'
-        : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
-          ? ROTATE_CURSOR
-          : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'
-            ? 'ew-resize'
-            : state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
-              ? 'ns-resize'
-              : null;
+  // "dragging will reshape" affordance (diagonal resize for Stretch and its
+  // built-in-brush counterpart SizeBuiltInBrushTool, horizontal for Shear, a
+  // circular arrow for Rotate — CSS has no rotate cursor, so it's a
+  // pixel-art data URI like the crosshair above).
+  const transformCursor = showResizeCursor
+    ? null // native cursor hidden; .canvas-resize-cursor draws the indicator instead, offset clear of the brush
+    : state.toolbox.selectedSelectorToolId === 'brushShearTool'
+      ? 'ew-resize'
+      : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
+        ? ROTATE_CURSOR
+        : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool'
+          ? 'ew-resize'
+          : state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
+            ? 'ns-resize'
+            : null;
   const canvasStyle = {
     ...CSSZoom,
     ...(state.app.isLoading
       ? { cursor: 'wait' }
       : transformCursor
         ? { cursor: transformCursor }
-        : usePreciseCursor
+        : usePreciseCursor || showResizeCursor
           ? { cursor: 'none' }
           : {}),
   };
-  const canvasClassName = 'canvas' + (usePreciseCursor ? '' : ' canvas--native-crosshair-cursor');
+  const canvasClassName =
+    'canvas' + (usePreciseCursor || showResizeCursor ? '' : ' canvas--native-crosshair-cursor');
 
   return (
     <>
@@ -205,18 +259,21 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         }}
         onMouseEnter={(event): void => {
           updateCursorPos(event);
+          updateResizeCursorPos(event);
           getEventHandler(tool, 'onMouseEnter')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseEnterOverlay')(event);
         }}
         onMouseLeave={(event): void => {
           hideCursor();
+          hideResizeCursor();
           getEventHandler(tool, 'onMouseLeave')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseLeaveOverlay')(event);
         }}
         onMouseMove={(event): void => {
           updateCursorPos(event);
+          updateResizeCursorPos(event);
           getEventHandler(tool, 'onMouseMove')(event);
           // Each mouse event's overlay draws (possibly several — a gradient
           // fill preview issues one call per color band) replace the
@@ -238,6 +295,13 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
       />
       {usePreciseCursor && !state.app.isLoading && (
         <div ref={cursorRef} className="canvas-cursor" />
+      )}
+      {showResizeCursor && (
+        <div
+          ref={resizeCursorRef}
+          className="canvas-resize-cursor"
+          style={{ backgroundImage: RESIZE_CURSOR_ICON }}
+        />
       )}
     </>
   );

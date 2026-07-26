@@ -42,16 +42,18 @@ export function Menubar(): JSX.Element {
   const armedTransform =
     state.toolbox.selectedSelectorToolId === 'brushStretchTool'
       ? 'Stretch'
-      : state.toolbox.selectedSelectorToolId === 'brushShearTool'
-        ? 'Shear'
-        : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
-          ? state.tool.brushRotateTool.center
-            ? `Rotate ${state.tool.brushRotateTool.angle}°`
-            : 'Rotate'
-          : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool' ||
-              state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
-            ? 'Bend'
-            : null;
+      : state.toolbox.selectedSelectorToolId === 'sizeBuiltInBrushTool'
+        ? 'Resize'
+        : state.toolbox.selectedSelectorToolId === 'brushShearTool'
+          ? 'Shear'
+          : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
+            ? state.tool.brushRotateTool.center
+              ? `Rotate ${state.tool.brushRotateTool.angle}°`
+              : 'Rotate'
+            : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool' ||
+                state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
+              ? 'Bend'
+              : null;
   // Flood Fill targets whatever pixel is under the cursor rather than a
   // fixed FG/BG color, so a hover swatch previews what the fill would hit.
   const floodFillHoverColor = state.tool.floodFillTool.hoverColor;

@@ -17,6 +17,7 @@ import { Mode, usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { BuiltInFamily } from '../algorithm/builtInBrushShapes';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { drawFilledLines, drawFilledQuad, drawGradientFilledShape } from './fillStyleDraw';
@@ -34,11 +35,22 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public width: number;
   public heigth: number;
   public lastChanged: number;
+  // Set only on the built-in brushes (and their right-click resized
+  // variants, docs/brush-transforms.md "Sizing a built-in brush") — the tag
+  // `isBuiltInBrush` keys off, so a resized instance keeps reading as
+  // built-in (no Matte/Repl, never banked to Previous) even though it's a
+  // fresh object, not one of the fixed registry singletons.
+  public builtInFamily?: BuiltInFamily;
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
   private brushColorIndexColorBG: BrushColorIndex;
 
-  public constructor(colorIndex: BrushColorIndex, width: number, height: number) {
+  public constructor(
+    colorIndex: BrushColorIndex,
+    width: number,
+    height: number,
+    builtInFamily?: BuiltInFamily
+  ) {
     this.width = width;
     this.heigth = height;
     this.brushColorIndex = colorIndex;
@@ -46,6 +58,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.brushColorIndexColorFG = colorIndex;
     this.brushColorIndexColorBG = colorIndex;
     this.lastChanged = Date.now();
+    this.builtInFamily = builtInFamily;
   }
 
   // Factory method for extracting a brush from canvas

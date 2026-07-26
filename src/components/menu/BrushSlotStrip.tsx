@@ -15,7 +15,7 @@ export function BrushSlotStrip(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
 
-  const usingBuiltInBrush = state.brush.selectedBuiltInBrushId !== null;
+  const usingBuiltInBrush = state.brush.usingBuiltInBrush;
 
   // recall changes the active brush, so it closes the menu and refreshes
   // the cursor like the transform gadgets do; store is bookkeeping (like

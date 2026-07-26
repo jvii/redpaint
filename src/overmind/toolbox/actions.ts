@@ -56,6 +56,28 @@ export const toggleBrushTransformMode = (context: Context, tool: BrushTransformT
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : tool;
 };
 
+// Right-click on a built-in brush icon (BuiltInBrushes.tsx), DPaint's
+// SizePen (MODES.C) — a separate resize path from the customs-only Stretch
+// above, so it enters unconditionally re-anchored to whichever icon was
+// clicked, rather than toggling off if already active (a second right-click
+// on a different icon should re-target the drag, not exit the mode).
+export const enterSizeBuiltInBrushMode = (context: Context): void => {
+  // Guards against a stuck mode (resize cursor armed, drag a no-op) if the
+  // brush that just got selected still isn't a resizable built-in for any
+  // reason — same defensive shape as toggleBrushTransformMode's guard above.
+  if (!(brushRecall.current instanceof CustomBrush) || !isBuiltInBrush(brushRecall.current)) {
+    return;
+  }
+  if (context.state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool') {
+    context.actions.toolbox.setActiveToPreviousTool();
+  }
+  context.state.toolbox.selectedSelectorToolId = 'sizeBuiltInBrushTool';
+};
+
+export const exitSizeBuiltInBrushMode = (context: Context): void => {
+  context.state.toolbox.selectedSelectorToolId = null;
+};
+
 export const toggleForegroundColorSelectionMode = (context: Context): void => {
   context.actions.toolbox.setActiveToPreviousTool();
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'foregroundColorSelectorTool';

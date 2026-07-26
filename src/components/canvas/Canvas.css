@@ -39,6 +39,24 @@
   pointer-events: none;
 }
 
+.canvas-resize-cursor {
+  /* Offset from the actual pointer (Canvas.tsx: RESIZE_CURSOR_OFFSET), not
+     centered on it like .canvas-cursor — a Stretch/SizeBuiltInBrushTool drag
+     always has the pointer sitting right on the brush preview's own bounding
+     box corner, so a pointer-centered icon would sit on top of the brush
+     being resized. This renders past that corner instead, clear of it.
+     Size matches RESIZE_CURSOR_SIZE in Canvas.tsx. */
+  position: fixed;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  width: 24px;
+  height: 24px;
+  background-size: 24px 24px;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
 .canvas--overlay {
   position: absolute; /* absolutely positioned to perfectly overlap drawing canvas  */
   left: 0;
