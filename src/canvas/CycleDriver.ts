@@ -9,7 +9,9 @@ import { overlayCanvasController } from './overlayCanvas/OverlayCanvasController
 // Overmind and re-uploading both GL palette textures. Display-only by
 // construction: the document palette never changes; stopping just zeroes
 // the offsets. Singleton, like the canvas controllers. Lifecycle is owned
-// by palette.toggleCycling; state.palette.cyclingOn mirrors it for the UI.
+// by palette.toggleCycling, which reads/flips state.palette.cyclingOn as
+// its own on/off flag (no UI currently reads it back — the palette editor's
+// On/Off control is per-range, driven by activeRange.active instead).
 class CycleDriver {
   private rafId: number | null = null;
   private lastTime: number | null = null;

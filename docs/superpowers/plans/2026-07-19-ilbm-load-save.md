@@ -1,5 +1,14 @@
 # IFF/ILBM Load & Save Implementation Plan
 
+> **Shipped 2026-07-21.** The codec layer (`src/fileformat/`) landed exactly
+> as planned below. The UI wiring didn't: this plan predates the menu
+> redesign, so every reference to `src/components/menubar/MenuItemOpen.tsx`
+> / `Menubar.tsx` describes the pre-redesign component layout. The feature
+> actually landed in `src/components/menu/Menu.tsx`, and the save gadget
+> shipped as "Save IFF", not "Save ILBM…". Left unmarked/unedited below as a
+> historical record of the plan as executed against the codec; don't follow
+> its UI-layer file paths or snippets literally.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Open and save Amiga IFF ILBM images (the native Deluxe Paint format), palette and color-cycle ranges included.

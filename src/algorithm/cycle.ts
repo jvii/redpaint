@@ -8,8 +8,8 @@ export function cycleColorIndex(range: RangeIndices, step: number): number {
   return range.start + (step % span);
 }
 
-export const CRNG_FULL_RATE = 16384; // the CRNG unit: 16384 = 60 steps/second
-export const MAX_STEPS_PER_SECOND = 60;
+const CRNG_FULL_RATE = 16384; // the CRNG unit: 16384 = 60 steps/second
+const MAX_STEPS_PER_SECOND = 60;
 
 export function rateToStepsPerSecond(rate: number): number {
   return (rate / CRNG_FULL_RATE) * MAX_STEPS_PER_SECOND;

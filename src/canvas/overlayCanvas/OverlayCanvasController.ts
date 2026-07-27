@@ -36,10 +36,11 @@ class OverlayCanvasController implements CanvasController {
   // vanish the moment cycling's replay redrew just the dots. So this
   // remembers *every* overlay draw call made since the last
   // beginFrame()/clear() — color-bearing or not — and CycleDriver replays
-  // the whole frame every tick. Solid-color previews are one call, but a
-  // gradient-filled shape preview is one call *per color band*
-  // (fillStyleDraw.ts buckets by color); all of them need replaying, not
-  // just the last, or every band but one would freeze. Canvas.tsx calls
+  // the whole frame every tick. Solid-color and gradient-filled shape
+  // previews are each a single call, but a symmetry-mode preview issues one
+  // per copy, plus separate calls for the brush cursor/indicator dots
+  // alongside it; all of them need replaying, not just the last, or every
+  // copy/indicator but one would freeze or vanish. Canvas.tsx calls
   // beginFrame() before dispatching each overlay handler, so calls from a
   // single mouse event accumulate together and calls from the next event
   // start a fresh list instead of growing forever.

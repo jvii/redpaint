@@ -32,12 +32,6 @@
   margin-right: 30px;
 }
 
-.retro-divider {
-  border: 0;
-  border-top: 2px solid black;
-  margin: 0 30px;
-}
-
 .modal__header {
   padding: 17px 20px 12px 20px;
   font-size: 16px;

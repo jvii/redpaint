@@ -204,22 +204,29 @@ random source (defaulting to `Math.random`, genuinely random at paint time)
 so tests can pin it to an exact value and assert precise output despite the
 real thing being non-deterministic.
 
-The implementation needed no WebGL/shader changes: every draw primitive
-still takes exactly one `PaintColor` per call (see `DrawTarget` in
-`src/canvas/CanvasController.ts`), so gradient fill rasterizes the fill as
-usual (`Point[]`/`LineH[]`, same as solid fills always have), buckets the
-result by computed target color (`bucketPointsByGradient`,
-`src/algorithm/gradientFill.ts`), and issues one ordinary single-color call
-per bucket instead of one call total. This also composes with symmetry for
-free, since `SymmetryBrush` already re-rasterizes each copy independently.
+The first cut needed no WebGL/shader changes: gradient fill rasterized the
+fill as usual (`Point[]`/`LineH[]`), bucketed the result by computed target
+color (`bucketPointsByGradient`), and issued one ordinary single-color call
+per bucket instead of one call total. That CPU bucketing path was later
+replaced (2026-07-22/23) by a real GPU implementation: filled rect/circle/
+ellipse/polygon and flood-fill's shape preview now paint through a single
+`gradientFill` draw primitive (`src/algorithm/gradientFill.ts`'s
+`gradientFillUniforms` + the shared GLSL in `src/canvas/util/
+gradientShaderLib.ts`), computing each pixel's band and dither in the
+fragment shader instead of bucketing points on the CPU beforehand.
+`bucketPointsByGradient` still exists, but only as flood fill's own path
+(`FloodFillTool.tsx`, which pushes final points rather than issuing a draw
+call) — every other tool went through the GPU path.
 
-Range selection is an explicit picker in the requester rather than DPaint's
-implicit "whichever range contains the current foreground color" (which
-silently fell back to solid if the color wasn't in any range) — the same
-kind of small, deliberate improvement over the original mechanic as
-elsewhere in this doc. Deferred: "From brush" pattern fill (the type union
-already anticipates a third mode) and DPaint's reverse-gradient modifier
-click.
+Range selection followed DPaint exactly as of 2026-07-27: the range is
+whichever palette range contains the current foreground color
+(`activeRangeIndices`, `src/algorithm/paletteRange.ts` — the same lookup
+Cycle/Shade/Blend use), falling back to the whole palette if the FG color
+isn't in any range. An explicit Range picker lived in the Fill Style dialog
+between those two dates; it's gone now, in favor of just picking a new FG
+color from the toolbox palette without closing the dialog. Deferred: "From
+brush" pattern fill (the type union already anticipates a third mode) and
+DPaint's reverse-gradient modifier click.
 
 ### Brush color-reduction gaps (noted 2026-07-13, unimplemented)
 

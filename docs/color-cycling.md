@@ -101,7 +101,7 @@ Data flow:
 ```
 CycleDriver (rAF singleton, alongside the canvas controllers)
   └─ per-range accumulators advance by rate; when an integer offset changes:
-       overmind.actions.palette.setCycleOffsets(offsets)   ← 4 ints, on change only
+       overmind.actions.palette.setCycleOffsets(offsets)   ← one int per range slot, on change only
          ├─ derived state.palette.displayPalette
          │    = cycledPalette(base palette, ranges, offsets)
          ├─ effect → paintingCanvasController.updatePalette()
@@ -123,10 +123,11 @@ Next to the existing `cycleColorIndex`:
   its offset. Each range reads from the _base_ palette and ranges apply in
   slot order 1→N, so on overlap the later slot wins. Spans of length ≤ 1 and
   inactive/null ranges are no-ops.
-- `advanceCycle(accumulators, ranges, elapsedMs)` — advances fractional step
-  accumulators at the CRNG rate (`16384 = 60 steps/s`) and returns the new
-  accumulators plus integer offsets (`floor(acc) mod span`, sign flipped for
-  reverse). Pure, time injected, fully testable.
+- `advanceCycleSteps(accumulators, ranges, elapsedMs)` — advances fractional
+  step accumulators at the CRNG rate (`16384 = 60 steps/s`). Pure, time
+  injected, fully testable.
+- `cycleOffsetsOf(accumulators, ranges)` — turns those accumulators into
+  integer offsets (`floor(acc) mod span`, sign flipped for reverse).
 
 `CycleDriver` stays thin: start/stop on the `cyclingOn` flag, one
 `requestAnimationFrame` loop, calls the pure functions, dispatches
@@ -224,8 +225,8 @@ All in the pure layer, per repo convention (`test/` mirrors `src/`):
 
 - `test/algorithm/cycle.test.ts`: `cycledPalette` — forward/reverse rotation,
   overlap precedence, span-1 and inactive no-ops, wholesale offset-0
-  identity; `advanceCycle` — rate→steps timing with injected elapsed time,
-  fractional accumulation, wrap-around, reverse sign.
+  identity; `advanceCycleSteps`/`cycleOffsetsOf` — rate→steps timing with
+  injected elapsed time, fractional accumulation, wrap-around, reverse sign.
 - CRNG↔`PaletteRange` mapping round-trip (rate/active/reverse preservation,
   more than six ranges surviving load, minimum-six `null` padding)
   alongside the existing `paletteRange`/ilbm tests.

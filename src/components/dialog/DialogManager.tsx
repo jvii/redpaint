@@ -67,8 +67,8 @@ export function DialogManager(): JSX.Element | null {
     case 'PASTE_SELECT':
       return (
         <Dialog header="Image from clipboard" prompt="Select how to use this image.">
-          <RetroButton onClick={pasteAsBrush}>Paste as brush</RetroButton>
-          <RetroButton onClick={pasteAsImage}>Paste as new image</RetroButton>
+          <RetroButton onClick={pasteAsBrush}>Paste as Brush</RetroButton>
+          <RetroButton onClick={pasteAsImage}>Paste as New Image</RetroButton>
           <RetroButton variant="secondary" onClick={cancelPaste}>
             Cancel
           </RetroButton>
