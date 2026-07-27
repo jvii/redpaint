@@ -37,6 +37,15 @@
   gap: 24px;
 }
 
+/* the axis toggle's icon segments are narrower than this column's other
+   children (the Range/Dither/Jitter fieldsets, which do want to fill the
+   width for their box/legend) — without this it inherits the flex column's
+   default align-items: stretch and its border/shadow stretch out past the
+   actual buttons on the right */
+.fill-style-settings__gradient-box > .retro-toggle--row {
+  align-self: flex-start;
+}
+
 .fill-style-settings__hint {
   display: block;
   max-width: 260px;

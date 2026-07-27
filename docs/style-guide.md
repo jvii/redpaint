@@ -123,7 +123,15 @@ Consistency is judged within each control type, not across them:
   longer labels, a narrower footprint). One layout per group, never mixed
   within one.
 - **RetroToggle**: text-only segments, plus the Mode toggle's own keycap
-  exception below.
+  exception below, and the Fill Style dialog's gradient-axis toggle, which
+  uses icon segments instead (`gradientAxisIcons.tsx`) — DPaint's Fill Type
+  requester shows the axis as an arrow, not a word, and the icons also let
+  the toggle sit in one row instead of a three-row stack. Same action-glyph
+  register as `transformIcons.tsx` (currentColor stroke, no fill, so hover/
+  selected/disabled coloring comes free), except the Horizontal Line glyph
+  swaps in round caps/joins for its curved arrowheads, the detail that sets
+  it apart from plain Horizontal's sharp ones. A per-segment `title` tooltip
+  carries the text name that the icon itself doesn't.
 - **Toolbox**: always icon-only (it is a compact palette).
 - Keyboard shortcuts live in gadget `title` tooltips, plus a monospace
   keycap on two controls that get one, styled with a shared base class

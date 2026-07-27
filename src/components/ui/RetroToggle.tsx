@@ -7,6 +7,8 @@ type Option = {
   // Greys out and ignores clicks on this segment only (the group stays live),
   // for options that don't apply in the current context.
   disabled?: boolean;
+  // Tooltip, for icon-only segments where the label itself carries no text.
+  title?: string;
 };
 
 // How the segments are laid out. 'row' is a horizontal strip, 'column' a
@@ -60,6 +62,7 @@ export function RetroToggle({
           <button
             key={option.value}
             type="button"
+            title={option.title}
             disabled={disabled || option.disabled}
             className={
               'retro-toggle__segment' +

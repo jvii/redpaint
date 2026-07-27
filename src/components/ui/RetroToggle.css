@@ -27,6 +27,9 @@
   border: 2px solid black;
   border-radius: 0;
   padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition:
     background-color 0.2s,
     color 0.2s;

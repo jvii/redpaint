@@ -12,11 +12,19 @@ import { RetroToggle } from '../ui/RetroToggle';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { OverlayGeometricRenderer } from '../../canvas/overlayCanvas/program/OverlayGeometricRenderer';
 import { OverlayGradientRenderer } from '../../canvas/overlayCanvas/program/OverlayGradientRenderer';
+import {
+  GradientHorizontalIcon,
+  GradientHorizontalLineIcon,
+  GradientVerticalIcon,
+} from './gradientAxisIcons';
 
-const AXIS_OPTIONS: { value: GradientAxis; label: string }[] = [
-  { value: 'vertical', label: 'Vertical' },
-  { value: 'horizontal', label: 'Horizontal' },
-  { value: 'horizontalLine', label: 'Horizontal Line' },
+// Icons, not text, per axis — a deliberate exception to RetroToggle's usual
+// text-only segments (see docs/style-guide.md), matching DPaint's Fill Type
+// requester where the axis is an arrow glyph rather than a word.
+const AXIS_OPTIONS: { value: GradientAxis; label: JSX.Element; title: string }[] = [
+  { value: 'vertical', label: <GradientVerticalIcon />, title: 'Vertical' },
+  { value: 'horizontal', label: <GradientHorizontalIcon />, title: 'Horizontal' },
+  { value: 'horizontalLine', label: <GradientHorizontalLineIcon />, title: 'Horizontal Line' },
 ];
 
 const PREVIEW_SIZE = 100; // canvas resolution; scaled up to fill-style-settings.css's display size
@@ -198,7 +206,7 @@ function FillStyleSettingsOpen(): JSX.Element {
           className="fill-style-settings__gradient-box"
         >
           <RetroToggle
-            variant="column"
+            variant="row"
             options={AXIS_OPTIONS}
             value={state.fillStyle.axis}
             onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
