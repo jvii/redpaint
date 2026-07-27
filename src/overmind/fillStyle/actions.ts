@@ -10,10 +10,6 @@ export const setAxis = (context: Context, axis: GradientAxis): void => {
   context.state.fillStyle.axis = axis;
 };
 
-export const setRangeIndex = (context: Context, rangeIndex: number): void => {
-  context.state.fillStyle.rangeIndex = rangeIndex;
-};
-
 export const setDither = (context: Context, dither: number): void => {
   context.state.fillStyle.dither = Math.max(0, Math.min(20, Math.round(dither)));
 };
@@ -26,8 +22,8 @@ export const setJitter = (context: Context, jitter: number): void => {
 };
 
 export const openSettings = (context: Context): void => {
-  const { mode, axis, rangeIndex, dither, jitter } = context.state.fillStyle;
-  context.state.fillStyle.settingsSnapshot = { mode, axis, rangeIndex, dither, jitter };
+  const { mode, axis, dither, jitter } = context.state.fillStyle;
+  context.state.fillStyle.settingsSnapshot = { mode, axis, dither, jitter };
   context.state.fillStyle.settingsOpen = true;
 };
 
@@ -42,7 +38,6 @@ export const cancelSettings = (context: Context): void => {
   if (snapshot) {
     context.state.fillStyle.mode = snapshot.mode;
     context.state.fillStyle.axis = snapshot.axis;
-    context.state.fillStyle.rangeIndex = snapshot.rangeIndex;
     context.state.fillStyle.dither = snapshot.dither;
     context.state.fillStyle.jitter = snapshot.jitter;
   }

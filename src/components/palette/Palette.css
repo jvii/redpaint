@@ -33,6 +33,20 @@
   border: 2px solid black;
 }
 
+/* Fill Style is the one modal that leaves this grid reachable (see
+   Palette.tsx) while its own full-page click-catcher (Modal.tsx,
+   position: fixed, z-index: auto) blocks everything else. A plain in-flow
+   block always paints below a fixed-position one regardless of DOM order,
+   so this grid needs an explicit positioned stacking context with a
+   z-index the catcher's auto doesn't have, to paint (and hit-test) above
+   it instead — .palette's existing `isolation: isolate` alone doesn't do
+   this, since isolation without position+z-index doesn't change where the
+   element itself lands in its *parent's* stacking order. */
+.palette--above-modal {
+  position: relative;
+  z-index: 10;
+}
+
 .ColorButton {
   width: 100%;
   aspect-ratio: 1;

@@ -162,11 +162,6 @@ function FillStyleSettingsOpen(): JSX.Element {
     state.tool.activePaintColor,
   ]);
 
-  const rangeOptions = state.palette.ranges
-    .map((range, index) => ({ range, index }))
-    .filter(({ range }) => range !== null)
-    .map(({ index }) => ({ value: String(index), label: String(index + 1) }));
-
   const isGradient = state.fillStyle.mode === 'gradient';
 
   return (
@@ -212,20 +207,11 @@ function FillStyleSettingsOpen(): JSX.Element {
             onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
             disabled={!isGradient}
           />
-          <RetroFieldset legend="Range" className="fill-style-settings__range" as="div">
-            {rangeOptions.length > 0 ? (
-              <RetroToggle
-                options={rangeOptions}
-                value={String(state.fillStyle.rangeIndex)}
-                onChange={(value): void => actions.fillStyle.setRangeIndex(Number(value))}
-                disabled={!isGradient}
-              />
-            ) : (
-              <span className="fill-style-settings__hint">
-                No ranges defined — set one in the palette editor.
-              </span>
-            )}
-          </RetroFieldset>
+          <span className="fill-style-settings__hint">
+            Range follows the FG color, DPaint-style — pick a color from a palette
+            range (set up in the palette editor) to gradient across it, or any other
+            color for the whole palette. Pick a new FG color without closing this dialog.
+          </span>
           <RetroFieldset legend="Dither" className="fill-style-settings__dither" as="div">
             <RetroLabeledSlider
               label=""

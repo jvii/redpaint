@@ -60,6 +60,14 @@ function Palette({
   const columns = columnCountFor(colorCount);
   const rows = Math.ceil(colorCount / columns);
 
+  // While the Fill Style dialog is open, DPaint only let the FG color
+  // change (that's what picks the gradient range) — everything else in the
+  // app (including this same grid's own BG pick) stays behind the modal's
+  // usual full-page click-catcher (Modal.tsx). Doesn't apply when this grid
+  // is embedded elsewhere with its own onSelectColor (e.g. the palette
+  // editor, which never renders while Fill Style is up anyway).
+  const isFillStyleException = !onSelectColor && state.fillStyle.settingsOpen;
+
   const isSelected = (id: string): boolean =>
     onSelectColor
       ? id === selectedColorId
@@ -78,9 +86,13 @@ function Palette({
         onClick={(): void =>
           onSelectColor ? onSelectColor(colorId) : actions.palette.setForegroundColor(colorId)
         }
-        onRightClick={(): void =>
-          onSelectColor ? onSelectColor(colorId) : actions.palette.setBackgroundColor(colorId)
-        }
+        onRightClick={(): void => {
+          if (onSelectColor) {
+            onSelectColor(colorId);
+          } else if (!isFillStyleException) {
+            actions.palette.setBackgroundColor(colorId);
+          }
+        }}
         isRangeMember={isRangeMember}
         isRangeStart={isRangeMember && colorId === activeRange?.start}
         isRangeEnd={isRangeMember && colorId === activeRange?.end}
@@ -103,7 +115,19 @@ function Palette({
   } as React.CSSProperties;
 
   return (
-    <div className={'palette' + (fillHeight ? ' palette--fill' : '')} style={gridStyle}>
+    <div
+      className={
+        'palette' +
+        (fillHeight ? ' palette--fill' : '') +
+        // Lifts this grid's own stacking context (already isolated, see
+        // Palette.css) above the Fill Style modal's full-page click-catcher
+        // — the one exception to that dialog blocking the whole app, rather
+        // than punching a hole in the catcher itself and re-blocking every
+        // other surface (canvas, menubar, toolbox, ...) by hand.
+        (isFillStyleException ? ' palette--above-modal' : '')
+      }
+      style={gridStyle}
+    >
       {state.palette.paletteArray.map((color, index): JSX.Element => createColorButton(index + 1))}
     </div>
   );
