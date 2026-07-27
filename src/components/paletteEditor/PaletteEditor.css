@@ -158,13 +158,11 @@
   align-self: stretch;
 }
 
-/* subtitle above title — side by side read too cramped next to the toggles
-   below. Extra margin top/bottom (beyond the parent's own gap) so the pair
-   doesn't crowd the Clear row above or the On/Off row below. */
+/* extra margin top/bottom (beyond the parent's own gap) so the title
+   doesn't crowd the Clear row above or the On/Off row below — which range
+   these settings belong to is the bordered box's own legend now (see
+   PaletteEditor.tsx), not a subtitle repeated in here too. */
 .palette-editor__range-cycling-title-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
   margin: 6px 0;
 }
 
@@ -174,17 +172,6 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   font-size: 16px;
-  color: black;
-}
-
-/* which slot these settings belong to — a small supporting readout beside
-   the bitmap title, same treatment as .fill-style-settings__hint */
-.palette-editor__range-cycling-subtitle {
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  font-weight: 500;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 13px;
   color: black;
 }
 

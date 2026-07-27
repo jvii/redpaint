@@ -164,7 +164,11 @@ export function PaletteEditor(): JSX.Element | null {
         </div>
       </RetroFieldset>
 
-      <RetroFieldset legend="Ranges" bordered className="palette-editor__ranges">
+      <RetroFieldset
+        legend={activeRangeIndex !== null ? `Range ${activeRangeIndex + 1}` : 'Ranges'}
+        bordered
+        className="palette-editor__ranges"
+      >
         {/* Same slot-strip interaction as the brush-slot strip
             (RangeSlotStrip.tsx): click an empty slot to arm a range pick
             (the currently edited color becomes the start, the next palette
@@ -181,11 +185,6 @@ export function PaletteEditor(): JSX.Element | null {
             width, or its track is too cramped to drag precisely. */}
         <div className="palette-editor__range-cycling">
           <div className="palette-editor__range-cycling-title-row">
-            {activeRangeIndex !== null && (
-              <span className="palette-editor__range-cycling-subtitle">
-                Range {activeRangeIndex + 1}
-              </span>
-            )}
             <span className="palette-editor__range-cycling-label">Color Cycling</span>
           </div>
           <div className="palette-editor__range-cycling-row">

@@ -118,3 +118,15 @@ export const selectRange = (context: Context, rangeIndex: number): void => {
     context.state.paletteEditor.armedAction = null;
   }
 };
+
+// Clearing steps the selection back to the previous slot (DPaint's own
+// stack-like feel for building/tearing down ranges left-to-right), or
+// deselects entirely — falling back to the "Ranges" title — when there's
+// no previous slot to land on.
+export const clearRange = (context: Context, rangeIndex: number): void => {
+  context.actions.palette.clearRange(rangeIndex);
+  context.state.paletteEditor.activeRangeIndex = rangeIndex > 0 ? rangeIndex - 1 : null;
+  if (context.state.paletteEditor.armedAction === 'range') {
+    context.state.paletteEditor.armedAction = null;
+  }
+};

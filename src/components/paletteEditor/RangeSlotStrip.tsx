@@ -56,7 +56,7 @@ export function RangeSlotStrip(): JSX.Element {
     (index: number) =>
     (event: React.SyntheticEvent): void => {
       event.stopPropagation();
-      actions.palette.clearRange(index);
+      actions.paletteEditor.clearRange(index);
     };
 
   const activateOnKey =

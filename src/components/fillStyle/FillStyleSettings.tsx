@@ -208,7 +208,8 @@ function FillStyleSettingsOpen(): JSX.Element {
             disabled={!isGradient}
           />
           <span className="fill-style-settings__hint">
-            Use the palette to select a color from a range to create a gradient.
+            Use the palette to select a color from a Range to create a gradient. Ranges are set in
+            the Palette Editor.
           </span>
           <RetroFieldset legend="Dither" className="fill-style-settings__dither" as="div">
             <RetroLabeledSlider
