@@ -33,16 +33,58 @@
    it over the fieldset's own border, unprompted by any CSS here) — the
    as="div" variant has no such behavior, so it's replicated by hand, only
    for that variant (the "div." tag qualifier keeps this from touching the
-   native-fieldset case, which doesn't need it). background-color matches
-   Modal's own so the border line underneath is genuinely interrupted, not
-   just visually crossed. */
+   native-fieldset case, which doesn't need it). This box gets no border-top
+   of its own; the stub+rule pair below draw it instead, split around the
+   legend text, so the border is a genuine gap there — not a same-colored
+   patch painted over a continuous line. That patch approach used to break
+   down against Modal's translucent background (a second, independently
+   alpha-blended white layered on top of the modal's own compounds into a
+   visibly different, slightly-more-opaque white — a seam right where the
+   patch's edges were), which a real gap in the border sidesteps entirely:
+   there's nothing painted over anything, so nothing to mismatch. */
 div.retro-fieldset--bordered {
   position: relative;
+  border-top: none;
 }
 
-div.retro-fieldset--bordered > .retro-fieldset__legend {
+.retro-fieldset__legend-row {
+  display: flex;
+  align-items: flex-start;
   position: absolute;
-  top: -12px;
-  left: 16px;
-  background-color: rgba(255, 255, 255, 0.95);
+  /* 0, not a guessed negative offset: this lands the row's own top edge on
+     exactly the same coordinate the box's own border-left/border-right
+     start from (the padding edge), so the (height: 0) stub/rule lines below
+     — pinned to that same edge via align-items: flex-start, not a
+     vertically-*centered* placement that would depend on the row's auto
+     height (the legend text's own line box) — can't round to a different
+     sub-pixel position than the box's border and leave a gap at the
+     corner. Only the legend text itself (translateY below) needs centering
+     on the line; the line's own position needs none at all. */
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.retro-fieldset__legend-stub,
+.retro-fieldset__legend-rule {
+  height: 0;
+  border-top: 2px solid black;
+}
+
+.retro-fieldset__legend-stub {
+  flex: none;
+  width: 16px;
+}
+
+.retro-fieldset__legend-rule {
+  flex: 1;
+}
+
+.retro-fieldset__legend-row > .retro-fieldset__legend {
+  padding: 0 8px;
+  white-space: nowrap;
+  /* straddles the border-line above (at the row's own y: 0) by shifting up
+     half of its own height — a transform, so it can't perturb the line's
+     position the way an extra layout offset on the row would. */
+  transform: translateY(-50%);
 }

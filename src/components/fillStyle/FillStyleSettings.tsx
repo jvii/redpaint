@@ -208,9 +208,7 @@ function FillStyleSettingsOpen(): JSX.Element {
             disabled={!isGradient}
           />
           <span className="fill-style-settings__hint">
-            Range follows the FG color, DPaint-style — pick a color from a palette
-            range (set up in the palette editor) to gradient across it, or any other
-            color for the whole palette. Pick a new FG color without closing this dialog.
+            Use the palette to select a color from a range to create a gradient.
           </span>
           <RetroFieldset legend="Dither" className="fill-style-settings__dither" as="div">
             <RetroLabeledSlider

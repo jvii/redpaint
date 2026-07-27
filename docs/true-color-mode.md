@@ -221,12 +221,16 @@ call) — every other tool went through the GPU path.
 Range selection followed DPaint exactly as of 2026-07-27: the range is
 whichever palette range contains the current foreground color
 (`activeRangeIndices`, `src/algorithm/paletteRange.ts` — the same lookup
-Cycle/Shade/Blend use), falling back to the whole palette if the FG color
-isn't in any range. An explicit Range picker lived in the Fill Style dialog
-between those two dates; it's gone now, in favor of just picking a new FG
-color from the toolbox palette without closing the dialog. Deferred: "From
-brush" pattern fill (the type union already anticipates a third mode) and
-DPaint's reverse-gradient modifier click.
+Cycle/Shade/Blend use). Unlike Cycle/Shade/Blend, an FG color outside every
+range doesn't fall back to a whole-palette gradient — `effectiveFillStyle`
+(`src/overmind/fillStyle/state.ts`) returns `null` there, so Gradient mode
+just paints solid with the FG color, same as DPaint (there's no such thing
+as a whole-palette gradient fill in the original). An explicit Range picker
+lived in the Fill Style dialog between those two dates; it's gone now, in
+favor of just picking a new FG color from the toolbox palette without
+closing the dialog. Deferred: "From brush" pattern fill (the type union
+already anticipates a third mode) and DPaint's reverse-gradient modifier
+click.
 
 ### Brush color-reduction gaps (noted 2026-07-13, unimplemented)
 

@@ -42,7 +42,21 @@ export function RetroFieldset({
   if (as === 'div') {
     return (
       <div className={rootClassName}>
-        <span className="retro-fieldset__legend">{legend}</span>
+        {bordered ? (
+          // A real border-top-line gap, not a same-colored patch painted over
+          // a continuous border: the box has no top border of its own here,
+          // just this stub+rule pair either side of the legend text, so
+          // there's nothing translucent stacked on top of anything else to
+          // mismatch — the legend sits directly on the box's own single
+          // background layer, identical to everywhere else in it.
+          <div className="retro-fieldset__legend-row">
+            <span className="retro-fieldset__legend-stub" aria-hidden="true" />
+            <span className="retro-fieldset__legend">{legend}</span>
+            <span className="retro-fieldset__legend-rule" aria-hidden="true" />
+          </div>
+        ) : (
+          <span className="retro-fieldset__legend">{legend}</span>
+        )}
         {children}
       </div>
     );
