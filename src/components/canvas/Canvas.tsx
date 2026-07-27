@@ -2,6 +2,7 @@ import React, { JSX, useEffect, useRef } from 'react';
 import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
 import { getEventHandler, isMiddleMouseButton } from '../../tools/util/util';
+import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from '../../types';
@@ -256,6 +257,13 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           getEventHandler(tool, 'onMouseUp')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseUpOverlay')(event);
+          // Every tool's overlay preview is drawn from onMouseMoveOverlay,
+          // which drawing tools skip while a button is held (the real canvas
+          // shows the live stroke instead) — so mouse-up leaves the overlay
+          // exactly as the drag left it (cleared) until the pointer next
+          // actually moves. Replaying one, same fix as the menu-close/
+          // hotkey cases above, makes the brush cursor reappear immediately.
+          setTimeout(refreshBrushPreview, 0);
         }}
         onMouseEnter={(event): void => {
           updateCursorPos(event);
