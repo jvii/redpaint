@@ -60,6 +60,16 @@ export function PaletteEditor(): JSX.Element | null {
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
 
+  // Every cycling control below edits the selected slot and no-ops when
+  // there isn't one — the controls are all disabled in that state anyway,
+  // so this guard is belt-and-braces rather than reachable.
+  function updateActiveRange(settings: { active?: boolean; reverse?: boolean; rate?: number }): void {
+    if (activeRangeIndex === null) {
+      return;
+    }
+    actions.palette.setRangeSettings({ rangeIndex: activeRangeIndex, ...settings });
+  }
+
   return (
     <Modal header="Color Palette" width={700}>
       <div className="palette-editor__container">
@@ -195,14 +205,7 @@ export function PaletteEditor(): JSX.Element | null {
               ]}
               value={activeRange?.active ? 'on' : 'off'}
               disabled={!activeRange}
-              onChange={(value): void => {
-                if (activeRangeIndex !== null) {
-                  actions.palette.setRangeSettings({
-                    rangeIndex: activeRangeIndex,
-                    active: value === 'on',
-                  });
-                }
-              }}
+              onChange={(value): void => updateActiveRange({ active: value === 'on' })}
             />
             <RetroToggle
               options={[
@@ -211,14 +214,7 @@ export function PaletteEditor(): JSX.Element | null {
               ]}
               value={activeRange?.reverse ? 'reverse' : 'forward'}
               disabled={!activeRange}
-              onChange={(value): void => {
-                if (activeRangeIndex !== null) {
-                  actions.palette.setRangeSettings({
-                    rangeIndex: activeRangeIndex,
-                    reverse: value === 'reverse',
-                  });
-                }
-              }}
+              onChange={(value): void => updateActiveRange({ reverse: value === 'reverse' })}
             />
           </div>
           <div className="palette-editor__range-cycling-row palette-editor__range-cycling-row--speed">
@@ -229,14 +225,7 @@ export function PaletteEditor(): JSX.Element | null {
               min={0}
               max={60}
               disabled={!activeRange}
-              onChange={(value): void => {
-                if (activeRangeIndex !== null) {
-                  actions.palette.setRangeSettings({
-                    rangeIndex: activeRangeIndex,
-                    rate: stepsPerSecondToRate(value),
-                  });
-                }
-              }}
+              onChange={(value): void => updateActiveRange({ rate: stepsPerSecondToRate(value) })}
             />
           </div>
         </div>

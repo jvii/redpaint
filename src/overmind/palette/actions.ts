@@ -5,9 +5,7 @@ import { brushRecall } from '../../brush/BrushRecall';
 import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
 import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
-import { cycleDriver } from '../../canvas/CycleDriver';
-import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
-import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
+import { cycleDriver, refreshCyclePalettes } from '../../canvas/CycleDriver';
 
 // Resizes the palette to exactly `colors` entries (the screen format's
 // Number of Colors). Existing colors are kept up to the new count; growing
@@ -260,12 +258,6 @@ export const toggleCycling = (context: Context): void => {
   } else {
     cycleDriver.stop();
     context.state.palette.cycleOffsets = context.state.palette.ranges.map(() => 0);
-    paintingCanvasController.updatePalette();
-    overlayCanvasController.updatePalette();
-    // The overlay is immediate-mode — re-uploading the texture alone doesn't
-    // repaint whatever's currently shown (a brush cursor, an in-progress
-    // shape), so without this it would keep showing its last cycled color
-    // instead of snapping back to base like the main canvas does.
-    overlayCanvasController.redrawForCycling();
+    refreshCyclePalettes(); // same refresh a cycling tick does, with zeroes
   }
 };

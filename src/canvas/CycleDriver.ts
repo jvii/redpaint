@@ -80,13 +80,24 @@ class CycleDriver {
 
   private applyOffsets(offsets: number[]): void {
     overmind.actions.palette.setCycleOffsets(offsets);
-    paintingCanvasController.updatePalette();
-    overlayCanvasController.updatePalette();
-    // The overlay doesn't repaint on its own (it's immediate-mode, redrawn
-    // only on mouse events) — replay whatever's currently shown (brush
-    // cursor, in-progress shape) so it cycles too, like DPaint's did.
-    overlayCanvasController.redrawForCycling();
+    refreshCyclePalettes();
   }
+}
+
+// Pushes state.palette.cycleOffsets to the screen: re-upload both GL palette
+// textures, then replay the overlay. Free function, not a CycleDriver method,
+// because toggleCycling needs it too — that action zeroes the offsets itself
+// (an action can't dispatch setCycleOffsets through the overmind singleton
+// from inside another action) and then needs exactly this same refresh, so
+// "what has to happen when the offsets change" lives in one place instead of
+// being spelled out on both sides.
+export function refreshCyclePalettes(): void {
+  paintingCanvasController.updatePalette();
+  overlayCanvasController.updatePalette();
+  // The overlay doesn't repaint on its own (it's immediate-mode, redrawn only
+  // on mouse events) — replay whatever's currently shown (brush cursor,
+  // in-progress shape) so it cycles too, like DPaint's did.
+  overlayCanvasController.redrawForCycling();
 }
 
 export const cycleDriver = new CycleDriver();

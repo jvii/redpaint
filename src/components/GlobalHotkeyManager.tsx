@@ -4,7 +4,16 @@ import { overmind } from '../index';
 import { MODE_ORDER } from '../overmind/brush/mode';
 import { isEdge } from '../browser';
 
-// A non-rendering logic component for managing hotkeys and copy/paste
+// A non-rendering logic component for managing hotkeys and copy/paste.
+//
+// Every hook below registers its listeners on `document` and removes them on
+// unmount. This component is mounted once for the app's lifetime and never
+// unmounts, so today the cleanups never run — they're here so the file stops
+// depending on that being true, and on addEventListener quietly de-duplicating
+// StrictMode's double effect invocation (same function reference, so the
+// second registration is a no-op). Either of those changing would give every
+// hotkey two handlers, and two handlers on the cycling toggle cancel out into
+// a dead Tab key.
 export function GlobalHotKeyManager(): null {
   usePaste();
   useMenuHotkey();
@@ -29,8 +38,9 @@ function usePaste(): void {
     actions.dialog.open('PASTE_SELECT');
   }
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
     document.addEventListener('paste', handlePaste);
+    return (): void => document.removeEventListener('paste', handlePaste);
   }, []);
 }
 
@@ -81,8 +91,9 @@ function useMenuHotkey(): void {
     setTimeout(refreshBrushPreview, 0);
   }
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
     document.addEventListener('keydown', handleKey);
+    return (): void => document.removeEventListener('keydown', handleKey);
   }, []);
 }
 
@@ -105,8 +116,9 @@ function useCyclingHotkey(): void {
     actions.palette.toggleCycling();
   }
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
     document.addEventListener('keydown', handleKey);
+    return (): void => document.removeEventListener('keydown', handleKey);
   }, []);
 }
 
@@ -132,9 +144,13 @@ function useMiddleClickMenuToggle(): void {
     setTimeout(refreshBrushPreview, 0);
   }
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
     document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('auxclick', handleAuxClick);
+    return (): void => {
+      document.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('auxclick', handleAuxClick);
+    };
   }, []);
 }
 
@@ -162,8 +178,9 @@ function useModeHotkeys(): void {
     refreshBrushPreview();
   }
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
     document.addEventListener('keydown', handleKey);
+    return (): void => document.removeEventListener('keydown', handleKey);
   }, []);
 }
 
@@ -270,8 +287,12 @@ function useBrushTransformHotkeys(): void {
     setTimeout(refreshBrushPreview, 0);
   }
 
-  useEffect((): void => {
+  useEffect((): (() => void) => {
     document.addEventListener('mousemove', trackPointer);
     document.addEventListener('keydown', handleKey);
+    return (): void => {
+      document.removeEventListener('mousemove', trackPointer);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, []);
 }
