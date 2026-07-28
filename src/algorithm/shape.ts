@@ -383,3 +383,39 @@ export function filledPolygon(vertices: Point[]): LineH[] {
 
   return filledPolygon;
 }
+
+// A filled ellipse via a direct per-pixel-center distance test, as an
+// alternative to filledEllipse above: that one solves each row's boundary x
+// with a quadratic formula and rounds the two roots independently
+// (Math.round), which isn't symmetric for a fractional root (JS always
+// rounds .5 up, so e.g. round(3.5)=4 but round(-3.5)=-3). Invisible at the
+// sizes real brush strokes use, but clearly off-center at the very low
+// resolutions the Fill Style preview swatch can end up with (its only
+// caller). Testing each pixel's own center against the ellipse equation has
+// no such bias: the test is symmetric in (x - center) by construction,
+// whichever side of center a pixel falls on.
+//
+// `center` must be at integer coordinates whenever the result will be fed
+// through the GPU fill path's row-span table (rowSpans.ts): that table is
+// center-relative, and the shader reconstructs a fragment's local position
+// as `pix - center`, a translation that only preserves this rasterization
+// for whole-pixel offsets. A half-integer center silently produces a
+// different pixel set on the two sides of the round trip.
+export function symmetricFilledEllipse(center: Point, radiusX: number, radiusY: number): LineH[] {
+  const lines: LineH[] = [];
+  const yStart = Math.floor(center.y - radiusY);
+  const yEnd = Math.ceil(center.y + radiusY);
+  for (let y = yStart; y <= yEnd; y++) {
+    const dy = (y + 0.5 - center.y) / radiusY;
+    if (Math.abs(dy) > 1) {
+      continue;
+    }
+    const dxMax = radiusX * Math.sqrt(1 - dy * dy);
+    const xStart = Math.ceil(center.x - dxMax - 0.5);
+    const xEnd = Math.floor(center.x + dxMax - 0.5);
+    if (xEnd >= xStart) {
+      lines.push(new LineH({ x: xStart, y }, { x: xEnd, y }));
+    }
+  }
+  return lines;
+}

@@ -7,6 +7,7 @@ import {
   filledEllipse,
   filledPolygon,
   line,
+  symmetricFilledEllipse,
   unfilledCircle,
   unfilledEllipse,
   unfilledPolygon,
@@ -59,6 +60,34 @@ describe('shape (visual fixtures)', () => {
   test('filled ellipse', () => {
     const grid = rasterizeLines(filledEllipse({ x: 20, y: 15 }, 16, 8, 20), 40, 32);
     expectMatchesFixture(grid, fixture('filled-ellipse'));
+  });
+
+  test('symmetric filled ellipse', () => {
+    const grid = rasterizeLines(symmetricFilledEllipse({ x: 20, y: 15 }, 16, 8), 40, 32);
+    expectMatchesFixture(grid, fixture('symmetric-filled-ellipse'));
+  });
+
+  // The reason this rasterizer exists: at the low resolutions the Fill Style
+  // preview swatch reaches, filledEllipse's independently-rounded roots are
+  // visibly lopsided, so each row here must be an exact mirror of the row on
+  // the other side of center, and each row itself centered on the shape.
+  test('symmetric filled ellipse is symmetric about its center', () => {
+    const radiusX = 13;
+    const radiusY = 8;
+    const center = { x: 16, y: 12 };
+    const rows = symmetricFilledEllipse(center, radiusX, radiusY);
+    const byY = new Map(rows.map((l) => [l.p1.y, l]));
+
+    for (const row of rows) {
+      // rows pair up across the horizontal axis of symmetry (center.y - 0.5,
+      // since the test samples pixel centers at y + 0.5)
+      const mirrored = byY.get(2 * center.y - 1 - row.p1.y);
+      expect(mirrored).toBeDefined();
+      expect(mirrored.p1.x).toBe(row.p1.x);
+      expect(mirrored.p2.x).toBe(row.p2.x);
+      // and each row is itself centered: equal margins left and right
+      expect(row.p1.x - (center.x - radiusX)).toBe(center.x + radiusX - 1 - row.p2.x);
+    }
   });
 
   test('unfilled polygon', () => {

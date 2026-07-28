@@ -77,6 +77,9 @@ export class RowSpanTexture {
   private textureUnit: number;
   private texture: WebGLTexture | null = null;
   private lastKey: string | null = null;
+  // the override table this instance currently holds, for the caller-owned
+  // cache in use() below
+  private lastTable: RowSpanTable | null = null;
   public yMin = 0;
   public rowCount = 0;
 
@@ -97,13 +100,21 @@ export class RowSpanTexture {
   // its own ellipse rasterization (symmetricFilledEllipse) instead of the
   // real filledCircle/filledEllipse, so all three of that swatch's fill
   // modes agree with each other rather than the real (but, at that small
-  // preview resolution, visibly asymmetric) shape. Always re-uploaded,
-  // uncached: this is only ever the low-frequency dialog preview, not a
-  // per-copy hot path, so the caching complexity isn't worth it.
+  // preview resolution, visibly asymmetric) shape. Cached by table
+  // identity, not by a geometry key: the caller owns the table, so it's the
+  // caller that decides when the shape changed (the preview memoizes its
+  // table on the radii). Without this, a dialog left open while color
+  // cycling runs re-encodes and re-uploads an unchanged table every
+  // animation frame.
   public use(shape: FillShape, overrideTable?: RowSpanTable): boolean {
     if (overrideTable) {
-      this.upload(overrideTable);
-      this.lastKey = null; // next non-override call must not think it's still cached
+      if (overrideTable !== this.lastTable) {
+        this.upload(overrideTable);
+      } else {
+        this.bind();
+      }
+      // next non-override call must not think its own key is still cached
+      this.lastKey = null;
       return true;
     }
     const key = cacheKey(shape);
@@ -118,13 +129,18 @@ export class RowSpanTexture {
       this.upload(table);
       this.lastKey = key;
     } else {
-      this.gl.activeTexture(this.gl.TEXTURE0 + this.textureUnit);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+      this.bind();
     }
     return true;
   }
 
+  private bind(): void {
+    this.gl.activeTexture(this.gl.TEXTURE0 + this.textureUnit);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+  }
+
   private upload(table: RowSpanTable): void {
+    this.lastTable = table;
     const gl = this.gl;
     const { height, data } = encodeRowSpanTexture(table);
     gl.activeTexture(gl.TEXTURE0 + this.textureUnit);

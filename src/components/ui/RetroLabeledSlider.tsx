@@ -3,7 +3,9 @@ import './RetroLabeledSlider.css';
 import { RetroSlider } from './RetroSlider';
 
 type Props = {
-  label: string;
+  // omitted where a surrounding fieldset legend already names the control
+  // (the Fill Style dialog's Dither/Jitter boxes)
+  label?: string;
   value: number;
   min: number;
   max: number;
@@ -17,7 +19,7 @@ type Props = {
 // buffer so a value can be typed freely (including transiently
 // invalid/empty states) and is only clamped and committed on blur/Enter.
 export function RetroLabeledSlider({
-  label,
+  label = '',
   value,
   min,
   max,
