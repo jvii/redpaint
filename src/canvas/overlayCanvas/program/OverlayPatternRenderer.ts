@@ -1,14 +1,15 @@
-import { GradientShape } from '../../../algorithm/gradientFill';
+import { FillShape } from '../../../algorithm/fillShape';
 import { patternFillUniforms } from '../../../algorithm/patternFill';
 import { BrushColorIndex } from '../../../domain/BrushColorIndex';
-import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import {
   applyPatternUniforms,
   PATTERN_LIB,
   PATTERN_UNIFORM_NAMES,
 } from '../../util/patternShaderLib';
-import { GRADIENT_VERTEX_SHADER } from '../../util/gradientShaderLib';
+import { FILL_VERTEX_SHADER } from '../../util/shapeFillShaderLib';
+import { drawShapeQuad } from '../../util/shapeFillDraw';
+import { PatternTexture } from '../../util/patternTexture';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 import { RowSpanTable } from '../../../algorithm/rowSpans';
 
@@ -32,8 +33,7 @@ export class OverlayPatternRenderer {
   private program: WebGLProgram;
   private a_position: number;
   private uniforms: { [name: string]: WebGLUniformLocation | null };
-  private texture: WebGLTexture | null = null;
-  private currentPatternVersion = -1;
+  private patternTexture: PatternTexture;
   private rowSpanTexture: RowSpanTexture;
 
   public constructor(gl: WebGLRenderingContext) {
@@ -46,6 +46,7 @@ export class OverlayPatternRenderer {
     }
     gl.uniform1i(this.uniforms['u_pattern'], PATTERN_TEXTURE_UNIT);
     gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
+    this.patternTexture = new PatternTexture(gl, PATTERN_TEXTURE_UNIT);
     this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
@@ -54,7 +55,7 @@ export class OverlayPatternRenderer {
   // consistent with Solid's, both using symmetricFilledEllipse instead of
   // this shape's real row-span table.
   public renderPatternFill(
-    shape: GradientShape,
+    shape: FillShape,
     pattern: BrushColorIndex,
     version: number,
     rowSpanTableOverride?: RowSpanTable
@@ -64,14 +65,7 @@ export class OverlayPatternRenderer {
 
     activateProgram(gl, this.program);
 
-    if (this.currentPatternVersion !== version) {
-      this.loadPatternAsTexture(pattern);
-      this.currentPatternVersion = version;
-    }
-    // Re-bind every draw (cheap — 2 calls), not just when the pattern
-    // version changes — see PatternGeometricIndexer's identical comment.
-    gl.activeTexture(gl.TEXTURE0 + PATTERN_TEXTURE_UNIT);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    this.patternTexture.use(pattern, version);
     if (this.rowSpanTexture.use(shape, rowSpanTableOverride)) {
       applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
     }
@@ -79,45 +73,7 @@ export class OverlayPatternRenderer {
     applyPatternUniforms(gl, this.uniforms, u);
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
 
-    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.a_position);
-
-    const xLeft = canvasToWebGLCoordX(gl, u.left);
-    const xRight = canvasToWebGLCoordX(gl, u.right + 1);
-    const yTop = canvasToWebGLCoordY(gl, u.top);
-    const yBottom = canvasToWebGLCoordY(gl, u.bottom + 1);
-
-    const vertices = new Float32Array([xLeft, yTop, xLeft, yBottom, xRight, yTop, xRight, yBottom]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  }
-
-  private loadPatternAsTexture(pattern: BrushColorIndex): void {
-    const gl = this.gl;
-
-    gl.activeTexture(gl.TEXTURE0 + PATTERN_TEXTURE_UNIT);
-
-    if (!this.texture) {
-      this.texture = gl.createTexture();
-    }
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      pattern.width,
-      pattern.height,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      pattern.indexArray
-    );
-
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    drawShapeQuad(gl, this.a_position, u);
   }
 
   private createProgram(): WebGLProgram {
@@ -132,16 +88,13 @@ export class OverlayPatternRenderer {
     }
     `;
 
-    const program = createProgram(this.gl, GRADIENT_VERTEX_SHADER, fragmentShader);
+    const program = createProgram(this.gl, FILL_VERTEX_SHADER, fragmentShader);
     console.log('Program ready (OverlayPatternRenderer)');
     return program;
   }
 
   public dispose(): void {
-    if (this.texture) {
-      this.gl.deleteTexture(this.texture);
-      this.texture = null;
-    }
+    this.patternTexture.dispose();
     this.rowSpanTexture.dispose();
     if (this.program) {
       this.gl.deleteProgram(this.program);

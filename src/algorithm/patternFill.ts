@@ -1,7 +1,7 @@
 import { Point } from '../types';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { ALPHA_INDEXED } from '../domain/CanvasColorIndex';
-import { GradientShape, ShapeGeometry, shapeGeometry } from './gradientFill';
+import { FillShape, ShapeGeometry, shapeGeometry } from './fillShape';
 
 // DPaint's Pattern fill: a captured brush bitmap tiled edge-to-edge from a
 // fixed canvas origin (0,0) — the same anchor DPaint's own hardware-blitter
@@ -64,14 +64,14 @@ export function bucketPointsByPattern(
 // the GPU-path analog of bucketPointsByPattern above, for the shapes that
 // DO have a closed form (filled rect/circle/ellipse/polygon). Shares its
 // shape bounding-quad/center/radius/rotation math with Gradient fill's own
-// uniform prep (shapeGeometry, gradientFill.ts) rather than recomputing the
+// uniform prep (shapeGeometry, fillShape.ts) rather than recomputing the
 // rotated-ellipse bounding box a second time.
-export interface PatternUniforms extends ShapeGeometry {
+export type PatternUniforms = ShapeGeometry & {
   patternWidth: number;
   patternHeight: number;
-}
+};
 
-export function patternFillUniforms(shape: GradientShape, pattern: BrushColorIndex): PatternUniforms {
+export function patternFillUniforms(shape: FillShape, pattern: BrushColorIndex): PatternUniforms {
   return {
     ...shapeGeometry(shape),
     patternWidth: pattern.width,

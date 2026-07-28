@@ -37,18 +37,21 @@
 //    rotation baked in, so there's nothing left that distinguishes them at
 //    this point.
 
-import { GradientUniforms, MAX_GRADIENT_POLYGON_VERTICES } from '../../algorithm/gradientFill';
-import { SHAPE_FILL_LIB } from './shapeFillShaderLib';
+import { GradientUniforms } from '../../algorithm/gradientFill';
+import {
+  applyShapeUniforms,
+  SHAPE_FILL_LIB,
+  SHAPE_FILL_UNIFORM_NAMES,
+} from './shapeFillShaderLib';
 
 // Shared by both GradientGeometricIndexer and OverlayGradientRenderer:
-// every uniform GRADIENT_LIB declares except u_palette (the overlay-only
+// every uniform GRADIENT_LIB declares (the shape-describing ones via
+// SHAPE_FILL_UNIFORM_NAMES) except u_palette (the overlay-only
 // sampler) and u_rowSpans (a texture unit number each caller binds once at
 // program-construction time, like PATTERN_LIB's u_pattern — its location is
 // still looked up here since applyGradientUniforms doesn't set it).
 export const GRADIENT_UNIFORM_NAMES = [
-  'u_canvasHeight',
-  'u_shapeKind',
-  'u_center',
+  ...SHAPE_FILL_UNIFORM_NAMES,
   'u_axisMode',
   'u_axisMin',
   'u_axisSpan',
@@ -56,35 +59,23 @@ export const GRADIENT_UNIFORM_NAMES = [
   'u_rangeLowIndex',
   'u_ditherJitter',
   'u_seed',
-  'u_vertices',
-  'u_nextVertices',
-  'u_vertexCount',
   'u_rowSpans',
   'u_rowSpanYMin',
   'u_rowSpanRowCount',
 ];
 
-// Sets every GRADIENT_LIB uniform from one GradientUniforms value — the
-// part of indexGradientFill/renderGradientFill that's identical between
-// the commit and preview path, except u_rowSpans* (bound alongside the
-// texture itself by RowSpanTexture.use, right before this runs) and
-// u_rowSpans (see GRADIENT_UNIFORM_NAMES). u_nextVertices[i] duplicates
-// u_vertices[(i+1) % count] — computed here on the CPU, not in the shader.
-// WebGL1 fragment shaders only allow the bare loop-control variable as a
-// dynamic array index (ANGLE rejects anything derived from it, e.g. a
-// `j = i==0 ? count-1 : i-1` previous-vertex index, with "Index expression
-// can only contain const or loop symbols"), so the shader can't compute
-// "the previous/next vertex" itself — every edge (u_vertices[i],
-// u_nextVertices[i]) is looked up with the same bare `i` instead, at the
-// cost of this second array.
+// Sets every GRADIENT_LIB uniform from one GradientUniforms value: the
+// shape-describing ones via applyShapeUniforms, then Gradient's own band/
+// dither parameters. Not set here: u_rowSpans (a texture unit number each
+// caller binds once at program-construction time) and u_rowSpanYMin/
+// u_rowSpanRowCount (bound alongside the texture itself by
+// RowSpanTexture.use + applyRowSpanUniforms, right before this runs).
 export function applyGradientUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
   u: GradientUniforms
 ): void {
-  gl.uniform1f(locations['u_canvasHeight'], gl.drawingBufferHeight);
-  gl.uniform1i(locations['u_shapeKind'], u.shapeKind);
-  gl.uniform2f(locations['u_center'], u.center.x, u.center.y);
+  applyShapeUniforms(gl, locations, u);
   gl.uniform1i(locations['u_axisMode'], u.axisMode);
   gl.uniform1f(locations['u_axisMin'], u.axisMin);
   gl.uniform1f(locations['u_axisSpan'], u.axisSpan);
@@ -92,29 +83,7 @@ export function applyGradientUniforms(
   gl.uniform1f(locations['u_rangeLowIndex'], u.rangeLowIndex);
   gl.uniform1f(locations['u_ditherJitter'], u.ditherJitter);
   gl.uniform1f(locations['u_seed'], u.seed);
-
-  const count = u.vertices.length;
-  const packedVertices = new Float32Array(MAX_GRADIENT_POLYGON_VERTICES * 2);
-  const packedNextVertices = new Float32Array(MAX_GRADIENT_POLYGON_VERTICES * 2);
-  for (let i = 0; i < count; i++) {
-    packedVertices[i * 2] = u.vertices[i].x;
-    packedVertices[i * 2 + 1] = u.vertices[i].y;
-    const next = u.vertices[(i + 1) % count];
-    packedNextVertices[i * 2] = next.x;
-    packedNextVertices[i * 2 + 1] = next.y;
-  }
-  gl.uniform2fv(locations['u_vertices'], packedVertices);
-  gl.uniform2fv(locations['u_nextVertices'], packedNextVertices);
-  gl.uniform1f(locations['u_vertexCount'], count);
 }
-
-export const GRADIENT_VERTEX_SHADER = `
-    attribute vec4 a_position;
-
-    void main () {
-      gl_Position = a_position;
-    }
-    `;
 
 export const GRADIENT_LIB = `
     #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -125,8 +94,6 @@ export const GRADIENT_LIB = `
 
     ${SHAPE_FILL_LIB}
 
-    uniform int u_shapeKind;      // 0 = rect, 1 = circle, 2 = ellipse, 3 = polygon
-    uniform vec2 u_center;        // shape center, canvas coords (y down)
     uniform int u_axisMode;       // 0 = vertical, 1 = horizontal, 2 = horizontalLine
     uniform float u_axisMin;      // band-0 axis position (modes 0/1; rect rows in mode 2)
     uniform float u_axisSpan;     // axis extent, max - min

@@ -1,16 +1,13 @@
-import {
-  GradientFillStyle,
-  GradientShape,
-  gradientFillUniforms,
-} from '../../../algorithm/gradientFill';
-import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
+import { GradientFillStyle, gradientFillUniforms } from '../../../algorithm/gradientFill';
+import { FillShape } from '../../../algorithm/fillShape';
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
   GRADIENT_LIB,
   GRADIENT_UNIFORM_NAMES,
-  GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
+import { FILL_VERTEX_SHADER } from '../../util/shapeFillShaderLib';
+import { drawShapeQuad } from '../../util/shapeFillDraw';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 import { RowSpanTable } from '../../../algorithm/rowSpans';
 
@@ -48,7 +45,7 @@ export class OverlayGradientRenderer {
   // consistent with Solid's, both using symmetricFilledEllipse instead of
   // this shape's real row-span table.
   public renderGradientFill(
-    shape: GradientShape,
+    shape: FillShape,
     style: GradientFillStyle,
     seed: number,
     rowSpanTableOverride?: RowSpanTable
@@ -64,17 +61,7 @@ export class OverlayGradientRenderer {
     }
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
 
-    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.a_position);
-
-    const xLeft = canvasToWebGLCoordX(gl, u.left);
-    const xRight = canvasToWebGLCoordX(gl, u.right + 1);
-    const yTop = canvasToWebGLCoordY(gl, u.top);
-    const yBottom = canvasToWebGLCoordY(gl, u.bottom + 1);
-
-    const vertices = new Float32Array([xLeft, yTop, xLeft, yBottom, xRight, yTop, xRight, yBottom]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    drawShapeQuad(gl, this.a_position, u);
   }
 
   private createProgram(): WebGLProgram {
@@ -89,7 +76,7 @@ export class OverlayGradientRenderer {
     }
     `;
 
-    const program = createProgram(this.gl, GRADIENT_VERTEX_SHADER, fragmentShader);
+    const program = createProgram(this.gl, FILL_VERTEX_SHADER, fragmentShader);
     console.log('Program ready (OverlayGradientRenderer)');
     return program;
   }

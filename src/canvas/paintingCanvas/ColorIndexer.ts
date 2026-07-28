@@ -11,7 +11,8 @@ import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
 import { overmind } from '../..';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
-import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { GradientFillStyle } from '../../algorithm/gradientFill';
+import { FillShape } from '../../algorithm/fillShape';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 
 type GLBuffers = {
@@ -80,11 +81,11 @@ export class ColorIndexer {
     this.geometricIndexer.indexQuad(start, end, color);
   }
 
-  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     this.gradientIndexer.indexGradientFill(shape, style, seed);
   }
 
-  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+  patternFill(shape: FillShape, pattern: BrushColorIndex, version: number): void {
     this.patternIndexer.indexPatternFill(shape, pattern, version);
   }
 

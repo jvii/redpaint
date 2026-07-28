@@ -1,16 +1,13 @@
-import {
-  GradientFillStyle,
-  GradientShape,
-  gradientFillUniforms,
-} from '../../../algorithm/gradientFill';
-import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
+import { GradientFillStyle, gradientFillUniforms } from '../../../algorithm/gradientFill';
+import { FillShape } from '../../../algorithm/fillShape';
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
   GRADIENT_LIB,
   GRADIENT_UNIFORM_NAMES,
-  GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
+import { FILL_VERTEX_SHADER } from '../../util/shapeFillShaderLib';
+import { drawShapeQuad } from '../../util/shapeFillDraw';
 import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
@@ -52,7 +49,7 @@ export class GradientGeometricIndexer {
     this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
-  public indexGradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  public indexGradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     const gl = this.gl;
     const u = gradientFillUniforms(shape, style, seed);
 
@@ -64,19 +61,7 @@ export class GradientGeometricIndexer {
       applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
     }
 
-    gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
-    gl.enableVertexAttribArray(this.a_position);
-
-    // pixel n covers canvas coordinates [n, n+1), so the quad extends to the
-    // far edge of the greater pixel (same convention as indexQuad)
-    const xLeft = canvasToWebGLCoordX(gl, u.left);
-    const xRight = canvasToWebGLCoordX(gl, u.right + 1);
-    const yTop = canvasToWebGLCoordY(gl, u.top);
-    const yBottom = canvasToWebGLCoordY(gl, u.bottom + 1);
-
-    const vertices = new Float32Array([xLeft, yTop, xLeft, yBottom, xRight, yTop, xRight, yBottom]);
-    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    drawShapeQuad(gl, this.a_position, u);
   }
 
   private createProgram(): WebGLProgram {
@@ -91,7 +76,7 @@ export class GradientGeometricIndexer {
     }
     `;
 
-    const program = createProgram(this.gl, GRADIENT_VERTEX_SHADER, fragmentShader);
+    const program = createProgram(this.gl, FILL_VERTEX_SHADER, fragmentShader);
     console.log('Program ready (GradientGeometricIndexer)');
     return program;
   }

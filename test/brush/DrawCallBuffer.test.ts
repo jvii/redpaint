@@ -5,7 +5,8 @@ import type { CustomBrush } from '../../src/brush/CustomBrush';
 import { Point, PaintColor } from '../../src/types';
 import { LineH } from '../../src/domain/LineH';
 import { LineV } from '../../src/domain/LineV';
-import { GradientFillStyle, GradientShape } from '../../src/algorithm/gradientFill';
+import { GradientFillStyle } from '../../src/algorithm/gradientFill';
+import { FillShape } from '../../src/algorithm/fillShape';
 
 // A CustomBrush stand-in: DrawCallBuffer only passes the brush through, and
 // runtime-importing the real class would pull in the DOM-touching controller
@@ -14,12 +15,12 @@ const fakeBrush = { width: 3, heigth: 3 } as unknown as CustomBrush;
 
 class RecordingTarget implements DrawTarget {
   public effectCalls: { points: Point[]; brush: CustomBrush; copyId: number }[] = [];
-  public gradientCalls: { shape: GradientShape; style: GradientFillStyle; seed: number }[] = [];
+  public gradientCalls: { shape: FillShape; style: GradientFillStyle; seed: number }[] = [];
   public flushEffectDrawCalls = 0;
   points(points: Point[], color: PaintColor): void {}
   lines(lines: (LineH | LineV)[], color: PaintColor): void {}
   quad(start: Point, end: Point, color: PaintColor): void {}
-  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     this.gradientCalls.push({ shape, style, seed });
   }
   drawImage(points: Point[], brush: CustomBrush): void {}
@@ -71,8 +72,8 @@ describe('DrawCallBuffer gradient fills', () => {
   it('replays each recorded gradientFill in order with its shape, style and seed', () => {
     const buffer = new DrawCallBuffer();
     const style: GradientFillStyle = { axis: 'vertical', rangeLow: 1, rangeHigh: 4, dither: 0 };
-    const circle: GradientShape = { kind: 'circle', center: { x: 5, y: 5 }, radius: 3 };
-    const rect: GradientShape = { kind: 'rect', start: { x: 0, y: 0 }, end: { x: 2, y: 2 } };
+    const circle: FillShape = { kind: 'circle', center: { x: 5, y: 5 }, radius: 3 };
+    const rect: FillShape = { kind: 'rect', start: { x: 0, y: 0 }, end: { x: 2, y: 2 } };
     // one call per symmetry copy of the same stroke: same style, same seed
     buffer.gradientFill(circle, style, 42);
     buffer.gradientFill(rect, style, 42);

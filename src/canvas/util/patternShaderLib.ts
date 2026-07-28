@@ -17,23 +17,22 @@
 // followed: sharing a texture's hardware wrap mode with the unrelated
 // brush-stamp code in DrawImageIndexer.ts would couple the two features).
 
-import { MAX_GRADIENT_POLYGON_VERTICES } from '../../algorithm/gradientFill';
 import { PatternUniforms } from '../../algorithm/patternFill';
-import { SHAPE_FILL_LIB } from './shapeFillShaderLib';
+import {
+  applyShapeUniforms,
+  SHAPE_FILL_LIB,
+  SHAPE_FILL_UNIFORM_NAMES,
+} from './shapeFillShaderLib';
 
 // Shared by both PatternGeometricIndexer and OverlayPatternRenderer: every
-// uniform PATTERN_LIB declares except u_palette (the overlay-only sampler
-// that resolves the fetched index to a display color) and u_pattern/
-// u_rowSpans (texture unit numbers each caller binds once at
-// program-construction time — their locations are still looked up here
-// since applyPatternUniforms doesn't set them).
+// uniform PATTERN_LIB declares (the shape-describing ones via
+// SHAPE_FILL_UNIFORM_NAMES) except u_palette, the overlay-only sampler that
+// resolves the fetched index to a display color. u_pattern/u_rowSpans are
+// texture unit numbers each caller binds once at program-construction time —
+// their locations are still looked up here since applyPatternUniforms
+// doesn't set them.
 export const PATTERN_UNIFORM_NAMES = [
-  'u_canvasHeight',
-  'u_shapeKind',
-  'u_center',
-  'u_vertices',
-  'u_nextVertices',
-  'u_vertexCount',
+  ...SHAPE_FILL_UNIFORM_NAMES,
   'u_pattern',
   'u_patternSize',
   'u_rowSpans',
@@ -41,36 +40,19 @@ export const PATTERN_UNIFORM_NAMES = [
   'u_rowSpanRowCount',
 ];
 
-// Sets every PATTERN_LIB uniform (except u_pattern/u_rowSpans, texture unit
-// numbers each caller already binds once at program-construction time, and
-// u_palette, overlay-only, and u_rowSpanYMin/u_rowSpanRowCount, set
-// alongside the row-span texture itself by RowSpanTexture.use +
-// applyRowSpanUniforms) from one PatternUniforms value.
+// Sets every PATTERN_LIB uniform from one PatternUniforms value: the
+// shape-describing ones via applyShapeUniforms, then Pattern's own. Not set
+// here: u_pattern/u_rowSpans (texture unit numbers each caller binds once at
+// program-construction time), u_palette (overlay-only), and
+// u_rowSpanYMin/u_rowSpanRowCount (set alongside the row-span texture itself
+// by RowSpanTexture.use + applyRowSpanUniforms).
 export function applyPatternUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
   u: PatternUniforms
 ): void {
-  gl.uniform1f(locations['u_canvasHeight'], gl.drawingBufferHeight);
-  gl.uniform1i(locations['u_shapeKind'], u.shapeKind);
-  gl.uniform2f(locations['u_center'], u.center.x, u.center.y);
+  applyShapeUniforms(gl, locations, u);
   gl.uniform2f(locations['u_patternSize'], u.patternWidth, u.patternHeight);
-
-  // Same fixed-size polygon array packing as applyGradientUniforms — see
-  // its own comment (gradientShaderLib.ts) for why u_nextVertices exists.
-  const count = u.vertices.length;
-  const packedVertices = new Float32Array(MAX_GRADIENT_POLYGON_VERTICES * 2);
-  const packedNextVertices = new Float32Array(MAX_GRADIENT_POLYGON_VERTICES * 2);
-  for (let i = 0; i < count; i++) {
-    packedVertices[i * 2] = u.vertices[i].x;
-    packedVertices[i * 2 + 1] = u.vertices[i].y;
-    const next = u.vertices[(i + 1) % count];
-    packedNextVertices[i * 2] = next.x;
-    packedNextVertices[i * 2 + 1] = next.y;
-  }
-  gl.uniform2fv(locations['u_vertices'], packedVertices);
-  gl.uniform2fv(locations['u_nextVertices'], packedNextVertices);
-  gl.uniform1f(locations['u_vertexCount'], count);
 }
 
 export const PATTERN_LIB = `
@@ -82,8 +64,6 @@ export const PATTERN_LIB = `
 
     ${SHAPE_FILL_LIB}
 
-    uniform int u_shapeKind;      // 0 = rect, 1 = circle, 2 = ellipse, 3 = polygon
-    uniform vec2 u_center;        // shape center, canvas coords (y down)
     uniform sampler2D u_pattern;  // the captured pattern bitmap
     uniform vec2 u_patternSize;   // pattern width/height in pixels
 

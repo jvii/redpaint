@@ -13,12 +13,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '..';
 import { DrawTarget } from '../canvas/CanvasController';
-import {
-  drawFilledLines,
-  drawFilledQuad,
-  drawGradientFilledShape,
-  drawPatternFilledShape,
-} from './fillStyleDraw';
+import { drawStyledFilledShape } from './fillStyleDraw';
 import { CustomBrush } from './CustomBrush';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { ALPHA_INDEXED } from '../domain/CanvasColorIndex';
@@ -76,13 +71,7 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
-    if (
-      drawPatternFilledShape({ kind: 'rect', start, end }, canvas) ||
-      drawGradientFilledShape({ kind: 'rect', start, end }, canvas)
-    ) {
-      return;
-    }
-    drawFilledQuad(start, end, canvas, overmind.state.tool.activePaintColor);
+    drawStyledFilledShape({ kind: 'rect', start, end }, canvas);
   }
 
   public drawUnfilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
@@ -91,14 +80,9 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
-    if (
-      drawPatternFilledShape({ kind: 'circle', center, radius }, canvas) ||
-      drawGradientFilledShape({ kind: 'circle', center, radius }, canvas)
-    ) {
-      return;
-    }
-    const filledCircleAsLines = filledCircle(center, radius);
-    drawFilledLines(filledCircleAsLines, canvas, overmind.state.tool.activePaintColor);
+    drawStyledFilledShape({ kind: 'circle', center, radius }, canvas, () =>
+      filledCircle(center, radius)
+    );
   }
 
   public drawUnfilledEllipse(
@@ -119,17 +103,11 @@ export class PixelBrush implements BrushInterface {
     rotationAngle: number,
     canvas: DrawTarget
   ): void {
-    if (
-      drawPatternFilledShape(
-        { kind: 'ellipse', center, radiusX, radiusY, rotationAngle },
-        canvas
-      ) ||
-      drawGradientFilledShape({ kind: 'ellipse', center, radiusX, radiusY, rotationAngle }, canvas)
-    ) {
-      return;
-    }
-    const filledEllipseAsLines = filledEllipse(center, radiusX, radiusY, rotationAngle);
-    drawFilledLines(filledEllipseAsLines, canvas, overmind.state.tool.activePaintColor);
+    drawStyledFilledShape(
+      { kind: 'ellipse', center, radiusX, radiusY, rotationAngle },
+      canvas,
+      () => filledEllipse(center, radiusX, radiusY, rotationAngle)
+    );
   }
 
   public drawUnfilledPolygon(vertices: Point[], complete: boolean, canvas: DrawTarget): void {
@@ -138,14 +116,9 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
-    if (
-      drawPatternFilledShape({ kind: 'polygon', vertices }, canvas) ||
-      drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)
-    ) {
-      return;
-    }
-    const filledPolygonAsLines = filledPolygon(vertices);
-    drawFilledLines(filledPolygonAsLines, canvas, overmind.state.tool.activePaintColor);
+    drawStyledFilledShape({ kind: 'polygon', vertices }, canvas, () =>
+      filledPolygon(vertices)
+    );
   }
 
   private stampOrPoints(points: Point[], canvas: DrawTarget, color: PaintColor): void {

@@ -6,7 +6,8 @@ import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { shiftPoint } from '../util/util';
 import { OverlayMainCanvasRenderer } from './OverlayMainCanvasRenderer';
 import { paletteTextureData } from '../../algorithm/cycle';
-import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { GradientFillStyle } from '../../algorithm/gradientFill';
+import { FillShape } from '../../algorithm/fillShape';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 
 // OverlayController is a singleton responsible for controlling
@@ -107,13 +108,13 @@ class OverlayCanvasController implements CanvasController {
     this.renderZoomCanvas();
   }
 
-  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     this.recordFrameDraw(() => this.gradientFill(shape, style, seed));
     this.mainCanvasRenderer?.gradientFill(shape, style, seed);
     this.renderZoomCanvas();
   }
 
-  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+  patternFill(shape: FillShape, pattern: BrushColorIndex, version: number): void {
     this.recordFrameDraw(() => this.patternFill(shape, pattern, version));
     this.mainCanvasRenderer?.patternFill(shape, pattern, version);
     this.renderZoomCanvas();

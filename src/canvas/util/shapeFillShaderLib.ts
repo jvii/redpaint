@@ -5,24 +5,87 @@
 // polygon math and the circle/ellipse row-span lookup, so a fix to either
 // doesn't need to be repeated in two places.
 //
-// Declares u_canvasHeight and the polygon uniforms (u_vertices/
-// u_nextVertices/u_vertexCount) itself — every consumer's own GLSL must NOT
-// redeclare these (a duplicate `uniform` declaration is a GLSL compile
-// error) but does still need to list their names in its own uniform-location
-// lookup (see GRADIENT_UNIFORM_NAMES / PATTERN_UNIFORM_NAMES) since
-// applyGradientUniforms/applyPatternUniforms still set them by name.
-// u_shapeKind/u_center stay out of this file: they're read directly by each
-// consumer's own top-level function, not by anything declared here, so each
-// consumer keeps declaring them itself.
+// Declares every uniform that describes the shape itself — u_canvasHeight,
+// u_shapeKind, u_center, and the polygon arrays (u_vertices/u_nextVertices/
+// u_vertexCount). Consumers' own GLSL must NOT redeclare these (a duplicate
+// `uniform` declaration is a GLSL compile error); each declares only the
+// uniforms specific to its own fill mode (gradient bands, pattern size).
+// SHAPE_FILL_UNIFORM_NAMES + applyShapeUniforms below are the JS side of the
+// same split: the one place that looks up and sets exactly this set, so
+// neither fill mode carries its own copy of the polygon packing.
 
-import { MAX_GRADIENT_POLYGON_VERTICES } from '../../algorithm/gradientFill';
+import { Point } from '../../types';
+import { MAX_FILL_POLYGON_VERTICES, ShapeGeometry } from '../../algorithm/fillShape';
 import { ROW_SPAN_OFFSET } from './rowSpanTexture';
+
+// Every uniform SHAPE_FILL_LIB declares. Each consumer concatenates its own
+// names onto this list for its location lookup (see GRADIENT_UNIFORM_NAMES /
+// PATTERN_UNIFORM_NAMES).
+export const SHAPE_FILL_UNIFORM_NAMES = [
+  'u_canvasHeight',
+  'u_shapeKind',
+  'u_center',
+  'u_vertices',
+  'u_nextVertices',
+  'u_vertexCount',
+];
+
+// Sets every SHAPE_FILL_LIB uniform from one ShapeGeometry — the part of the
+// per-draw uniform setup that's identical between Gradient and Pattern, and
+// between each one's commit and preview path.
+//
+// u_nextVertices[i] duplicates u_vertices[(i+1) % count], computed here on
+// the CPU rather than in the shader: WebGL1 fragment shaders only allow the
+// bare loop-control variable as a dynamic array index (ANGLE rejects
+// anything derived from it, e.g. a `j = i==0 ? count-1 : i-1`
+// previous-vertex index, with "Index expression can only contain const or
+// loop symbols"), so the shader can't compute "the next vertex" itself —
+// every edge is looked up as (u_vertices[i], u_nextVertices[i]) with the
+// same bare `i` instead, at the cost of this second array.
+export function applyShapeUniforms(
+  gl: WebGLRenderingContext,
+  locations: { [name: string]: WebGLUniformLocation | null },
+  geometry: ShapeGeometry
+): void {
+  gl.uniform1f(locations['u_canvasHeight'], gl.drawingBufferHeight);
+  gl.uniform1i(locations['u_shapeKind'], geometry.shapeKind);
+  gl.uniform2f(locations['u_center'], geometry.center.x, geometry.center.y);
+
+  const vertices: Point[] = geometry.vertices;
+  const count = vertices.length;
+  const packedVertices = new Float32Array(MAX_FILL_POLYGON_VERTICES * 2);
+  const packedNextVertices = new Float32Array(MAX_FILL_POLYGON_VERTICES * 2);
+  for (let i = 0; i < count; i++) {
+    packedVertices[i * 2] = vertices[i].x;
+    packedVertices[i * 2 + 1] = vertices[i].y;
+    const next = vertices[(i + 1) % count];
+    packedNextVertices[i * 2] = next.x;
+    packedNextVertices[i * 2 + 1] = next.y;
+  }
+  gl.uniform2fv(locations['u_vertices'], packedVertices);
+  gl.uniform2fv(locations['u_nextVertices'], packedNextVertices);
+  gl.uniform1f(locations['u_vertexCount'], count);
+}
+
+// Every fill program draws the same thing: one bounding quad in clip space,
+// the fragment shader discarding whatever falls outside the shape. So all
+// four of them (Gradient/Pattern x commit/preview) share this vertex shader
+// — see drawShapeQuad (shapeFillDraw.ts), which feeds it.
+export const FILL_VERTEX_SHADER = `
+    attribute vec4 a_position;
+
+    void main () {
+      gl_Position = a_position;
+    }
+    `;
 
 export const SHAPE_FILL_LIB = `
     uniform float u_canvasHeight; // drawing buffer height in pixels
-    uniform vec2 u_vertices[${MAX_GRADIENT_POLYGON_VERTICES}]; // polygon only, absolute canvas coords
-    uniform vec2 u_nextVertices[${MAX_GRADIENT_POLYGON_VERTICES}]; // u_vertices[(i+1) % count], precomputed on the CPU
-    uniform float u_vertexCount;  // polygon only, <= ${MAX_GRADIENT_POLYGON_VERTICES}.0
+    uniform int u_shapeKind;      // 0 = rect, 1 = circle, 2 = ellipse, 3 = polygon
+    uniform vec2 u_center;        // shape center, canvas coords (y down)
+    uniform vec2 u_vertices[${MAX_FILL_POLYGON_VERTICES}]; // polygon only, absolute canvas coords
+    uniform vec2 u_nextVertices[${MAX_FILL_POLYGON_VERTICES}]; // u_vertices[(i+1) % count], precomputed on the CPU
+    uniform float u_vertexCount;  // polygon only, <= ${MAX_FILL_POLYGON_VERTICES}.0
 
     // Circle/ellipse membership + per-row bounds: a texture lookup against
     // the exact row-span table filledCircle/filledEllipse produce
@@ -80,7 +143,7 @@ export const SHAPE_FILL_LIB = `
       bool inside = false;
       runMin = -1.0e6;
       runMax = 1.0e6;
-      for (int i = 0; i < ${MAX_GRADIENT_POLYGON_VERTICES}; i++) {
+      for (int i = 0; i < ${MAX_FILL_POLYGON_VERTICES}; i++) {
         if (float(i) >= u_vertexCount) {
           break;
         }

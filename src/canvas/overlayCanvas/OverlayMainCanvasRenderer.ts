@@ -5,7 +5,8 @@ import { OverlayGeometricRenderer } from './program/OverlayGeometricRenderer';
 import { OverlaySelectionIndicatorRenderer } from './program/OverlaySelectionIndicatorRenderer';
 import { OverlayGradientRenderer } from './program/OverlayGradientRenderer';
 import { OverlayPatternRenderer } from './program/OverlayPatternRenderer';
-import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { GradientFillStyle } from '../../algorithm/gradientFill';
+import { FillShape } from '../../algorithm/fillShape';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 
 type GLBuffers = {
@@ -82,12 +83,12 @@ export class OverlayMainCanvasRenderer {
     this.geometricRenderer.renderQuad(start, end, color);
   }
 
-  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     this.updateViewport();
     this.gradientRenderer.renderGradientFill(shape, style, seed);
   }
 
-  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+  patternFill(shape: FillShape, pattern: BrushColorIndex, version: number): void {
     this.updateViewport();
     this.patternRenderer.renderPatternFill(shape, pattern, version);
   }

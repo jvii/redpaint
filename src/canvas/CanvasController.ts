@@ -2,7 +2,8 @@ import { CustomBrush } from '../brush/CustomBrush';
 import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
 import { PaintColor, Point } from '../types';
-import { GradientFillStyle, GradientShape } from '../algorithm/gradientFill';
+import { GradientFillStyle } from '../algorithm/gradientFill';
+import { FillShape } from '../algorithm/fillShape';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 
 // A sink for draw commands. This is all a brush needs to draw into — the
@@ -17,12 +18,12 @@ export interface DrawTarget {
   // degenerate ranges never come through here — the brushes fall back to
   // quad()/lines() (see fillStyleDraw.ts). seed: the per-stroke dither
   // seed, identical across a stroke's symmetry copies.
-  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void;
+  gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void;
   // GPU Pattern fill for convex shapes: one draw call per shape, tiling the
   // captured pattern bitmap per fragment (see patternShaderLib.ts). version
   // is patternFillStore.version (PatternFill.ts), so the indexer only
   // re-uploads the pattern texture when it actually changed.
-  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void;
+  patternFill(shape: FillShape, pattern: BrushColorIndex, version: number): void;
   drawImage(points: Point[], brush: CustomBrush): void;
   // Effect-mode stamping (Smear/Shade/Blend/Smooth/Cycle): order-dependent
   // per-point stamps handled by EffectIndexer. copyId identifies the symmetry

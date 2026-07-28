@@ -4,7 +4,8 @@ import { LineH } from '../domain/LineH';
 import { LineV } from '../domain/LineV';
 import type { CustomBrush } from './CustomBrush';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
-import { GradientFillStyle, GradientShape } from '../algorithm/gradientFill';
+import { GradientFillStyle } from '../algorithm/gradientFill';
+import { FillShape } from '../algorithm/fillShape';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 
 // A DrawTarget that records draw calls instead of drawing them, then replays
@@ -39,8 +40,8 @@ export class DrawCallBuffer implements DrawTarget {
   private imagePointBuffer: Point[] = [];
   private imageBrush: CustomBrush | null = null;
   private effectBatches: { points: Point[]; brush: CustomBrush }[] = [];
-  private gradientFills: { shape: GradientShape; style: GradientFillStyle; seed: number }[] = [];
-  private patternFills: { shape: GradientShape; pattern: BrushColorIndex; version: number }[] = [];
+  private gradientFills: { shape: FillShape; style: GradientFillStyle; seed: number }[] = [];
+  private patternFills: { shape: FillShape; pattern: BrushColorIndex; version: number }[] = [];
 
   public points(points: Point[], color: PaintColor): void {
     const batch = this.batchFor(this.pointBatches, color, () => ({ color, points: [] }));
@@ -61,12 +62,12 @@ export class DrawCallBuffer implements DrawTarget {
     batch.quads.push({ start, end });
   }
 
-  public gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  public gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     // no batching: each call is already one cheap GPU draw per shape
     this.gradientFills.push({ shape, style, seed });
   }
 
-  public patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+  public patternFill(shape: FillShape, pattern: BrushColorIndex, version: number): void {
     // same reasoning as gradientFill: one draw already produces many colors
     // (the tiled pattern), so there's no single color key to batch under
     this.patternFills.push({ shape, pattern, version });

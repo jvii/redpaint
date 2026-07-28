@@ -1,4 +1,4 @@
-import { GradientShape } from '../../algorithm/gradientFill';
+import { FillShape } from '../../algorithm/fillShape';
 import { circleRowSpans, ellipseRowSpans, RowSpanTable } from '../../algorithm/rowSpans';
 
 // Packs a circle/ellipse's exact row-span table (rowSpans.ts) into an RGBA
@@ -32,7 +32,7 @@ export function encodeRowSpanTexture(table: RowSpanTable): { height: number; dat
 // one upload (RowSpanTexture.use below), the same way the rest of the
 // gradient fill pipeline already shares per-stroke work (seed, dither hash)
 // across copies instead of redoing it per copy.
-function cacheKey(shape: GradientShape): string | null {
+function cacheKey(shape: FillShape): string | null {
   if (shape.kind === 'circle') {
     return `circle:${shape.radius}`;
   }
@@ -42,7 +42,7 @@ function cacheKey(shape: GradientShape): string | null {
   return null;
 }
 
-function tableForShape(shape: GradientShape): RowSpanTable | null {
+function tableForShape(shape: FillShape): RowSpanTable | null {
   if (shape.kind === 'circle') {
     return circleRowSpans(shape.radius);
   }
@@ -100,7 +100,7 @@ export class RowSpanTexture {
   // preview resolution, visibly asymmetric) shape. Always re-uploaded,
   // uncached: this is only ever the low-frequency dialog preview, not a
   // per-copy hot path, so the caching complexity isn't worth it.
-  public use(shape: GradientShape, overrideTable?: RowSpanTable): boolean {
+  public use(shape: FillShape, overrideTable?: RowSpanTable): boolean {
     if (overrideTable) {
       this.upload(overrideTable);
       this.lastKey = null; // next non-override call must not think it's still cached

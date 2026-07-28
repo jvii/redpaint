@@ -10,7 +10,8 @@ import { LineH } from '../../domain/LineH';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { paletteTextureData } from '../../algorithm/cycle';
-import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { GradientFillStyle } from '../../algorithm/gradientFill';
+import { FillShape } from '../../algorithm/fillShape';
 import { bindFramebuffer } from '../util/webglUtil';
 
 type GLBuffers = {
@@ -114,13 +115,13 @@ export class PaintingCanvasController implements CanvasController {
     this.renderZoomCanvas();
   }
 
-  gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void {
     this.colorIndexer?.gradientFill(shape, style, seed);
     this.mainCanvasRenderer?.renderCanvas();
     this.renderZoomCanvas();
   }
 
-  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+  patternFill(shape: FillShape, pattern: BrushColorIndex, version: number): void {
     this.colorIndexer?.patternFill(shape, pattern, version);
     this.mainCanvasRenderer?.renderCanvas();
     this.renderZoomCanvas();
