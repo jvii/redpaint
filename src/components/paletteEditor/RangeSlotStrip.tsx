@@ -1,7 +1,7 @@
 import { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
-import { colorToRGBString } from '../../tools/util/util';
+import { colorToRGBString } from '../../algorithm/color';
 import { StoreIcon } from '../menu/BrushSlotIcons';
 import './RangeSlotStrip.css';
 

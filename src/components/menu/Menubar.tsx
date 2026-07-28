@@ -1,6 +1,6 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
-import { colorToRGBString } from '../../tools/util/util';
+import { colorToRGBString } from '../../algorithm/color';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import './Menubar.css';
 

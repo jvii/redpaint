@@ -4,7 +4,7 @@ import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
+import { rgbToHsv, hsvToRgb } from '../../algorithm/color';
 import Palette from '../palette/Palette';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';

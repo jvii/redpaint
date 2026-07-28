@@ -3,7 +3,7 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
 import { brushRecall } from '../../brush/BrushRecall';
 import { createPalette } from '../../components/palette/util';
-import { rgbToHsv, hsvToRgb } from '../../tools/util/util';
+import { rgbToHsv, hsvToRgb } from '../../algorithm/color';
 import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
 import { cycleDriver, refreshCyclePalettes } from '../../canvas/CycleDriver';
 

@@ -1,6 +1,6 @@
 import { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
-import { colorToRGBString } from '../../tools/util/util';
+import { colorToRGBString } from '../../algorithm/color';
 
 export function ColorIndicator(): JSX.Element {
   const state = useAppState();

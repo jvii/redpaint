@@ -1,6 +1,6 @@
 import React, { JSX } from 'react';
 import { useAppState } from '../../overmind';
-import { colorToRGBString } from '../../tools/util/util';
+import { colorToRGBString } from '../../algorithm/color';
 
 // One shared thickness for the column divider (the grid's column gap, see
 // Palette.tsx), the range bracket and the selection ring.
