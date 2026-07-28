@@ -17,6 +17,8 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { LoadPreview } from './LoadPreview';
+import { drawLoadPreview } from './drawLoadPreview';
+import { plainPalette } from '../../algorithm/imageColors';
 
 // How the loaded image's colors are treated (the image always loads at its
 // own size — resizing is the screen format's business):
@@ -69,18 +71,11 @@ function ImageLoadDialogOpen(): JSX.Element {
   const previewRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
     const image = peekPendingImage();
-    const canvas = previewRef.current;
-    if (!image || !canvas) {
-      return;
-    }
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
     if (mode === 'true') {
-      ctx.putImageData(image, 0, 0); // loads verbatim
+      drawLoadPreview(previewRef.current, image); // loads verbatim
+      return;
+    }
+    if (!image) {
       return;
     }
     const exact = mode === 'new' && info.colorCount <= count;
@@ -89,19 +84,11 @@ function ImageLoadDialogOpen(): JSX.Element {
         ? exact
           ? extractExactPalette(image.data, count)
           : medianCutPalette(image.data, count)
-        : state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b }));
+        : plainPalette(state.palette.paletteArray);
     const indices = exact
       ? mapToPaletteExact(image.data, palette)
       : mapToPalette(image.data, palette);
-    const out = ctx.createImageData(image.width, image.height);
-    for (let p = 0, i = 0; p < indices.length; p++, i += 4) {
-      const color = palette[indices[p]];
-      out.data[i] = color.r;
-      out.data[i + 1] = color.g;
-      out.data[i + 2] = color.b;
-      out.data[i + 3] = 255;
-    }
-    ctx.putImageData(out, 0, 0);
+    drawLoadPreview(previewRef.current, image, (_data, i) => palette[indices[i / 4]]);
   }, [mode, count]);
 
   const handleCancel = (): void => {
@@ -141,7 +128,7 @@ function ImageLoadDialogOpen(): JSX.Element {
     } else {
       // plain copies: mapToPalette reads r/g/b once per histogram bin times
       // palette length, which is no place for proxied state objects
-      const palette = state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b }));
+      const palette = plainPalette(state.palette.paletteArray);
       const indices = mapToPalette(image.data, palette);
       colorIndex = CanvasColorIndex.fromIndexedPixels(image.width, image.height, indices);
     }
@@ -174,7 +161,7 @@ function ImageLoadDialogOpen(): JSX.Element {
           <RetroToggle
             variant="column"
             options={[
-              { value: 'true', label: 'True Color (original)' },
+              { value: 'true', label: 'True Color (Original)' },
               { value: 'new', label: 'New Palette From Image' },
               {
                 value: 'current',

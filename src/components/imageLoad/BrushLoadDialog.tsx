@@ -3,7 +3,7 @@ import './BrushLoadDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { peekPendingBrush, takePendingBrush } from '../../canvas/pendingBrush';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
-import { distinctOpaqueColorsByFrequency } from '../../algorithm/imageColors';
+import { distinctOpaqueColorsByFrequency, plainPalette } from '../../algorithm/imageColors';
 import { remapColorsGreedy } from '../../algorithm/quantize';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushRecall } from '../../brush/BrushRecall';
@@ -13,6 +13,7 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { LoadPreview } from './LoadPreview';
+import { drawLoadPreview } from './drawLoadPreview';
 
 // The greedy remap (see remapColorsGreedy) as a 24-bit-RGB -> palette-index
 // lookup, shared by the live preview and the actual commit in handleOk.
@@ -65,36 +66,22 @@ function BrushLoadDialogOpen(): JSX.Element {
   const previewRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
     const image = peekPendingBrush();
-    const canvas = previewRef.current;
-    if (!image || !canvas) {
-      return;
-    }
-    canvas.width = image.width;
-    canvas.height = image.height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      return;
-    }
     if (mode === 'true') {
-      ctx.putImageData(image, 0, 0);
+      drawLoadPreview(previewRef.current, image);
       return;
     }
-    const palette = state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b }));
-    const indexByColor = remapToIndexByColor(image, palette);
-    const out = ctx.createImageData(image.width, image.height);
-    for (let p = 0, i = 0; i < image.data.length; p++, i += 4) {
-      const alpha = image.data[i + 3];
-      if (alpha < 128) {
-        continue; // transparent, out stays zero-filled (alpha 0)
-      }
-      const rgb = (image.data[i] << 16) | (image.data[i + 1] << 8) | image.data[i + 2];
-      const color = palette[indexByColor.get(rgb) ?? 0];
-      out.data[i] = color.r;
-      out.data[i + 1] = color.g;
-      out.data[i + 2] = color.b;
-      out.data[i + 3] = 255;
+    if (!image) {
+      return;
     }
-    ctx.putImageData(out, 0, 0);
+    const palette = plainPalette(state.palette.paletteArray);
+    const indexByColor = remapToIndexByColor(image, palette);
+    drawLoadPreview(previewRef.current, image, (data, i) => {
+      if (data[i + 3] < 128) {
+        return null; // transparent stays transparent, in either mode
+      }
+      const rgb = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
+      return palette[indexByColor.get(rgb) ?? 0];
+    });
   }, [mode]);
 
   const handleCancel = (): void => {
@@ -114,7 +101,7 @@ function BrushLoadDialogOpen(): JSX.Element {
     if (mode === 'true') {
       colorIndex = BrushColorIndex.fromImageData(image);
     } else {
-      const palette = state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b }));
+      const palette = plainPalette(state.palette.paletteArray);
       colorIndex = BrushColorIndex.fromRemappedImageData(
         image,
         remapToIndexByColor(image, palette)
