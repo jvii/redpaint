@@ -18,6 +18,7 @@
 // brush-stamp code in DrawImageIndexer.ts would couple the two features).
 
 import { PatternUniforms } from '../../algorithm/patternFill';
+import { ALPHA_TAG_LIB } from './alphaTagShaderLib';
 import {
   applyShapeUniforms,
   SHAPE_FILL_LIB,
@@ -62,6 +63,8 @@ export const PATTERN_LIB = `
       precision mediump float;
     #endif
 
+    ${ALPHA_TAG_LIB}
+
     ${SHAPE_FILL_LIB}
 
     uniform sampler2D u_pattern;  // the captured pattern bitmap
@@ -100,10 +103,10 @@ export const PATTERN_LIB = `
         (u_patternSize.y - tile.y - 0.5) / u_patternSize.y
       );
       vec4 texel = texture2D(u_pattern, uv);
-      // Only the indexed tag (~127/255) is supported; both transparent
-      // (~0) and true-color (~255) tiles are skipped, same as
-      // patternColorAt's own ALPHA_INDEXED-only check.
-      if (texel.a < 0.4 || texel.a > 0.6) {
+      // Only the indexed tag is supported; both transparent and true-color
+      // tiles are skipped, same as patternColorAt's own ALPHA_INDEXED-only
+      // check.
+      if (!isIndexed(texel)) {
         discard;
       }
       return texel;

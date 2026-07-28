@@ -4,6 +4,9 @@
 // is the write policy: hybrid writes the literal RGB as a true-color pixel,
 // indexed snaps to the nearest palette color within the active range
 // (fixed-bound loop — WebGL1 requires constant loop limits).
+//
+// Reads and writes the pixel-format tag through ALPHA_TAG_LIB, which every
+// consumer must embed before this (see its own comment).
 export const EFFECT_LIB = `
 uniform sampler2D u_palette;   // 256x1 palette, texture unit 1
 uniform float u_rangeStart;    // 0-based storage indices, inclusive
@@ -12,14 +15,14 @@ uniform float u_wholePalette;  // 1.0 when no real range is active
 uniform float u_indexedPolicy; // 1.0 = resolve results to the palette
 
 vec3 displayed(vec4 p) {
-  if (p.a > 0.9) {
+  if (isTrueColor(p)) {
     return p.rgb;
   }
   return texture2D(u_palette, vec2((floor(p.r * 255.0 + 0.5) + 0.5) / 256.0, 0.5)).rgb;
 }
 
 bool inRange(vec4 p) {
-  if (p.a > 0.9) {
+  if (isTrueColor(p)) {
     return u_wholePalette > 0.5;
   }
   float idx = floor(p.r * 255.0 + 0.5);
@@ -44,6 +47,6 @@ vec4 resolveColor(vec3 rgb) {
       bestIdx = fi;
     }
   }
-  return vec4(bestIdx / 255.0, 0.0, 0.0, 127.0 / 255.0);
+  return vec4(bestIdx / 255.0, 0.0, 0.0, INDEXED_ALPHA);
 }
 `;

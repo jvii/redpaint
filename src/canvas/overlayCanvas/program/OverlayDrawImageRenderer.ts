@@ -2,6 +2,7 @@ import { CustomBrush } from '../../../brush/CustomBrush';
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftPoint } from '../../util/util';
 import { Point } from '../../../types';
 import { createProgram, activateProgram } from '../../util/webglUtil';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
 type GLBuffers = {
   vertexBuffer: WebGLBuffer;
@@ -180,6 +181,7 @@ export class OverlayDrawImageRenderer {
 
     const fragmentShader = `
     precision mediump float;
+    ${ALPHA_TAG_LIB}
 
     uniform sampler2D u_image;
     uniform sampler2D u_palette;
@@ -188,10 +190,10 @@ export class OverlayDrawImageRenderer {
     void main () {
       vec4 pixel = texture2D(u_image, v_texCoord);
 
-      if (pixel.a < 0.1) {
+      if (isTransparent(pixel)) {
         discard; // alpha tag 0 means this pixel of the brush is transparent
       }
-      if (pixel.a > 0.9) {
+      if (isTrueColor(pixel)) {
         // true-color brush pixel: the literal RGB color
         gl_FragColor = vec4(pixel.rgb, 1.0);
         return;

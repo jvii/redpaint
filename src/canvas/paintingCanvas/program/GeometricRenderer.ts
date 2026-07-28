@@ -1,6 +1,7 @@
 import { Line, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
 /* eslint-disable max-len */
 export class GeometricRenderer {
@@ -100,6 +101,7 @@ export class GeometricRenderer {
 
     const fragmentShader = `
     precision mediump float;
+    ${ALPHA_TAG_LIB}
 
     uniform vec2 resolution;
     uniform sampler2D u_colorIndexTexture;
@@ -109,7 +111,7 @@ export class GeometricRenderer {
       vec2 position = vec2((gl_FragCoord.x) / (resolution.x), (gl_FragCoord.y / (resolution.y)));
       vec4 pixel = texture2D(u_colorIndexTexture, position);
 
-      if (pixel.a > 0.9) {
+      if (isTrueColor(pixel)) {
         // true-color pixel: the literal RGB color
         gl_FragColor = vec4(pixel.rgb, 1.0);
         return;

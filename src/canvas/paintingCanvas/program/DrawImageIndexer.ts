@@ -5,6 +5,7 @@ import { createProgram, activateProgram, bindFramebuffer } from '../../util/webg
 import { overmind } from '../../..';
 import { backgroundPaintColorOf } from '../../../overmind/palette/state';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../../../domain/CanvasColorIndex';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -172,6 +173,7 @@ export class DrawImageIndexer {
 
     const fragmentShader = `
     precision mediump float;
+    ${ALPHA_TAG_LIB}
 
     uniform sampler2D u_image;
     uniform float u_replMode;  // 1.0 in Repl mode: no transparent pixels
@@ -181,7 +183,7 @@ export class DrawImageIndexer {
     void main () {
       vec4 color = texture2D(u_image, v_texCoord);
 
-      if (color.a < 0.1) {
+      if (isTransparent(color)) {
         if (u_replMode < 0.5) {
           discard; // alpha tag 0 means this pixel of the brush is transparent
         }
@@ -190,13 +192,13 @@ export class DrawImageIndexer {
         gl_FragColor = u_replPixel;
         return;
       }
-      if (color.a > 0.9) {
+      if (isTrueColor(color)) {
         // true-color brush pixel: write the literal color, keep the tag
         gl_FragColor = vec4(color.rgb, 1.0);
         return;
       }
       // indexed brush pixel: write a normalized indexed pixel
-      gl_FragColor = vec4(color.r, 0.0, 0.0, 127.0/255.0);
+      gl_FragColor = vec4(color.r, 0.0, 0.0, INDEXED_ALPHA);
     }
     `;
 

@@ -7,6 +7,7 @@ import { stampRect, scratchSize, maskOffset, StampRect } from '../../../algorith
 import { activeRangeIndices, RangeIndices } from '../../../algorithm/paletteRange';
 import { cycleColorIndex } from '../../../algorithm/cycle';
 import { EFFECT_LIB } from './effectShaderLib';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -693,6 +694,7 @@ void main () {
 
 const SMEAR_FRAGMENT_SHADER = `
 precision mediump float;
+${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape; // brush bitmap: alpha tag 0 = outside the shape
 uniform sampler2D u_save;  // canvas pixels under the previous stamp
@@ -702,7 +704,7 @@ varying vec2 v_texCoord;
 varying vec2 v_shapeCoord;
 
 void main () {
-  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+  if (isTransparent(texture2D(u_shape, v_shapeCoord))) {
     discard;
   }
   if (v_texCoord.x < u_saveBounds.x || v_texCoord.y < u_saveBounds.y ||
@@ -716,6 +718,7 @@ void main () {
 
 const SHADE_FRAGMENT_SHADER = `
 precision mediump float;
+${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape;
 uniform sampler2D u_work;    // current canvas pixels under the brush
@@ -732,7 +735,7 @@ varying vec2 v_texCoord;
 varying vec2 v_shapeCoord;
 
 void main () {
-  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+  if (isTransparent(texture2D(u_shape, v_shapeCoord))) {
     discard;
   }
   if (u_hasMask > 0.5) {
@@ -745,7 +748,7 @@ void main () {
     }
   }
   vec4 p = texture2D(u_work, v_texCoord);
-  if (p.a > 0.9) {
+  if (isTrueColor(p)) {
     // true-color pixel: participates only when the whole palette is the
     // range; additive brightness step so shading up works from black
     if (u_wholePalette < 0.5) {
@@ -759,19 +762,20 @@ void main () {
     discard; // out-of-range indexed pixels pass through untouched
   }
   idx = clamp(idx + u_direction, u_rangeStart, u_rangeEnd);
-  gl_FragColor = vec4(idx / 255.0, 0.0, 0.0, 127.0 / 255.0);
+  gl_FragColor = vec4(idx / 255.0, 0.0, 0.0, INDEXED_ALPHA);
 }
 `;
 
 const MASK_FRAGMENT_SHADER = `
 precision mediump float;
+${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape;
 
 varying vec2 v_shapeCoord;
 
 void main () {
-  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+  if (isTransparent(texture2D(u_shape, v_shapeCoord))) {
     discard;
   }
   gl_FragColor = vec4(1.0);
@@ -780,6 +784,7 @@ void main () {
 
 const BLEND_FRAGMENT_SHADER = `
 precision mediump float;
+${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape;
 uniform sampler2D u_work;   // pixels at the current position
@@ -796,7 +801,7 @@ varying vec2 v_shapeCoord;
 ${EFFECT_LIB}
 
 void main () {
-  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+  if (isTransparent(texture2D(u_shape, v_shapeCoord))) {
     discard;
   }
   if (u_hasMask > 0.5) {
@@ -824,6 +829,7 @@ void main () {
 
 const SMOOTH_FRAGMENT_SHADER = `
 precision mediump float;
+${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape;
 uniform sampler2D u_work;
@@ -837,7 +843,7 @@ varying vec2 v_shapeCoord;
 ${EFFECT_LIB}
 
 void main () {
-  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+  if (isTransparent(texture2D(u_shape, v_shapeCoord))) {
     discard;
   }
   vec4 center = texture2D(u_work, v_texCoord);
@@ -857,6 +863,7 @@ void main () {
 
 const CYCLE_FRAGMENT_SHADER = `
 precision mediump float;
+${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape;
 uniform vec4 u_pixel; // the cycling color as a packed indexed pixel
@@ -864,7 +871,7 @@ uniform vec4 u_pixel; // the cycling color as a packed indexed pixel
 varying vec2 v_shapeCoord;
 
 void main () {
-  if (texture2D(u_shape, v_shapeCoord).a < 0.1) {
+  if (isTransparent(texture2D(u_shape, v_shapeCoord))) {
     discard;
   }
   gl_FragColor = u_pixel;

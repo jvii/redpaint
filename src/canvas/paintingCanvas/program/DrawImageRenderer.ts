@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
 /**
  * DrawImageRenderer is responsible for rendering the main canvas using WebGL.
@@ -95,6 +96,7 @@ export class DrawImageRenderer {
     // docs/true-color-mode.md
     const fragmentShader = `
     precision mediump float;
+    ${ALPHA_TAG_LIB}
 
     varying vec2 v_texcoord;
     uniform sampler2D u_image;    // Color index texture
@@ -104,7 +106,7 @@ export class DrawImageRenderer {
       // We flip Y coordinate (1.0 - v_texcoord.y) since WebGL texture coordinates are flipped
       vec4 pixel = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
 
-      if (pixel.a > 0.9) {
+      if (isTrueColor(pixel)) {
         // true-color pixel: the literal RGB color
         gl_FragColor = vec4(pixel.rgb, 1.0);
         return;
