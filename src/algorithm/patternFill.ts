@@ -1,6 +1,6 @@
-import { Point } from '../types';
+import { PaintColor, Point } from '../types';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
-import { ALPHA_INDEXED } from '../domain/CanvasColorIndex';
+import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { FillShape, ShapeGeometry, shapeGeometry } from './fillShape';
 
 // DPaint's Pattern fill: a captured brush bitmap tiled edge-to-edge from a
@@ -8,17 +8,25 @@ import { FillShape, ShapeGeometry, shapeGeometry } from './fillShape';
 // tiling used, so multiple separately-filled shapes show one continuous,
 // aligned pattern instead of each restarting the tile at its own bounding
 // box (see the Fill Style requester, src/components/fillStyle/).
-// Indexed-only for now: a true-color captured
-// pixel is treated the same as a transparent one (skipped) rather than
-// erroring — see BrushColorIndex's alpha-tag scheme.
+//
+// A pattern carries whatever the captured brush carried, indexed or
+// true-color, and paints it through unchanged — the same rule stamping that
+// brush directly follows (DrawImageIndexer writes a true-color brush pixel
+// as a true-color canvas pixel, without consulting trueColorEnabled). Only
+// *computed* colors need a write policy, which is why the paint effects have
+// one and this doesn't; reconciling true-color content with an indexed
+// document happens in one designated place, applyScreenFormat's flatten.
 
-// The pattern pixel at canvas position (x, y). Returns null for a
-// transparent (or true-color, unsupported for now) pattern pixel — the
-// caller should skip that point, leaving existing canvas content showing
-// through, matching the brush-stamp shader's own transparency handling
-// (DrawImageIndexer.ts discards on ALPHA_TRANSPARENT). Otherwise returns the
-// 1-based PaintColor.colorNumber.
-export function patternColorAt(pattern: BrushColorIndex, x: number, y: number): number | null {
+// The color the pattern paints at canvas position (x, y): a palette index
+// for an indexed pattern pixel, a literal RGB for a true-color one. Returns
+// null for a transparent pixel — the caller skips that point, leaving
+// existing canvas content showing through, matching the brush-stamp shader's
+// own transparency handling (DrawImageIndexer discards on ALPHA_TRANSPARENT).
+export function patternColorAt(
+  pattern: BrushColorIndex,
+  x: number,
+  y: number
+): PaintColor | null {
   const { width, height, indexArray } = pattern;
   const col = ((x % width) + width) % width;
   const rowFromTop = ((y % height) + height) % height;
@@ -28,33 +36,47 @@ export function patternColorAt(pattern: BrushColorIndex, x: number, y: number): 
   // mirrored offset from the start of the array.
   const row = height - 1 - rowFromTop;
   const i = (row * width + col) * 4;
-  if (indexArray[i + 3] !== ALPHA_INDEXED) {
-    return null;
+  if (indexArray[i + 3] === ALPHA_TRUECOLOR) {
+    return {
+      kind: 'rgb',
+      color: { r: indexArray[i], g: indexArray[i + 1], b: indexArray[i + 2] },
+    };
   }
-  return indexArray[i] + 1;
+  if (indexArray[i + 3] !== ALPHA_INDEXED) {
+    return null; // transparent
+  }
+  return { kind: 'index', colorNumber: indexArray[i] + 1 };
 }
 
-// Buckets an arbitrary point set by the pattern pixel each point lands on,
+// Buckets an arbitrary point set by the color the pattern paints there,
 // dropping points on a transparent pattern pixel. Only caller is
 // FloodFillTool — its region comes from pixel connectivity, not geometry, so
 // (like bucketPointsByGradient) it has no closed form to hand a shader.
-// Returns one Point[] per distinct resulting color id; the caller issues one
+// Returns one entry per distinct resulting color; the caller issues one
 // ordinary single-color draw call per bucket.
+//
+// Keyed by a string rather than the color id, since a true-color pattern's
+// colors have no id — 'i:<n>' for indexed, 'c:<r>,<g>,<b>' for RGB — with the
+// PaintColor carried alongside so the caller never re-derives it.
 export function bucketPointsByPattern(
   points: Point[],
   pattern: BrushColorIndex
-): Map<number, Point[]> {
-  const buckets = new Map<number, Point[]>();
+): Map<string, { color: PaintColor; points: Point[] }> {
+  const buckets = new Map<string, { color: PaintColor; points: Point[] }>();
   for (const point of points) {
-    const colorId = patternColorAt(pattern, point.x, point.y);
-    if (colorId === null) {
+    const color = patternColorAt(pattern, point.x, point.y);
+    if (color === null) {
       continue;
     }
-    const bucket = buckets.get(colorId);
+    const key =
+      color.kind === 'index'
+        ? `i:${color.colorNumber}`
+        : `c:${color.color.r},${color.color.g},${color.color.b}`;
+    const bucket = buckets.get(key);
     if (bucket) {
-      bucket.push(point);
+      bucket.points.push(point);
     } else {
-      buckets.set(colorId, [point]);
+      buckets.set(key, { color, points: [point] });
     }
   }
   return buckets;

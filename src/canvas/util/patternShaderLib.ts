@@ -6,6 +6,12 @@
 // only in what they do with the fetched texel — see GRADIENT_LIB's own
 // header comment for the shared-lib convention this mirrors.
 //
+// The returned texel is still tagged (patternTexel discards only transparent
+// tiles), so each consumer decides what an indexed and a true-color tile
+// mean for it: the commit path writes each straight back as its own kind of
+// pixel, the preview path resolves an index through the palette and shows a
+// true-color tile's RGB as-is.
+//
 // Tiling: mod(pix, u_patternSize) anchors the tile to the fixed canvas
 // origin (0, 0) — DPaint's own hardware-blitter tiling anchored the same
 // way, so multiple separately-filled shapes show one continuous, aligned
@@ -103,10 +109,11 @@ export const PATTERN_LIB = `
         (u_patternSize.y - tile.y - 0.5) / u_patternSize.y
       );
       vec4 texel = texture2D(u_pattern, uv);
-      // Only the indexed tag is supported; both transparent and true-color
-      // tiles are skipped, same as patternColorAt's own ALPHA_INDEXED-only
-      // check.
-      if (!isIndexed(texel)) {
+      // Only a transparent tile is skipped. A true-color tile keeps its
+      // literal RGB and is written through as a true-color pixel by the
+      // caller — the same pass-through stamping a true-color brush does
+      // (see patternColorAt, the CPU twin this stays identical with).
+      if (isTransparent(texel)) {
         discard;
       }
       return texel;

@@ -7,7 +7,6 @@ import {
   PATTERN_LIB,
   PATTERN_UNIFORM_NAMES,
 } from '../../util/patternShaderLib';
-import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
 import { FILL_VERTEX_SHADER } from '../../util/shapeFillShaderLib';
 import { drawShapeQuad } from '../../util/shapeFillDraw';
 import { PatternTexture } from '../../util/patternTexture';
@@ -75,9 +74,15 @@ export class PatternGeometricIndexer {
 
     void main () {
       vec4 texel = patternTexel();
+      if (isTrueColor(texel)) {
+        // a true-color tile paints its literal RGB, tag and all — exactly
+        // what stamping the same brush directly would write
+        gl_FragColor = vec4(texel.rgb, 1.0);
+        return;
+      }
       // packed indexed pixel, same format as GeometricIndexer's u_pixel:
       // storage index in R, ALPHA_INDEXED tag in A (docs/true-color-mode.md)
-      gl_FragColor = vec4(texel.r, 0.0, 0.0, ${ALPHA_INDEXED}.0 / 255.0);
+      gl_FragColor = vec4(texel.r, 0.0, 0.0, INDEXED_ALPHA);
     }
     `;
 

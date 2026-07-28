@@ -75,8 +75,8 @@ export class FloodFillTool implements Tool {
     if (overmind.state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
       const pattern = patternFillStore.pattern.brushColorIndex;
       for (const group of pointGroups) {
-        for (const [colorNumber, bucketPoints] of bucketPointsByPattern(group, pattern)) {
-          paintingCanvasController.points(bucketPoints, { kind: 'index', colorNumber });
+        for (const bucket of bucketPointsByPattern(group, pattern).values()) {
+          paintingCanvasController.points(bucket.points, bucket.color);
         }
       }
       return;

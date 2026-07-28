@@ -84,6 +84,10 @@ export class OverlayPatternRenderer {
 
     void main () {
       vec4 texel = patternTexel();
+      if (isTrueColor(texel)) {
+        gl_FragColor = vec4(texel.rgb, 1.0); // literal color, no palette hop
+        return;
+      }
       gl_FragColor = texture2D(u_palette, vec2((texel.r * 255.0 + 0.5) / 256.0, 0.5));
     }
     `;
