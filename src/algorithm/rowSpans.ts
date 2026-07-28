@@ -31,7 +31,14 @@ export type RowSpanTable = {
 
 const ORIGIN: Point = { x: 0, y: 0 };
 
-function fromLines(lines: (LineH | LineV)[]): RowSpanTable {
+// Exported for callers with their own local (center-relative) LineH/LineV
+// shape — e.g. the Fill Style preview swatch (FillStyleSettings.tsx), which
+// deliberately draws a *different* ellipse rasterization than
+// filledEllipse's for its own reasons (see symmetricFilledEllipse's own
+// comment) but still wants the Gradient/Pattern preview to use that same
+// footprint rather than the real filledEllipse-derived one, so all three
+// fill-mode previews in that swatch agree with each other.
+export function rowSpansFromLines(lines: (LineH | LineV)[]): RowSpanTable {
   const rows = new Map<number, { min: number; max: number }>();
   const extend = (y: number, x: number): void => {
     const span = rows.get(y);
@@ -69,7 +76,7 @@ function fromLines(lines: (LineH | LineV)[]): RowSpanTable {
 }
 
 export function circleRowSpans(radius: number): RowSpanTable {
-  return fromLines(filledCircle(ORIGIN, radius));
+  return rowSpansFromLines(filledCircle(ORIGIN, radius));
 }
 
 export function ellipseRowSpans(
@@ -77,5 +84,5 @@ export function ellipseRowSpans(
   radiusY: number,
   rotationAngle: number
 ): RowSpanTable {
-  return fromLines(filledEllipse(ORIGIN, radiusX, radiusY, rotationAngle));
+  return rowSpansFromLines(filledEllipse(ORIGIN, radiusX, radiusY, rotationAngle));
 }

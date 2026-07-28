@@ -91,35 +91,54 @@ export class RowSpanTexture {
   // for its pattern bitmap). Returns false for shapes with no row-span
   // table (rect/polygon) — callers should skip the row-span branch entirely
   // rather than bind a stale or empty texture.
-  public use(shape: GradientShape): boolean {
+  //
+  // `overrideTable`, if given, is uploaded instead of the table derived
+  // from `shape` — the Fill Style preview swatch's escape hatch for using
+  // its own ellipse rasterization (symmetricFilledEllipse) instead of the
+  // real filledCircle/filledEllipse, so all three of that swatch's fill
+  // modes agree with each other rather than the real (but, at that small
+  // preview resolution, visibly asymmetric) shape. Always re-uploaded,
+  // uncached: this is only ever the low-frequency dialog preview, not a
+  // per-copy hot path, so the caching complexity isn't worth it.
+  public use(shape: GradientShape, overrideTable?: RowSpanTable): boolean {
+    if (overrideTable) {
+      this.upload(overrideTable);
+      this.lastKey = null; // next non-override call must not think it's still cached
+      return true;
+    }
     const key = cacheKey(shape);
     if (key === null) {
       return false;
     }
-    const gl = this.gl;
-    gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
     if (key !== this.lastKey) {
       const table = tableForShape(shape);
       if (!table) {
         return false;
       }
-      const { height, data } = encodeRowSpanTexture(table);
-      if (!this.texture) {
-        this.texture = gl.createTexture();
-      }
-      gl.bindTexture(gl.TEXTURE_2D, this.texture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      this.upload(table);
       this.lastKey = key;
-      this.yMin = table.yMin;
-      this.rowCount = height;
     } else {
-      gl.bindTexture(gl.TEXTURE_2D, this.texture);
+      this.gl.activeTexture(this.gl.TEXTURE0 + this.textureUnit);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
     }
     return true;
+  }
+
+  private upload(table: RowSpanTable): void {
+    const gl = this.gl;
+    const { height, data } = encodeRowSpanTexture(table);
+    gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
+    if (!this.texture) {
+      this.texture = gl.createTexture();
+    }
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    this.yMin = table.yMin;
+    this.rowCount = height;
   }
 
   public dispose(): void {

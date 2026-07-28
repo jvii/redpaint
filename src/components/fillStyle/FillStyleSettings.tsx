@@ -15,6 +15,7 @@ import { OverlayGeometricRenderer } from '../../canvas/overlayCanvas/program/Ove
 import { OverlayGradientRenderer } from '../../canvas/overlayCanvas/program/OverlayGradientRenderer';
 import { OverlayPatternRenderer } from '../../canvas/overlayCanvas/program/OverlayPatternRenderer';
 import { patternFillStore } from '../../brush/PatternFill';
+import { rowSpansFromLines } from '../../algorithm/rowSpans';
 import {
   GradientHorizontalIcon,
   GradientHorizontalLineIcon,
@@ -33,6 +34,12 @@ import {
 // center against the ellipse equation directly has no such bias: the test
 // is symmetric in (x - center) by construction, whichever side of center a
 // pixel falls on.
+//
+// Also feeds Gradient/Pattern's row-span override below (rowSpansFromLines)
+// so every fill mode in this swatch draws the *same* shape: Gradient/
+// Pattern's real row-span table (rowSpans.ts) is filledEllipse-derived, and
+// using it here would reintroduce the exact asymmetry this function exists
+// to avoid, just for two of the three modes instead of none.
 function symmetricFilledEllipse(
   center: Point,
   radiusX: number,
@@ -223,12 +230,23 @@ function FillStyleSettingsOpen(): JSX.Element {
     // column) rather than drawing a slightly-too-big curve.
     const radiusX = Math.min(onScreenRadius / displayScale.x, previewWidth / 2 - 2);
     const radiusY = Math.min(onScreenRadius / displayScale.y, previewHeight / 2 - 2);
+    // Built from the same symmetricFilledEllipse the Solid branch below
+    // draws with (center-relative: the row-span table format is always
+    // local to the shape's own center, see rowSpans.ts), and handed to
+    // Gradient/Pattern as an override so all three fill modes in this
+    // swatch share one shape instead of Solid looking visibly different
+    // from Gradient/Pattern's real filledEllipse-derived footprint at this
+    // preview's low raw resolution.
+    const previewRowSpans = rowSpansFromLines(
+      symmetricFilledEllipse({ x: 0, y: 0 }, radiusX, radiusY)
+    );
     const style = state.fillStyle.effectiveFillStyle;
     if (state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
       pattern.renderPatternFill(
         { kind: 'ellipse', center, radiusX, radiusY, rotationAngle: 0 },
         patternFillStore.pattern.brushColorIndex,
-        patternFillStore.version
+        patternFillStore.version,
+        previewRowSpans
       );
     } else if (!style) {
       // symmetricFilledEllipse, not the real solid-fill path's filledEllipse
@@ -241,7 +259,8 @@ function FillStyleSettingsOpen(): JSX.Element {
       gradient.renderGradientFill(
         { kind: 'ellipse', center, radiusX, radiusY, rotationAngle: 0 },
         style,
-        previewSeedRef.current
+        previewSeedRef.current,
+        previewRowSpans
       );
     }
   }, [

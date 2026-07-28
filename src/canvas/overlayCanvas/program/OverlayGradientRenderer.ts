@@ -12,6 +12,7 @@ import {
   GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
+import { RowSpanTable } from '../../../algorithm/rowSpans';
 
 // Mirrors GradientGeometricIndexer's own ROW_SPAN_TEXTURE_UNIT constant —
 // see that file's comment. A separate context (this is the overlay canvas,
@@ -42,14 +43,23 @@ export class OverlayGradientRenderer {
     this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
-  public renderGradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
+  // rowSpanTableOverride: see RowSpanTexture.use's own comment — the Fill
+  // Style preview swatch's way of keeping Gradient/Pattern's preview
+  // consistent with Solid's, both using symmetricFilledEllipse instead of
+  // this shape's real row-span table.
+  public renderGradientFill(
+    shape: GradientShape,
+    style: GradientFillStyle,
+    seed: number,
+    rowSpanTableOverride?: RowSpanTable
+  ): void {
     const gl = this.gl;
     const u = gradientFillUniforms(shape, style, seed);
 
     activateProgram(gl, this.program);
 
     applyGradientUniforms(gl, this.uniforms, u);
-    if (this.rowSpanTexture.use(shape)) {
+    if (this.rowSpanTexture.use(shape, rowSpanTableOverride)) {
       applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
     }
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
