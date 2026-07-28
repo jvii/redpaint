@@ -5,6 +5,16 @@ import type { OvermindState } from '../../overmind';
 
 export type FillMode = 'solid' | 'gradient' | 'brush';
 
+// What a fill would *actually* paint right now, as opposed to `mode`, which
+// is only what the requester has armed. The two differ whenever the armed
+// mode can't be honoured: Pattern with nothing captured yet, or Gradient
+// with an FG color that isn't in a usable range. DPaint has the same split —
+// "If your current color is outside all ranges, DeluxePaint will not create
+// a gradient fill but will fill with the solid color" (DP2 manual §2.19) —
+// and hangs real UI off it: the menubar's Color Fill Box appears only when
+// this is not 'solid' (§4.25, "absent if fill mode is set to normal").
+export type EffectiveFillMode = 'solid' | 'gradient' | 'pattern';
+
 // Snapshot/restore shape for the settings panel's Cancel — every field a
 // requester control can change, including a capture made via "From Brush"
 // during this dialog session. The pattern bitmap itself never enters this
@@ -50,6 +60,11 @@ export type State = {
   // effects use) — so changing the range means changing the FG color, from
   // the toolbox palette, without needing this dialog open.
   readonly effectiveFillStyle: GradientFillStyle | null;
+  // The one place that decides which of the three fill paths a fill takes —
+  // read by drawStyledFilledShape (the real fill) and by the menubar's Color
+  // Fill Box (its preview), so the swatch can't claim a gradient the fill
+  // would decline to paint.
+  readonly effectiveMode: EffectiveFillMode;
 };
 
 export const state: State = {
@@ -84,4 +99,14 @@ export const state: State = {
       };
     }
   ),
+  effectiveMode: derived((state: State): EffectiveFillMode => {
+    if (state.mode === 'brush') {
+      return state.hasPattern ? 'pattern' : 'solid';
+    }
+    const style = state.effectiveFillStyle;
+    // A one-color range is a gradient with a single band, i.e. a solid fill
+    // by another name — treated as solid so the Color Fill Box doesn't show
+    // a flat rectangle indistinguishable from no fill style at all.
+    return style && style.rangeHigh > style.rangeLow ? 'gradient' : 'solid';
+  }),
 };

@@ -2,6 +2,7 @@ import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../algorithm/color';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
+import { ColorFillBox } from './ColorFillBox';
 import './Menubar.css';
 
 // The flood fill bucket glyph, lifted from the toolbox sprite's
@@ -30,7 +31,8 @@ const floodFillIcon = (
   </svg>
 );
 
-// The 50px bar itself: title, mode/transform indicator, flood fill swatch.
+// The 50px bar itself: title, mode/transform indicator, then the status
+// cluster (Color Fill Box, flood fill swatch).
 // Clicking anywhere on it toggles the drop-down Menu panel (Menu.tsx).
 export function Menubar(): JSX.Element {
   const actions = useActions();
@@ -92,16 +94,24 @@ export function Menubar(): JSX.Element {
       >
         {armedTransform ?? mode}
       </div>
-      {floodFillHoverSwatchColor && (
-        <div className="menubar__floodfill-indicator">
-          {floodFillIcon}
-          <div
-            className="menubar__floodfill-swatch"
-            style={{ backgroundColor: colorToRGBString(floodFillHoverSwatchColor) }}
-            title="Flood fill target color"
-          ></div>
-        </div>
-      )}
+      {/* Both indicators are transient, so they share one left-aligned
+          cluster: the Color Fill Box comes first (DPaint put it directly
+          right of the mode text) and the flood fill swatch, which blinks in
+          and out with the cursor, sits after it where it can't shove the
+          Color Fill Box sideways as it appears. */}
+      <div className="menubar__indicators">
+        {state.fillStyle.effectiveMode !== 'solid' && <ColorFillBox />}
+        {floodFillHoverSwatchColor && (
+          <div className="menubar__floodfill-indicator">
+            {floodFillIcon}
+            <div
+              className="menubar__floodfill-swatch"
+              style={{ backgroundColor: colorToRGBString(floodFillHoverSwatchColor) }}
+              title="Flood fill target color"
+            ></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

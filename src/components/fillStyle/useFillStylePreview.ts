@@ -1,12 +1,9 @@
 import { RefObject, useEffect, useMemo, useRef } from 'react';
 import { useAppState } from '../../overmind';
-import { paletteTextureData } from '../../algorithm/cycle';
 import { symmetricFilledEllipse } from '../../algorithm/shape';
 import { rowSpansFromLines } from '../../algorithm/rowSpans';
-import { OverlayGeometricRenderer } from '../../canvas/overlayCanvas/program/OverlayGeometricRenderer';
-import { OverlayGradientRenderer } from '../../canvas/overlayCanvas/program/OverlayGradientRenderer';
-import { OverlayPatternRenderer } from '../../canvas/overlayCanvas/program/OverlayPatternRenderer';
 import { patternFillStore } from '../../brush/PatternFill';
+import { beginPreviewFrame, useFillPreviewGL } from './fillPreviewGL';
 
 // The Fill Style dialog's live preview swatch: a filled ellipse painted in
 // the current (uncommitted-until-OK) fill style, redrawn whenever anything
@@ -33,12 +30,7 @@ export function useFillStylePreview(
 ): void {
   const state = useAppState();
 
-  const glRef = useRef<{
-    gl: WebGLRenderingContext;
-    geometric: OverlayGeometricRenderer;
-    gradient: OverlayGradientRenderer;
-    pattern: OverlayPatternRenderer;
-  } | null>(null);
+  const glRef = useFillPreviewGL(canvasRef);
   const seedRef = useRef(Math.random() * 8);
 
   // An ellipse, not a circle: previewWidth/previewHeight aren't generally
@@ -87,57 +79,6 @@ export function useFillStylePreview(
     [radiusX, radiusY]
   );
 
-  // One-time setup per dialog mount: WebGL context, a shared vertex buffer
-  // (bound once — every renderer's draw call assumes ARRAY_BUFFER is already
-  // bound, same as the real overlay canvas setup), and a palette texture at
-  // unit 1, mirroring OverlayCanvasController's initPaletteTexture.
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
-    // width/height are set as JSX attributes (not here) so the canvas never
-    // has an unset, mismatched-with-CSS intrinsic size for Safari to lay out
-    // the modal against before this effect runs — Safari doesn't always
-    // reflow an auto-height ancestor when a canvas's size changes
-    // imperatively afterward, only once some other change forces a relayout.
-    // antialias: false to match the main/overlay canvases — GL_LINES
-    // antialiasing blends adjacent scanline rows (symmetricFilledEllipse's
-    // fill technique) at their edges, and image-rendering: pixelated then
-    // upscales those blended edge pixels into visible dotted artifacts.
-    const gl = canvas.getContext('webgl', { antialias: false });
-    if (!gl) {
-      return;
-    }
-
-    const vertexBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-
-    gl.activeTexture(gl.TEXTURE1);
-    const paletteTex = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, paletteTex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    glRef.current = {
-      gl,
-      geometric: new OverlayGeometricRenderer(gl),
-      gradient: new OverlayGradientRenderer(gl),
-      pattern: new OverlayPatternRenderer(gl),
-    };
-
-    return (): void => {
-      glRef.current?.geometric.dispose();
-      glRef.current?.gradient.dispose();
-      glRef.current?.pattern.dispose();
-      gl.deleteTexture(paletteTex);
-      gl.deleteBuffer(vertexBuffer);
-      glRef.current = null;
-    };
-  }, [canvasRef]);
-
   useEffect((): void => {
     const ctx = glRef.current;
     if (!ctx) {
@@ -146,22 +87,7 @@ export function useFillStylePreview(
     const { gl, geometric, gradient, pattern } = ctx;
 
     const { palette, ranges, cycleOffsets } = state.palette;
-    gl.activeTexture(gl.TEXTURE1);
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      256,
-      1,
-      0,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      paletteTextureData(palette, ranges, cycleOffsets)
-    );
-
-    gl.viewport(0, 0, previewWidth, previewHeight);
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    beginPreviewFrame(gl, palette, ranges, cycleOffsets, previewWidth, previewHeight);
 
     const style = state.fillStyle.effectiveFillStyle;
     if (state.fillStyle.mode === 'brush' && patternFillStore.pattern) {

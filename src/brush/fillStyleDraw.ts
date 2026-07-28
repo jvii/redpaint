@@ -76,14 +76,14 @@ export function drawStyledFilledShape(
   const gpuCapable = shape.kind !== 'polygon' || shape.vertices.length <= MAX_FILL_POLYGON_VERTICES;
 
   if (gpuCapable) {
-    const { mode } = overmind.state.fillStyle;
-    if (mode === 'brush' && patternFillStore.pattern) {
-      canvas.patternFill(shape, patternFillStore.pattern.brushColorIndex, patternFillStore.version);
+    const { effectiveMode, effectiveFillStyle } = overmind.state.fillStyle;
+    const pattern = patternFillStore.pattern;
+    if (effectiveMode === 'pattern' && pattern) {
+      canvas.patternFill(shape, pattern.brushColorIndex, patternFillStore.version);
       return;
     }
-    const style = overmind.state.fillStyle.effectiveFillStyle;
-    if (style && style.rangeHigh - style.rangeLow > 0) {
-      canvas.gradientFill(shape, style, gradientSeed);
+    if (effectiveMode === 'gradient' && effectiveFillStyle) {
+      canvas.gradientFill(shape, effectiveFillStyle, gradientSeed);
       return;
     }
   }

@@ -4,12 +4,12 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   display: grid;
-  grid-template-areas: 'title modeIndicator floodFillSwatch';
+  grid-template-areas: 'title modeIndicator indicators';
   /* title/mode columns are sized to their own content only (not stretched
-     to fill leftover space) so the flood fill indicator appearing/disappearing
-     in the third column can't shove them around; the row is pinned to the
-     bar's own height so a taller item in that column can't grow the row and
-     shift "redpaint" vertically */
+     to fill leftover space) so the indicators appearing/disappearing in the
+     third column can't shove them around; the row is pinned to the bar's own
+     height so a taller item in that column can't grow the row and shift
+     "redpaint" vertically */
   grid-template-columns: max-content max-content 1fr;
   grid-template-rows: 50px;
   column-gap: 180px;
@@ -59,13 +59,45 @@
   color: var(--wb-orange);
 }
 
-.menubar__floodfill-indicator {
-  grid-area: floodFillSwatch;
+/* The status cluster: DPaint's Color Fill Box plus redpaint's own flood fill
+   target swatch, both transient. Fits the fixed 50px row exactly (10px margin
+   top/bottom + 30px content), so neither can grow the bar. */
+.menubar__indicators {
+  grid-area: indicators;
   margin: 10px;
   display: flex;
   align-items: center;
+  gap: 24px;
+  height: 30px;
+}
+
+/* DPaint's Color Fill Box (ColorFillBox.tsx). Its raw resolution — the
+   width/height attributes, set inline there — varies with the canvas's
+   display scale so the preview is a true-scale window into the fill; these
+   fixed CSS dimensions are the interior the component's BOX_WIDTH/BOX_HEIGHT
+   must agree with. No drop shadow: this is a readout, not a gadget. The
+   shared .transparency-checker ground (applied in the JSX) shows through a
+   pattern's transparent pixels, which would otherwise read as white pixels
+   belonging to the pattern itself. */
+.menubar__fill-box {
+  display: block; /* canvas is inline by default; avoids the baseline gap */
+  flex: none;
+  width: 56px;
+  height: 26px;
+  border: 2px solid black;
+  box-sizing: content-box;
+  image-rendering: pixelated;
+  /* a finer check than the app default (12px): at 56x26 the default squares
+     are big enough to read as content of the pattern rather than as the
+     ground behind it */
+  --checker-size: 6px;
+  --checker-half: 3px;
+}
+
+.menubar__floodfill-indicator {
+  display: flex;
+  align-items: center;
   gap: 2px;
-  /* fits the fixed 50px row exactly (10px margin top/bottom + 30px content) */
   height: 30px;
 }
 
