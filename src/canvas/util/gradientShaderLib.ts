@@ -22,7 +22,7 @@
 //    u_ditherJitter * pointsPerColor, clamped to [0, u_bandCount].
 //  * span <= 0.0 (a one-pixel row/column) resolves to band 0 = u_rangeLowIndex,
 //    matching the CPU path's `span <= 0` guard.
-//  * All uniforms are floats/vec2 except the two mode selectors (int).
+//  * All uniforms are floats/vec2 except the shape/axis mode selectors (int).
 //  * Polygon (shapeKind 3) is the one shape whose vertices are already in
 //    ABSOLUTE canvas coordinates (SymmetryBrush resolves rotation/mirroring
 //    per copy on the CPU before this ever runs — see MAX_VERTICES below),
@@ -30,19 +30,26 @@
 //    against the center-relative `local` the other shapes use. The dither
 //    hash still reads `local` for polygon too, keeping its input bounded by
 //    the shape's own size regardless of where on the canvas it's drawn.
+//  * Circle/ellipse (shapeKind 1/2) membership and per-row bounds come from
+//    a row-span texture (rowSpanTexture.ts), not a continuous ellipse-
+//    equation test: see rowSpanInside's own comment for why. Both shape
+//    kinds share one code path — the row-span table already has any
+//    rotation baked in, so there's nothing left that distinguishes them at
+//    this point.
 
 import { GradientUniforms, MAX_GRADIENT_POLYGON_VERTICES } from '../../algorithm/gradientFill';
 import { SHAPE_FILL_LIB } from './shapeFillShaderLib';
+import { ROW_SPAN_OFFSET } from './rowSpanTexture';
 
 // Shared by both GradientGeometricIndexer and OverlayGradientRenderer:
 // every uniform GRADIENT_LIB declares except u_palette (the overlay-only
-// sampler). Look these up once per program via getUniformLocation.
+// sampler) and u_rowSpans (a texture unit number each caller binds once at
+// program-construction time, like PATTERN_LIB's u_pattern — its location is
+// still looked up here since applyGradientUniforms doesn't set it).
 export const GRADIENT_UNIFORM_NAMES = [
   'u_canvasHeight',
   'u_shapeKind',
   'u_center',
-  'u_radius',
-  'u_rotation',
   'u_axisMode',
   'u_axisMin',
   'u_axisSpan',
@@ -53,22 +60,24 @@ export const GRADIENT_UNIFORM_NAMES = [
   'u_vertices',
   'u_nextVertices',
   'u_vertexCount',
+  'u_rowSpans',
+  'u_rowSpanYMin',
+  'u_rowSpanRowCount',
 ];
 
 // Sets every GRADIENT_LIB uniform from one GradientUniforms value — the
 // part of indexGradientFill/renderGradientFill that's identical between
-// the commit and preview path. u_vertices/u_nextVertices are padded to the
-// shader's fixed array size (unused slots are never read: the shader loop
-// breaks at u_vertexCount) and gl.uniform2fv sets a whole array in one call.
-//
-// u_nextVertices[i] duplicates u_vertices[(i+1) % count] — computed here on
-// the CPU, not in the shader. WebGL1 fragment shaders only allow the bare
-// loop-control variable as a dynamic array index (ANGLE rejects anything
-// derived from it, e.g. a `j = i==0 ? count-1 : i-1` previous-vertex index,
-// with "Index expression can only contain const or loop symbols"), so the
-// shader can't compute "the previous/next vertex" itself — every edge
-// (u_vertices[i], u_nextVertices[i]) is looked up with the same bare `i`
-// instead, at the cost of this second array.
+// the commit and preview path, except u_rowSpans* (bound alongside the
+// texture itself by RowSpanTexture.use, right before this runs) and
+// u_rowSpans (see GRADIENT_UNIFORM_NAMES). u_nextVertices[i] duplicates
+// u_vertices[(i+1) % count] — computed here on the CPU, not in the shader.
+// WebGL1 fragment shaders only allow the bare loop-control variable as a
+// dynamic array index (ANGLE rejects anything derived from it, e.g. a
+// `j = i==0 ? count-1 : i-1` previous-vertex index, with "Index expression
+// can only contain const or loop symbols"), so the shader can't compute
+// "the previous/next vertex" itself — every edge (u_vertices[i],
+// u_nextVertices[i]) is looked up with the same bare `i` instead, at the
+// cost of this second array.
 export function applyGradientUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
@@ -77,8 +86,6 @@ export function applyGradientUniforms(
   gl.uniform1f(locations['u_canvasHeight'], gl.drawingBufferHeight);
   gl.uniform1i(locations['u_shapeKind'], u.shapeKind);
   gl.uniform2f(locations['u_center'], u.center.x, u.center.y);
-  gl.uniform2f(locations['u_radius'], u.radiusX, u.radiusY);
-  gl.uniform1f(locations['u_rotation'], u.rotation);
   gl.uniform1i(locations['u_axisMode'], u.axisMode);
   gl.uniform1f(locations['u_axisMin'], u.axisMin);
   gl.uniform1f(locations['u_axisSpan'], u.axisSpan);
@@ -102,6 +109,19 @@ export function applyGradientUniforms(
   gl.uniform1f(locations['u_vertexCount'], count);
 }
 
+// Sets the two row-span uniforms (yMin/rowCount) from the texture the
+// caller just uploaded/bound via RowSpanTexture.use — kept separate from
+// applyGradientUniforms because it's only meaningful for shapeKind 1/2 and
+// depends on the texture upload having already happened this draw call.
+export function applyRowSpanUniforms(
+  gl: WebGLRenderingContext,
+  locations: { [name: string]: WebGLUniformLocation | null },
+  rowSpanTexture: { yMin: number; rowCount: number }
+): void {
+  gl.uniform1f(locations['u_rowSpanYMin'], rowSpanTexture.yMin);
+  gl.uniform1f(locations['u_rowSpanRowCount'], rowSpanTexture.rowCount);
+}
+
 export const GRADIENT_VERTEX_SHADER = `
     attribute vec4 a_position;
 
@@ -111,14 +131,16 @@ export const GRADIENT_VERTEX_SHADER = `
     `;
 
 export const GRADIENT_LIB = `
-    precision mediump float;
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+      precision highp float;
+    #else
+      precision mediump float;
+    #endif
 
     ${SHAPE_FILL_LIB}
 
     uniform int u_shapeKind;      // 0 = rect, 1 = circle, 2 = ellipse, 3 = polygon
     uniform vec2 u_center;        // shape center, canvas coords (y down)
-    uniform vec2 u_radius;        // (rx, ry); circle: (r, r); unused for polygon
-    uniform float u_rotation;     // ellipse rotation in radians, else 0.0
     uniform int u_axisMode;       // 0 = vertical, 1 = horizontal, 2 = horizontalLine
     uniform float u_axisMin;      // band-0 axis position (modes 0/1; rect rows in mode 2)
     uniform float u_axisSpan;     // axis extent, max - min
@@ -126,6 +148,40 @@ export const GRADIENT_LIB = `
     uniform float u_rangeLowIndex;// 0-based storage index of the range start
     uniform float u_ditherJitter; // dither * jitterPercent / 100; 0.0 = off
     uniform float u_seed;         // per-stroke dither seed
+
+    // Circle/ellipse membership + per-row bounds: a texture lookup against
+    // the exact row-span table filledCircle/filledEllipse produce
+    // (src/algorithm/rowSpans.ts, packed by rowSpanTexture.ts), rather than
+    // a continuous ellipse-equation test — this is what makes the GPU fill
+    // match the CPU-rasterized solid fill pixel-for-pixel instead of
+    // rounding differently at the boundary (the two were previously found
+    // to disagree by up to a visible 1px notch at the shape's top/bottom/
+    // sides). One texel per local row; u_rowSpanYMin is the table's first
+    // row's LOCAL (center-relative) y. Each texel packs that row's min/max
+    // local x as unsigned 16-bit values (R/G = min high/low byte, B/A = max
+    // high/low byte) biased by ROW_SPAN_OFFSET so negative offsets stay
+    // representable — see rowSpanTexture.ts. Reconstructing a 16-bit value
+    // from two bytes needs highp: mediump's guaranteed-exact integer range
+    // (roughly +/-1024) is well below the values this reaches for anything
+    // but a small shape, hence the GL_FRAGMENT_PRECISION_HIGH default above
+    // (falls back to mediump, and this specific lookup, on the rare
+    // hardware without highp fragment support — same fallback stance
+    // gradientHash already took on mediump-only precision).
+    uniform sampler2D u_rowSpans;
+    uniform float u_rowSpanYMin;
+    uniform float u_rowSpanRowCount;
+    const float ROW_SPAN_OFFSET = ${ROW_SPAN_OFFSET}.0;
+
+    bool rowSpanInside(vec2 local, out float xMin, out float xMax) {
+      float row = local.y - u_rowSpanYMin;
+      if (row < 0.0 || row >= u_rowSpanRowCount) {
+        return false;
+      }
+      vec4 texel = texture2D(u_rowSpans, vec2(0.5, (row + 0.5) / u_rowSpanRowCount));
+      xMin = floor(texel.r * 255.0 + 0.5) * 256.0 + floor(texel.g * 255.0 + 0.5) - ROW_SPAN_OFFSET;
+      xMax = floor(texel.b * 255.0 + 0.5) * 256.0 + floor(texel.a * 255.0 + 0.5) - ROW_SPAN_OFFSET;
+      return local.x >= xMin && local.x <= xMax;
+    }
 
     // Small-coefficient, fract-early hash (the "hash21" pattern used widely
     // in shader code): every intermediate value stays near [0, 1) instead
@@ -184,41 +240,33 @@ export const GRADIENT_LIB = `
         return u_rangeLowIndex + gradientBand(pos, minPos, span, local);
       }
 
-      float c = cos(u_rotation);
-      float s = sin(u_rotation);
-
-      if (u_shapeKind != 0 && !ellipseInside(local, u_radius, u_rotation)) {
-        discard;
+      if (u_shapeKind == 1 || u_shapeKind == 2) {
+        float rowXMin;
+        float rowXMax;
+        if (!rowSpanInside(local, rowXMin, rowXMax)) {
+          discard;
+        }
+        if (u_axisMode == 0) {
+          pos = pix.y; minPos = u_axisMin; span = u_axisSpan;
+        } else if (u_axisMode == 1) {
+          pos = pix.x; minPos = u_axisMin; span = u_axisSpan;
+        } else {
+          // horizontalLine: this row's own exact span from the table
+          // itself, not a closed-form chord — exact for rotated ellipses
+          // too, since rotation is already baked into the table.
+          pos = pix.x; minPos = u_center.x + rowXMin; span = rowXMax - rowXMin;
+        }
+        return u_rangeLowIndex + gradientBand(pos, minPos, span, local);
       }
 
+      // u_shapeKind == 0 (rect): the quad IS the shape, no inside test
+      // needed. horizontalLine on a rect: every row spans the full width,
+      // same as the other two axis modes.
       if (u_axisMode == 0) {
         pos = pix.y; minPos = u_axisMin; span = u_axisSpan;
-      } else if (u_axisMode == 1) {
-        pos = pix.x; minPos = u_axisMin; span = u_axisSpan;
-      } else if (u_shapeKind == 0) {
-        // horizontalLine on a rect: every row spans the full width
-        pos = pix.x; minPos = u_axisMin; span = u_axisSpan;
-      } else if (u_shapeKind == 1) {
-        // horizontalLine on a circle: this row's single run, closed form
-        float halfChord = sqrt(max(u_radius.x * u_radius.x - local.y * local.y, 0.0));
-        pos = pix.x; minPos = u_center.x - halfChord; span = 2.0 * halfChord;
       } else {
-        // horizontalLine on a rotated ellipse: for a fixed canvas row
-        // (local.y), the implicit equation
-        //   ((x c + y s) / rx)^2 + ((-x s + y c) / ry)^2 = 1
-        // is a quadratic A x^2 + B x + C = 0 in local x; its two roots are
-        // the run's ends. disc is clamped at 0 (rows grazing the edge).
-        float rx2 = u_radius.x * u_radius.x;
-        float ry2 = u_radius.y * u_radius.y;
-        float A = (c * c) / rx2 + (s * s) / ry2;
-        float B = 2.0 * local.y * c * s * (1.0 / rx2 - 1.0 / ry2);
-        float C = local.y * local.y * ((s * s) / rx2 + (c * c) / ry2) - 1.0;
-        float root = sqrt(max(B * B - 4.0 * A * C, 0.0));
-        float x0 = (-B - root) / (2.0 * A);
-        float x1 = (-B + root) / (2.0 * A);
-        pos = pix.x; minPos = u_center.x + x0; span = x1 - x0;
+        pos = pix.x; minPos = u_axisMin; span = u_axisSpan;
       }
-
       return u_rangeLowIndex + gradientBand(pos, minPos, span, local);
     }
     `;

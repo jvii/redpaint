@@ -1,0 +1,115 @@
+import { GradientShape } from '../../algorithm/gradientFill';
+import { circleRowSpans, ellipseRowSpans, RowSpanTable } from '../../algorithm/rowSpans';
+
+// Packs a circle/ellipse's exact row-span table (rowSpans.ts) into an RGBA
+// texture the gradient shaders sample per-fragment instead of testing the
+// shape against a continuous ellipse equation — see gradientShaderLib.ts's
+// rowSpanInside(). Each texel is one local row: R/G pack that row's min
+// local x, B/A pack its max, both as unsigned 16-bit values biased by
+// ROW_SPAN_OFFSET so negative local offsets stay representable in unsigned
+// bytes. A shape radius anywhere near ROW_SPAN_OFFSET (32768px) is far
+// outside any canvas this app supports.
+export const ROW_SPAN_OFFSET = 32768;
+
+export function encodeRowSpanTexture(table: RowSpanTable): { height: number; data: Uint8Array } {
+  const height = table.spans.length;
+  const data = new Uint8Array(height * 4);
+  for (let i = 0; i < height; i++) {
+    const span = table.spans[i];
+    const min = span.min + ROW_SPAN_OFFSET;
+    const max = span.max + ROW_SPAN_OFFSET;
+    data[i * 4] = (min >> 8) & 0xff;
+    data[i * 4 + 1] = min & 0xff;
+    data[i * 4 + 2] = (max >> 8) & 0xff;
+    data[i * 4 + 3] = max & 0xff;
+  }
+  return { height, data };
+}
+
+// Cache key for "is this the same shape geometry as last upload" — center
+// is deliberately excluded: every symmetry copy of one stroke shares the
+// same radius/rotation and only translates, so all copies in a frame reuse
+// one upload (RowSpanTexture.use below), the same way the rest of the
+// gradient fill pipeline already shares per-stroke work (seed, dither hash)
+// across copies instead of redoing it per copy.
+function cacheKey(shape: GradientShape): string | null {
+  if (shape.kind === 'circle') {
+    return `circle:${shape.radius}`;
+  }
+  if (shape.kind === 'ellipse') {
+    return `ellipse:${shape.radiusX}:${shape.radiusY}:${shape.rotationAngle}`;
+  }
+  return null;
+}
+
+function tableForShape(shape: GradientShape): RowSpanTable | null {
+  if (shape.kind === 'circle') {
+    return circleRowSpans(shape.radius);
+  }
+  if (shape.kind === 'ellipse') {
+    return ellipseRowSpans(shape.radiusX, shape.radiusY, shape.rotationAngle);
+  }
+  return null;
+}
+
+// One GL texture + upload cache, shared by GradientGeometricIndexer (commit
+// path) and OverlayGradientRenderer (preview path) — each owns its own
+// instance, since they're different WebGL contexts (paintingCanvas vs
+// overlayCanvas) and can't share a texture object.
+export class RowSpanTexture {
+  private gl: WebGLRenderingContext;
+  private textureUnit: number;
+  private texture: WebGLTexture | null = null;
+  private lastKey: string | null = null;
+  public yMin = 0;
+  public rowCount = 0;
+
+  public constructor(gl: WebGLRenderingContext, textureUnit: number) {
+    this.gl = gl;
+    this.textureUnit = textureUnit;
+  }
+
+  // Binds this shape's row-span texture to this instance's texture unit,
+  // re-uploading only when the shape's geometry actually changed since the
+  // last call (the same cache-by-key pattern PatternGeometricIndexer uses
+  // for its pattern bitmap). Returns false for shapes with no row-span
+  // table (rect/polygon) — callers should skip the row-span branch entirely
+  // rather than bind a stale or empty texture.
+  public use(shape: GradientShape): boolean {
+    const key = cacheKey(shape);
+    if (key === null) {
+      return false;
+    }
+    const gl = this.gl;
+    gl.activeTexture(gl.TEXTURE0 + this.textureUnit);
+    if (key !== this.lastKey) {
+      const table = tableForShape(shape);
+      if (!table) {
+        return false;
+      }
+      const { height, data } = encodeRowSpanTexture(table);
+      if (!this.texture) {
+        this.texture = gl.createTexture();
+      }
+      gl.bindTexture(gl.TEXTURE_2D, this.texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      this.lastKey = key;
+      this.yMin = table.yMin;
+      this.rowCount = height;
+    } else {
+      gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    }
+    return true;
+  }
+
+  public dispose(): void {
+    if (this.texture) {
+      this.gl.deleteTexture(this.texture);
+      this.texture = null;
+    }
+  }
+}

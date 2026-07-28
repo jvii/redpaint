@@ -7,11 +7,19 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
+  applyRowSpanUniforms,
   GRADIENT_LIB,
   GRADIENT_UNIFORM_NAMES,
   GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
 import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
+import { RowSpanTexture } from '../../util/rowSpanTexture';
+
+// The row-span texture lives on its own dedicated unit (8 — every other
+// unit in the codebase is already permanently claimed: 0/1/2 by the
+// canvas/palette/brush-stamp textures, 3-6 by EffectIndexer's scratch
+// textures, 7 by Pattern fill's captured-bitmap texture).
+const ROW_SPAN_TEXTURE_UNIT = 8;
 
 // Writes a gradient-filled convex shape (rect/circle/ellipse) into the
 // color-index texture in ONE draw call: the fragment shader classifies each
@@ -27,6 +35,7 @@ export class GradientGeometricIndexer {
   // round-trips, too slow for per-draw-call use
   private a_position: number;
   private uniforms: { [name: string]: WebGLUniformLocation | null };
+  private rowSpanTexture: RowSpanTexture;
 
   public constructor(gl: WebGLRenderingContext, targetFrameBuffer: WebGLFramebuffer) {
     this.gl = gl;
@@ -37,6 +46,11 @@ export class GradientGeometricIndexer {
     for (const name of GRADIENT_UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
+    // the row-span texture is always in ROW_SPAN_TEXTURE_UNIT, so the
+    // sampler uniform can be set once (mirrors PatternGeometricIndexer's
+    // u_pattern)
+    gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
+    this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
   public indexGradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
@@ -47,6 +61,9 @@ export class GradientGeometricIndexer {
     bindFramebuffer(gl, this.targetFrameBuffer);
 
     applyGradientUniforms(gl, this.uniforms, u);
+    if (this.rowSpanTexture.use(shape)) {
+      applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
+    }
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.a_position);
@@ -81,6 +98,7 @@ export class GradientGeometricIndexer {
   }
 
   public dispose(): void {
+    this.rowSpanTexture.dispose();
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;

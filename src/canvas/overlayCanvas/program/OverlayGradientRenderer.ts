@@ -7,10 +7,18 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
+  applyRowSpanUniforms,
   GRADIENT_LIB,
   GRADIENT_UNIFORM_NAMES,
   GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
+import { RowSpanTexture } from '../../util/rowSpanTexture';
+
+// Mirrors GradientGeometricIndexer's own ROW_SPAN_TEXTURE_UNIT constant —
+// see that file's comment. A separate context (this is the overlay canvas,
+// not the painting canvas) so the unit number doesn't have to match, but
+// keeping it identical avoids a second, arbitrary number to track.
+const ROW_SPAN_TEXTURE_UNIT = 8;
 
 // The live-preview twin of GradientGeometricIndexer: same shape/band/dither
 // GLSL, but resolves the per-fragment index through the palette texture
@@ -21,6 +29,7 @@ export class OverlayGradientRenderer {
   private program: WebGLProgram;
   private a_position: number;
   private uniforms: { [name: string]: WebGLUniformLocation | null };
+  private rowSpanTexture: RowSpanTexture;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -30,6 +39,8 @@ export class OverlayGradientRenderer {
     for (const name of [...GRADIENT_UNIFORM_NAMES, 'u_palette']) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
+    gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
+    this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
   public renderGradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
@@ -39,6 +50,9 @@ export class OverlayGradientRenderer {
     activateProgram(gl, this.program);
 
     applyGradientUniforms(gl, this.uniforms, u);
+    if (this.rowSpanTexture.use(shape)) {
+      applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
+    }
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
 
     gl.vertexAttribPointer(this.a_position, 2, gl.FLOAT, false, 0, 0);
@@ -72,6 +86,7 @@ export class OverlayGradientRenderer {
   }
 
   public dispose(): void {
+    this.rowSpanTexture.dispose();
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;

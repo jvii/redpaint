@@ -72,8 +72,27 @@ export interface PatternUniforms extends ShapeGeometry {
 }
 
 export function patternFillUniforms(shape: GradientShape, pattern: BrushColorIndex): PatternUniforms {
+  const geometry = shapeGeometry(shape);
+  if (shape.kind === 'circle' || shape.kind === 'ellipse') {
+    // Pattern fill's shape test (ellipseInside, shapeFillShaderLib.ts)
+    // compares an integer pixel position against a continuous radius, which
+    // — unlike filledCircle/filledEllipse's integer Bresenham stepping
+    // (shape.ts) — has no built-in rounding: at exactly radius r it clips
+    // pixels the CPU rasterizer keeps, leaving a 1px flat notch at the
+    // top/bottom/sides of the shape. Padding the radius by half a pixel
+    // here rounds the boundary outward instead, matching
+    // "round(distance) <= r" rather than "distance <= r". It won't
+    // reproduce filledCircle's octant-by-octant pixels exactly (no closed
+    // form does — see rowSpans.ts, which Gradient fill uses instead of this
+    // heuristic for an exact match), but it removes the notch. Never grows
+    // past the bounding quad shapeGeometry already computed: the extra
+    // 0.5px never reaches the next integer pixel row/column outside
+    // [left, right] / [top, bottom].
+    geometry.radiusX += 0.5;
+    geometry.radiusY += 0.5;
+  }
   return {
-    ...shapeGeometry(shape),
+    ...geometry,
     patternWidth: pattern.width,
     patternHeight: pattern.height,
   };
