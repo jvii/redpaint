@@ -10,6 +10,7 @@ import {
 } from '../../util/patternShaderLib';
 import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
 import { GRADIENT_VERTEX_SHADER } from '../../util/gradientShaderLib';
+import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
 // Writes a Pattern-filled convex shape (rect/circle/ellipse/polygon) into
 // the color-index texture in ONE draw call — the Pattern-fill twin of
@@ -17,9 +18,12 @@ import { GRADIENT_VERTEX_SHADER } from '../../util/gradientShaderLib';
 // computing a band index. The pattern texture lives on its own dedicated
 // unit (7 — every other unit in the codebase is already permanently
 // claimed: 0/1/2 by the canvas/palette/brush-stamp textures, 3-6 by
-// EffectIndexer's scratch textures), re-uploaded only when the captured
-// pattern actually changes (patternFillStore.version, PatternFill.ts).
+// EffectIndexer's scratch textures, 8 by Gradient fill's row-span texture),
+// re-uploaded only when the captured pattern actually changes
+// (patternFillStore.version, PatternFill.ts). The row-span texture (see
+// ROW_SPAN_TEXTURE_UNIT) is this class's own second texture, on unit 9.
 const PATTERN_TEXTURE_UNIT = 7;
+const ROW_SPAN_TEXTURE_UNIT = 9;
 
 export class PatternGeometricIndexer {
   private gl: WebGLRenderingContext;
@@ -29,6 +33,7 @@ export class PatternGeometricIndexer {
   private uniforms: { [name: string]: WebGLUniformLocation | null };
   private texture: WebGLTexture | null = null;
   private currentPatternVersion = -1;
+  private rowSpanTexture: RowSpanTexture;
 
   public constructor(gl: WebGLRenderingContext, targetFrameBuffer: WebGLFramebuffer) {
     this.gl = gl;
@@ -39,9 +44,11 @@ export class PatternGeometricIndexer {
     for (const name of PATTERN_UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
-    // the pattern texture is always in PATTERN_TEXTURE_UNIT, so the sampler
-    // uniform can be set once
+    // the pattern/row-span textures are always in their own fixed unit, so
+    // the sampler uniforms can be set once
     gl.uniform1i(this.uniforms['u_pattern'], PATTERN_TEXTURE_UNIT);
+    gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
+    this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
   public indexPatternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
@@ -61,6 +68,9 @@ export class PatternGeometricIndexer {
     // else ever doing so.
     gl.activeTexture(gl.TEXTURE0 + PATTERN_TEXTURE_UNIT);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    if (this.rowSpanTexture.use(shape)) {
+      applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
+    }
 
     applyPatternUniforms(gl, this.uniforms, u);
 
@@ -133,6 +143,7 @@ export class PatternGeometricIndexer {
       this.gl.deleteTexture(this.texture);
       this.texture = null;
     }
+    this.rowSpanTexture.dispose();
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;

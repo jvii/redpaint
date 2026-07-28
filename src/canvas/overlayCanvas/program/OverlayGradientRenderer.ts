@@ -7,12 +7,11 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
-  applyRowSpanUniforms,
   GRADIENT_LIB,
   GRADIENT_UNIFORM_NAMES,
   GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
-import { RowSpanTexture } from '../../util/rowSpanTexture';
+import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
 // Mirrors GradientGeometricIndexer's own ROW_SPAN_TEXTURE_UNIT constant —
 // see that file's comment. A separate context (this is the overlay canvas,

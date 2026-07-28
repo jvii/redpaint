@@ -7,13 +7,12 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY } from '../../util/util';
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import {
   applyGradientUniforms,
-  applyRowSpanUniforms,
   GRADIENT_LIB,
   GRADIENT_UNIFORM_NAMES,
   GRADIENT_VERTEX_SHADER,
 } from '../../util/gradientShaderLib';
 import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
-import { RowSpanTexture } from '../../util/rowSpanTexture';
+import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
 // The row-span texture lives on its own dedicated unit (8 — every other
 // unit in the codebase is already permanently claimed: 0/1/2 by the

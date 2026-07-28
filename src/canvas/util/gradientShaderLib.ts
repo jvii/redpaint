@@ -39,7 +39,6 @@
 
 import { GradientUniforms, MAX_GRADIENT_POLYGON_VERTICES } from '../../algorithm/gradientFill';
 import { SHAPE_FILL_LIB } from './shapeFillShaderLib';
-import { ROW_SPAN_OFFSET } from './rowSpanTexture';
 
 // Shared by both GradientGeometricIndexer and OverlayGradientRenderer:
 // every uniform GRADIENT_LIB declares except u_palette (the overlay-only
@@ -109,19 +108,6 @@ export function applyGradientUniforms(
   gl.uniform1f(locations['u_vertexCount'], count);
 }
 
-// Sets the two row-span uniforms (yMin/rowCount) from the texture the
-// caller just uploaded/bound via RowSpanTexture.use — kept separate from
-// applyGradientUniforms because it's only meaningful for shapeKind 1/2 and
-// depends on the texture upload having already happened this draw call.
-export function applyRowSpanUniforms(
-  gl: WebGLRenderingContext,
-  locations: { [name: string]: WebGLUniformLocation | null },
-  rowSpanTexture: { yMin: number; rowCount: number }
-): void {
-  gl.uniform1f(locations['u_rowSpanYMin'], rowSpanTexture.yMin);
-  gl.uniform1f(locations['u_rowSpanRowCount'], rowSpanTexture.rowCount);
-}
-
 export const GRADIENT_VERTEX_SHADER = `
     attribute vec4 a_position;
 
@@ -148,40 +134,6 @@ export const GRADIENT_LIB = `
     uniform float u_rangeLowIndex;// 0-based storage index of the range start
     uniform float u_ditherJitter; // dither * jitterPercent / 100; 0.0 = off
     uniform float u_seed;         // per-stroke dither seed
-
-    // Circle/ellipse membership + per-row bounds: a texture lookup against
-    // the exact row-span table filledCircle/filledEllipse produce
-    // (src/algorithm/rowSpans.ts, packed by rowSpanTexture.ts), rather than
-    // a continuous ellipse-equation test — this is what makes the GPU fill
-    // match the CPU-rasterized solid fill pixel-for-pixel instead of
-    // rounding differently at the boundary (the two were previously found
-    // to disagree by up to a visible 1px notch at the shape's top/bottom/
-    // sides). One texel per local row; u_rowSpanYMin is the table's first
-    // row's LOCAL (center-relative) y. Each texel packs that row's min/max
-    // local x as unsigned 16-bit values (R/G = min high/low byte, B/A = max
-    // high/low byte) biased by ROW_SPAN_OFFSET so negative offsets stay
-    // representable — see rowSpanTexture.ts. Reconstructing a 16-bit value
-    // from two bytes needs highp: mediump's guaranteed-exact integer range
-    // (roughly +/-1024) is well below the values this reaches for anything
-    // but a small shape, hence the GL_FRAGMENT_PRECISION_HIGH default above
-    // (falls back to mediump, and this specific lookup, on the rare
-    // hardware without highp fragment support — same fallback stance
-    // gradientHash already took on mediump-only precision).
-    uniform sampler2D u_rowSpans;
-    uniform float u_rowSpanYMin;
-    uniform float u_rowSpanRowCount;
-    const float ROW_SPAN_OFFSET = ${ROW_SPAN_OFFSET}.0;
-
-    bool rowSpanInside(vec2 local, out float xMin, out float xMax) {
-      float row = local.y - u_rowSpanYMin;
-      if (row < 0.0 || row >= u_rowSpanRowCount) {
-        return false;
-      }
-      vec4 texel = texture2D(u_rowSpans, vec2(0.5, (row + 0.5) / u_rowSpanRowCount));
-      xMin = floor(texel.r * 255.0 + 0.5) * 256.0 + floor(texel.g * 255.0 + 0.5) - ROW_SPAN_OFFSET;
-      xMax = floor(texel.b * 255.0 + 0.5) * 256.0 + floor(texel.a * 255.0 + 0.5) - ROW_SPAN_OFFSET;
-      return local.x >= xMin && local.x <= xMax;
-    }
 
     // Small-coefficient, fract-early hash (the "hash21" pattern used widely
     // in shader code): every intermediate value stays near [0, 1) instead

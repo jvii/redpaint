@@ -1,11 +1,10 @@
 // Shared GLSL for the GPU Pattern fill — the DPaint "Pattern"/"From Brush"
 // fill mode, sitting alongside Gradient (gradientShaderLib.ts) and reusing
 // its shape inside-tests (shapeFillShaderLib.ts) rather than a second copy
-// of the rotated-ellipse/polygon math. Both the commit path
-// (PatternGeometricIndexer) and preview path (OverlayPatternRenderer) embed
-// PATTERN_LIB and differ only in what they do with the fetched texel — see
-// GRADIENT_LIB's own header comment for the shared-lib convention this
-// mirrors.
+// of the polygon/row-span math. Both the commit path (PatternGeometricIndexer)
+// and preview path (OverlayPatternRenderer) embed PATTERN_LIB and differ
+// only in what they do with the fetched texel — see GRADIENT_LIB's own
+// header comment for the shared-lib convention this mirrors.
 //
 // Tiling: mod(pix, u_patternSize) anchors the tile to the fixed canvas
 // origin (0, 0) — DPaint's own hardware-blitter tiling anchored the same
@@ -24,23 +23,29 @@ import { SHAPE_FILL_LIB } from './shapeFillShaderLib';
 
 // Shared by both PatternGeometricIndexer and OverlayPatternRenderer: every
 // uniform PATTERN_LIB declares except u_palette (the overlay-only sampler
-// that resolves the fetched index to a display color).
+// that resolves the fetched index to a display color) and u_pattern/
+// u_rowSpans (texture unit numbers each caller binds once at
+// program-construction time — their locations are still looked up here
+// since applyPatternUniforms doesn't set them).
 export const PATTERN_UNIFORM_NAMES = [
   'u_canvasHeight',
   'u_shapeKind',
   'u_center',
-  'u_radius',
-  'u_rotation',
   'u_vertices',
   'u_nextVertices',
   'u_vertexCount',
   'u_pattern',
   'u_patternSize',
+  'u_rowSpans',
+  'u_rowSpanYMin',
+  'u_rowSpanRowCount',
 ];
 
-// Sets every PATTERN_LIB uniform (except u_pattern itself, a texture unit
-// number each caller already binds once at program-construction time, and
-// u_palette, overlay-only) from one PatternUniforms value.
+// Sets every PATTERN_LIB uniform (except u_pattern/u_rowSpans, texture unit
+// numbers each caller already binds once at program-construction time, and
+// u_palette, overlay-only, and u_rowSpanYMin/u_rowSpanRowCount, set
+// alongside the row-span texture itself by RowSpanTexture.use +
+// applyRowSpanUniforms) from one PatternUniforms value.
 export function applyPatternUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
@@ -49,8 +54,6 @@ export function applyPatternUniforms(
   gl.uniform1f(locations['u_canvasHeight'], gl.drawingBufferHeight);
   gl.uniform1i(locations['u_shapeKind'], u.shapeKind);
   gl.uniform2f(locations['u_center'], u.center.x, u.center.y);
-  gl.uniform2f(locations['u_radius'], u.radiusX, u.radiusY);
-  gl.uniform1f(locations['u_rotation'], u.rotation);
   gl.uniform2f(locations['u_patternSize'], u.patternWidth, u.patternHeight);
 
   // Same fixed-size polygon array packing as applyGradientUniforms — see
@@ -71,14 +74,16 @@ export function applyPatternUniforms(
 }
 
 export const PATTERN_LIB = `
-    precision mediump float;
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+      precision highp float;
+    #else
+      precision mediump float;
+    #endif
 
     ${SHAPE_FILL_LIB}
 
     uniform int u_shapeKind;      // 0 = rect, 1 = circle, 2 = ellipse, 3 = polygon
     uniform vec2 u_center;        // shape center, canvas coords (y down)
-    uniform vec2 u_radius;        // (rx, ry); circle: (r, r); unused for polygon
-    uniform float u_rotation;     // ellipse rotation in radians, else 0.0
     uniform sampler2D u_pattern;  // the captured pattern bitmap
     uniform vec2 u_patternSize;   // pattern width/height in pixels
 
@@ -96,9 +101,11 @@ export const PATTERN_LIB = `
         if (!polygonRow(pix, runMin, runMax)) {
           discard;
         }
-      } else if (u_shapeKind != 0) {
+      } else if (u_shapeKind == 1 || u_shapeKind == 2) {
         vec2 local = pix - u_center;
-        if (!ellipseInside(local, u_radius, u_rotation)) {
+        float rowXMin;
+        float rowXMax;
+        if (!rowSpanInside(local, rowXMin, rowXMax)) {
           discard;
         }
       }

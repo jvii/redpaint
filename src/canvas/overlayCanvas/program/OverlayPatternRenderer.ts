@@ -9,15 +9,17 @@ import {
   PATTERN_UNIFORM_NAMES,
 } from '../../util/patternShaderLib';
 import { GRADIENT_VERTEX_SHADER } from '../../util/gradientShaderLib';
+import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
-// The pattern texture's own dedicated unit — this renderer lives in the
-// overlay canvas's own separate GL context, so this doesn't collide with
-// PatternGeometricIndexer's identically-numbered unit in the painting
+// The pattern/row-span textures' own dedicated units — this renderer lives
+// in the overlay canvas's own separate GL context, so these don't collide
+// with PatternGeometricIndexer's identically-numbered units in the painting
 // canvas's context (the two are independent GPU resource namespaces); using
-// the same number for both is just the established convention (mirrors
+// the same numbers for both is just the established convention (mirrors
 // DrawImageIndexer/OverlayDrawImageRenderer both using unit 2 for the
 // brush-stamp texture, each in its own context).
 const PATTERN_TEXTURE_UNIT = 7;
+const ROW_SPAN_TEXTURE_UNIT = 9;
 
 // The live-preview twin of PatternGeometricIndexer: same shape/tiling GLSL,
 // but resolves the fetched texel's storage index through the palette
@@ -31,6 +33,7 @@ export class OverlayPatternRenderer {
   private uniforms: { [name: string]: WebGLUniformLocation | null };
   private texture: WebGLTexture | null = null;
   private currentPatternVersion = -1;
+  private rowSpanTexture: RowSpanTexture;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -41,6 +44,8 @@ export class OverlayPatternRenderer {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
     gl.uniform1i(this.uniforms['u_pattern'], PATTERN_TEXTURE_UNIT);
+    gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
+    this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
   public renderPatternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
@@ -57,6 +62,9 @@ export class OverlayPatternRenderer {
     // version changes — see PatternGeometricIndexer's identical comment.
     gl.activeTexture(gl.TEXTURE0 + PATTERN_TEXTURE_UNIT);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    if (this.rowSpanTexture.use(shape)) {
+      applyRowSpanUniforms(gl, this.uniforms, this.rowSpanTexture);
+    }
 
     applyPatternUniforms(gl, this.uniforms, u);
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
@@ -124,6 +132,7 @@ export class OverlayPatternRenderer {
       this.gl.deleteTexture(this.texture);
       this.texture = null;
     }
+    this.rowSpanTexture.dispose();
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;

@@ -2,13 +2,13 @@ import { GradientShape } from '../../algorithm/gradientFill';
 import { circleRowSpans, ellipseRowSpans, RowSpanTable } from '../../algorithm/rowSpans';
 
 // Packs a circle/ellipse's exact row-span table (rowSpans.ts) into an RGBA
-// texture the gradient shaders sample per-fragment instead of testing the
-// shape against a continuous ellipse equation — see gradientShaderLib.ts's
-// rowSpanInside(). Each texel is one local row: R/G pack that row's min
-// local x, B/A pack its max, both as unsigned 16-bit values biased by
-// ROW_SPAN_OFFSET so negative local offsets stay representable in unsigned
-// bytes. A shape radius anywhere near ROW_SPAN_OFFSET (32768px) is far
-// outside any canvas this app supports.
+// texture the Gradient and Pattern fill shaders sample per-fragment instead
+// of testing the shape against a continuous ellipse equation — see
+// shapeFillShaderLib.ts's rowSpanInside(). Each texel is one local row: R/G
+// pack that row's min local x, B/A pack its max, both as unsigned 16-bit
+// values biased by ROW_SPAN_OFFSET so negative local offsets stay
+// representable in unsigned bytes. A shape radius anywhere near
+// ROW_SPAN_OFFSET (32768px) is far outside any canvas this app supports.
 export const ROW_SPAN_OFFSET = 32768;
 
 export function encodeRowSpanTexture(table: RowSpanTable): { height: number; data: Uint8Array } {
@@ -52,10 +52,26 @@ function tableForShape(shape: GradientShape): RowSpanTable | null {
   return null;
 }
 
-// One GL texture + upload cache, shared by GradientGeometricIndexer (commit
-// path) and OverlayGradientRenderer (preview path) — each owns its own
-// instance, since they're different WebGL contexts (paintingCanvas vs
-// overlayCanvas) and can't share a texture object.
+// Sets the two row-span uniforms (yMin/rowCount) from the texture the
+// caller just uploaded/bound via RowSpanTexture.use — kept separate from
+// applyGradientUniforms/applyPatternUniforms because it's only meaningful
+// for shapeKind 1/2 and depends on the texture upload having already
+// happened this draw call.
+export function applyRowSpanUniforms(
+  gl: WebGLRenderingContext,
+  locations: { [name: string]: WebGLUniformLocation | null },
+  rowSpanTexture: { yMin: number; rowCount: number }
+): void {
+  gl.uniform1f(locations['u_rowSpanYMin'], rowSpanTexture.yMin);
+  gl.uniform1f(locations['u_rowSpanRowCount'], rowSpanTexture.rowCount);
+}
+
+// One GL texture + upload cache. Each of the four fill renderers
+// (Gradient/Pattern x commit/preview) owns its own instance: the commit and
+// preview paths are different WebGL contexts (paintingCanvas vs
+// overlayCanvas) and can't share a texture object, and Gradient/Pattern
+// each need their own texture unit within a context (see
+// GradientGeometricIndexer/PatternGeometricIndexer's ROW_SPAN_TEXTURE_UNIT).
 export class RowSpanTexture {
   private gl: WebGLRenderingContext;
   private textureUnit: number;
