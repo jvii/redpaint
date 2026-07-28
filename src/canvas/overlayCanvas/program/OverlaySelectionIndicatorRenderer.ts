@@ -132,11 +132,19 @@ export class OverlaySelectionIndicatorRenderer {
     this.gl.drawArrays(gl.LINES, 0, 2 * crosshairLines.length);
   }
 
-  // re-upload the main canvas into the texture if it changed
+  // re-upload the main canvas into the texture if it changed. Committing a
+  // new stroke bumps lastUndoPointTime; undo/redo instead bump
+  // lastUndoRedoTime (see overmind/undo/actions.ts) — watching only the
+  // former left this texture stale after undo/redo, showing "ghost" colors
+  // from before the undo until the next stroke committed.
   private updateCanvasTexture(): void {
-    if (this.lastCanvasUpdate !== overmind.state.undo.lastUndoPointTime) {
+    const latestCanvasChange = Math.max(
+      overmind.state.undo.lastUndoPointTime,
+      overmind.state.undo.lastUndoRedoTime
+    );
+    if (this.lastCanvasUpdate !== latestCanvasChange) {
       this.loadMainCanvasAsTexture();
-      this.lastCanvasUpdate = overmind.state.undo.lastUndoPointTime;
+      this.lastCanvasUpdate = latestCanvasChange;
     }
   }
 
