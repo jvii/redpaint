@@ -2,6 +2,7 @@ import { GeometricIndexer } from './program/GeometricIndexer';
 import { DrawImageIndexer } from './program/DrawImageIndexer';
 import { EffectIndexer } from './program/EffectIndexer';
 import { GradientGeometricIndexer } from './program/GradientGeometricIndexer';
+import { PatternGeometricIndexer } from './program/PatternGeometricIndexer';
 import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { visualiseTexture } from '../util/util';
@@ -11,6 +12,7 @@ import { LineH } from '../../domain/LineH';
 import { overmind } from '../..';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { BrushColorIndex } from '../../domain/BrushColorIndex';
 
 type GLBuffers = {
   colorIndexFramebuffer: WebGLFramebuffer;
@@ -25,6 +27,7 @@ export class ColorIndexer {
   private drawImageIndexer: DrawImageIndexer;
   private effectIndexer: EffectIndexer;
   private gradientIndexer: GradientGeometricIndexer;
+  private patternIndexer: PatternGeometricIndexer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -36,6 +39,7 @@ export class ColorIndexer {
     this.drawImageIndexer = new DrawImageIndexer(gl, buffers);
     this.effectIndexer = new EffectIndexer(gl, buffers);
     this.gradientIndexer = new GradientGeometricIndexer(gl, buffers.colorIndexFramebuffer);
+    this.patternIndexer = new PatternGeometricIndexer(gl, buffers.colorIndexFramebuffer);
   }
 
   /**
@@ -58,6 +62,10 @@ export class ColorIndexer {
       this.gradientIndexer.dispose();
       this.gradientIndexer = null;
     }
+    if (this.patternIndexer) {
+      this.patternIndexer.dispose();
+      this.patternIndexer = null;
+    }
   }
 
   points(points: Point[], color: PaintColor): void {
@@ -74,6 +82,10 @@ export class ColorIndexer {
 
   gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
     this.gradientIndexer.indexGradientFill(shape, style, seed);
+  }
+
+  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+    this.patternIndexer.indexPatternFill(shape, pattern, version);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

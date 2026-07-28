@@ -5,6 +5,7 @@ import { LineV } from '../domain/LineV';
 import type { CustomBrush } from './CustomBrush';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 import { GradientFillStyle, GradientShape } from '../algorithm/gradientFill';
+import { BrushColorIndex } from '../domain/BrushColorIndex';
 
 // A DrawTarget that records draw calls instead of drawing them, then replays
 // everything to a real target in as few calls as possible (one per distinct
@@ -39,6 +40,7 @@ export class DrawCallBuffer implements DrawTarget {
   private imageBrush: CustomBrush | null = null;
   private effectBatches: { points: Point[]; brush: CustomBrush }[] = [];
   private gradientFills: { shape: GradientShape; style: GradientFillStyle; seed: number }[] = [];
+  private patternFills: { shape: GradientShape; pattern: BrushColorIndex; version: number }[] = [];
 
   public points(points: Point[], color: PaintColor): void {
     const batch = this.batchFor(this.pointBatches, color, () => ({ color, points: [] }));
@@ -62,6 +64,12 @@ export class DrawCallBuffer implements DrawTarget {
   public gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
     // no batching: each call is already one cheap GPU draw per shape
     this.gradientFills.push({ shape, style, seed });
+  }
+
+  public patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+    // same reasoning as gradientFill: one draw already produces many colors
+    // (the tiled pattern), so there's no single color key to batch under
+    this.patternFills.push({ shape, pattern, version });
   }
 
   public drawImage(points: Point[], brush: CustomBrush): void {
@@ -110,6 +118,9 @@ export class DrawCallBuffer implements DrawTarget {
     }
     for (const g of this.gradientFills) {
       target.gradientFill(g.shape, g.style, g.seed);
+    }
+    for (const p of this.patternFills) {
+      target.patternFill(p.shape, p.pattern, p.version);
     }
     if (this.imagePointBuffer.length > 0 && this.imageBrush) {
       target.drawImage(this.imagePointBuffer, this.imageBrush);

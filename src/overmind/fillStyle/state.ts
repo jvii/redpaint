@@ -3,15 +3,23 @@ import { GradientAxis, GradientFillStyle } from '../../algorithm/gradientFill';
 import { activeRangeIndices } from '../../algorithm/paletteRange';
 import type { OvermindState } from '../../overmind';
 
-export type FillMode = 'solid' | 'gradient'; // 'brush' (pattern fill) later
+export type FillMode = 'solid' | 'gradient' | 'brush';
 
 // Snapshot/restore shape for the settings panel's Cancel — every field a
-// requester control can change.
+// requester control can change, including a capture made via "From Brush"
+// during this dialog session. The pattern bitmap itself never enters this
+// object, or Overmind state at all — see PatternFill.ts's takeSnapshot/
+// restoreSnapshot: Overmind deep-proxies anything assigned into state for
+// reactivity tracking, which corrupts a CustomBrush's underlying Uint8Array
+// (WebGL's texImage2D then rejects it as not an ArrayBufferView). Only the
+// boolean/number mirror fields travel through here.
 type Snapshot = {
   mode: FillMode;
   axis: GradientAxis;
   dither: number;
   jitter: number;
+  hasPattern: boolean;
+  patternVersion: number;
 };
 
 export type State = {
@@ -25,6 +33,14 @@ export type State = {
   jitter: number;
   settingsOpen: boolean;
   settingsSnapshot: Snapshot | null;
+  // Reactive mirror of patternFillStore (PatternFill.ts) — the bitmap
+  // itself is non-serializable and stays out of Overmind, same split as
+  // brushRecall/state.brush. hasPattern gates every "is Pattern usable"
+  // check; patternVersion mirrors patternFillStore.version purely so a
+  // recapture (which doesn't flip hasPattern, already true) still gives
+  // the live preview's effect a changed dependency to react to.
+  hasPattern: boolean;
+  patternVersion: number;
   // The effective gradient to paint with: null in solid mode, or in
   // gradient mode when the FG color isn't in any range (falls back to a
   // plain solid fill, same as DPaint — there's no "whole palette" gradient
@@ -48,6 +64,8 @@ export const state: State = {
   jitter: 17, // ~1/6, matches PyDPainter's HORIZ_FIT dither (see gradientFill.ts)
   settingsOpen: false,
   settingsSnapshot: null,
+  hasPattern: false,
+  patternVersion: 0,
   foregroundInRange: derived(
     (_state: State, rootState: OvermindState): boolean =>
       !activeRangeIndices(

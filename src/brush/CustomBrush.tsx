@@ -20,7 +20,12 @@ import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { BuiltInFamily } from '../algorithm/builtInBrushShapes';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
-import { drawFilledLines, drawFilledQuad, drawGradientFilledShape } from './fillStyleDraw';
+import {
+  drawFilledLines,
+  drawFilledQuad,
+  drawGradientFilledShape,
+  drawPatternFilledShape,
+} from './fillStyleDraw';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -131,7 +136,10 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    if (drawGradientFilledShape({ kind: 'rect', start, end }, canvas)) {
+    if (
+      drawPatternFilledShape({ kind: 'rect', start, end }, canvas) ||
+      drawGradientFilledShape({ kind: 'rect', start, end }, canvas)
+    ) {
       return;
     }
     drawFilledQuad(start, end, canvas, overmind.state.tool.activePaintColor);
@@ -144,7 +152,10 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    if (drawGradientFilledShape({ kind: 'circle', center, radius }, canvas)) {
+    if (
+      drawPatternFilledShape({ kind: 'circle', center, radius }, canvas) ||
+      drawGradientFilledShape({ kind: 'circle', center, radius }, canvas)
+    ) {
       return;
     }
     const filledCircleAsLines = filledCircle(center, radius);
@@ -176,6 +187,10 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   ): void {
     // DPaint just draws the filled shape as if using a pixel brush
     if (
+      drawPatternFilledShape(
+        { kind: 'ellipse', center, radiusX, radiusY, rotationAngle },
+        canvas
+      ) ||
       drawGradientFilledShape({ kind: 'ellipse', center, radiusX, radiusY, rotationAngle }, canvas)
     ) {
       return;
@@ -194,7 +209,10 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    if (drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)) {
+    if (
+      drawPatternFilledShape({ kind: 'polygon', vertices }, canvas) ||
+      drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)
+    ) {
       return;
     }
     const filledPolygonAsLines = filledPolygon(vertices);

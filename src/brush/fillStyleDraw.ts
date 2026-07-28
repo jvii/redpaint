@@ -3,6 +3,7 @@ import { PaintColor, Point } from '../types';
 import { DrawTarget } from '../canvas/CanvasController';
 import { GradientShape, MAX_GRADIENT_POLYGON_VERTICES } from '../algorithm/gradientFill';
 import { overmind } from '..';
+import { patternFillStore } from './PatternFill';
 
 // Draws a filled shape's already-rasterized output when the GPU gradient
 // path (drawGradientFilledShape) didn't handle it: solid mode, a degenerate
@@ -57,5 +58,20 @@ export function drawGradientFilledShape(shape: GradientShape, canvas: DrawTarget
     return false;
   }
   canvas.gradientFill(shape, style, gradientSeed);
+  return true;
+}
+
+// Pattern fill's sibling to drawGradientFilledShape: same bail-out
+// convention (returns false to fall back to a flat solid fill), just gated
+// on Pattern mode having a captured pattern instead of a usable gradient
+// range. Modes are mutually exclusive, so callers try both in sequence.
+export function drawPatternFilledShape(shape: GradientShape, canvas: DrawTarget): boolean {
+  if (overmind.state.fillStyle.mode !== 'brush' || !patternFillStore.pattern) {
+    return false;
+  }
+  if (shape.kind === 'polygon' && shape.vertices.length > MAX_GRADIENT_POLYGON_VERTICES) {
+    return false;
+  }
+  canvas.patternFill(shape, patternFillStore.pattern.brushColorIndex, patternFillStore.version);
   return true;
 }

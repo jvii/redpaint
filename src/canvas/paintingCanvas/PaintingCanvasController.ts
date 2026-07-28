@@ -120,6 +120,12 @@ export class PaintingCanvasController implements CanvasController {
     this.renderZoomCanvas();
   }
 
+  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+    this.colorIndexer?.patternFill(shape, pattern, version);
+    this.mainCanvasRenderer?.renderCanvas();
+    this.renderZoomCanvas();
+  }
+
   drawImage(points: Point[], brush: CustomBrush): void {
     this.colorIndexer?.drawImage(points, brush);
     this.mainCanvasRenderer?.renderCanvas(); // TODO: renderDrawImage?

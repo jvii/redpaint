@@ -12,6 +12,8 @@ import { RetroToggle } from '../ui/RetroToggle';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { OverlayGeometricRenderer } from '../../canvas/overlayCanvas/program/OverlayGeometricRenderer';
 import { OverlayGradientRenderer } from '../../canvas/overlayCanvas/program/OverlayGradientRenderer';
+import { OverlayPatternRenderer } from '../../canvas/overlayCanvas/program/OverlayPatternRenderer';
+import { patternFillStore } from '../../brush/PatternFill';
 import {
   GradientHorizontalIcon,
   GradientHorizontalLineIcon,
@@ -63,6 +65,7 @@ function FillStyleSettingsOpen(): JSX.Element {
     gl: WebGLRenderingContext;
     geometric: OverlayGeometricRenderer;
     gradient: OverlayGradientRenderer;
+    pattern: OverlayPatternRenderer;
   } | null>(null);
   const previewSeedRef = useRef(Math.random() * 8);
 
@@ -104,11 +107,13 @@ function FillStyleSettingsOpen(): JSX.Element {
       gl,
       geometric: new OverlayGeometricRenderer(gl),
       gradient: new OverlayGradientRenderer(gl),
+      pattern: new OverlayPatternRenderer(gl),
     };
 
     return (): void => {
       previewGlRef.current?.geometric.dispose();
       previewGlRef.current?.gradient.dispose();
+      previewGlRef.current?.pattern.dispose();
       gl.deleteTexture(paletteTex);
       gl.deleteBuffer(vertexBuffer);
       previewGlRef.current = null;
@@ -120,7 +125,7 @@ function FillStyleSettingsOpen(): JSX.Element {
     if (!ctx) {
       return;
     }
-    const { gl, geometric, gradient } = ctx;
+    const { gl, geometric, gradient, pattern } = ctx;
 
     const { palette, ranges, cycleOffsets } = state.palette;
     gl.activeTexture(gl.TEXTURE1);
@@ -143,7 +148,13 @@ function FillStyleSettingsOpen(): JSX.Element {
     const center = { x: PREVIEW_SIZE / 2, y: PREVIEW_SIZE / 2 };
     const radius = PREVIEW_SIZE / 2 - 2;
     const style = state.fillStyle.effectiveFillStyle;
-    if (!style) {
+    if (state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
+      pattern.renderPatternFill(
+        { kind: 'circle', center, radius },
+        patternFillStore.pattern.brushColorIndex,
+        patternFillStore.version
+      );
+    } else if (!style) {
       // same call solid-mode fills make for real: filledCircle rasterized
       // to lines, drawn with the current paint color
       geometric.renderLines(filledCircle(center, radius), state.tool.activePaintColor);
@@ -155,7 +166,10 @@ function FillStyleSettingsOpen(): JSX.Element {
       );
     }
   }, [
+    state.fillStyle.mode,
     state.fillStyle.effectiveFillStyle,
+    state.fillStyle.hasPattern,
+    state.fillStyle.patternVersion,
     state.palette.palette,
     state.palette.ranges,
     state.palette.cycleOffsets,
@@ -163,6 +177,7 @@ function FillStyleSettingsOpen(): JSX.Element {
   ]);
 
   const isGradient = state.fillStyle.mode === 'gradient';
+  const isPattern = state.fillStyle.mode === 'brush';
 
   return (
     <Modal header="Fill Style">
@@ -179,6 +194,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               variant="column"
               options={[
                 { value: 'solid', label: 'Solid' },
+                { value: 'brush', label: 'Pattern' },
                 { value: 'gradient', label: 'Gradient' },
               ]}
               value={state.fillStyle.mode}
@@ -186,6 +202,25 @@ function FillStyleSettingsOpen(): JSX.Element {
             />
           </RetroFieldset>
         </div>
+        <RetroFieldset
+          legend="Pattern"
+          bordered
+          as="div"
+          className="fill-style-settings__pattern-box"
+        >
+          <RetroButton
+            variant="basic"
+            disabled={!isPattern}
+            onClick={actions.fillStyle.captureFromBrush}
+          >
+            From Brush
+          </RetroButton>
+          <span className="fill-style-settings__hint">
+            {!state.fillStyle.hasPattern
+              ? 'No pattern captured yet — pick a brush, then click From Brush.'
+              : 'From Brush tiles the current brush across the fill.'}
+          </span>
+        </RetroFieldset>
         {/* as="div" throughout this whole group, not just Range/Dither/
             Jitter: a real <fieldset> — even this outer one, on its own,
             with no flex directly on it and nothing nested inside it —

@@ -177,12 +177,7 @@ export const MAX_GRADIENT_POLYGON_VERTICES = 64;
 // Everything the gradient shaders need, computed once per draw call on the
 // JS side. This is the single place where 1-based color ids become 0-based
 // storage indices and where degrees become radians.
-export interface GradientUniforms {
-  shapeKind: 0 | 1 | 2 | 3; // rect | circle | ellipse | polygon
-  center: Point;
-  radiusX: number;
-  radiusY: number;
-  rotation: number; // radians
+export interface GradientUniforms extends ShapeGeometry {
   axisMode: 0 | 1 | 2; // vertical | horizontal | horizontalLine
   axisMin: number;
   axisSpan: number; // extent (max - min), matching bucketPointsByGradient
@@ -190,11 +185,6 @@ export interface GradientUniforms {
   rangeLowIndex: number; // 0-based
   ditherJitter: number; // dither * jitterPercent / 100
   seed: number;
-  left: number; // inclusive pixel bounds = the bounding quad to draw
-  top: number;
-  right: number;
-  bottom: number;
-  vertices: Point[]; // polygon only; empty for every other shape kind
 }
 
 const AXIS_MODE: { [axis in GradientAxis]: 0 | 1 | 2 } = {
@@ -203,11 +193,26 @@ const AXIS_MODE: { [axis in GradientAxis]: 0 | 1 | 2 } = {
   horizontalLine: 2,
 };
 
-export function gradientFillUniforms(
-  shape: GradientShape,
-  style: GradientFillStyle,
-  seed: number
-): GradientUniforms {
+// Everything the Gradient and Pattern GPU shaders both need from a
+// GradientShape: its bounding quad (the actual draw target — a quad the
+// shader then discards outside of), center/radii/rotation (the ellipse
+// inside-test), and polygon vertices. Shared so the rotated-ellipse
+// bounding-box math (the one part of this that's easy to get subtly wrong)
+// has a single source of truth — see patternFillUniforms in patternFill.ts.
+export interface ShapeGeometry {
+  shapeKind: 0 | 1 | 2 | 3; // rect | circle | ellipse | polygon
+  center: Point;
+  radiusX: number;
+  radiusY: number;
+  rotation: number; // radians
+  left: number; // inclusive pixel bounds = the bounding quad to draw
+  top: number;
+  right: number;
+  bottom: number;
+  vertices: Point[]; // polygon only; empty for every other shape kind
+}
+
+export function shapeGeometry(shape: GradientShape): ShapeGeometry {
   let center: Point;
   let radiusX = 0;
   let radiusY = 0;
@@ -255,8 +260,6 @@ export function gradientFillUniforms(
     center = { x: (left + right) / 2, y: (top + bottom) / 2 };
   }
 
-  const vertical = style.axis === 'vertical';
-  const jitterPercent = style.jitter ?? DEFAULT_JITTER_PERCENT;
   return {
     shapeKind:
       shape.kind === 'rect' ? 0 : shape.kind === 'circle' ? 1 : shape.kind === 'ellipse' ? 2 : 3,
@@ -264,17 +267,30 @@ export function gradientFillUniforms(
     radiusX,
     radiusY,
     rotation,
-    axisMode: AXIS_MODE[style.axis],
-    axisMin: vertical ? top : left,
-    axisSpan: vertical ? bottom - top : right - left,
-    bandCount: style.rangeHigh - style.rangeLow,
-    rangeLowIndex: style.rangeLow - 1,
-    ditherJitter: (style.dither * jitterPercent) / 100,
-    seed,
     left,
     top,
     right,
     bottom,
     vertices: shape.kind === 'polygon' ? shape.vertices : [],
+  };
+}
+
+export function gradientFillUniforms(
+  shape: GradientShape,
+  style: GradientFillStyle,
+  seed: number
+): GradientUniforms {
+  const geometry = shapeGeometry(shape);
+  const vertical = style.axis === 'vertical';
+  const jitterPercent = style.jitter ?? DEFAULT_JITTER_PERCENT;
+  return {
+    ...geometry,
+    axisMode: AXIS_MODE[style.axis],
+    axisMin: vertical ? geometry.top : geometry.left,
+    axisSpan: vertical ? geometry.bottom - geometry.top : geometry.right - geometry.left,
+    bandCount: style.rangeHigh - style.rangeLow,
+    rangeLowIndex: style.rangeLow - 1,
+    ditherJitter: (style.dither * jitterPercent) / 100,
+    seed,
   };
 }

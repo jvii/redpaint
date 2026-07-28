@@ -60,3 +60,15 @@
 .fill-style-settings__dither .retro-labeled-slider {
   width: 100%;
 }
+
+/* From Brush's own box — unlike the Gradient box, nothing in here disables
+   by mode: From Brush is the control that turns Pattern mode on, so it
+   can't require Pattern mode to already be active. No raw-tile preview
+   swatch here (DPaint had one; redpaint's big circular preview above
+   already renders the real tiled result through the same GPU path, making
+   a second, smaller, static preview redundant). */
+.fill-style-settings__pattern-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

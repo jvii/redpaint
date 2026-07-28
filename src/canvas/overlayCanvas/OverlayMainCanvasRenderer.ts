@@ -4,7 +4,9 @@ import { OverlayDrawImageRenderer } from './program/OverlayDrawImageRenderer';
 import { OverlayGeometricRenderer } from './program/OverlayGeometricRenderer';
 import { OverlaySelectionIndicatorRenderer } from './program/OverlaySelectionIndicatorRenderer';
 import { OverlayGradientRenderer } from './program/OverlayGradientRenderer';
+import { OverlayPatternRenderer } from './program/OverlayPatternRenderer';
 import { GradientFillStyle, GradientShape } from '../../algorithm/gradientFill';
+import { BrushColorIndex } from '../../domain/BrushColorIndex';
 
 type GLBuffers = {
   vertexBuffer: WebGLBuffer;
@@ -17,6 +19,7 @@ export class OverlayMainCanvasRenderer {
   private drawImageRenderer: OverlayDrawImageRenderer;
   private selectionIndicatorRenderer: OverlaySelectionIndicatorRenderer;
   private gradientRenderer: OverlayGradientRenderer;
+  private patternRenderer: OverlayPatternRenderer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -27,6 +30,7 @@ export class OverlayMainCanvasRenderer {
     this.drawImageRenderer = new OverlayDrawImageRenderer(gl, buffers);
     this.selectionIndicatorRenderer = new OverlaySelectionIndicatorRenderer(gl);
     this.gradientRenderer = new OverlayGradientRenderer(gl);
+    this.patternRenderer = new OverlayPatternRenderer(gl);
   }
 
   /**
@@ -49,6 +53,10 @@ export class OverlayMainCanvasRenderer {
     if (this.gradientRenderer) {
       this.gradientRenderer.dispose();
       this.gradientRenderer = null;
+    }
+    if (this.patternRenderer) {
+      this.patternRenderer.dispose();
+      this.patternRenderer = null;
     }
   }
 
@@ -77,6 +85,11 @@ export class OverlayMainCanvasRenderer {
   gradientFill(shape: GradientShape, style: GradientFillStyle, seed: number): void {
     this.updateViewport();
     this.gradientRenderer.renderGradientFill(shape, style, seed);
+  }
+
+  patternFill(shape: GradientShape, pattern: BrushColorIndex, version: number): void {
+    this.updateViewport();
+    this.patternRenderer.renderPatternFill(shape, pattern, version);
   }
 
   drawImage(points: Point[], brush: CustomBrush): void {

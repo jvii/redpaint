@@ -9,6 +9,8 @@ import { drawSymmetryIndicator } from './util/symmetryIndicator';
 import { PaintColor, Point } from '../types';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 import { bucketPointsByGradient } from '../algorithm/gradientFill';
+import { bucketPointsByPattern } from '../algorithm/patternFill';
+import { patternFillStore } from '../brush/PatternFill';
 
 export class FloodFillTool implements Tool {
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -70,6 +72,15 @@ export class FloodFillTool implements Tool {
   // gets its own gradient normalized to its own extent, rather than one
   // gradient stretched across the combined bounding box of every copy.
   private paintPoints(pointGroups: Point[][], solidColor: PaintColor): void {
+    if (overmind.state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
+      const pattern = patternFillStore.pattern.brushColorIndex;
+      for (const group of pointGroups) {
+        for (const [colorNumber, bucketPoints] of bucketPointsByPattern(group, pattern)) {
+          paintingCanvasController.points(bucketPoints, { kind: 'index', colorNumber });
+        }
+      }
+      return;
+    }
     const style = overmind.state.fillStyle.effectiveFillStyle;
     if (!style) {
       paintingCanvasController.points(pointGroups.flat(), solidColor);

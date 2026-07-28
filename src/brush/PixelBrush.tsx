@@ -13,7 +13,12 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '..';
 import { DrawTarget } from '../canvas/CanvasController';
-import { drawFilledLines, drawFilledQuad, drawGradientFilledShape } from './fillStyleDraw';
+import {
+  drawFilledLines,
+  drawFilledQuad,
+  drawGradientFilledShape,
+  drawPatternFilledShape,
+} from './fillStyleDraw';
 import { CustomBrush } from './CustomBrush';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { ALPHA_INDEXED } from '../domain/CanvasColorIndex';
@@ -71,7 +76,10 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledRect(start: Point, end: Point, canvas: DrawTarget): void {
-    if (drawGradientFilledShape({ kind: 'rect', start, end }, canvas)) {
+    if (
+      drawPatternFilledShape({ kind: 'rect', start, end }, canvas) ||
+      drawGradientFilledShape({ kind: 'rect', start, end }, canvas)
+    ) {
       return;
     }
     drawFilledQuad(start, end, canvas, overmind.state.tool.activePaintColor);
@@ -83,7 +91,10 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledCircle(center: Point, radius: number, canvas: DrawTarget): void {
-    if (drawGradientFilledShape({ kind: 'circle', center, radius }, canvas)) {
+    if (
+      drawPatternFilledShape({ kind: 'circle', center, radius }, canvas) ||
+      drawGradientFilledShape({ kind: 'circle', center, radius }, canvas)
+    ) {
       return;
     }
     const filledCircleAsLines = filledCircle(center, radius);
@@ -109,6 +120,10 @@ export class PixelBrush implements BrushInterface {
     canvas: DrawTarget
   ): void {
     if (
+      drawPatternFilledShape(
+        { kind: 'ellipse', center, radiusX, radiusY, rotationAngle },
+        canvas
+      ) ||
       drawGradientFilledShape({ kind: 'ellipse', center, radiusX, radiusY, rotationAngle }, canvas)
     ) {
       return;
@@ -123,7 +138,10 @@ export class PixelBrush implements BrushInterface {
   }
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
-    if (drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)) {
+    if (
+      drawPatternFilledShape({ kind: 'polygon', vertices }, canvas) ||
+      drawGradientFilledShape({ kind: 'polygon', vertices }, canvas)
+    ) {
       return;
     }
     const filledPolygonAsLines = filledPolygon(vertices);
