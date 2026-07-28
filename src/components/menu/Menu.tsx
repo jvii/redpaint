@@ -14,6 +14,7 @@ import { encodeIlbm, isIlbmHeader } from '../../fileformat/ilbm';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { cycleDriver } from '../../canvas/CycleDriver';
 import './Menu.css';
+import { plainPalette } from '../../algorithm/imageColors';
 
 // IFF is recognized by content, not extension — extensions in the wild vary
 // (.iff, .lbm, .ilbm) and lie; isIlbmHeader knows what content qualifies.
@@ -100,9 +101,7 @@ export function Menu(): JSX.Element {
       );
       return;
     }
-    // plain copies: proxied state objects don't belong in a tight encode loop
-    const palette = state.palette.palette;
-    const colors = Object.values(palette).map((c) => ({ r: c.r, g: c.g, b: c.b }));
+    const colors = plainPalette(Object.values(state.palette.palette));
     const cycleRanges = state.palette.ranges.flatMap((range) =>
       range
         ? [

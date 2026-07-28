@@ -4,6 +4,7 @@ import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanva
 import { Color } from '../../types';
 import { undoBuffer, UndoEntry } from './UndoBuffer';
 import { newGradientSeed } from '../../brush/fillStyleDraw';
+import { plainPalette } from '../../algorithm/imageColors';
 
 export const setUndoPoint = (context: Context): void => {
   // every committed stroke ends here — also the effect chains' reset point
@@ -18,7 +19,7 @@ export const setUndoPoint = (context: Context): void => {
   }
   const entry: UndoEntry = {
     colorIndex,
-    palette: context.state.palette.paletteArray.map((c) => ({ r: c.r, g: c.g, b: c.b })),
+    palette: plainPalette(context.state.palette.paletteArray),
   };
   if (context.state.undo.currentIndex === null) {
     undoBuffer.setBuffer([entry]);

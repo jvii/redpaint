@@ -50,3 +50,17 @@ export function distinctOpaqueColorsByFrequency(
     }))
     .sort((a, b) => b.count - a.count);
 }
+
+// A plain, unproxied copy of a palette.
+//
+// Overmind deep-proxies everything in state for reactivity tracking, and the
+// color-mapping loops here and in quantize.ts read r/g/b once per histogram
+// bin times palette length — a proxy get-trap on every one of those is the
+// difference between a snappy load and a visible stall. Copying the ~32..256
+// entries once up front costs nothing by comparison. Every caller handing
+// state.palette.paletteArray to a mapping function goes through this, so the
+// reason lives in one place instead of being re-derived (or dropped as
+// "redundant") at each call site.
+export function plainPalette(palette: readonly Color[]): Color[] {
+  return palette.map((c) => ({ r: c.r, g: c.g, b: c.b }));
+}
