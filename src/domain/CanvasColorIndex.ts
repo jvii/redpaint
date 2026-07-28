@@ -143,11 +143,6 @@ export class CanvasColorIndex {
     return this.trueColorScan;
   }
 
-  isTrueColorPixel(pixel: Point): boolean {
-    const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;
-    return this.indexArray[arrayIndex + 3] === ALPHA_TRUECOLOR;
-  }
-
   // The PaintColor that would reproduce this pixel (used by the color picker).
   getPaintColorForPixel(pixel: Point): PaintColor {
     const arrayIndex = pixel.x * 4 + (this.height - pixel.y - 1) * this.width * 4;

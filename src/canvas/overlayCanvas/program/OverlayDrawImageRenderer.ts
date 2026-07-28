@@ -43,7 +43,6 @@ export class OverlayDrawImageRenderer {
    * Cleans up WebGL resources when the renderer is no longer needed
    */
   public dispose(): void {
-    console.log('Disposing OverlayDrawImageRenderer');
     if (this.program) {
       this.gl.deleteProgram(this.program);
       this.program = null;

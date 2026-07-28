@@ -73,12 +73,10 @@ const RESIZE_CURSOR_OFFSET = 16;
 export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): JSX.Element | null {
   const state = useAppState();
 
-  console.log('render ' + (isZoomCanvas ? 'ZoomCanvas' : 'MainCanvas'));
   const paintingCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
 
   useEffect((): (() => void) => {
-    console.log('Canvas component mounted', isZoomCanvas ? 'zoom' : 'main');
     if (isZoomCanvas) {
       paintingCanvasController.attachZoomCanvas(paintingCanvasRef.current);
       overlayCanvasController.attachZoomCanvas(overlayCanvasRef.current);
@@ -89,7 +87,6 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
 
     // Cleanup function to dispose of WebGL resources when component unmounts
     return () => {
-      console.log('Canvas component unmounting', isZoomCanvas ? 'zoom' : 'main');
       if (isZoomCanvas) {
         // Clean up zoom canvas resources
         paintingCanvasController.disposeZoomCanvas();

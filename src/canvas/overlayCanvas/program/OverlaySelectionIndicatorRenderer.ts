@@ -31,7 +31,6 @@ export class OverlaySelectionIndicatorRenderer {
    * Cleans up WebGL resources when the renderer is no longer needed
    */
   public dispose(): void {
-    console.log('Disposing OverlaySelectionIndicatorRenderer');
     if (this.canvasTexture) {
       this.gl.deleteTexture(this.canvasTexture);
       this.canvasTexture = null;

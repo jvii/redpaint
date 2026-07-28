@@ -261,7 +261,6 @@ class OverlayCanvasController implements CanvasController {
    * Cleans up WebGL resources for the main canvas
    */
   public disposeMainCanvas(): void {
-    console.log('Disposing OverlayCanvasController main canvas');
     if (this.mainCanvasRenderer) {
       this.mainCanvasRenderer.dispose();
       this.mainCanvasRenderer = null;
@@ -283,7 +282,6 @@ class OverlayCanvasController implements CanvasController {
    * Cleans up WebGL resources for the zoom canvas
    */
   public disposeZoomCanvas(): void {
-    console.log('Disposing OverlayCanvasController zoom canvas');
     // Currently no WebGL resources to clean up for zoom canvas
     // as it uses 2D context instead of WebGL
   }

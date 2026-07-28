@@ -203,9 +203,6 @@ export class PaintingCanvasController implements CanvasController {
   }
 
   // testing, debugging purposes only
-  visualiseIndex(): void {
-    this.colorIndexer?.visualiseIndex();
-  }
 
   updatePalette(): void {
     const gl = this.gl;

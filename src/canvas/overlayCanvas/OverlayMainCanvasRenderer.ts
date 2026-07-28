@@ -38,7 +38,6 @@ export class OverlayMainCanvasRenderer {
    * Cleans up WebGL resources when the renderer is no longer needed
    */
   public dispose(): void {
-    console.log('Disposing OverlayMainCanvasRenderer');
     if (this.geometricRenderer) {
       this.geometricRenderer.dispose();
       this.geometricRenderer = null;

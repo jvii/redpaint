@@ -5,7 +5,6 @@ import { GradientGeometricIndexer } from './program/GradientGeometricIndexer';
 import { PatternGeometricIndexer } from './program/PatternGeometricIndexer';
 import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
-import { visualiseTexture } from '../util/util';
 import { bindFramebuffer } from '../util/webglUtil';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
@@ -196,14 +195,5 @@ export class ColorIndexer {
 
     bindFramebuffer(gl, null);
     return pixels;
-  }
-
-  // testing, debugging purposes only
-  visualiseIndex(): void {
-    const gl = this.gl;
-
-    const index = this.getIndex();
-    const width = gl.drawingBufferWidth;
-    visualiseTexture(index.indexArray, width);
   }
 }

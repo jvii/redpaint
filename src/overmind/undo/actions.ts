@@ -11,7 +11,9 @@ export const setUndoPoint = (context: Context): void => {
   newGradientSeed(); // next gradient fill gets fresh dither speckle
   const colorIndex = paintingCanvasController.getCanvasColorIndex();
   if (!colorIndex) {
-    console.log('no index');
+    // the canvas has no readable index texture yet — nothing to snapshot, and
+    // an undo point that silently isn't recorded is worth a console entry
+    console.warn('setUndoPoint: no canvas color index available');
     return;
   }
   const entry: UndoEntry = {
