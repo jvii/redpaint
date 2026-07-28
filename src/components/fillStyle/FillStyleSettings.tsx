@@ -2,9 +2,10 @@ import { JSX, useEffect, useRef } from 'react';
 import './FillStyleSettings.css';
 import { useActions, useAppState } from '../../overmind';
 import { GradientAxis } from '../../algorithm/gradientFill';
-import { filledCircle } from '../../algorithm/shape';
 import { paletteTextureData } from '../../algorithm/cycle';
 import { FillMode } from '../../overmind/fillStyle/state';
+import { Point } from '../../types';
+import { LineH } from '../../domain/LineH';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
@@ -20,6 +21,41 @@ import {
   GradientVerticalIcon,
 } from './gradientAxisIcons';
 
+// A filled ellipse via a direct per-row distance test, not
+// algorithm/shape.ts's filledEllipse: that function solves for each row's
+// boundary x with a quadratic formula and rounds the two roots
+// independently (Math.round), which isn't symmetric for a fractional root
+// (JS always rounds .5 up, so e.g. round(3.5)=4 but round(-3.5)=-3) — fine
+// for real brush strokes, but this preview swatch specifically needs to
+// look centered, and that asymmetry became clearly visible at the low raw
+// resolutions a low-density screen format zoomed into a large window can
+// produce (see previewWidth/Height's comment). Testing each pixel's own
+// center against the ellipse equation directly has no such bias: the test
+// is symmetric in (x - center) by construction, whichever side of center a
+// pixel falls on.
+function symmetricFilledEllipse(
+  center: Point,
+  radiusX: number,
+  radiusY: number
+): LineH[] {
+  const lines: LineH[] = [];
+  const yStart = Math.floor(center.y - radiusY);
+  const yEnd = Math.ceil(center.y + radiusY);
+  for (let y = yStart; y <= yEnd; y++) {
+    const dy = (y + 0.5 - center.y) / radiusY;
+    if (Math.abs(dy) > 1) {
+      continue;
+    }
+    const dxMax = radiusX * Math.sqrt(1 - dy * dy);
+    const xStart = Math.ceil(center.x - dxMax - 0.5);
+    const xEnd = Math.floor(center.x + dxMax - 0.5);
+    if (xEnd >= xStart) {
+      lines.push(new LineH({ x: xStart, y }, { x: xEnd, y }));
+    }
+  }
+  return lines;
+}
+
 // Icons, not text, per axis — a deliberate exception to RetroToggle's usual
 // text-only segments (see docs/style-guide.md), matching DPaint's Fill Type
 // requester where the axis is an arrow glyph rather than a word.
@@ -29,7 +65,12 @@ const AXIS_OPTIONS: { value: GradientAxis; label: JSX.Element; title: string }[]
   { value: 'horizontalLine', label: <GradientHorizontalLineIcon />, title: 'Horizontal Line' },
 ];
 
-const PREVIEW_SIZE = 100; // canvas resolution; scaled up to fill-style-settings.css's display size
+// CSS px — the preview's display box is a fixed PREVIEW_DISPLAY_SIZE square
+// regardless of screen format or window shape (using the layout space DPaint
+// itself would use for this, not shrinking on one axis to match whatever
+// the raw buffer's aspect happens to be — see previewWidth/Height's comment
+// for how the raw buffer can end up a very different shape than the box).
+const PREVIEW_DISPLAY_SIZE = 260;
 
 // The fill style requester — redpaint's equivalent of DPaint's Fill Type
 // dialog, opened by right-clicking the flood fill button or any filled
@@ -48,6 +89,26 @@ export function FillStyleSettings(): JSX.Element | null {
 function FillStyleSettingsOpen(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
+
+  // The swatch's raw pixel count, sized so it shows an equally-sized window
+  // into the real canvas — the display box's fixed physical size
+  // (PREVIEW_DISPLAY_SIZE CSS px) divided by MainCanvas's actual current
+  // displayScale (CSS px per raw canvas px, mirrored into Overmind — see
+  // overmind/canvas/state.ts). That value already folds in devicePixelRatio
+  // (Native mode), the screen format's pixel aspect, AND the live window
+  // size (a Lo-Res canvas shown zoomed into a large window has far fewer
+  // raw pixels in a 220px swatch than the same canvas at 1:1 would). Unlike
+  // the display box, this raw buffer is free to end up a very different
+  // shape per axis (displayScale.x and .y aren't generally equal) — the
+  // circle drawn into it below compensates for that with an ellipse, rather
+  // than the box shrinking on one axis to chase the buffer's own aspect
+  // (which wasted the dialog's available width whenever that aspect got
+  // narrow). Read once here (not inside the mount effect below) purely so
+  // both that effect and the render-time JSX canvas attributes agree on the
+  // same numbers.
+  const displayScale = state.canvas.displayScale;
+  const previewWidth = Math.round(PREVIEW_DISPLAY_SIZE / displayScale.x);
+  const previewHeight = Math.round(PREVIEW_DISPLAY_SIZE / displayScale.y);
 
   // A filled circle swatch previewing the current (uncommitted-until-OK)
   // fill style live — a circle rather than a flat rect shows the
@@ -84,8 +145,8 @@ function FillStyleSettingsOpen(): JSX.Element {
     // reflow an auto-height ancestor when a canvas's size changes
     // imperatively afterward, only once some other change forces a relayout.
     // antialias: false to match the main/overlay canvases — GL_LINES
-    // antialiasing blends adjacent scanline rows (filledCircle's fill
-    // technique) at their edges, and image-rendering: pixelated then
+    // antialiasing blends adjacent scanline rows (symmetricFilledEllipse's
+    // fill technique) at their edges, and image-rendering: pixelated then
     // upscales those blended edge pixels into visible dotted artifacts.
     const gl = canvas.getContext('webgl', { antialias: false });
     if (!gl) {
@@ -141,26 +202,44 @@ function FillStyleSettingsOpen(): JSX.Element {
       paletteTextureData(palette, ranges, cycleOffsets)
     );
 
-    gl.viewport(0, 0, PREVIEW_SIZE, PREVIEW_SIZE);
+    gl.viewport(0, 0, previewWidth, previewHeight);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const center = { x: PREVIEW_SIZE / 2, y: PREVIEW_SIZE / 2 };
-    const radius = PREVIEW_SIZE / 2 - 2;
+    const center = { x: previewWidth / 2, y: previewHeight / 2 };
+    // An ellipse, not a circle: previewWidth/previewHeight aren't generally
+    // equal (see their comment), so a shape drawn on-screen-radius R needs
+    // per-axis raw radii that pre-compensate for the CSS stretch each axis
+    // gets when this non-square buffer is displayed in the fixed square box
+    // — otherwise it'd render as a circle in raw-buffer space but a
+    // stretched ellipse once the browser scales it up to the display box.
+    const onScreenRadius = PREVIEW_DISPLAY_SIZE / 2 - 2;
+    // Clamped to at least 2 raw pixels of margin on each axis: at low raw
+    // resolution (a low-density screen format zoomed into a large window —
+    // see previewWidth/Height's comment) the 2 CSS px margin above shrinks
+    // to a fraction of a single raw pixel once divided by displayScale, so
+    // without this the ellipse's edge could land past the buffer's actual
+    // bounds — WebGL then just clips it (a flat edge on the last row/
+    // column) rather than drawing a slightly-too-big curve.
+    const radiusX = Math.min(onScreenRadius / displayScale.x, previewWidth / 2 - 2);
+    const radiusY = Math.min(onScreenRadius / displayScale.y, previewHeight / 2 - 2);
     const style = state.fillStyle.effectiveFillStyle;
     if (state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
       pattern.renderPatternFill(
-        { kind: 'circle', center, radius },
+        { kind: 'ellipse', center, radiusX, radiusY, rotationAngle: 0 },
         patternFillStore.pattern.brushColorIndex,
         patternFillStore.version
       );
     } else if (!style) {
-      // same call solid-mode fills make for real: filledCircle rasterized
-      // to lines, drawn with the current paint color
-      geometric.renderLines(filledCircle(center, radius), state.tool.activePaintColor);
+      // symmetricFilledEllipse, not the real solid-fill path's filledEllipse
+      // — see its comment for why
+      geometric.renderLines(
+        symmetricFilledEllipse(center, radiusX, radiusY),
+        state.tool.activePaintColor
+      );
     } else {
       gradient.renderGradientFill(
-        { kind: 'circle', center, radius },
+        { kind: 'ellipse', center, radiusX, radiusY, rotationAngle: 0 },
         style,
         previewSeedRef.current
       );
@@ -174,6 +253,10 @@ function FillStyleSettingsOpen(): JSX.Element {
     state.palette.ranges,
     state.palette.cycleOffsets,
     state.tool.activePaintColor,
+    previewWidth,
+    previewHeight,
+    displayScale.x,
+    displayScale.y,
   ]);
 
   const isGradient = state.fillStyle.mode === 'gradient';
@@ -185,8 +268,8 @@ function FillStyleSettingsOpen(): JSX.Element {
         <div className="fill-style-settings__top">
           <canvas
             ref={previewRef}
-            width={PREVIEW_SIZE}
-            height={PREVIEW_SIZE}
+            width={previewWidth}
+            height={previewHeight}
             className="fill-style-settings__preview"
           />
           <RetroFieldset legend="Fill">

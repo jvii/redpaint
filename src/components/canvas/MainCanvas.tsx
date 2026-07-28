@@ -31,10 +31,20 @@ export function MainCanvas(): JSX.Element {
   const formatId = state.canvas.screenFormatId;
   const scaleMode = state.canvas.scaleMode;
   const videoStandard = state.canvas.videoStandard;
-  const [displayScale, setDisplayScale] = useState<Point>({ x: 1, y: 1 });
+  const [displayScale, setLocalDisplayScale] = useState<Point>({ x: 1, y: 1 });
+  // Also mirrored into Overmind (state.canvas.displayScale) so other UI —
+  // the Fill Style dialog's live preview, sizing itself to show "an equally
+  // sized window into the canvas" — can read the canvas's actual current
+  // on-screen pixel density without duplicating this window-size-dependent
+  // computation. Local state stays the source of truth for this component's
+  // own render (no round-trip through Overmind needed for that).
+  const updateDisplayScale = (scale: Point): void => {
+    setLocalDisplayScale(scale);
+    actions.canvas.setDisplayScale(scale);
+  };
   useEffect((): (() => void) | void => {
     if (formatId === null) {
-      setDisplayScale({ x: 1 / dpr, y: 1 / dpr });
+      updateDisplayScale({ x: 1 / dpr, y: 1 / dpr });
       return;
     }
     const format = resolveScreenFormat(formatId, videoStandard);
@@ -50,12 +60,12 @@ export function MainCanvas(): JSX.Element {
       const fillX = div.offsetWidth / format.width;
       const fillY = div.offsetHeight / format.height;
       if (scaleMode === 'integer') {
-        setDisplayScale({
+        updateDisplayScale({
           x: Math.max(1, Math.floor(fillX)),
           y: Math.max(1, Math.floor(fillY)),
         });
       } else {
-        setDisplayScale({
+        updateDisplayScale({
           x: Math.max(format.aspectX, fillX),
           y: Math.max(format.aspectY, fillY),
         });
@@ -64,6 +74,7 @@ export function MainCanvas(): JSX.Element {
     compute();
     window.addEventListener('resize', compute);
     return (): void => window.removeEventListener('resize', compute);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formatId, scaleMode, videoStandard, dpr]);
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);

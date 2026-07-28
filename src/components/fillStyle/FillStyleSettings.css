@@ -13,14 +13,19 @@
 }
 
 /* live preview of the current fill style, on a filled-circle swatch so the
-   Horizontal Line axis's per-row "3-D" look is visible, not just named */
+   Horizontal Line axis's per-row "3-D" look is visible, not just named. The
+   box itself is a fixed square regardless of screen format (its raw pixel
+   *resolution* — the width/height attributes, set inline in
+   FillStyleSettings.tsx — varies with the format instead; see
+   previewWidth/Height's comment there for why letting the box's own shape
+   follow that resolution wasted the dialog's available width). */
 .fill-style-settings__preview {
   display: block; /* canvas defaults to inline; a flex item is blockified
     anyway, but this is cheap insurance against the classic baseline-gap
     bug replaced elements get under inline layout */
   flex: none;
-  width: 220px;
-  height: 220px;
+  width: 260px;
+  height: 260px;
   border: 2px solid black;
   box-shadow: 4px 4px 0 0 black;
   image-rendering: pixelated;
@@ -61,12 +66,10 @@
   width: 100%;
 }
 
-/* From Brush's own box — unlike the Gradient box, nothing in here disables
-   by mode: From Brush is the control that turns Pattern mode on, so it
-   can't require Pattern mode to already be active. No raw-tile preview
-   swatch here (DPaint had one; redpaint's big circular preview above
-   already renders the real tiled result through the same GPU path, making
-   a second, smaller, static preview redundant). */
+/* From Brush's own box. No raw-tile preview swatch here (DPaint had one;
+   redpaint's big circular preview above already renders the real tiled
+   result through the same GPU path, making a second, smaller, static
+   preview redundant). */
 .fill-style-settings__pattern-box {
   display: flex;
   flex-direction: column;

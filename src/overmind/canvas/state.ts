@@ -116,6 +116,16 @@ export type State = {
   pixelAspect: { x: number; y: number };
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
+  // Mirror of MainCanvas's own displayScale (CSS px per buffer px, per
+  // axis) — that value is computed there from the live canvas div's actual
+  // size (window-dependent, see MainCanvas.tsx's own comment) and kept as
+  // local component state for its render loop, but other UI that wants to
+  // know the canvas's *current* on-screen pixel density — e.g. the Fill
+  // Style dialog's live preview, sizing itself to show "an equally sized
+  // window into the canvas" — has no other way to see it. Updated every
+  // time MainCanvas recomputes its own copy; {1,1} until the canvas has
+  // mounted once.
+  displayScale: Point;
   // Whether the committed canvas holds any true-color pixels (hybrid rather
   // than fully indexed). Maintained by the undo actions: every committed
   // content change passes through setUndoPoint, and undo/redo restore the
@@ -159,6 +169,7 @@ export const state: State = {
   ),
   scrollFocusPoint: null,
   zoomFocusPoint: null,
+  displayScale: { x: 1, y: 1 },
   hasTrueColorPixels: false,
   trueColorEnabled: true,
   pendingScreenFormat: null,

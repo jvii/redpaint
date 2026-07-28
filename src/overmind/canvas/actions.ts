@@ -107,6 +107,12 @@ export const toggleScaleMode = (context: Context): void => {
     context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
 };
 
+// Mirrors MainCanvas's own locally computed displayScale into Overmind
+// state — see state.ts's displayScale comment for why.
+export const setDisplayScale = (context: Context, scale: Point): void => {
+  context.state.canvas.displayScale = scale;
+};
+
 // Loading an image as True Color opts the new document back into true color;
 // the Screen Format requester's switch goes through applyScreenFormat instead
 // (turning it off there also conforms the pixels).
