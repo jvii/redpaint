@@ -50,7 +50,7 @@ export function BrushSlotStrip(): JSX.Element {
             <div
               className={
                 'brush-slot__cell' +
-                (slot.occupied ? ' is-occupied' : '') +
+                (slot.occupied ? ' is-occupied transparency-checker' : '') +
                 (!slot.occupied && usingBuiltInBrush ? ' is-disabled' : '')
               }
               role="button"

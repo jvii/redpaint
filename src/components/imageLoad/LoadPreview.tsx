@@ -47,7 +47,7 @@ export function LoadPreview({
         {colorCount === 1 ? 'color' : 'colors'}
         {exactNote && <span className="load-preview__exact"> &mdash; {exactNote}</span>}
       </div>
-      <canvas ref={canvasRef} className="load-preview__canvas" style={previewStyle} />
+      <canvas ref={canvasRef} className="load-preview__canvas transparency-checker" style={previewStyle} />
     </div>
   );
 }

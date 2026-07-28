@@ -27,13 +27,18 @@ Semantic exceptions, deliberately scarce:
   world; a second gradient anywhere kills it.
 - Red is the menubar title's paint dot and error/live signals, not an
   accent.
-- **Transparency checkerboard**, `rgb(242,242,242)`/`rgb(204,204,204)` in
-  8px squares, on any surface where "the canvas shows through here" is the
-  point — currently the Fill Style preview swatch, where a captured pattern
-  can have transparent pixels. Written with a repeating gradient function
-  but hard-stopped into flat squares: no ramp, so the rainbow rule above
-  stands. Not decoration — don't use it as a background anywhere the
-  transparency it signals isn't real.
+- **Transparency checkerboard**, `#e8e8e8`/`#cfcfcf` in 12px squares, on any
+  surface where "the canvas shows through here" is the point: the load
+  preview, an occupied brush slot, the Fill Style preview swatch. Never
+  hand-rolled per component — apply the `.transparency-checker` class
+  (defined once in `index.css`, off `--checker-*` custom properties), which
+  exists because this drifted into a second set of colors and cell size the
+  moment it was written out by hand a third time. Hard-stopped gradients, so
+  it paints flat squares with no ramp and the rainbow rule above stands. Not
+  decoration — don't use it anywhere the transparency it signals isn't real.
+  The dark pasteboard around the canvas and the zoom separator
+  (`Canvas.css`) are also checkers, but they mean "outside the page" and
+  deliberately look nothing like this one.
 
 ## Chrome (where the DPaint feel actually lives)
 

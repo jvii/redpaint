@@ -29,23 +29,13 @@
   border: 2px solid black;
   box-shadow: 4px 4px 0 0 black;
   image-rendering: pixelated;
-  /* Transparency checkerboard, showing through everywhere the swatch's own
-     GL canvas is transparent: outside the ellipse, and — the reason it's
-     worth having — through a captured pattern's transparent pixels, which
-     otherwise read as "the dialog's background color" rather than "the
-     canvas will show through here". Painted as the canvas element's own
-     background rather than a wrapper, since the canvas is already the
-     transparent layer.
-
-     A gradient function, but not a gradient: hard 0%-stops make flat
-     squares, no ramp anywhere, so this doesn't spend the style guide's
-     one-rainbow budget (noted there too). 8px squares, the same 8px grid
-     the type sizes sit on. */
-  background-image: repeating-conic-gradient(
-    rgb(242, 242, 242) 0% 25%,
-    rgb(204, 204, 204) 0% 50%
-  );
-  background-size: 16px 16px;
+  /* Transparency checkerboard (the shared .transparency-checker class is
+     applied in the JSX): shows through everywhere the swatch's own GL canvas
+     is transparent — outside the ellipse, and, the reason it's worth having,
+     through a captured pattern's transparent pixels, which otherwise read as
+     "the dialog's background color" rather than "the canvas will show through
+     here". It rides on the canvas element itself, which is already the
+     transparent layer, so no wrapper is needed. */
 }
 
 /* groups every gradient-only control in one visible box, since they all

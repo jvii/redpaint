@@ -1,5 +1,37 @@
 /* Press Start 2P is loaded via a <link> in index.html, not @import'd here —
    see the comment there. */
+
+/* The transparency checkerboard: one definition for every surface that means
+   "the canvas shows through here" — the load preview, the brush slots, and
+   the Fill Style preview swatch. Kept here rather than copied per component
+   because it drifted once already (a fourth variant with its own colors and
+   cell size), and a checker that doesn't match the other checkers reads as a
+   different kind of surface. See docs/style-guide.md.
+
+   NOT for the dark pasteboard around the canvas or the zoom separator
+   (Canvas.css): those signal "outside the page", a different idea that
+   deliberately looks different. */
+:root {
+  --checker-light: #e8e8e8;
+  --checker-dark: #cfcfcf;
+  --checker-size: 12px;
+  --checker-half: 6px;
+}
+
+.transparency-checker {
+  background-color: var(--checker-light);
+  background-image:
+    linear-gradient(45deg, var(--checker-dark) 25%, transparent 25%),
+    linear-gradient(135deg, var(--checker-dark) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker-dark) 75%),
+    linear-gradient(135deg, transparent 75%, var(--checker-dark) 75%);
+  background-size: var(--checker-size) var(--checker-size);
+  background-position:
+    0 0,
+    var(--checker-half) 0,
+    var(--checker-half) calc(-1 * var(--checker-half)),
+    0 var(--checker-half);
+}
 body {
   margin: 0;
   padding: 0;

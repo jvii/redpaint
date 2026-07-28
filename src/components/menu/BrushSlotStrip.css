@@ -32,26 +32,14 @@
   border-left: none;
 }
 
-/* the load-preview checker (LoadPreview.css), only once a brush is stored:
-   transparency in the brush itself needs to read against something other
-   than flat white, or a transparent-background brush looks identical to
-   the (also white) empty slot. An empty slot stays plain white — the
-   checker is specifically the "this is transparent" signal, not a generic
-   empty-cell texture. */
-.brush-slot__cell.is-occupied {
-  background-color: #e8e8e8;
-  background-image:
-    linear-gradient(45deg, #cfcfcf 25%, transparent 25%),
-    linear-gradient(135deg, #cfcfcf 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #cfcfcf 75%),
-    linear-gradient(135deg, transparent 75%, #cfcfcf 75%);
-  background-size: 12px 12px;
-  background-position:
-    0 0,
-    6px 0,
-    6px -6px,
-    0 6px;
-}
+/* An occupied cell carries the shared .transparency-checker class (index.css,
+   applied in the JSX), only once a brush is stored: transparency in the brush
+   itself needs to read against something other than flat white, or a
+   transparent-background brush looks identical to the (also white) empty
+   slot. An empty slot stays plain white — the checker is specifically the
+   "this is transparent" signal, not a generic empty-cell texture. The hover
+   rule below outranks it (two class selectors to its one), so a hovered cell
+   still goes flat orange. */
 
 .brush-slot__cell:hover {
   background-color: #ff8800;

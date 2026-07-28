@@ -36,18 +36,11 @@
   color: #ff8800;
 }
 
-/* the media as the draft would load it; the checker shows through transparency */
+/* the media as the draft would load it; the shared .transparency-checker
+   class (index.css, applied in the JSX) shows through its transparency */
 .load-preview__canvas {
   flex: none;
   border: 2px solid black;
   box-shadow: 4px 4px 0 0 black;
   image-rendering: pixelated;
-  background-color: #e8e8e8;
-  background-image:
-    linear-gradient(45deg, #cfcfcf 25%, transparent 25%),
-    linear-gradient(135deg, #cfcfcf 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #cfcfcf 75%),
-    linear-gradient(135deg, transparent 75%, #cfcfcf 75%);
-  background-size: 12px 12px;
-  background-position: 0 0, 6px 0, 6px -6px, 0 6px;
 }

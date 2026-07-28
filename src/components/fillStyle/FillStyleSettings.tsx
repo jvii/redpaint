@@ -83,7 +83,7 @@ function FillStyleSettingsOpen(): JSX.Element {
             ref={previewRef}
             width={previewWidth}
             height={previewHeight}
-            className="fill-style-settings__preview"
+            className="fill-style-settings__preview transparency-checker"
           />
           <RetroFieldset legend="Fill">
             <RetroToggle
