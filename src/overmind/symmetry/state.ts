@@ -5,7 +5,7 @@ import type { OvermindState } from '../../overmind';
 
 export type State = {
   center: Point | null; // null => default to canvas center
-  order: number; // number of rotational copies, 1..40
+  order: number; // number of rotational copies, 1..MAX_ORDER (symmetry.ts)
   mirror: boolean;
   settingsOpen: boolean; // the symmetry settings panel (DPaint's SymRequest)
   // Values at the time the panel was opened, restored on Cancel

@@ -6,6 +6,7 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
+import { MAX_ORDER } from '../../algorithm/symmetry';
 
 // The symmetry settings panel — redpaint's equivalent of DPaint's SymRequest
 // requester (SYMREQ.C: Cyclic / Mirror / Order / Cancel / Ok), opened by
@@ -42,7 +43,7 @@ export function SymmetrySettings(): JSX.Element | null {
           vertical={false}
           value={state.symmetry.order}
           min={1}
-          max={40}
+          max={MAX_ORDER}
           onChange={(value): void => actions.symmetry.setOrder(value)}
         />
         <div className="symmetry-settings__row">

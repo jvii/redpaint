@@ -7,7 +7,7 @@ import { Point } from '../types';
 
 export type SymmetrySettings = {
   center: Point;
-  order: number; // number of rotational copies, 1..40
+  order: number; // number of rotational copies, 1..MAX_ORDER
   mirror: boolean; // also reflect each copy across the vertical axis
 };
 
@@ -22,7 +22,9 @@ export type SymmetryCopy = {
   mirror: boolean;
 };
 
-const MAX_ORDER = 40;
+// DPaint's own cap (PSYM.C). Exported so the settings slider and the action
+// that clamps the value can't drift from what this file will actually honor.
+export const MAX_ORDER = 40;
 
 function clampOrder(order: number): number {
   return Math.max(1, Math.min(MAX_ORDER, Math.floor(order)));
