@@ -50,11 +50,6 @@ export type State = {
   // effects use) — so changing the range means changing the FG color, from
   // the toolbox palette, without needing this dialog open.
   readonly effectiveFillStyle: GradientFillStyle | null;
-  // Whether the current FG color is inside a palette range at all —
-  // independent of `mode`, so the dialog can warn about it (Gradient will
-  // just paint solid otherwise) the moment a member color is picked, before
-  // Gradient mode is even turned on.
-  readonly foregroundInRange: boolean;
 };
 
 export const state: State = {
@@ -66,15 +61,6 @@ export const state: State = {
   settingsSnapshot: null,
   hasPattern: false,
   patternVersion: 0,
-  foregroundInRange: derived(
-    (_state: State, rootState: OvermindState): boolean =>
-      !activeRangeIndices(
-        rootState.palette.ranges,
-        rootState.palette.foregroundColorId,
-        rootState.palette.foregroundRgb !== null,
-        rootState.palette.paletteArray.length
-      ).wholePalette
-  ),
   effectiveFillStyle: derived(
     (state: State, rootState: OvermindState): GradientFillStyle | null => {
       if (state.mode !== 'gradient') {

@@ -7,8 +7,8 @@ import { GradientShape, ShapeGeometry, shapeGeometry } from './gradientFill';
 // fixed canvas origin (0,0) — the same anchor DPaint's own hardware-blitter
 // tiling used, so multiple separately-filled shapes show one continuous,
 // aligned pattern instead of each restarting the tile at its own bounding
-// box (see docs/pattern-fill.md and the Fill Style requester,
-// src/components/fillStyle/). Indexed-only for now: a true-color captured
+// box (see the Fill Style requester, src/components/fillStyle/).
+// Indexed-only for now: a true-color captured
 // pixel is treated the same as a transparent one (skipped) rather than
 // erroring — see BrushColorIndex's alpha-tag scheme.
 

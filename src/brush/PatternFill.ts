@@ -5,8 +5,8 @@ import { CustomBrush } from './CustomBrush';
 // Brush": a single snapshot of a brush's bitmap, decoupled from Brush
 // Recall so switching brushes afterward never changes what Pattern fill
 // tiles with. Not observable state — the reactive mirror (hasPattern,
-// patternThumbnail, patternSize) lives in overmind state.fillStyle, the
-// same brushRecall/state.brush split (see BrushRecall.ts).
+// patternVersion) lives in overmind state.fillStyle, the same
+// brushRecall/state.brush split (see BrushRecall.ts).
 class PatternFillStore {
   pattern: CustomBrush | null = null;
   // Bumped on every capture; GPU texture-cache invalidation reads this the
