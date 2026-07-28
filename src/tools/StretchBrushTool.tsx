@@ -1,4 +1,4 @@
-import { Tool } from './Tool';
+import { BrushTransformTool, drawBoundsBox } from './BrushTransformTool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
@@ -14,18 +14,14 @@ import { Point } from '../types';
 // until release — each preview frame re-derives from the brush as it was on
 // entry, so there is no compounding resampling error and cancelling (Esc,
 // picking another tool) needs no restore.
-export class StretchBrushTool implements Tool {
+export class StretchBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushStretchStart(null);
   }
 
-  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    event.preventDefault();
-  }
-
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
@@ -52,8 +48,8 @@ export class StretchBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
@@ -65,15 +61,7 @@ export class StretchBrushTool implements Tool {
       // doesn't jump the brush. Boxed so the armed mode is visible even where
       // the brush bitmap is sparse or transparent. (No symmetry: the stretch
       // targets the brush itself, not the canvas.)
-      brush.drawPoints(
-        [{ x: mousePos.x - brush.width / 2, y: mousePos.y - brush.heigth / 2 }],
-        overlayCanvasController
-      );
-      drawBoundsBox(
-        { x: mousePos.x - brush.width, y: mousePos.y - brush.heigth },
-        brush.width,
-        brush.heigth
-      );
+      this.drawIdlePreview(mousePos, brush);
       return;
     }
     const size = dragSize(anchor, mousePos, event.shiftKey);
@@ -85,26 +73,12 @@ export class StretchBrushTool implements Tool {
     );
     drawBoundsBox(anchor, size.width, size.height);
   }
-
-  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    overlayCanvasController.clear();
-  }
-
-  public onExitOverlay(): void {
-    overlayCanvasController.clear();
-  }
 }
 
 // The transform's bounding box, in the same color-inverting style as the
 // brush-capture marquee. It doubles as the "you are in stretch mode"
 // indication. (Deviation for the better: DPaint 2 showed no box — its only
 // cue was the pointer changing to the text "SIZE".)
-function drawBoundsBox(topLeft: Point, width: number, height: number): void {
-  overlayCanvasController.selectionBox(topLeft, {
-    x: topLeft.x + width - 1,
-    y: topLeft.y + height - 1,
-  });
-}
 
 // Drag extent from the anchored top-left, at least 1x1. With Shift the
 // original aspect ratio is kept (DPaint's constrained stretch): the dragged

@@ -1,4 +1,4 @@
-import { Tool } from './Tool';
+import { BrushTransformTool } from './BrushTransformTool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
@@ -13,18 +13,14 @@ import { Point } from '../types';
 // no-mutation contract as StretchBrushTool: every frame previews a temporary
 // brush re-derived from the brush as it was on entry, release commits,
 // cancel needs no restore.
-export class ShearBrushTool implements Tool {
+export class ShearBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushShearStart(null);
   }
 
-  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    event.preventDefault();
-  }
-
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
@@ -50,23 +46,15 @@ export class ShearBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
     const anchor = overmind.state.tool.brushShearTool.anchor;
     overlayCanvasController.clear();
     if (!anchor) {
-      brush.drawPoints(
-        [{ x: mousePos.x - brush.width / 2, y: mousePos.y - brush.heigth / 2 }],
-        overlayCanvasController
-      );
-      drawBoundsBox(
-        { x: mousePos.x - brush.width, y: mousePos.y - brush.heigth },
-        brush.width,
-        brush.heigth
-      );
+      this.drawIdlePreview(mousePos, brush);
       return;
     }
     const dx = shearAmount(anchor, mousePos);
@@ -76,29 +64,11 @@ export class ShearBrushTool implements Tool {
     // (the anchored top row sits at the bitmap's right edge), so the box's
     // left edge follows the drag while the top row stays visually put
     const topLeft = { x: anchor.x + Math.min(dx, 0), y: anchor.y };
-    preview.drawPoints(
-      [{ x: topLeft.x + preview.width / 2, y: topLeft.y + preview.heigth / 2 }],
-      overlayCanvasController
-    );
+    this.drawPreviewAt(topLeft, preview);
     // the parallelogram the sheared brush actually fills — top row anchored,
     // bottom row slid by dx — not the wider axis-aligned box around it
     overlayCanvasController.selectionPolygon(shearedCorners(anchor, brush.width, brush.heigth, dx));
   }
-
-  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    overlayCanvasController.clear();
-  }
-
-  public onExitOverlay(): void {
-    overlayCanvasController.clear();
-  }
-}
-
-function drawBoundsBox(topLeft: Point, width: number, height: number): void {
-  overlayCanvasController.selectionBox(topLeft, {
-    x: topLeft.x + width - 1,
-    y: topLeft.y + height - 1,
-  });
 }
 
 // the brush's entry w x h rectangle with its bottom edge slid by dx — the

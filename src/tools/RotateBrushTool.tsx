@@ -1,9 +1,7 @@
-import { Tool } from './Tool';
+import { BrushTransformTool } from './BrushTransformTool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
-import { brushRecall } from '../brush/BrushRecall';
-import { CustomBrush } from '../brush/CustomBrush';
 import { rotate } from '../algorithm/brushTransform';
 import { Point } from '../types';
 
@@ -15,18 +13,14 @@ import { Point } from '../types';
 // center; the pointer's swing around it sets the angle (Shift snaps to 15°);
 // release commits. Same no-mutation contract: previews are temporary
 // brushes, cancel needs no restore.
-export class RotateBrushTool implements Tool {
+export class RotateBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushRotateStart(null);
   }
 
-  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    event.preventDefault();
-  }
-
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
@@ -53,23 +47,15 @@ export class RotateBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
     const rotateState = overmind.state.tool.brushRotateTool;
     overlayCanvasController.clear();
     if (!rotateState.center) {
-      brush.drawPoints(
-        [{ x: mousePos.x - brush.width / 2, y: mousePos.y - brush.heigth / 2 }],
-        overlayCanvasController
-      );
-      drawBoundsBox(
-        { x: mousePos.x - brush.width, y: mousePos.y - brush.heigth },
-        brush.width,
-        brush.heigth
-      );
+      this.drawIdlePreview(mousePos, brush);
       return;
     }
     const degrees = dragAngle(rotateState, mousePos, event.shiftKey);
@@ -84,21 +70,6 @@ export class RotateBrushTool implements Tool {
       rotatedCorners(rotateState.center, brush.width, brush.heigth, degrees)
     );
   }
-
-  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    overlayCanvasController.clear();
-  }
-
-  public onExitOverlay(): void {
-    overlayCanvasController.clear();
-  }
-}
-
-function drawBoundsBox(topLeft: Point, width: number, height: number): void {
-  overlayCanvasController.selectionBox(topLeft, {
-    x: topLeft.x + width - 1,
-    y: topLeft.y + height - 1,
-  });
 }
 
 // the brush's w x h rectangle rotated (visually clockwise) about its center

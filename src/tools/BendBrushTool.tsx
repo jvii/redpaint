@@ -1,4 +1,4 @@
-import { Tool } from './Tool';
+import { BrushTransformTool, drawBoundsBox } from './BrushTransformTool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
@@ -20,19 +20,16 @@ import { Point } from '../types';
 // The preview is the actual bent bitmap plus its curved outline (DPaint
 // showed only the XOR outline). Release commits; same no-mutation contract
 // as the other drag transforms.
-export class BendBrushTool implements Tool {
+export class BendBrushTool extends BrushTransformTool {
   private horizontal: boolean;
 
   public constructor(horizontal: boolean) {
+    super();
     this.horizontal = horizontal;
   }
 
   public onInit(): void {
     overmind.actions.tool.brushBendStart(null);
-  }
-
-  public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    event.preventDefault();
   }
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -58,24 +55,15 @@ export class BendBrushTool implements Tool {
   // Overlay
 
   public onMouseMoveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
+    const brush = this.currentBrush();
+    if (!brush) {
       return;
     }
     const mousePos = getMousePos(event);
     const origin = overmind.state.tool.brushBendTool.origin;
     overlayCanvasController.clear();
     if (!origin) {
-      // the grip is the middle of the edge that will bend (DPaint's handle),
-      // so both bend-the-end regions stay reachable once pressed
-      const center = this.horizontal
-        ? { x: mousePos.x - brush.width / 2, y: mousePos.y }
-        : { x: mousePos.x, y: mousePos.y - brush.heigth / 2 };
-      brush.drawPoints([center], overlayCanvasController);
-      overlayCanvasController.selectionBox(
-        { x: center.x - brush.width / 2, y: center.y - brush.heigth / 2 },
-        { x: center.x + brush.width / 2 - 1, y: center.y + brush.heigth / 2 - 1 }
-      );
+      this.drawIdlePreview(mousePos, brush);
       return;
     }
     const controls = this.bendControls(origin, mousePos, brush);
@@ -84,23 +72,27 @@ export class BendBrushTool implements Tool {
     );
     preview.applyMode(overmind.state.brush.mode);
     const topLeft = this.bentTopLeft(origin, brush, controls);
-    preview.drawPoints(
-      [{ x: topLeft.x + preview.width / 2, y: topLeft.y + preview.heigth / 2 }],
-      overlayCanvasController
-    );
+    this.drawPreviewAt(topLeft, preview);
     overlayCanvasController.selectionPolygon(this.bentOutline(origin, brush, controls));
-  }
-
-  public onMouseLeaveOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
-    overlayCanvasController.clear();
-  }
-
-  public onExitOverlay(): void {
-    overlayCanvasController.clear();
   }
 
   // The planted brush's top-left corner (the press point held the bending
   // edge's middle).
+  // Bend's grip is the middle of the edge that will bend (DPaint's handle),
+  // not the brush's center as in the other three transforms, so that both
+  // bend-the-end regions stay reachable once the button goes down.
+  protected drawIdlePreview(mousePos: Point, brush: CustomBrush): void {
+    const center = this.horizontal
+      ? { x: mousePos.x - brush.width / 2, y: mousePos.y }
+      : { x: mousePos.x, y: mousePos.y - brush.heigth / 2 };
+    brush.drawPoints([center], overlayCanvasController);
+    drawBoundsBox(
+      { x: center.x - brush.width / 2, y: center.y - brush.heigth / 2 },
+      brush.width,
+      brush.heigth
+    );
+  }
+
   private plantedTopLeft(origin: Point, brush: CustomBrush): Point {
     return this.horizontal
       ? { x: origin.x - brush.width, y: origin.y - Math.floor(brush.heigth / 2) }
