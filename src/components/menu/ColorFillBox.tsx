@@ -4,7 +4,7 @@ import { useFillStyleSwatch } from '../fillStyle/useFillStyleSwatch';
 
 // CSS px, the box's interior (inside its 2px border) — see .menubar__fill-box,
 // which must agree with these.
-const BOX_WIDTH = 56;
+const BOX_WIDTH = 80;
 const BOX_HEIGHT = 26;
 
 // DPaint's Color Fill Box, in the menubar slot it occupied there: a small

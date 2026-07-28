@@ -82,12 +82,13 @@
 .menubar__fill-box {
   display: block; /* canvas is inline by default; avoids the baseline gap */
   flex: none;
-  width: 56px;
+  /* wider than tall by about 3:1, the proportion DPaint's own box had */
+  width: 80px;
   height: 26px;
   border: 2px solid black;
   box-sizing: content-box;
   image-rendering: pixelated;
-  /* a finer check than the app default (12px): at 56x26 the default squares
+  /* a finer check than the app default (12px): at this size the default squares
      are big enough to read as content of the pattern rather than as the
      ground behind it */
   --checker-size: 6px;
