@@ -27,6 +27,13 @@ Semantic exceptions, deliberately scarce:
   world; a second gradient anywhere kills it.
 - Red is the menubar title's paint dot and error/live signals, not an
   accent.
+- **Transparency checkerboard**, `rgb(242,242,242)`/`rgb(204,204,204)` in
+  8px squares, on any surface where "the canvas shows through here" is the
+  point — currently the Fill Style preview swatch, where a captured pattern
+  can have transparent pixels. Written with a repeating gradient function
+  but hard-stopped into flat squares: no ramp, so the rainbow rule above
+  stands. Not decoration — don't use it as a background anywhere the
+  transparency it signals isn't real.
 
 ## Chrome (where the DPaint feel actually lives)
 
