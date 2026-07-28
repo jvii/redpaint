@@ -42,7 +42,7 @@
    still goes flat orange. */
 
 .brush-slot__cell:hover {
-  background-color: #ff8800;
+  background-color: var(--wb-orange);
   background-image: none;
 }
 
@@ -50,12 +50,12 @@
    plain dimmed well — no checker, no hover reaction */
 .brush-slot__cell.is-disabled {
   cursor: default;
-  background-color: rgb(242, 242, 242);
+  background-color: var(--paper);
   background-image: none;
 }
 
 .brush-slot__cell.is-disabled:hover {
-  background-color: rgb(242, 242, 242);
+  background-color: var(--paper);
 }
 
 /* Previous's empty state: no icon (nothing to click into it, unlike a
@@ -146,5 +146,5 @@
 }
 
 .brush-slot__overlay-clear:hover {
-  background-color: #ff8800;
+  background-color: var(--wb-orange);
 }

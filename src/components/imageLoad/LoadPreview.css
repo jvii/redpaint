@@ -15,7 +15,7 @@
 }
 
 .load-preview__info b {
-  color: rgb(0, 85, 170);
+  color: var(--wb-blue);
   font-weight: normal;
 }
 
@@ -33,7 +33,7 @@
 }
 
 .load-preview__exact {
-  color: #ff8800;
+  color: var(--wb-orange);
 }
 
 /* the media as the draft would load it; the shared .transparency-checker

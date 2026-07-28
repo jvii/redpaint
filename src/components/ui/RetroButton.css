@@ -14,7 +14,10 @@
   border: 2px solid black;
   border-radius: 0;
   box-shadow: 4px 4px 0 0 var(--retro-shadow-color);
-  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    background-color 0.2s;
   cursor: pointer;
 }
 
@@ -37,7 +40,7 @@
 
 .retro-button--primary {
   color: black;
-  background-color: #ff8800;
+  background-color: var(--wb-orange);
 }
 
 /* only the primary shifts color on hover */
@@ -48,7 +51,7 @@
 .retro-button--secondary {
   color: white;
   background-color: black;
-  --retro-shadow-color: #ff8800;
+  --retro-shadow-color: var(--wb-orange);
 }
 
 .retro-button:disabled {

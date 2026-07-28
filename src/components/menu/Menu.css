@@ -86,7 +86,7 @@
 }
 
 .menu__mode-row .retro-toggle {
-  background-color: rgb(242, 242, 242);
+  background-color: var(--paper);
 }
 
 /* the F1-F8 hint sits below each mode's label rather than beside it (unlike
@@ -131,5 +131,5 @@
 }
 
 .menu__closebtn:hover {
-  color: #ff8800;
+  color: var(--wb-orange);
 }

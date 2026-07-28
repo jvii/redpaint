@@ -10,15 +10,25 @@ breaking it, update it.
 
 The Workbench 1.3 four, plus bookkeeping colors:
 
-| Role                                                            | Value                                            |
-| --------------------------------------------------------------- | ------------------------------------------------ |
-| Workbench blue (panel ground, pressed gadgets)                  | `rgb(0, 85, 170)`                                |
-| Deep blue (pressed-in inset shadow)                             | `rgb(0, 51, 102)`                                |
-| Workbench orange (accent: hover, selected labels, armed states) | `#ff8800`                                        |
-| Paper / gadget face                                             | `#ffffff` / `rgb(242, 242, 242)`                 |
-| Ink (borders, shadows, labels)                                  | `#000000`                                        |
-| Disabled / dim label                                            | `#8888aa` (on blue), `rgb(130,130,130)` group-disabled / `rgba(130,130,130,0.45)` single-segment-disabled (on face) |
-| Icon navy (pixel-icon outlines/bodies)                          | `#0a0a28`                                        |
+Every one of these is a CSS custom property in `src/index.css` — use the
+property, never the literal. They were hand-typed at 46 sites before this,
+which is how the transparency checkerboard below ended up with two different
+sets of values.
+
+| Role                                                            | Property          | Value                            |
+| --------------------------------------------------------------- | ----------------- | -------------------------------- |
+| Workbench blue (panel ground, pressed gadgets)                  | `--wb-blue`       | `rgb(0, 85, 170)`                |
+| Deep blue (pressed-in inset shadow)                             | `--wb-deep-blue`  | `rgb(0, 51, 102)`                |
+| Workbench orange (accent: hover, selected labels, armed states) | `--wb-orange`     | `#ff8800`                        |
+| Paper / gadget face                                             | `--paper`         | `rgb(242, 242, 242)` (`#ffffff` where a control wants pure white) |
+| Ink (borders, shadows, labels)                                  | —                 | the `black` keyword              |
+| Disabled / dim label                                            | `--dim-label`     | `rgb(130,130,130)`, at `0.45` alpha for a single disabled segment inside an enabled group |
+| Icon navy (pixel-icon outlines/bodies)                          | —                 | `#0a0a28`, `pixelIcons.tsx` only |
+
+Two deliberate exceptions to "use the property": black stays the `black`
+keyword (nothing to get wrong), and `pixelIcons.tsx` keeps literal copies of
+the blue and orange because it feeds them to SVG `fill` attributes, which
+don't resolve `var()`.
 
 Semantic exceptions, deliberately scarce:
 

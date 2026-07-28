@@ -56,7 +56,7 @@
 /* an armed modal brush transform (Stretch) replaces the mode text — accent
    color so the armed state is unmissable at a glance */
 .menubar__mode-indicator--transform {
-  color: #ff8800;
+  color: var(--wb-orange);
 }
 
 .menubar__floodfill-indicator {

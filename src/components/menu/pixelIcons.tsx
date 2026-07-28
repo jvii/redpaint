@@ -5,12 +5,15 @@ import { JSX } from 'react';
 // rects in the Workbench 1.3 palette. Action glyphs (the transforms) are
 // line drawings in transformIcons.tsx, not pixel art. 'X' renders in
 // currentColor should a map ever need to follow the gadget text color.
+// Literal copies of the Workbench palette, not the --wb-* custom properties
+// every stylesheet uses (index.css): these feed SVG `fill` presentation
+// attributes, which don't resolve var(). Keep them in step with index.css.
 const PALETTE: Record<string, string> = {
-  K: '#0a0a28', // floppy body navy
-  O: '#ff8800', // Workbench orange
+  K: '#0a0a28', // floppy body navy (icon navy, this file only)
+  O: '#ff8800', // Workbench orange, = --wb-orange
   W: '#ffffff',
-  B: 'rgb(0, 85, 170)', // Workbench blue
-  U: '#0000ff', // brush handle blue
+  B: 'rgb(0, 85, 170)', // Workbench blue, = --wb-blue
+  U: '#0000ff', // brush handle blue (this file only)
 };
 
 function parse(map: string): string[] {

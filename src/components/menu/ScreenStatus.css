@@ -17,7 +17,7 @@
   font-size: 16px;
   line-height: 1.25;
   color: black;
-  background-color: rgb(242, 242, 242);
+  background-color: var(--paper);
   border: 2px solid black;
   border-radius: 0;
   padding: 11px 14px;
@@ -35,7 +35,7 @@
 
 /* the value reads in Workbench blue against the black label */
 .screen-status__segment b {
-  color: rgb(0, 85, 170);
+  color: var(--wb-blue);
   font-weight: normal;
   transition: color 0.2s;
 }
@@ -43,7 +43,7 @@
 /* hovering a segment shows it is the way into its requester: the whole label,
    value and caption go white on the Workbench orange, as RetroToggle does */
 .screen-status__segment:hover {
-  background-color: #ff8800;
+  background-color: var(--wb-orange);
   color: white;
 }
 
@@ -60,7 +60,7 @@
 /* the color count reads in orange, setting the palette depth apart from the
    two pixel dimensions (the hover rule still whitens it) */
 .screen-status__field--colors b {
-  color: #ff8800;
+  color: var(--wb-orange);
 }
 
 /* True Color ON earns the full spectrum: the gradient painted through the
@@ -112,7 +112,7 @@
   align-items: center;
   justify-content: center;
   color: black;
-  background-color: rgb(242, 242, 242);
+  background-color: var(--paper);
   border: 2px solid black;
   border-radius: 0;
   box-shadow: 4px 4px 0 0 black;
@@ -134,7 +134,7 @@
 }
 
 .view-scaling:hover {
-  background-color: #ff8800;
+  background-color: var(--wb-orange);
   color: white;
 }
 
@@ -142,8 +142,8 @@
    blue is this menu's own background, so an active gadget would vanish into it.
    Recessed instead — sunk into the panel, orange label. */
 .view-scaling--on {
-  background-color: rgb(0, 51, 102);
-  color: #ff8800;
+  background-color: var(--wb-deep-blue);
+  color: var(--wb-orange);
   box-shadow:
     inset 3px 3px 0 0 rgb(0, 30, 61),
     4px 4px 0 0 black;
@@ -151,6 +151,6 @@
 
 /* the active state keeps its colors on hover — the shadow already reads pressed */
 .view-scaling--on:hover {
-  background-color: rgb(0, 51, 102);
-  color: #ff8800;
+  background-color: var(--wb-deep-blue);
+  color: var(--wb-orange);
 }
