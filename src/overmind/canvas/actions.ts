@@ -10,7 +10,7 @@ import {
 import { countDistinctColors } from '../../algorithm/imageColors';
 import { Color } from '../../types';
 import { Point } from '../../types';
-import { PendingScreenFormat, ScaleMode, ScreenFormatId, VideoStandard } from './state';
+import { PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
 
 type Resolution = { width: number; height: number };
 
@@ -76,7 +76,7 @@ export interface SetScreenFormatParams {
 }
 
 // Applies only which screen is simulated. How that screen is scaled into the
-// window is an independent view preference (see setScaleMode), and resizing the
+// window is an independent view preference (see toggleScaleMode), and resizing the
 // canvas to the screen is a separate, conditional step (see the Screen Format
 // requester): grow/crop/scale only when it matters.
 export const setScreenFormat = (
@@ -97,11 +97,8 @@ export const setVideoStandard = (context: Context, standard: VideoStandard): voi
 
 // How the simulated screen fills the window. Independent of the format, and
 // meaningless for Native (which is always 1:1), so it lives outside the
-// Screen Format requester.
-export const setScaleMode = (context: Context, scaleMode: ScaleMode): void => {
-  context.state.canvas.scaleMode = scaleMode;
-};
-
+// Screen Format requester — a menu toggle owns it (ScreenStatus.tsx), which
+// is why this is a toggle and not a setter.
 export const toggleScaleMode = (context: Context): void => {
   context.state.canvas.scaleMode =
     context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
