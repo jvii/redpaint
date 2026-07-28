@@ -42,6 +42,88 @@ function cacheAttribs(gl: WebGLRenderingContext, program: WebGLProgram): Attribs
   };
 }
 
+// One compiled pass: its program plus the locations looked up once for it.
+// The three used to be three parallel fields per pass (six passes, eighteen
+// fields), which meant every pass method reached for three of them by name
+// and dispose repeated the same null-check six times.
+type EffectProgram = {
+  program: WebGLProgram | null;
+  locations: Locations;
+  attribs: Attribs;
+};
+
+type PassName = 'smear' | 'shade' | 'mask' | 'blend' | 'smooth' | 'cycle';
+
+// Each pass's fragment shader and the uniforms it declares — the whole
+// per-pass difference in setup, in one table. A function, not a const: the
+// shader sources are declared below the class (they're long), so they are
+// still in their temporal dead zone while this module initializes, but not
+// by the time a constructor calls this.
+function passShaders(): { [name in PassName]: { fragment: string; uniforms: string[] } } {
+  return {
+    smear: {
+      fragment: SMEAR_FRAGMENT_SHADER,
+      uniforms: ['u_shape', 'u_save', 'u_saveBounds', 'u_scratchSize', 'u_brushSize'],
+    },
+    shade: {
+      fragment: SHADE_FRAGMENT_SHADER,
+      uniforms: [
+        'u_shape',
+        'u_work',
+        'u_direction',
+        'u_rangeStart',
+        'u_rangeEnd',
+        'u_wholePalette',
+        'u_mask',
+        'u_hasMask',
+        'u_maskOffset',
+        'u_maskBounds',
+        'u_scratchSize',
+        'u_brushSize',
+      ],
+    },
+    mask: { fragment: MASK_FRAGMENT_SHADER, uniforms: ['u_shape', 'u_scratchSize', 'u_brushSize'] },
+    blend: {
+      fragment: BLEND_FRAGMENT_SHADER,
+      uniforms: [
+        'u_shape',
+        'u_work',
+        'u_save',
+        'u_saveBounds',
+        'u_mask',
+        'u_hasMask',
+        'u_maskOffset',
+        'u_maskBounds',
+        'u_palette',
+        'u_indexedPolicy',
+        'u_rangeStart',
+        'u_rangeEnd',
+        'u_wholePalette',
+        'u_scratchSize',
+        'u_brushSize',
+      ],
+    },
+    smooth: {
+      fragment: SMOOTH_FRAGMENT_SHADER,
+      uniforms: [
+        'u_shape',
+        'u_work',
+        'u_palette',
+        'u_indexedPolicy',
+        'u_rangeStart',
+        'u_rangeEnd',
+        'u_wholePalette',
+        'u_scratchSize',
+        'u_brushSize',
+      ],
+    },
+    cycle: {
+      fragment: CYCLE_FRAGMENT_SHADER,
+      uniforms: ['u_shape', 'u_pixel', 'u_scratchSize', 'u_brushSize'],
+    },
+  };
+}
+
 // Per-symmetry-copy chain state: each kaleidoscope copy is its own
 // smear/blend trail (see docs/effects.md).
 type CopyState = {
@@ -60,24 +142,7 @@ type CopyState = {
 export class EffectIndexer {
   private gl: WebGLRenderingContext;
   private buffers: GLBuffers;
-  private smearProgram: WebGLProgram | null;
-  private shadeProgram: WebGLProgram | null;
-  private maskProgram: WebGLProgram | null;
-  private blendProgram: WebGLProgram | null;
-  private smoothProgram: WebGLProgram | null;
-  private cycleProgram: WebGLProgram | null;
-  private smearLocations!: Locations;
-  private shadeLocations!: Locations;
-  private maskLocations!: Locations;
-  private blendLocations!: Locations;
-  private smoothLocations!: Locations;
-  private cycleLocations!: Locations;
-  private smearAttribs!: Attribs;
-  private shadeAttribs!: Attribs;
-  private maskAttribs!: Attribs;
-  private blendAttribs!: Attribs;
-  private smoothAttribs!: Attribs;
-  private cycleAttribs!: Attribs;
+  private passes!: { [name in PassName]: EffectProgram };
   private scratchFbo: WebGLFramebuffer | null;
   private brushTexture: WebGLTexture | null = null;
   private currentBrushId = 0;
@@ -93,80 +158,17 @@ export class EffectIndexer {
   public constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
     this.buffers = buffers;
-    this.smearProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMEAR_FRAGMENT_SHADER);
-    this.shadeProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SHADE_FRAGMENT_SHADER);
-    this.maskProgram = createProgram(gl, EFFECT_VERTEX_SHADER, MASK_FRAGMENT_SHADER);
-    this.blendProgram = createProgram(gl, EFFECT_VERTEX_SHADER, BLEND_FRAGMENT_SHADER);
-    this.smoothProgram = createProgram(gl, EFFECT_VERTEX_SHADER, SMOOTH_FRAGMENT_SHADER);
-    this.cycleProgram = createProgram(gl, EFFECT_VERTEX_SHADER, CYCLE_FRAGMENT_SHADER);
-
-    this.smearLocations = cacheUniforms(gl, this.smearProgram, [
-      'u_shape',
-      'u_save',
-      'u_saveBounds',
-      'u_scratchSize',
-      'u_brushSize',
-    ]);
-    this.shadeLocations = cacheUniforms(gl, this.shadeProgram, [
-      'u_shape',
-      'u_work',
-      'u_direction',
-      'u_rangeStart',
-      'u_rangeEnd',
-      'u_wholePalette',
-      'u_mask',
-      'u_hasMask',
-      'u_maskOffset',
-      'u_maskBounds',
-      'u_scratchSize',
-      'u_brushSize',
-    ]);
-    this.maskLocations = cacheUniforms(gl, this.maskProgram, [
-      'u_shape',
-      'u_scratchSize',
-      'u_brushSize',
-    ]);
-    this.blendLocations = cacheUniforms(gl, this.blendProgram, [
-      'u_shape',
-      'u_work',
-      'u_save',
-      'u_saveBounds',
-      'u_mask',
-      'u_hasMask',
-      'u_maskOffset',
-      'u_maskBounds',
-      'u_palette',
-      'u_indexedPolicy',
-      'u_rangeStart',
-      'u_rangeEnd',
-      'u_wholePalette',
-      'u_scratchSize',
-      'u_brushSize',
-    ]);
-    this.smoothLocations = cacheUniforms(gl, this.smoothProgram, [
-      'u_shape',
-      'u_work',
-      'u_palette',
-      'u_indexedPolicy',
-      'u_rangeStart',
-      'u_rangeEnd',
-      'u_wholePalette',
-      'u_scratchSize',
-      'u_brushSize',
-    ]);
-    this.cycleLocations = cacheUniforms(gl, this.cycleProgram, [
-      'u_shape',
-      'u_pixel',
-      'u_scratchSize',
-      'u_brushSize',
-    ]);
-
-    this.smearAttribs = cacheAttribs(gl, this.smearProgram);
-    this.shadeAttribs = cacheAttribs(gl, this.shadeProgram);
-    this.maskAttribs = cacheAttribs(gl, this.maskProgram);
-    this.blendAttribs = cacheAttribs(gl, this.blendProgram);
-    this.smoothAttribs = cacheAttribs(gl, this.smoothProgram);
-    this.cycleAttribs = cacheAttribs(gl, this.cycleProgram);
+    const shaders = passShaders();
+    this.passes = {} as { [name in PassName]: EffectProgram };
+    for (const name of Object.keys(shaders) as PassName[]) {
+      const { fragment, uniforms } = shaders[name];
+      const program = createProgram(gl, EFFECT_VERTEX_SHADER, fragment);
+      this.passes[name] = {
+        program,
+        locations: cacheUniforms(gl, program, uniforms),
+        attribs: cacheAttribs(gl, program),
+      };
+    }
 
     this.scratchFbo = gl.createFramebuffer();
     console.log('Program ready (EffectIndexer: smear, shade, mask, blend, smooth, cycle)');
@@ -226,7 +228,7 @@ export class EffectIndexer {
       } else if (mode === 'Smooth') {
         this.smoothPass(rect);
       } else if (mode === 'Cycle') {
-        this.drawStampQuad(this.cycleAttribs, rect);
+        this.drawStampQuad(this.passes.cycle.attribs, rect);
       }
       state.prevOrigin = origin;
       state.prevRect = rect;
@@ -252,29 +254,11 @@ export class EffectIndexer {
 
   public dispose(): void {
     const gl = this.gl;
-    if (this.smearProgram) {
-      gl.deleteProgram(this.smearProgram);
-      this.smearProgram = null;
-    }
-    if (this.shadeProgram) {
-      gl.deleteProgram(this.shadeProgram);
-      this.shadeProgram = null;
-    }
-    if (this.maskProgram) {
-      gl.deleteProgram(this.maskProgram);
-      this.maskProgram = null;
-    }
-    if (this.blendProgram) {
-      gl.deleteProgram(this.blendProgram);
-      this.blendProgram = null;
-    }
-    if (this.smoothProgram) {
-      gl.deleteProgram(this.smoothProgram);
-      this.smoothProgram = null;
-    }
-    if (this.cycleProgram) {
-      gl.deleteProgram(this.cycleProgram);
-      this.cycleProgram = null;
+    for (const pass of Object.values(this.passes)) {
+      if (pass.program) {
+        gl.deleteProgram(pass.program);
+        pass.program = null;
+      }
     }
     if (this.scratchFbo) {
       gl.deleteFramebuffer(this.scratchFbo);
@@ -299,8 +283,8 @@ export class EffectIndexer {
 
   private smearPass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
-    const program = this.smearProgram as WebGLProgram;
-    const loc = this.smearLocations;
+    const { locations: loc, attribs } = this.passes.smear;
+    const program = this.passes.smear.program as WebGLProgram;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.activeTexture(gl.TEXTURE4);
@@ -310,13 +294,13 @@ export class EffectIndexer {
     gl.uniform1i(loc.u_save, 4);
     gl.uniform4f(loc.u_saveBounds, prev.u0, prev.v0, prev.u1, prev.v1);
     this.setShapeUniforms(loc);
-    this.drawStampQuad(this.smearAttribs, rect);
+    this.drawStampQuad(attribs, rect);
   }
 
   private shadePass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
-    const program = this.shadeProgram as WebGLProgram;
-    const loc = this.shadeLocations;
+    const { locations: loc, attribs } = this.passes.shade;
+    const program = this.passes.shade.program as WebGLProgram;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(loc.u_shape, 6);
@@ -327,7 +311,7 @@ export class EffectIndexer {
     this.rangeUniforms(loc);
     this.maskUniforms(loc, state, this.curOrigin as Point);
     this.setShapeUniforms(loc);
-    this.drawStampQuad(this.shadeAttribs, rect);
+    this.drawStampQuad(attribs, rect);
   }
 
   // Renders this stamp's brush coverage into the copy's mask texture. Runs
@@ -335,8 +319,8 @@ export class EffectIndexer {
   // canvas size afterwards — the other indexers rely on it.
   private updateMask(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
-    const program = this.maskProgram as WebGLProgram;
-    const loc = this.maskLocations;
+    const { locations: loc, attribs } = this.passes.mask;
+    const program = this.passes.mask.program as WebGLProgram;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.scratchFbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, state.mask, 0);
@@ -346,7 +330,7 @@ export class EffectIndexer {
     gl.uniform1i(loc.u_shape, 6);
     this.setShapeUniforms(loc);
     // quad over the written subrect, in scratch clip space (derived from uv)
-    this.drawScratchQuad(this.maskAttribs, rect);
+    this.drawScratchQuad(attribs, rect);
     // restore global state for everyone else
     gl.viewport(
       0,
@@ -359,8 +343,8 @@ export class EffectIndexer {
 
   private blendPass(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
-    const program = this.blendProgram as WebGLProgram;
-    const loc = this.blendLocations;
+    const { locations: loc, attribs } = this.passes.blend;
+    const program = this.passes.blend.program as WebGLProgram;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(loc.u_shape, 6);
@@ -377,13 +361,13 @@ export class EffectIndexer {
     this.rangeUniforms(loc);
     this.maskUniforms(loc, state, this.curOrigin as Point);
     this.setShapeUniforms(loc);
-    this.drawStampQuad(this.blendAttribs, rect);
+    this.drawStampQuad(attribs, rect);
   }
 
   private smoothPass(rect: StampRect): void {
     const gl = this.gl;
-    const program = this.smoothProgram as WebGLProgram;
-    const loc = this.smoothLocations;
+    const { locations: loc, attribs } = this.passes.smooth;
+    const program = this.passes.smooth.program as WebGLProgram;
     activateProgram(gl, program);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(loc.u_shape, 6);
@@ -394,7 +378,7 @@ export class EffectIndexer {
     gl.uniform1f(loc.u_indexedPolicy, overmind.state.canvas.trueColorEnabled ? 0 : 1);
     this.rangeUniforms(loc);
     this.setShapeUniforms(loc);
-    this.drawStampQuad(this.smoothAttribs, rect);
+    this.drawStampQuad(attribs, rect);
   }
 
   // Cycle's whole uniform state (u_shape, u_pixel, the scratch/brush size
@@ -409,9 +393,10 @@ export class EffectIndexer {
   // copies, used to repeat this whole setup for every single point.
   private cycleSetup(state: CopyState): void {
     const gl = this.gl;
-    const program = this.cycleProgram as WebGLProgram;
-    const loc = this.cycleLocations;
-    activateProgram(gl, program);
+    const { locations: loc } = this.passes.cycle;
+    // cycleSetup only binds state; the draw itself happens per point in
+    // effectDraw, which reaches for this pass's attribs there
+    activateProgram(gl, this.passes.cycle.program as WebGLProgram);
     bindFramebuffer(gl, this.buffers.colorIndexFramebuffer);
     gl.uniform1i(loc.u_shape, 6);
     const palette = overmind.state.palette;
