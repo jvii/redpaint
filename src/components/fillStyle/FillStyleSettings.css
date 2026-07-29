@@ -1,15 +1,30 @@
+/* Two columns: what the fill is (mode + its preview) on the left, the
+   settings for the modes that have them on the right. Side by side rather
+   than one long stack because the stack ran ~800px tall — taller than a
+   1080p screen has room for once the OS is scaling at 125% — while leaving
+   the width beside the preview empty. */
 .fill-style-settings__body {
   display: flex;
-  flex-direction: column;
+  align-items: flex-start;
   gap: 24px;
   padding: 24px 30px 28px 30px;
   text-align: left;
 }
 
-.fill-style-settings__top {
+/* sized by the preview below the toggle, the wider of the two */
+.fill-style-settings__mode-column {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  flex: none;
   gap: 24px;
+}
+
+.fill-style-settings__settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* live preview of the current fill style, on a filled-circle swatch so the
