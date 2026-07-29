@@ -15,6 +15,7 @@ import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { cycleDriver } from '../../canvas/CycleDriver';
 import './Menu.css';
 import { plainPalette } from '../../algorithm/imageColors';
+import { UI_SCALES } from '../../uiScale';
 
 // IFF is recognized by content, not extension — extensions in the wild vary
 // (.iff, .lbm, .ilbm) and lie; isIlbmHeader knows what content qualifies.
@@ -219,6 +220,23 @@ export function Menu(): JSX.Element {
                       </span>
                     ),
                     disabled: (m === 'Matte' || m === 'Repl') && usingBuiltInBrush,
+                  }))}
+                />
+              </div>
+              {/* PROTOTYPE (uiScale.ts): shrinks the menubar, this panel, the
+                  toolbox column and the requesters, leaving the canvas
+                  untouched — for Windows display scaling and short screens,
+                  where the chrome is laid out in CSS pixels the OS has
+                  already made bigger. */}
+              <div className="menu__scale-row">
+                <div className="wb-cluster__head">UI Size</div>
+                <RetroToggle
+                  variant="row"
+                  value={String(state.app.uiScale)}
+                  onChange={(value): void => actions.app.setUiScale(Number(value))}
+                  options={UI_SCALES.map((scale) => ({
+                    value: String(scale),
+                    label: `${Math.round(scale * 100)}%`,
                   }))}
                 />
               </div>

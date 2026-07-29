@@ -1,4 +1,6 @@
-import React, { JSX } from 'react';
+import React, { JSX, useLayoutEffect } from 'react';
+import { useAppState } from '../overmind';
+import { applyUiScale } from '../uiScale';
 import MainCanvas from './canvas/MainCanvas';
 import ZoomCanvas from './canvas/ZoomCanvas';
 import { Menubar } from './menu/Menubar';
@@ -18,6 +20,13 @@ import { FillStyleSettings } from './fillStyle/FillStyleSettings';
 import './App.css';
 
 function App(): JSX.Element {
+  // Mirrors the chrome scale onto :root as --ui-scale, which is where every
+  // zoomed container reads it from (uiScale.ts). A layout effect, not a plain
+  // one, so the restored setting is in place before the first paint rather
+  // than a frame of full-size chrome later.
+  const uiScale = useAppState().app.uiScale;
+  useLayoutEffect((): void => applyUiScale(uiScale), [uiScale]);
+
   return (
     <div className="app">
       <Menubar />

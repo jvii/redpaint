@@ -70,8 +70,11 @@ export function PaletteEditor(): JSX.Element | null {
     actions.palette.setRangeSettings({ rangeIndex: activeRangeIndex, ...settings });
   }
 
+  // overflowingBody: the armed-action callout deliberately hangs past the
+  // requester's right edge (see .palette-editor__callout) — a scrolling body
+  // would clip it. This requester is short enough not to need the scroll.
   return (
-    <Modal header="Color Palette" width={700}>
+    <Modal header="Color Palette" width={700} overflowingBody>
       <div className="palette-editor__container">
         {/* DPaint's Palette Window layout: sliders on the left, swatch grid
             on the right */}

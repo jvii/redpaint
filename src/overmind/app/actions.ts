@@ -9,6 +9,7 @@ import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCa
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { findMatchingScreenFormat } from '../canvas/state';
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
+import { storeUiScale } from '../../uiScale';
 
 export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
   context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
@@ -159,4 +160,12 @@ export const closeMenu = (context: Context): void => {
 
 export const toggleBrushDrawer = (context: Context): void => {
   context.state.app.brushDrawerOpen = !context.state.app.brushDrawerOpen;
+};
+
+// The chrome scale (uiScale.ts). The --ui-scale custom property the CSS
+// actually reads is written by App.tsx watching this value, so the DOM write
+// stays out of the action and startup goes through the same path.
+export const setUiScale = (context: Context, scale: number): void => {
+  context.state.app.uiScale = scale;
+  storeUiScale(scale);
 };

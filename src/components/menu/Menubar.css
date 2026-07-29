@@ -24,6 +24,12 @@
   width: 100%;
   box-sizing: border-box;
   align-items: center;
+  /* UI Size setting (uiScale.ts). The width above needs no compensation: a
+     percentage is resolved against the containing block already converted
+     into this zoomed box's own units, so 100% still means the full window.
+     Viewport units are the ones that don't get that treatment — see the
+     handful of `/ var(--ui-scale)` sites, all of them vh. */
+  zoom: var(--ui-scale, 1);
 }
 
 .menubar__title {

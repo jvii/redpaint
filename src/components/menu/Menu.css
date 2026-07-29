@@ -10,6 +10,9 @@
    keeping it mounted (at height: 0) just to keep a scrollHeight measurement
    warm for the old JS-driven height animation. */
 .menu {
+  /* UI Size setting (uiScale.ts): zoomed like the menubar it hangs from, so
+     top: 50px below still lands on the (equally zoomed) bar's bottom edge. */
+  zoom: var(--ui-scale, 1);
   width: 100%;
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
@@ -46,8 +49,12 @@
      sizing — see below) to that same bounded height, which is what lets
      BrushMenu.css's __spacer shrink itself away first on a short viewport.
      Only once the real rows genuinely don't fit even without the spacer does
-     this overflow-y produce an actual scrollbar, as a last resort. */
-  max-height: calc(100vh - 50px);
+     this overflow-y produce an actual scrollbar, as a last resort.
+
+     The 100vh is divided by --ui-scale (this box is inside the zoomed .menu)
+     so the cap tracks the real viewport at any UI Size; the 50px menubar
+     inset isn't, because it's a length in this same zoomed space already. */
+  max-height: calc(100vh / var(--ui-scale, 1) - 50px);
 }
 
 /* Everything but the close button: the screen status strip above the columns */
@@ -108,6 +115,18 @@
 .menu__mode-keycap {
   font-size: 14px;
   padding: 2px 5px;
+}
+
+/* the UI Size row under Mode: same gadget-face treatment as the mode strip
+   (the menu's blue would swallow the unselected segments), one step tighter
+   above it since it's a second row in the same block rather than a new one */
+.menu__scale-row {
+  margin-top: 24px;
+  width: max-content;
+}
+
+.menu__scale-row .retro-toggle {
+  background-color: var(--paper);
 }
 
 .menu__close {

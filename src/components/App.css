@@ -21,6 +21,7 @@
 
 .toolbox-container {
   display: flex;
+  zoom: var(--ui-scale, 1); /* UI Size setting — see uiScale.ts */
   width: 81px; /* 40px icon, 1px divider, 40pc icon */
   flex-direction: column;
   flex-shrink: 0; /* never shrink width smaller than content (toolbar) */

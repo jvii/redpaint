@@ -21,14 +21,64 @@
   /*box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.4);*/
   width: 500px;
   text-align: right;
+  /* header / body / footer, so the body can be the one part that scrolls */
+  display: flex;
+  flex-direction: column;
+  /* Never taller than the viewport, minus a margin so it still reads as a
+     window floating over the app rather than a full-height panel. Requesters
+     are laid out at their natural height (Fill Style is ~800px tall) — fine
+     on a 1080p screen at 100%, but Windows display scaling at 125% leaves
+     only 864 CSS px of viewport, and a 1366x768 laptop less still. Without
+     this the overflow simply hangs off the bottom of the screen, taking the
+     OK button with it.
+
+     Divided by --ui-scale because the window is the element carrying the
+     `zoom` (see uiScale.ts): lengths inside a zoomed box are multiplied by
+     the zoom on render, viewport units included, so dividing here is what
+     makes the cap mean the same number of real screen pixels at any scale. */
+  max-height: calc((100vh - 24px) / var(--ui-scale, 1));
+  box-sizing: border-box; /* so the cap counts the 2px border, not just content */
+  zoom: var(--ui-scale, 1);
+}
+
+.modal__header {
+  flex: none;
+}
+
+.modal__body {
+  flex: 1 1 auto;
+  min-height: 0; /* a flex item won't shrink below its content without this */
+  overflow-y: auto;
+  /* The vertical scrollbar eats ~15px of a requester laid out to fill its
+     fixed width exactly, which is enough to push a few px of drop shadow
+     past the edge — clipped rather than answered with a second, horizontal
+     scrollbar across the bottom of a requester that has nothing to scroll
+     to sideways. */
+  overflow-x: clip;
+}
+
+/* see Modal.tsx's overflowingBody. The cap comes off with the scrolling:
+   capping a body that can't scroll would only push the content down through
+   the footer buttons — this variant is back to laying out at its natural
+   height, exactly as every requester did before the cap existed. */
+.modal__body--overflowing {
+  overflow: visible;
+}
+
+.modal__window--overflowing {
+  max-height: none;
+}
+
+.modal__footer {
+  flex: none;
 }
 
 /* footer buttons and divider align with the 30px body inset */
-.modal__window > button {
+.modal__footer > button {
   margin: 16px 10px 20px;
 }
 
-.modal__window > button:last-child {
+.modal__footer > button:last-child {
   margin-right: 30px;
 }
 

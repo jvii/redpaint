@@ -1,10 +1,19 @@
 import React, { JSX, useRef, useState } from 'react';
+import { useAppState } from '../../overmind';
+import { RetroButton } from '../ui/RetroButton';
 import './Modal.css';
 
 interface Props {
   header: string;
   children: React.ReactNode;
   width?: number;
+  // Lets the body overflow the window's box instead of scrolling inside it.
+  // For requesters whose content deliberately sticks out past the window edge
+  // (the palette editor's armed-action callout) — a scroll container would
+  // clip exactly that. Costs those requesters the too-tall-viewport
+  // protection below, so only use it when the requester is short enough that
+  // it was never going to need it.
+  overflowingBody?: boolean;
 }
 
 // How much of the header (the only drag handle — there's no other way to
@@ -13,7 +22,35 @@ interface Props {
 // viewport with no way to grab it again.
 const HEADER_MIN_VISIBLE = 100;
 
-export function Modal({ header, children, width }: Props): JSX.Element | null {
+// The requester's footer is its trailing run of buttons (OK / Cancel / the
+// dialog choices) — every caller writes them as the last children of the
+// Modal, after the body. Splitting them out here, rather than asking each
+// caller to wrap them, is what lets the body scroll on a short viewport
+// while the buttons stay pinned to the bottom of the window: a scroll
+// container has to be one element, and it can't be the whole window without
+// taking the buttons (and the drag handle) out of reach with the content.
+function isFooterButton(node: React.ReactNode): boolean {
+  return React.isValidElement(node) && (node.type === RetroButton || node.type === 'button');
+}
+
+function splitFooter(children: React.ReactNode): {
+  body: React.ReactNode[];
+  footer: React.ReactNode[];
+} {
+  const items = React.Children.toArray(children);
+  let start = items.length;
+  while (start > 0 && isFooterButton(items[start - 1])) {
+    start--;
+  }
+  return { body: items.slice(0, start), footer: items.slice(start) };
+}
+
+export function Modal({ header, children, width, overflowingBody }: Props): JSX.Element | null {
+  // The UI scale (#2) is a `zoom` on the window itself, so the drag offset —
+  // computed from pointer coordinates, which are unzoomed — has to be
+  // divided back out before it goes into a transform inside that zoomed box.
+  const uiScale = useAppState().app.uiScale;
+  const { body, footer } = splitFooter(children);
   // Offset from the centered position, driven by dragging the header
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const drag = useRef<{
@@ -68,9 +105,9 @@ export function Modal({ header, children, width }: Props): JSX.Element | null {
   return (
     <div className="modal__overlay-invisible">
       <div
-        className="modal__window"
+        className={'modal__window' + (overflowingBody ? ' modal__window--overflowing' : '')}
         style={{
-          transform: `translate(${offset.x}px, ${offset.y}px)`,
+          transform: `translate(${offset.x / uiScale}px, ${offset.y / uiScale}px)`,
           ...(width ? { width: `${width}px` } : {}),
         }}
       >
@@ -83,7 +120,10 @@ export function Modal({ header, children, width }: Props): JSX.Element | null {
         >
           <p>{header}</p>
         </div>
-        {children}
+        <div className={'modal__body' + (overflowingBody ? ' modal__body--overflowing' : '')}>
+          {body}
+        </div>
+        {footer.length > 0 && <div className="modal__footer">{footer}</div>}
       </div>
     </div>
   );

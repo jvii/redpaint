@@ -1,3 +1,5 @@
+import { loadUiScale } from '../../uiScale';
+
 export type State = {
   pasteBufferImageObjectURL: string;
   // What the image load requester shows about the decoded image awaiting a
@@ -13,6 +15,10 @@ export type State = {
   // the Brush drawer (transforms + brush disk) inside the menu; remembered
   // across menu open/close so it reopens the way it was left
   brushDrawerOpen: boolean;
+  // How much the app chrome is scaled down, for OS display scaling and small
+  // screens — see uiScale.ts. Persisted in localStorage, not part of a
+  // document, so it's read back here at startup.
+  uiScale: number;
 };
 
 export const state: State = {
@@ -22,4 +28,5 @@ export const state: State = {
   isLoading: false,
   menuOpen: false,
   brushDrawerOpen: true,
+  uiScale: loadUiScale(),
 };

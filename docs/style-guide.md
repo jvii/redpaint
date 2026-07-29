@@ -67,6 +67,31 @@ These rules are absolute — they, not icon style, make the app read retro:
   deliberate dim-label colors.
 - Gadgets on a row share one fixed height so seams and shadows line up.
 
+## Sizes and scaling
+
+Chrome is laid out in hardcoded CSS pixels, deliberately — the retro look is
+a pixel grid, and the type sizes below only work on 8px multiples. It stays
+that way. What flexes instead is the whole chrome at once, through the
+**UI Size** setting in the menu panel (`src/uiScale.ts`): a CSS `zoom` on the
+menubar, menu panel, toolbox column and requesters, for OS display scaling
+(Windows at 125% leaves a 1080p screen only 864 CSS px tall) and short
+laptop screens. Consequences for new UI:
+
+- Keep writing plain px. Don't reach for `rem`, `vh`-based type sizes, or
+  `clamp()` to make something "responsive" — a fractional Press Start 2P
+  size blurs the bitmap face, and the scale steps (80/75/67%) are chosen as
+  inverses of the common OS scaling factors so a scaled UI still lands on
+  whole device pixels.
+- A **viewport unit inside a zoomed container must be divided by
+  `var(--ui-scale, 1)`** — `zoom` multiplies computed lengths, and `vh`
+  arrives unconverted, so an undivided `100vh` means 80% of the window at
+  80%. Percentages need no compensation (the containing block is converted
+  first). Grep `--ui-scale` for the existing sites.
+- Requesters (`Modal.tsx`) cap at the viewport height and scroll their body,
+  with the header and footer buttons pinned. Anything tall belongs in the
+  body, and the OK/Cancel row stays the modal's last children so the footer
+  split finds it.
+
 ## Typography
 
 - Press Start 2P for every piece of UI text, `-webkit-font-smoothing: none`.
