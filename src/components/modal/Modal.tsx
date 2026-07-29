@@ -120,7 +120,11 @@ export function Modal({ header, children, width, overflowingBody }: Props): JSX.
         >
           <p>{header}</p>
         </div>
-        <div className={'modal__body' + (overflowingBody ? ' modal__body--overflowing' : '')}>
+        <div
+          className={
+            'modal__body retro-scrollbar' + (overflowingBody ? ' modal__body--overflowing' : '')
+          }
+        >
           {body}
         </div>
         {footer.length > 0 && <div className="modal__footer">{footer}</div>}

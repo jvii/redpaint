@@ -40,6 +40,10 @@
    content while collapsed. Flex layout here (not on .menu) lays out
    .menu__main beside .menu__close, same as before. */
 .menu__collapse {
+  /* white thumb, not the shared default's blue: this panel's ground IS the
+     Workbench blue, and it's the same white as the panel's own section rules
+     and labels (see .retro-scrollbar, index.css) */
+  --scrollbar-thumb: white;
   display: flex;
   overflow-x: hidden;
   overflow-y: auto;

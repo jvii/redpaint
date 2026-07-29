@@ -36,6 +36,45 @@
   --checker-half: 6px;
 }
 
+/* Scrollbars, wherever one shows up (the requester body, the menu panel on a
+   short viewport). Always a fallback — a panel that fits doesn't have one —
+   so it keeps the platform's rounded, inset shape rather than being rebuilt
+   as a squared-off Workbench trough, and takes only the palette: a thumb in
+   --scrollbar-thumb, orange on hover like every other control. Set
+   --scrollbar-thumb per ground (blue on paper, white on the menu's blue).
+
+   The transparent border plus background-clip is what keeps that inset
+   shape while the color is ours; a thumb painted edge to edge reads as the
+   old square WebKit bar. Firefox has no scrollbar pseudo-elements, only the
+   standard properties — and they carry no hover state, which is why they
+   aren't the main path; they're scoped so Blink never sees them, because
+   setting `scrollbar-color` anywhere is what makes it ignore the rules
+   above. */
+.retro-scrollbar::-webkit-scrollbar {
+  width: 15px;
+}
+
+.retro-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.retro-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb, var(--wb-blue));
+  background-clip: content-box;
+  border: 4px solid transparent;
+  border-radius: 8px;
+}
+
+.retro-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--wb-orange);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .retro-scrollbar {
+    scrollbar-color: var(--scrollbar-thumb, var(--wb-blue)) transparent;
+  }
+}
+
 .transparency-checker {
   background-color: var(--checker-light);
   background-image:

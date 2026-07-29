@@ -91,10 +91,17 @@ laptop screens. Consequences for new UI:
   with the header and footer buttons pinned. Anything tall belongs in the
   body, and the OK/Cancel row stays the modal's last children so the footer
   split finds it. Leave a requester's own width enough slack to give the
-  scrollbar its ~15px without the content losing anything (Fill Style's 540
-  is 500 plus that margin) — the bar itself keeps the platform's rounded
-  shape, deliberately not rebuilt as a retro trough, but takes the palette's
-  blue thumb and orange hover like every other control.
+  scrollbar its ~15px without the content losing anything — Fill Style's 820
+  covers it, and its two-column layout means it no longer needs the scroll on
+  a 125%-scaled 1080p screen at all.
+- **Scrollbars** anywhere (requester body, menu panel) use the shared
+  `.retro-scrollbar` class from `index.css`, never hand-rolled per component.
+  They keep the platform's rounded, inset shape — deliberately not rebuilt as
+  a squared-off Workbench trough, since a bar that only appears when a panel
+  doesn't fit is the wrong place for that weight — and take only the palette:
+  the thumb is `--scrollbar-thumb` (set per ground: the shared blue default
+  on paper, white on the menu panel's blue) and turns orange on hover like
+  every other control.
 
 ## Typography
 

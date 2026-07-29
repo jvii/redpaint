@@ -155,7 +155,7 @@ export function Menu(): JSX.Element {
         setTimeout(refreshBrushPreview, 0);
       }}
     >
-      <div className="menu__collapse">
+      <div className="menu__collapse retro-scrollbar">
         {state.app.menuOpen && (
           <>
             <div className="menu__main">
