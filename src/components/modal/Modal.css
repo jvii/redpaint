@@ -19,7 +19,11 @@
   border: 2px solid black;
   border-radius: 5px;
   /*box-shadow: 4px 4px 0 0 rgba(0, 0, 0, 0.4);*/
-  width: 500px;
+  /* --modal-gutter is the scrollbar's width, set by Modal.tsx only while the
+     body actually scrolls: the window grows to host the bar rather than the
+     content shrinking to make room for it. Callers passing an explicit width
+     get the same treatment inline. */
+  width: calc(500px + var(--modal-gutter, 0px));
   text-align: right;
   /* header / body / footer, so the body can be the one part that scrolls */
   display: flex;
@@ -55,7 +59,17 @@
      scrollbar across the bottom of a requester that has nothing to scroll
      to sideways. */
   overflow-x: clip;
+  /* The bar is a last resort (a requester that fits doesn't have one), so it
+     gets the platform scrollbar tinted to the palette and nothing more —
+     `::-webkit-scrollbar` can rebuild it as a squared-off Workbench trough,
+     but a piece of retro furniture is the wrong weight for something that
+     only shows up when the window is too short. The rounded thumb that comes
+     with the standard scrollbar is accepted along with it (note that setting
+     either standard property is what makes Blink ignore the -webkit- rules,
+     so the two approaches can't be combined as progressive enhancement). */
+  scrollbar-color: var(--wb-blue) var(--paper);
 }
+
 
 /* see Modal.tsx's overflowingBody. The cap comes off with the scrolling:
    capping a body that can't scroll would only push the content down through
@@ -71,6 +85,9 @@
 
 .modal__footer {
   flex: none;
+  /* the buttons align with the body's content, not with the gutter the
+     scrollbar occupies beside it */
+  padding-right: var(--modal-gutter, 0px);
 }
 
 /* footer buttons and divider align with the 30px body inset */

@@ -90,7 +90,12 @@ laptop screens. Consequences for new UI:
 - Requesters (`Modal.tsx`) cap at the viewport height and scroll their body,
   with the header and footer buttons pinned. Anything tall belongs in the
   body, and the OK/Cancel row stays the modal's last children so the footer
-  split finds it.
+  split finds it. The window widens by the scrollbar's own width when that
+  happens, so the bar never takes space from content laid out to fill the
+  requester exactly. The bar itself is the platform scrollbar tinted to the
+  palette (`scrollbar-color`) and nothing more — a fallback that only
+  appears on a too-short window isn't worth rebuilding as retro furniture,
+  and its rounded thumb is accepted as the cost of staying subtle.
 
 ## Typography
 
