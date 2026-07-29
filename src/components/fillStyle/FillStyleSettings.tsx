@@ -79,7 +79,7 @@ function FillStyleSettingsOpen(): JSX.Element {
     // Wider than the default requester because it lays out in two columns
     // (see the CSS): the 260px mode column, the gap, and a settings column
     // with room for the axis toggle and the sliders' labels.
-    <Modal header="Fill Style" width={800}>
+    <Modal header="Fill Style" width={820}>
       <div className="fill-style-settings__body">
         {/* what the fill looks like, and what it is: the preview leads, with
             the mode choice that drives it directly under */}

@@ -6,7 +6,10 @@
 .fill-style-settings__body {
   display: flex;
   align-items: flex-start;
-  gap: 24px;
+  /* wider than the 24px that separates rows within a column: the two columns
+     are separate subjects, and at the same spacing as their own contents
+     they read as one loose grid instead */
+  gap: 44px;
   padding: 24px 30px 28px 30px;
   text-align: left;
 }
