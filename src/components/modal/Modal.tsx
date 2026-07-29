@@ -1,4 +1,4 @@
-import React, { JSX, useLayoutEffect, useRef, useState } from 'react';
+import React, { JSX, useRef, useState } from 'react';
 import { useAppState } from '../../overmind';
 import { RetroButton } from '../ui/RetroButton';
 import './Modal.css';
@@ -45,47 +45,12 @@ function splitFooter(children: React.ReactNode): {
   return { body: items.slice(0, start), footer: items.slice(start) };
 }
 
-// Widens the window by exactly the scrollbar's own width when the body
-// scrolls, so the bar sits beside the content instead of eating into it.
-// A classic (non-overlay) scrollbar — Windows' default, and what the
-// requesters are laid out too tightly to give up 15px to: Fill Style's
-// two-column top row is within a few px of its minimum width, so the bar
-// squeezed the Fill toggle past the window edge. Returns 0 where scrollbars
-// overlay (macOS), where there's nothing to make room for.
-//
-// Grow-only, and reset per open (the hook lives with the mounted window):
-// removing the gutter again would give the content back the width that
-// stopped it needing a scrollbar, which is the shape of a layout that
-// oscillates. Once a requester has asked for the gutter it keeps it.
-function useScrollbarGutter(bodyRef: React.RefObject<HTMLDivElement | null>): number {
-  const [gutter, setGutter] = useState(0);
-  useLayoutEffect((): (() => void) | undefined => {
-    const element = bodyRef.current;
-    if (!element) {
-      return undefined;
-    }
-    const measure = (): void => {
-      // offsetWidth counts the scrollbar, clientWidth doesn't; both are in
-      // the box's own units, so this stays correct under the UI Size zoom
-      const width = element.offsetWidth - element.clientWidth;
-      setGutter((previous): number => (width > previous ? width : previous));
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return (): void => observer.disconnect();
-  }, [bodyRef]);
-  return gutter;
-}
-
 export function Modal({ header, children, width, overflowingBody }: Props): JSX.Element | null {
   // The UI scale (#2) is a `zoom` on the window itself, so the drag offset —
   // computed from pointer coordinates, which are unzoomed — has to be
   // divided back out before it goes into a transform inside that zoomed box.
   const uiScale = useAppState().app.uiScale;
   const { body, footer } = splitFooter(children);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const gutter = useScrollbarGutter(bodyRef);
   // Offset from the centered position, driven by dragging the header
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const drag = useRef<{
@@ -143,10 +108,7 @@ export function Modal({ header, children, width, overflowingBody }: Props): JSX.
         className={'modal__window' + (overflowingBody ? ' modal__window--overflowing' : '')}
         style={{
           transform: `translate(${offset.x / uiScale}px, ${offset.y / uiScale}px)`,
-          // the gutter is added to the window's width, not subtracted from
-          // the body's, so the content keeps the width it was designed at
-          ...(width ? { width: `${width + gutter}px` } : {}),
-          ...(gutter ? { ['--modal-gutter' as string]: `${gutter}px` } : {}),
+          ...(width ? { width: `${width}px` } : {}),
         }}
       >
         <div
@@ -158,10 +120,7 @@ export function Modal({ header, children, width, overflowingBody }: Props): JSX.
         >
           <p>{header}</p>
         </div>
-        <div
-          ref={bodyRef}
-          className={'modal__body' + (overflowingBody ? ' modal__body--overflowing' : '')}
-        >
+        <div className={'modal__body' + (overflowingBody ? ' modal__body--overflowing' : '')}>
           {body}
         </div>
         {footer.length > 0 && <div className="modal__footer">{footer}</div>}

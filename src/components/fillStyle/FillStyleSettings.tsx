@@ -76,7 +76,11 @@ function FillStyleSettingsOpen(): JSX.Element {
   const isPattern = state.fillStyle.mode === 'brush';
 
   return (
-    <Modal header="Fill Style">
+    // Wider than the default requester: the top row (a fixed 260px preview
+    // beside the Fill toggle) was within a few px of filling 500, which left
+    // no margin to speak of on the right and nothing to give up when the
+    // body's scrollbar wants its ~15px on a short window.
+    <Modal header="Fill Style" width={540}>
       <div className="fill-style-settings__body">
         <div className="fill-style-settings__top">
           <canvas
