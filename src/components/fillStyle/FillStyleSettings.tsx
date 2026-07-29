@@ -81,9 +81,15 @@ function FillStyleSettingsOpen(): JSX.Element {
     // with room for the axis toggle and the sliders' labels.
     <Modal header="Fill Style" width={800}>
       <div className="fill-style-settings__body">
-        {/* what the fill IS, and what it looks like: the mode choice with
-            its own result directly under it */}
+        {/* what the fill looks like, and what it is: the preview leads, with
+            the mode choice that drives it directly under */}
         <div className="fill-style-settings__mode-column">
+          <canvas
+            ref={previewRef}
+            width={previewWidth}
+            height={previewHeight}
+            className="fill-style-settings__preview transparency-checker"
+          />
           <RetroFieldset legend="Fill">
             <RetroToggle
               variant="column"
@@ -96,12 +102,6 @@ function FillStyleSettingsOpen(): JSX.Element {
               onChange={(value): void => actions.fillStyle.setMode(value as FillMode)}
             />
           </RetroFieldset>
-          <canvas
-            ref={previewRef}
-            width={previewWidth}
-            height={previewHeight}
-            className="fill-style-settings__preview transparency-checker"
-          />
         </div>
         {/* the settings behind the two modes that have any, in the same
             order as the segments that select them */}
