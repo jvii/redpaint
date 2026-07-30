@@ -38,7 +38,12 @@ Semantic exceptions, deliberately scarce:
   accent.
 - **Transparency checkerboard**, `#e8e8e8`/`#cfcfcf` in 12px squares, on any
   surface where "the canvas shows through here" is the point: the load
-  preview, an occupied brush slot, the Fill Style preview swatch. Never
+  preview, an occupied brush slot. Not the Fill Style preview, which paints
+  the current background color behind its ellipse instead — a fill only means
+  anything against what it will sit on, and the checker was answering a
+  question nobody had while covering the answer to the one they did. Worth
+  asking before reaching for it: is the transparency the subject here, or
+  just the backdrop? Never
   hand-rolled per component — apply the `.transparency-checker` class
   (defined once in `index.css`, off `--checker-*` custom properties), which
   exists because this drifted into a second set of colors and cell size the

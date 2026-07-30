@@ -1,6 +1,7 @@
 import { JSX, useRef } from 'react';
 import './FillStyleSettings.css';
 import { useActions, useAppState } from '../../overmind';
+import { colorToRGBString } from '../../algorithm/color';
 import { GradientAxis } from '../../algorithm/gradientFill';
 import { FillMode } from '../../overmind/fillStyle/state';
 import { Modal } from '../modal/Modal';
@@ -81,15 +82,10 @@ function FillStyleSettingsOpen(): JSX.Element {
     // with room for the axis toggle and the sliders' labels.
     <Modal header="Fill Style" width={820}>
       <div className="fill-style-settings__body">
-        {/* what the fill looks like, and what it is: the preview leads, with
-            the mode choice that drives it directly under */}
+        {/* what the fill is, then what it looks like: the mode choice leads
+            and its preview sits under, so the column reads as cause above
+            effect and each of the two carries its own legend */}
         <div className="fill-style-settings__mode-column">
-          <canvas
-            ref={previewRef}
-            width={previewWidth}
-            height={previewHeight}
-            className="fill-style-settings__preview transparency-checker"
-          />
           <RetroFieldset legend="Fill">
             <RetroToggle
               variant="column"
@@ -101,6 +97,25 @@ function FillStyleSettingsOpen(): JSX.Element {
               value={state.fillStyle.mode}
               onChange={(value): void => actions.fillStyle.setMode(value as FillMode)}
             />
+          </RetroFieldset>
+          <RetroFieldset legend="Preview">
+            {/* The swatch's GL canvas is transparent outside its ellipse, so
+                whatever sits behind it is what the fill appears to be drawn
+                on. Painting that the current background color makes the
+                preview show the pairing you will actually get on canvas -
+                a light fill on a dark background reads completely
+                differently from the same fill on paper. displayBackgroundColor,
+                not backgroundColor, so it follows color cycling the way the
+                palette's own indicator does. */}
+            <div className="fill-style-settings__preview-frame">
+              <canvas
+                ref={previewRef}
+                width={previewWidth}
+                height={previewHeight}
+                className="fill-style-settings__preview"
+                style={{ backgroundColor: colorToRGBString(state.palette.displayBackgroundColor) }}
+              />
+            </div>
           </RetroFieldset>
         </div>
         {/* the settings behind the two modes that have any, in the same
