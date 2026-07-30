@@ -10,6 +10,7 @@ import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanva
 import { findMatchingScreenFormat } from '../canvas/state';
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
+import { Drawer } from './state';
 
 export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
   context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
@@ -158,9 +159,9 @@ export const closeMenu = (context: Context): void => {
   context.state.app.menuOpen = false;
 };
 
-// Picture and Brush are a radio group (Menu.tsx) — opening one closes the
-// other, and clicking the open one again collapses both.
-export const toggleDrawer = (context: Context, drawer: 'picture' | 'brush'): void => {
+// The drawers are a radio group (Menu.tsx) — opening one closes the others,
+// and clicking the open one again collapses it.
+export const toggleDrawer = (context: Context, drawer: Drawer): void => {
   context.state.app.openDrawer = context.state.app.openDrawer === drawer ? null : drawer;
 };
 

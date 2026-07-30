@@ -121,18 +121,6 @@
   padding: 2px 5px;
 }
 
-/* the UI Size row under Mode: same gadget-face treatment as the mode strip
-   (the menu's blue would swallow the unselected segments), one step tighter
-   above it since it's a second row in the same block rather than a new one */
-.menu__scale-row {
-  margin-top: 24px;
-  width: max-content;
-}
-
-.menu__scale-row .retro-toggle {
-  background-color: var(--paper);
-}
-
 .menu__close {
   width: auto;
   margin-right: 10px;

@@ -175,8 +175,8 @@ literal pictures of the pixels they paint — content, not iconography.
 Consistency is judged within each control type, not across them:
 
 - **Menu gadgets**: always icon + 16px label, in one of two layouts —
-  _horizontal_ (icon left: the rail's Open/Save/Brush and the drawer's File
-  gadgets) or _stacked_ (icon centered above the label: the transform
+  _horizontal_ (icon left: the rail's Picture/Brush/Prefs and the drawer's
+  File gadgets) or _stacked_ (icon centered above the label: the transform
   gadgets, giving them the classic toolbar-button silhouette and, with
   longer labels, a narrower footprint). One layout per group, never mixed
   within one.

@@ -62,3 +62,10 @@
   gap: 28px 32px;
   align-items: flex-start;
 }
+
+/* a setting's toggle (the Preferences drawer) needs the usual gadget face:
+   RetroToggle's segments are transparent, and the menu's own blue would
+   swallow the unselected ones. Same reason as Menu.css's mode row. */
+.drawer-menu .retro-toggle {
+  background-color: var(--paper);
+}

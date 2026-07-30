@@ -9,10 +9,10 @@ import { icons, PixelIcon } from './pixelIcons';
 import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
 import { PictureMenu } from './PictureMenu';
+import { PreferencesMenu } from './PreferencesMenu';
 import { isIlbmHeader } from '../../fileformat/ilbm';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import './Menu.css';
-import { UI_SCALES } from '../../uiScale';
 
 // IFF is recognized by content, not extension — extensions in the wild vary
 // (.iff, .lbm, .ilbm) and lie; isIlbmHeader knows what content qualifies.
@@ -21,8 +21,8 @@ async function isIffFile(file: File): Promise<boolean> {
 }
 
 // The drop-down menu panel under the menubar: the screen status strip and
-// gadget rail, the always-visible mode row, and the Picture/Brush drawer
-// (a radio group — only one open at a time, see app.openDrawer).
+// gadget rail, the always-visible mode row, and the Picture/Brush/Prefs
+// drawer (a radio group — only one open at a time, see app.openDrawer).
 //
 // The panel collapses via the CSS grid-template-rows 0fr/1fr trick
 // (Menu.css) instead of a JS-measured pixel height, which means the content
@@ -129,6 +129,13 @@ export function Menu(): JSX.Element {
                     on={state.app.openDrawer === 'brush'}
                     onClick={(): void => actions.app.toggleDrawer('brush')}
                   />
+                  <Gadget
+                    icon={<PixelIcon map={icons.prefs} scale={2} />}
+                    label="Prefs"
+                    title="Preferences"
+                    on={state.app.openDrawer === 'prefs'}
+                    onClick={(): void => actions.app.toggleDrawer('prefs')}
+                  />
                 </GadgetGroup>
               </div>
               {/* every mode one click away; the pressed segment is the mode
@@ -160,25 +167,9 @@ export function Menu(): JSX.Element {
                   }))}
                 />
               </div>
-              {/* PROTOTYPE (uiScale.ts): shrinks the menubar, this panel, the
-                  toolbox column and the requesters, leaving the canvas
-                  untouched — for Windows display scaling and short screens,
-                  where the chrome is laid out in CSS pixels the OS has
-                  already made bigger. */}
-              <div className="menu__scale-row">
-                <div className="wb-cluster__head">UI Size</div>
-                <RetroToggle
-                  variant="row"
-                  value={String(state.app.uiScale)}
-                  onChange={(value): void => actions.app.setUiScale(Number(value))}
-                  options={UI_SCALES.map((scale) => ({
-                    value: String(scale),
-                    label: `${Math.round(scale * 100)}%`,
-                  }))}
-                />
-              </div>
               {state.app.openDrawer === 'picture' && <PictureMenu onOpenFile={imageOpener.open} />}
               {state.app.openDrawer === 'brush' && <BrushMenu onOpenFile={brushOpener.open} />}
+              {state.app.openDrawer === 'prefs' && <PreferencesMenu />}
             </div>
             <div className="menu__close">
               <button

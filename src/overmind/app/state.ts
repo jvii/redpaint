@@ -1,5 +1,8 @@
 import { loadUiScale } from '../../uiScale';
 
+// The menu's drawers (Menu.tsx) — mutually exclusive, one panel each.
+export type Drawer = 'picture' | 'brush' | 'prefs';
+
 export type State = {
   pasteBufferImageObjectURL: string;
   // What the image load requester shows about the decoded image awaiting a
@@ -12,11 +15,11 @@ export type State = {
   brushLoadInfo: { width: number; height: number; colorCount: number } | null;
   isLoading: boolean;
   menuOpen: boolean;
-  // Which of the menu's two drawers (Picture: image disk I/O; Brush:
-  // transforms + brush disk) is open — a radio group, only one at a time —
-  // or null if both are collapsed. Remembered across menu open/close so it
-  // reopens the way it was left.
-  openDrawer: 'picture' | 'brush' | null;
+  // Which of the menu's drawers (Picture: image disk I/O; Brush: transforms
+  // + brush disk; Prefs: app settings) is open — a radio group, only one at
+  // a time — or null if all are collapsed. Remembered across menu open/close
+  // so it reopens the way it was left.
+  openDrawer: Drawer | null;
   // How much the app chrome is scaled down, for OS display scaling and small
   // screens — see uiScale.ts. Persisted in localStorage, not part of a
   // document, so it's read back here at startup.
