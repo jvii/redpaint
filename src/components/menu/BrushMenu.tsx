@@ -23,7 +23,7 @@ import {
   RestoreIcon,
 } from './transformIcons';
 import { saveCanvasAsPng } from './saveAsPng';
-import './BrushMenu.css';
+import './DrawerMenu.css';
 
 // Only captured or loaded brushes can be saved — the pixel brush has no
 // bitmap and the built-in brushes are not the user's work.
@@ -104,12 +104,12 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   };
 
   return (
-    <div className="brush-menu">
-      <div className="wb-cluster__head brush-menu__head">
+    <div className="drawer-menu">
+      <div className="wb-cluster__head drawer-menu__head">
         Brush
         <span className="brush-menu__current">{describeCurrentBrush(usingBuiltInBrush)}</span>
       </div>
-      <div className="brush-menu__row">
+      <div className="drawer-menu__row">
         <GadgetCluster head="File">
           <Gadget
             icon={<PixelIcon map={icons.disk} scale={3} />}
@@ -128,7 +128,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
       </div>
       {/* every transform gets its own row, separate from the file
           gadgets above — it's a distinct kind of action */}
-      <div className="brush-menu__row">
+      <div className="drawer-menu__row">
         <GadgetCluster head="Size">
           <Gadget
             icon={<StretchIcon />}
@@ -251,11 +251,11 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
       {/* the deliberate stash (docs/brush-slots.md), its own row below the
           transforms — recall isn't a transform, and a click here should
           never trigger the instant-transform's "close the menu" behavior */}
-      <div className="brush-menu__row">
+      <div className="drawer-menu__row">
         <BrushSlotStrip />
         <PreviousBrushSlot />
       </div>
-      <div className="brush-menu__spacer" />
+      <div className="drawer-menu__spacer" />
     </div>
   );
 }

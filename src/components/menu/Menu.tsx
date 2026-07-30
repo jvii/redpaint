@@ -1,6 +1,5 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
-import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { Mode } from '../../overmind/brush/state';
 import { MODE_ORDER } from '../../overmind/brush/mode';
 import { isEdge } from '../../browser';
@@ -9,12 +8,10 @@ import { Gadget, GadgetGroup, useFileOpener } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
-import { saveCanvasAsPng, saveFile } from './saveAsPng';
-import { encodeIlbm, isIlbmHeader } from '../../fileformat/ilbm';
+import { PictureMenu } from './PictureMenu';
+import { isIlbmHeader } from '../../fileformat/ilbm';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
-import { cycleDriver } from '../../canvas/CycleDriver';
 import './Menu.css';
-import { plainPalette } from '../../algorithm/imageColors';
 import { UI_SCALES } from '../../uiScale';
 
 // IFF is recognized by content, not extension — extensions in the wild vary
@@ -24,7 +21,8 @@ async function isIffFile(file: File): Promise<boolean> {
 }
 
 // The drop-down menu panel under the menubar: the screen status strip and
-// gadget rail, the always-visible mode row, and the brush drawer.
+// gadget rail, the always-visible mode row, and the Picture/Brush drawer
+// (a radio group — only one open at a time, see app.openDrawer).
 //
 // The panel collapses via the CSS grid-template-rows 0fr/1fr trick
 // (Menu.css) instead of a JS-measured pixel height, which means the content
@@ -76,59 +74,10 @@ export function Menu(): JSX.Element {
 
   // Both file inputs render once below, outside the menu's collapsible
   // content (see the mount-location comment on useFileOpener) — the trigger
-  // buttons stay wherever they visually belong (the rail here, the drawer's
-  // File cluster for the brush one, via the `open` passed down to BrushMenu).
+  // buttons stay wherever they visually belong (each drawer's own File
+  // cluster, via the `open` passed down to PictureMenu/BrushMenu).
   const imageOpener = useFileOpener(handleImageFileOpen, 'image/*,.iff,.ilbm,.lbm');
   const brushOpener = useFileOpener(handleBrushFileOpen);
-
-  const handleImageSave = (): void => {
-    // The PNG is read straight off the drawing buffer, which would bake a
-    // mid-cycle palette rotation into the file — hold the base colors until
-    // the capture (which happens after the async save picker) completes.
-    void cycleDriver.withBaseColors(async (): Promise<void> => {
-      // preserveDrawingBuffer is on, but render once to be sure the buffer is current
-      paintingCanvasController.render();
-      await saveCanvasAsPng(paintingCanvasController.mainCanvas, 'redpaint.png');
-    });
-  };
-
-  const handleImageSaveIlbm = (): void => {
-    const colorIndex = paintingCanvasController.getCanvasColorIndex();
-    const pixels = colorIndex?.toIndexedPixels();
-    if (!colorIndex || !pixels) {
-      alert(
-        'The image has True Color pixels — IFF ILBM stores palette-indexed pixels only. ' +
-          'Turn True Color off in Screen Format first.'
-      );
-      return;
-    }
-    const colors = plainPalette(Object.values(state.palette.palette));
-    const cycleRanges = state.palette.ranges.flatMap((range) =>
-      range
-        ? [
-            {
-              low: Number(range.start) - 1,
-              high: Number(range.end) - 1,
-              rate: range.rate,
-              active: range.active,
-              reverse: range.reverse,
-            },
-          ]
-        : []
-    );
-    const bytes = encodeIlbm({
-      width: colorIndex.width,
-      height: colorIndex.height,
-      palette: colors,
-      pixels,
-      cycleRanges,
-    });
-    void saveFile(async () => new Blob([bytes], { type: 'image/x-ilbm' }), 'redpaint.iff', {
-      description: 'IFF ILBM image',
-      mime: 'image/x-ilbm',
-      extension: '.iff',
-    });
-  };
 
   // for disabling Matte mode selection when using a built-in brush
   const usingBuiltInBrush = state.brush.usingBuiltInBrush;
@@ -162,35 +111,23 @@ export function Menu(): JSX.Element {
               {/* Live screen state readout plus the gadget rail beside it */}
               <div className="menu__status">
                 <ScreenStatus />
-                {/* image disk I/O, one click from the rail */}
+                {/* Picture and Brush are a radio group (state.app.openDrawer)
+                    — only one drawer can be open at a time, so exactly one of
+                    these two reads "on" */}
                 <GadgetGroup>
                   <Gadget
                     icon={<PixelIcon map={icons.image} scale={1} />}
-                    label="Open"
-                    title="Open image..."
-                    onClick={imageOpener.open}
+                    label="Picture"
+                    title="Picture disk I/O"
+                    on={state.app.openDrawer === 'picture'}
+                    onClick={(): void => actions.app.toggleDrawer('picture')}
                   />
-                  <Gadget
-                    icon={<PixelIcon map={icons.disk} scale={3} />}
-                    label="Save"
-                    title="Save image..."
-                    onClick={handleImageSave}
-                  />
-                  <Gadget
-                    icon={<PixelIcon map={icons.disk} scale={3} />}
-                    label="Save IFF"
-                    title="Save as IFF..."
-                    onClick={handleImageSaveIlbm}
-                  />
-                </GadgetGroup>
-                {/* everything brush lives behind this: transforms + brush disk */}
-                <GadgetGroup>
                   <Gadget
                     icon={<PixelIcon map={icons.brush} scale={3} />}
                     label="Brush"
                     title="Brush tools"
-                    on={state.app.brushDrawerOpen}
-                    onClick={actions.app.toggleBrushDrawer}
+                    on={state.app.openDrawer === 'brush'}
+                    onClick={(): void => actions.app.toggleDrawer('brush')}
                   />
                 </GadgetGroup>
               </div>
@@ -240,7 +177,8 @@ export function Menu(): JSX.Element {
                   }))}
                 />
               </div>
-              {state.app.brushDrawerOpen && <BrushMenu onOpenFile={brushOpener.open} />}
+              {state.app.openDrawer === 'picture' && <PictureMenu onOpenFile={imageOpener.open} />}
+              {state.app.openDrawer === 'brush' && <BrushMenu onOpenFile={brushOpener.open} />}
             </div>
             <div className="menu__close">
               <button

@@ -12,9 +12,11 @@ export type State = {
   brushLoadInfo: { width: number; height: number; colorCount: number } | null;
   isLoading: boolean;
   menuOpen: boolean;
-  // the Brush drawer (transforms + brush disk) inside the menu; remembered
-  // across menu open/close so it reopens the way it was left
-  brushDrawerOpen: boolean;
+  // Which of the menu's two drawers (Picture: image disk I/O; Brush:
+  // transforms + brush disk) is open — a radio group, only one at a time —
+  // or null if both are collapsed. Remembered across menu open/close so it
+  // reopens the way it was left.
+  openDrawer: 'picture' | 'brush' | null;
   // How much the app chrome is scaled down, for OS display scaling and small
   // screens — see uiScale.ts. Persisted in localStorage, not part of a
   // document, so it's read back here at startup.
@@ -27,6 +29,6 @@ export const state: State = {
   brushLoadInfo: null,
   isLoading: false,
   menuOpen: false,
-  brushDrawerOpen: true,
+  openDrawer: 'brush',
   uiScale: loadUiScale(),
 };

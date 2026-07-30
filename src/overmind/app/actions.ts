@@ -158,8 +158,10 @@ export const closeMenu = (context: Context): void => {
   context.state.app.menuOpen = false;
 };
 
-export const toggleBrushDrawer = (context: Context): void => {
-  context.state.app.brushDrawerOpen = !context.state.app.brushDrawerOpen;
+// Picture and Brush are a radio group (Menu.tsx) — opening one closes the
+// other, and clicking the open one again collapses both.
+export const toggleDrawer = (context: Context, drawer: 'picture' | 'brush'): void => {
+  context.state.app.openDrawer = context.state.app.openDrawer === drawer ? null : drawer;
 };
 
 // The chrome scale (uiScale.ts). The --ui-scale custom property the CSS
