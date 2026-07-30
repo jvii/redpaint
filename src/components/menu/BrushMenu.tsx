@@ -110,15 +110,21 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
         <span className="brush-menu__current">{describeCurrentBrush(usingBuiltInBrush)}</span>
       </div>
       <div className="drawer-menu__row">
+        {/* Open and Save sit in their own groups, as in the Picture drawer -
+            see the comment there on why reading and writing don't share a
+            seam. Here it also keeps Save's disabled state (built-in brushes
+            cannot be saved) from reading as if it dimmed the pair. */}
         <GadgetCluster head="File">
           <Gadget
-            icon={<PixelIcon map={icons.disk} scale={3} />}
+            icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
             title="Open brush..."
             onClick={onOpenFile}
           />
+        </GadgetCluster>
+        <GadgetCluster>
           <Gadget
-            icon={<PixelIcon map={icons.disk} scale={3} />}
+            icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
             title={usingBuiltInBrush ? 'Cannot save a built-in brush' : 'Save brush...'}
             onClick={handleBrushSave}
@@ -238,9 +244,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Restore"
             stacked
             title={
-              usingBuiltInBrush
-                ? 'Cannot restore a built-in brush'
-                : 'Restore original brush — B'
+              usingBuiltInBrush ? 'Cannot restore a built-in brush' : 'Restore original brush — B'
             }
             shortcut={shortcutCap('B')}
             disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}

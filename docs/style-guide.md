@@ -15,15 +15,14 @@ property, never the literal. They were hand-typed at 46 sites before this,
 which is how the transparency checkerboard below ended up with two different
 sets of values.
 
-| Role                                                            | Property          | Value                            |
-| --------------------------------------------------------------- | ----------------- | -------------------------------- |
-| Workbench blue (panel ground, pressed gadgets)                  | `--wb-blue`       | `rgb(0, 85, 170)`                |
-| Deep blue (pressed-in inset shadow)                             | `--wb-deep-blue`  | `rgb(0, 51, 102)`                |
-| Workbench orange (accent: hover, selected labels, armed states) | `--wb-orange`     | `#ff8800`                        |
-| Paper / gadget face                                             | `--paper`         | `rgb(242, 242, 242)` (`#ffffff` where a control wants pure white) |
-| Ink (borders, shadows, labels)                                  | —                 | the `black` keyword              |
-| Disabled / dim label                                            | `--dim-label`     | `rgb(130,130,130)`, at `0.45` alpha for a single disabled segment inside an enabled group |
-| Icon navy (pixel-icon outlines/bodies)                          | —                 | `#0a0a28`, `pixelIcons.tsx` only |
+| Role                                                            | Property         | Value                                                                                     |
+| --------------------------------------------------------------- | ---------------- | ----------------------------------------------------------------------------------------- |
+| Workbench blue (panel ground, pressed gadgets)                  | `--wb-blue`      | `rgb(0, 85, 170)`                                                                         |
+| Deep blue (pressed-in inset shadow)                             | `--wb-deep-blue` | `rgb(0, 51, 102)`                                                                         |
+| Workbench orange (accent: hover, selected labels, armed states) | `--wb-orange`    | `#ff8800`                                                                                 |
+| Paper / gadget face                                             | `--paper`        | `rgb(242, 242, 242)` (`#ffffff` where a control wants pure white)                         |
+| Ink (borders, shadows, labels)                                  | —                | the `black` keyword                                                                       |
+| Disabled / dim label                                            | `--dim-label`    | `rgb(130,130,130)`, at `0.45` alpha for a single disabled segment inside an enabled group |
 
 Two deliberate exceptions to "use the property": black stays the `black`
 keyword (nothing to get wrong), and `pixelIcons.tsx` keeps literal copies of
@@ -151,12 +150,17 @@ deliberate, not oversights:
 thumbnails. Multicolor WB 1.3-style pixel art (`pixelIcons.tsx`, ASCII maps
 rendered to crispEdges rects). Few, decorative, memorable. Workbench itself
 paired austere gadget chrome with lavish multicolor disk icons — this mix
-is period-authentic. Mind the grounds an icon sits on: a pressed gadget is
-Workbench blue and hover is orange, so those exact colors risk vanishing
-there. A full 1-2px outline around every fill color (the brush's navy
-outline around its blue handle) is what keeps a same-hue fill readable on
-a same-hue ground — an unoutlined fill in the gadget's own pressed/hover
-color would still vanish.
+is period-authentic. **Draw them from the four palette colors above only:
+black, white, Workbench blue, Workbench orange** — the same inks as the
+chrome around them, no icon-only near-misses. Two of those crept in and were
+removed (an `#0a0a28` navy a hair off black, a `#0000ff` a hair off the
+Workbench blue); at icon size neither was distinguishable from the color it
+shadowed, so all they bought was a wider palette. Mind the grounds an icon
+sits on: a pressed gadget is Workbench blue and hover is orange, so those
+exact colors risk vanishing there. A full 1-2px outline around every fill
+color (the black outline around the brush's blue handle) is what keeps a
+same-hue fill readable on a same-hue ground — an unoutlined fill in the
+gadget's own pressed/hover color would still vanish.
 
 **Action glyphs (verbs)** — transforms, toolbox tools. Single-color line
 drawings: `currentColor` stroke so they follow the gadget's

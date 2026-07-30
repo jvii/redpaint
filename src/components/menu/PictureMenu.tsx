@@ -70,21 +70,27 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     <div className="drawer-menu">
       <div className="wb-cluster__head drawer-menu__head">Picture</div>
       <div className="drawer-menu__row">
+        {/* reading and writing are separate groups, not one File strip: a
+            shared seam reads as "one set of related choices", and losing the
+            picture to a mis-aimed click is the one thing in here that cannot
+            be undone. The gap does the same work the icons' arrows do. */}
         <GadgetCluster head="File">
           <Gadget
-            icon={<PixelIcon map={icons.image} scale={1} />}
+            icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
             title="Open image..."
             onClick={onOpenFile}
           />
+        </GadgetCluster>
+        <GadgetCluster>
           <Gadget
-            icon={<PixelIcon map={icons.disk} scale={3} />}
+            icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
             title="Save image..."
             onClick={handleImageSave}
           />
           <Gadget
-            icon={<PixelIcon map={icons.disk} scale={3} />}
+            icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save IFF"
             title="Save as IFF..."
             onClick={handleImageSaveIlbm}
