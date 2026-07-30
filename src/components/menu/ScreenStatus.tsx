@@ -3,6 +3,24 @@ import { useActions, useAppState } from '../../overmind';
 import { resolveScreenFormat } from '../../overmind/canvas/state';
 import './ScreenStatus.css';
 
+// A width-by-height readout. The separator is U+00D7, not the letter x, and it
+// sits outside the <b> so it takes the segment's own colour - black at rest,
+// white on hover - instead of the value blue, which is what keeps it reading
+// as a mark between two numbers rather than a third character of one.
+//
+// Press Start 2P has a real multiplication sign, so this stays a font glyph on
+// the same pixel grid as everything else (no drawn icon needed): at 16px its
+// ink is 10px tall to the digits' 14px, and both centre on baseline-9, so it
+// is exactly centred. The lowercase x it replaces centres on baseline-7 - the
+// 2px drop that made it sit low against the numbers.
+function Dimensions({ width, height }: { width: number; height: number }): JSX.Element {
+  return (
+    <>
+      <b>{width}</b>×<b>{height}</b>
+    </>
+  );
+}
+
 // Four arrows radiating to the corners: the standard "expand to fill" glyph.
 // (Axis-aligned outward arrows crossing at the centre are the *move* cursor.)
 // Each arrow is an open barb — two strokes meeting at the tip — and a diagonal
@@ -76,7 +94,8 @@ export function ScreenStatus(): JSX.Element {
             <span className="screen-status__label">Resolution</span>
             {screenFormat ? (
               <>
-                {screenFormat.name} <b>{`${screenFormat.width}x${screenFormat.height}`}</b>
+                {screenFormat.name}{' '}
+                <Dimensions width={screenFormat.width} height={screenFormat.height} />
               </>
             ) : (
               'Native'
@@ -106,7 +125,10 @@ export function ScreenStatus(): JSX.Element {
         >
           <span className="screen-status__field">
             <span className="screen-status__label">Canvas</span>
-            <b>{`${state.canvas.resolution.width}x${state.canvas.resolution.height}`}</b>
+            <Dimensions
+              width={state.canvas.resolution.width}
+              height={state.canvas.resolution.height}
+            />
           </span>
         </button>
       </div>
