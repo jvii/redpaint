@@ -5,7 +5,7 @@ import { brushRecall } from '../../brush/BrushRecall';
 import { isBuiltInBrush } from '../../overmind/brush/state';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { BrushTransformToolId } from '../../overmind/toolbox/actions';
-import { Gadget, GadgetCluster } from './MenuGadgets';
+import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { BrushSlotStrip } from './BrushSlotStrip';
 import { PreviousBrushSlot } from './PreviousBrushSlot';
 import { icons, PixelIcon } from './pixelIcons';
@@ -110,19 +110,20 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
         <span className="brush-menu__current">{describeCurrentBrush(usingBuiltInBrush)}</span>
       </div>
       <div className="drawer-menu__row">
-        {/* Open and Save sit in their own groups, as in the Picture drawer -
-            see the comment there on why reading and writing don't share a
-            seam. Here it also keeps Save's disabled state (built-in brushes
-            cannot be saved) from reading as if it dimmed the pair. */}
-        <GadgetCluster head="File">
+        {/* Open and Save sit in their own unheaded groups, as in the Picture
+            drawer - see the comment there on why reading and writing don't
+            share a seam, and why "File" over them was redundant. Here the
+            split also keeps Save's disabled state (built-in brushes cannot be
+            saved) from reading as if it dimmed the pair. */}
+        <GadgetGroup>
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
             title="Open brush..."
             onClick={onOpenFile}
           />
-        </GadgetCluster>
-        <GadgetCluster>
+        </GadgetGroup>
+        <GadgetGroup>
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
@@ -130,7 +131,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             onClick={handleBrushSave}
             disabled={!isSaveableBrush(brushRecall.current)}
           />
-        </GadgetCluster>
+        </GadgetGroup>
       </div>
       {/* every transform gets its own row, separate from the file
           gadgets above — it's a distinct kind of action */}

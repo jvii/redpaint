@@ -4,7 +4,7 @@ import { cycleDriver } from '../../canvas/CycleDriver';
 import { encodeIlbm } from '../../fileformat/ilbm';
 import { plainPalette } from '../../algorithm/imageColors';
 import { useAppState } from '../../overmind';
-import { Gadget, GadgetCluster } from './MenuGadgets';
+import { Gadget, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { saveCanvasAsPng, saveFile } from './saveAsPng';
 import './DrawerMenu.css';
@@ -70,19 +70,23 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     <div className="drawer-menu">
       <div className="wb-cluster__head drawer-menu__head">Picture</div>
       <div className="drawer-menu__row">
-        {/* reading and writing are separate groups, not one File strip: a
-            shared seam reads as "one set of related choices", and losing the
-            picture to a mis-aimed click is the one thing in here that cannot
-            be undone. The gap does the same work the icons' arrows do. */}
-        <GadgetCluster head="File">
+        {/* Reading and writing are separate groups, not one strip: a shared
+            seam reads as "one set of related choices", and losing the picture
+            to a mis-aimed click is the one thing in here that cannot be
+            undone. The gap does the same work the icons' arrows do.
+            Bare groups rather than GadgetCluster - the disks and their labels
+            already say these are files, so a "File" head over them only added
+            a word to read past, and with nothing headed left on this row
+            there is no sibling for a blank head to align to either. */}
+        <GadgetGroup>
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
             title="Open image..."
             onClick={onOpenFile}
           />
-        </GadgetCluster>
-        <GadgetCluster>
+        </GadgetGroup>
+        <GadgetGroup>
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
@@ -95,7 +99,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             title="Save as IFF..."
             onClick={handleImageSaveIlbm}
           />
-        </GadgetCluster>
+        </GadgetGroup>
       </div>
       <div className="drawer-menu__spacer" />
     </div>
