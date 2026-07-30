@@ -82,9 +82,21 @@
   display: flex;
   /* the gadgets hang from the top of the strip, in line with the close button */
   align-items: flex-start;
-  /* just clear of the readout's drop shadow; the disk/brush gadgets sit next
-     to the canvas widget with the same spacing as its stretch gadget */
+  /* just clear of the readout's drop shadow — enough to keep the stretch
+     toggle reading as part of the readout it belongs to */
   gap: 10px;
+}
+
+/* The drawer buttons are a different kind of thing from the readout beside
+   them: they open panels rather than report state, so they get more air than
+   the stretch toggle does. Applied as a margin rather than by widening the
+   gap above, which would push the stretch toggle away from its readout too.
+   Deliberately short of the 28px the drawers use between their own rows —
+   at that width this stops reading as a gap and starts reading as a section
+   break, and these are still one strip. 10 + 10 = 20px, less the readout's
+   4px drop shadow, so 16px of actual daylight. */
+.menu__status > .wb-gadget-group {
+  margin-left: 10px;
 }
 
 /* the always-visible mode strip under the rail; the toggle's segments are

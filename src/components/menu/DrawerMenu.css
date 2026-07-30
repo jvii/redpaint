@@ -56,10 +56,15 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* 20px between clusters, matching the strip above (Menu.css's
+   .menu__status > .wb-gadget-group) so every gap between two gadget groups in
+   the panel is the same. Less the 4px drop shadow each group casts, that is
+   16px of daylight. The row gap stays wider: wrapped rows need to separate
+   more strongly than neighbours on one line, or the grid reads as a blob. */
 .drawer-menu__row {
   display: flex;
   flex-wrap: wrap;
-  gap: 28px 32px;
+  gap: 28px 20px;
   align-items: flex-start;
 }
 
