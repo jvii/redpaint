@@ -13,7 +13,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  /* icon to label; wider than the 8px lead-in so the two read as separate
+     things rather than one run. The stacked variant keeps 8px below — with
+     the label under the icon, a wider gap only makes the gadget taller. */
+  gap: 12px;
   height: 64px;
   background-color: var(--paper);
   color: black;
@@ -22,7 +25,11 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   font-size: 16px;
-  padding: 8px 8px;
+  /* asymmetric on purpose: the icon leads at the same tight 8px inset as
+     everywhere else, while the trailing label gets 12px so it doesn't read
+     as clipped against the seam with the next gadget. The stacked variant
+     (icon over label, nothing trailing) sets its own padding below. */
+  padding: 8px 12px 8px 8px;
   cursor: pointer;
 }
 
