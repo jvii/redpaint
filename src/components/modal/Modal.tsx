@@ -103,7 +103,17 @@ export function Modal({ header, children, width, overflowingBody }: Props): JSX.
   };
 
   return (
-    <div className="modal__overlay-invisible">
+    <div
+      className="modal__overlay-invisible"
+      // The overlay already swallows clicks on the app behind it, but a right
+      // click still raised the browser's own context menu — over UI that's
+      // blocked while the requester is up, and over the requester itself,
+      // where right click is the app's own gesture (a palette swatch's
+      // background-color pick). Suppressed for the whole overlay, requester
+      // included; this runs after the children's own handlers, which is all
+      // they need since none of them want the native menu either.
+      onContextMenu={(event): void => event.preventDefault()}
+    >
       <div
         className={'modal__window' + (overflowingBody ? ' modal__window--overflowing' : '')}
         style={{
