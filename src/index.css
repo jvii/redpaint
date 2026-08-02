@@ -26,9 +26,9 @@
    cell size), and a checker that doesn't match the other checkers reads as a
    different kind of surface. See docs/style-guide.md.
 
-   NOT for the dark pasteboard around the canvas or the zoom separator
-   (Canvas.css): those signal "outside the page", a different idea that
-   deliberately looks different. */
+   NOT for the dark pasteboard around either canvas view (Canvas.css): that
+   signals "outside the page", a different idea that deliberately looks
+   different. */
 :root {
   --checker-light: #e8e8e8;
   --checker-dark: #cfcfcf;
@@ -55,6 +55,13 @@
 }
 
 .retro-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* The square where a horizontal and a vertical bar meet. Blink paints it
+   opaque white by default, which on a dark ground reads as a stray tile
+   stuck in the corner — the track is transparent, so this is too. */
+.retro-scrollbar::-webkit-scrollbar-corner {
   background-color: transparent;
 }
 

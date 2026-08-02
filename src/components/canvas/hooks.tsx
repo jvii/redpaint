@@ -153,7 +153,13 @@ export function useScrollToFocusPoint(
       top: focusPoint.y * scale.y - canvasDiv.clientHeight / 2,
     };
     canvasDiv.scrollTo(scrollOptions);
-  }, [focusPoint]);
+    // Re-runs on a scale change as well as a focus point change: what a given
+    // scroll offset centers on depends on both. With a screen format active
+    // the two move together — opening the zoom view shrinks the main pane,
+    // which re-fits the main canvas, which changes the zoom view's own scale
+    // (a multiple of it) — so a scroll computed at the old scale would be
+    // left pointing somewhere else entirely.
+  }, [focusPoint, scale.x, scale.y]);
 }
 
 export function useRefreshZoomCanvas(zoomModeOn: boolean): void {

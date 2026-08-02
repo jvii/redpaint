@@ -200,7 +200,17 @@ export function refreshBrushPreview(): void {
     return;
   }
   const target = document.elementFromPoint(lastPointerPos.x, lastPointerPos.y);
-  target?.dispatchEvent(
+  // Only a canvas is worth replaying to. Anything else has no handler that
+  // repaints the preview, so the replay can't help — but it can hurt: the
+  // pointer being elsewhere is exactly when the last preview drawn is stale,
+  // and a caller that fires while the pointer sits off-canvas (the zoom
+  // divider mid-drag) would flag that stale crosshair visible again. A
+  // canvas covered by something (the menu panel) is also not a target: it
+  // isn't what the pointer is on, and elementFromPoint says so.
+  if (!(target instanceof HTMLCanvasElement)) {
+    return;
+  }
+  target.dispatchEvent(
     new MouseEvent('mousemove', {
       clientX: lastPointerPos.x,
       clientY: lastPointerPos.y,

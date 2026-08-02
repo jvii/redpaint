@@ -27,6 +27,16 @@ export const setResolution = (
   context: Context,
   { width, height, recordUndoPoint = true }: SetResolutionParams
 ): void => {
+  const current = context.state.canvas.resolution;
+  if (current.width !== width || current.height !== height) {
+    // The zoom view was aimed at a point on a canvas that no longer exists,
+    // and every path through here (a screen format, a resize, an image load)
+    // rebuilds the picture's geometry — so rather than leave the view parked
+    // on whatever pixel that coordinate now happens to be, close it and let
+    // the user re-aim at the new canvas.
+    context.state.toolbox.zoomModeOn = false;
+    context.state.canvas.zoomFocusPoint = null;
+  }
   context.state.canvas.resolution = { width, height };
   paintingCanvasController.init();
   if (recordUndoPoint) {

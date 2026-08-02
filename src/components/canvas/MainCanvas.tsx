@@ -48,8 +48,14 @@ export function MainCanvas(): JSX.Element {
       return;
     }
     const format = resolveScreenFormat(formatId, videoStandard);
+    // The whole canvas area, not this pane: the format fills the space the
+    // artwork has on screen, and opening the zoom view or dragging its
+    // divider must not change how big a pixel is — that would rescale the
+    // picture under the user mid-edit, where Native (a fixed scale) instead
+    // just shows less of it and scrolls. The main pane simply overflows and
+    // scrolls once the zoom view takes its half.
+    const area = canvasDivRef.current.parentElement ?? canvasDivRef.current;
     const compute = (): void => {
-      const div = canvasDivRef.current;
       // offsetWidth/Height (border box), not clientWidth/Height (content box):
       // while shrinking the window the still-oversized canvas briefly overflows
       // and the div shows a scrollbar, which eats into the content box. Reading
@@ -57,8 +63,8 @@ export function MainCanvas(): JSX.Element {
       // shrinks, the scrollbar vanishes, and that short size is left as a stale
       // margin with no further resize event to correct it. The border box is
       // unaffected by the transient scrollbar, so the canvas fills exactly.
-      const fillX = div.offsetWidth / format.width;
-      const fillY = div.offsetHeight / format.height;
+      const fillX = area.offsetWidth / format.width;
+      const fillY = area.offsetHeight / format.height;
       if (scaleMode === 'integer') {
         updateDisplayScale({
           x: Math.max(1, Math.floor(fillX)),
@@ -72,8 +78,14 @@ export function MainCanvas(): JSX.Element {
       }
     };
     compute();
-    window.addEventListener('resize', compute);
-    return (): void => window.removeEventListener('resize', compute);
+    // A ResizeObserver on the canvas area rather than a window resize
+    // listener: the area also changes when the chrome around it does (the
+    // UI Size setting rescales the toolbox column), and it deliberately does
+    // not change when the zoom divider moves, so the split never re-fits the
+    // canvas.
+    const observer = new ResizeObserver(compute);
+    observer.observe(area);
+    return (): void => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formatId, scaleMode, videoStandard, dpr]);
 
@@ -93,7 +105,7 @@ export function MainCanvas(): JSX.Element {
   }, []);
 
   return (
-    <div className="main-canvas-div" ref={canvasDivRef}>
+    <div className="main-canvas-div retro-scrollbar" ref={canvasDivRef}>
       <Canvas isZoomCanvas={false} displayScale={displayScale} />
     </div>
   );

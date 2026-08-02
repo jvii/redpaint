@@ -68,12 +68,17 @@
 .main-canvas-div {
   position: relative; /* relative to enable overlaying canvas element */
   overflow: auto; /* show scrollbar when required */
-  min-width: 50%;
-  flex-grow: 1; /* fill remaining horizontal space */
-  /* Pasteboard: a dark checker fills the area around the canvas so the
-     margin left by integer scaling reads as "outside the page", distinct
-     from a black drawing. The canvas element paints over it; only the
-     uncovered margin shows through. */
+  min-width: 0; /* the divider may drag this pane down to its own minimum */
+  flex-grow: 1; /* fill whatever the zoom pane's sized flex-basis leaves */
+}
+
+/* Pasteboard: a dark checker fills the area around the canvas so the margin
+   left by integer scaling reads as "outside the page", distinct from a black
+   drawing. The canvas element paints over it; only the uncovered margin
+   shows through. Both views get it — the same margin means the same thing in
+   either one. */
+.main-canvas-div,
+.zoom-canvas-div {
   background-color: #191919;
   background-image:
     linear-gradient(45deg, #2b2b2b 25%, transparent 25%),
@@ -91,32 +96,142 @@
 .zoom-canvas-div {
   position: relative; /* relative to enable overlaying canvas element */
   overflow: auto; /* show scrollbar when required */
-  min-width: 45%;
-  flex-grow: 1; /* fill remaining horizontal space */
+  /* Width comes from ZoomCanvas.tsx as a flex-basis — a percentage until the
+     divider is dragged, a pixel width after. flex: 0 0 so the basis is the
+     final word: this pane is the one being sized, and the main one absorbs
+     whatever is left. */
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 
-/* checkered pattern from https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542 */
+/* The divider between the two views: a light panel edge carrying the zoom
+   gadgets, and itself the drag handle for the split. Deliberately not the
+   transparency checkerboard (index.css) — nothing shows through here; this
+   is chrome, so it takes --paper like every other UI ground. Its gadgets
+   are --paper too and read as gadgets the same way a requester's do on the
+   requester's own ground: by their black border and drop shadow, not by a
+   different fill. */
 .zoom-canvas-separator {
-  display: inline-block;
-  width: 30px;
+  flex: 0 0 auto;
+  width: 34px; /* 2px seam + 2px inset + 24px gadget + 4px shadow + 2px seam */
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 0;
+  box-sizing: border-box;
+  background-color: var(--paper);
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+  user-select: none; /* chrome, not content */
+}
+
+/* The two gadgets are one group: a single 2px black outline around both, a
+   single hard drop shadow, and one shared 2px seam between them (the chrome
+   rules in docs/style-guide.md). */
+.zoom-canvas-separator__gadgets {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  margin-right: 4px; /* room for that shadow inside the 34px column */
+}
+
+.zoom-canvas-separator__gadget {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  /* taller than wide: the column's 34px caps the width, so height is the
+     only axis left to give these gadgets a comfortable hit target */
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: var(--paper);
+  color: black;
+  cursor: pointer;
+}
+
+/* the shared seam, drawn once by the upper gadget so the two never double it */
+.zoom-canvas-separator__gadget + .zoom-canvas-separator__gadget {
+  border-top: 2px solid black;
+}
+
+.zoom-canvas-separator__gadget:hover:not(:disabled) {
+  background-color: var(--wb-orange);
+  color: white;
+}
+
+.zoom-canvas-separator__gadget:active:not(:disabled) {
+  background-color: var(--wb-blue);
+  color: var(--wb-orange);
+  box-shadow: inset 3px 3px 0 0 var(--wb-deep-blue);
+}
+
+.zoom-canvas-separator__gadget:disabled {
+  color: var(--dim-label);
+  cursor: default;
+}
+
+/* Current magnification, in the small monospace register the style guide
+   reserves for readouts below Press Start 2P's 16px floor. */
+.zoom-canvas-separator__factor {
+  flex-shrink: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 11px;
+  color: black;
+  margin-right: 4px; /* stay centered under the gadget group, shadow excluded */
+}
+
+/* The drag handle: two columns of dots down the rest of the divider, the
+   period way of saying "this edge moves". Hard-stopped gradients, so they
+   paint flat 2px squares with no ramp (the no-gradients rule). */
+.zoom-canvas-separator__grip {
+  flex: 1;
+  align-self: stretch;
+  cursor: col-resize;
   background-image:
-    linear-gradient(45deg, #ccc 25%, transparent 25%),
-    linear-gradient(135deg, #ccc 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #ccc 75%),
-    linear-gradient(135deg, transparent 75%, #ccc 75%);
-  background-size: 10px 10px; /* Must be a square */
+    repeating-linear-gradient(to bottom, black 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(to bottom, black 0 2px, transparent 2px 6px);
+  background-size:
+    2px 100%,
+    2px 100%;
+  background-repeat: no-repeat, no-repeat;
   background-position:
-    0 0,
-    5px 0,
-    5px -5px,
-    0px 5px; /* Must be half of one side of the square */
-  background-color: white;
+    calc(50% - 3px) 0,
+    calc(50% + 3px) 0;
 }
 
-.zoom-canvas-separator__button-plus {
-  display: block;
+/* For the duration of a divider drag (ZoomCanvas.tsx adds the class to
+   <body>): the canvases stop taking pointer events, so a pane sliding under
+   the stationary pointer can't trigger the brush crosshair, and every
+   element yields its own cursor to the resize one — the drag is the only
+   thing happening, wherever the pointer has ended up. The !important is what
+   beats the crosshair's inline `cursor: none`, and `* ` is what stops a
+   gadget the pointer strays over from claiming its own pointer cursor. */
+body.zoom-divider-dragging * {
+  cursor: col-resize !important;
+  user-select: none;
 }
 
-.zoom-canvas-separator__button-minus {
-  display: block;
+body.zoom-divider-dragging .canvas {
+  pointer-events: none;
 }
+
+body.zoom-divider-dragging .canvas-cursor,
+body.zoom-divider-dragging .canvas-resize-cursor {
+  visibility: hidden !important;
+}
+
+.zoom-canvas-separator__grip:hover {
+  /* the accent everything else hovers to, on the dots themselves */
+  background-image:
+    repeating-linear-gradient(to bottom, var(--wb-orange) 0 2px, transparent 2px 6px),
+    repeating-linear-gradient(to bottom, var(--wb-orange) 0 2px, transparent 2px 6px);
+}
+
+/* Both canvas panes scroll with the shared retro bar (index.css) on its
+   default blue thumb — no --scrollbar-thumb override here. */

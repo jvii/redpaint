@@ -50,9 +50,12 @@ Semantic exceptions, deliberately scarce:
   moment it was written out by hand a third time. Hard-stopped gradients, so
   it paints flat squares with no ramp and the rainbow rule above stands. Not
   decoration — don't use it anywhere the transparency it signals isn't real.
-  The dark pasteboard around the canvas and the zoom separator
-  (`Canvas.css`) are also checkers, but they mean "outside the page" and
-  deliberately look nothing like this one.
+  The dark pasteboard around both canvas views (`Canvas.css`) is also a
+  checker, but it means "outside the page" and deliberately looks nothing
+  like this one. The zoom divider between those views used to be a third
+  checker and is now a plain `--paper` panel edge: nothing shows through it
+  and nothing lies outside the page there — it is chrome, so it takes the
+  same ground as every other piece of chrome.
 
 ## Chrome (where the DPaint feel actually lives)
 
@@ -98,14 +101,17 @@ laptop screens. Consequences for new UI:
   scrollbar its ~15px without the content losing anything — Fill Style's 820
   covers it, and its two-column layout means it no longer needs the scroll on
   a 125%-scaled 1080p screen at all.
-- **Scrollbars** anywhere (requester body, menu panel) use the shared
-  `.retro-scrollbar` class from `index.css`, never hand-rolled per component.
-  They keep the platform's rounded, inset shape — deliberately not rebuilt as
-  a squared-off Workbench trough, since a bar that only appears when a panel
-  doesn't fit is the wrong place for that weight — and take only the palette:
-  the thumb is `--scrollbar-thumb` (set per ground: the shared blue default
-  on paper, white on the menu panel's blue) and turns orange on hover like
-  every other control.
+- **Scrollbars** anywhere (requester body, menu panel, either canvas view)
+  use the shared `.retro-scrollbar` class from `index.css`, never
+  hand-rolled per component. They keep the platform's rounded, inset shape —
+  deliberately not rebuilt as a squared-off Workbench trough, since a bar
+  that only appears when a panel doesn't fit is the wrong place for that
+  weight — and take only the palette: the thumb is `--scrollbar-thumb` (set
+  per ground: the shared blue default on paper and on the canvas views' dark
+  pasteboard, white on the menu panel's own blue) and turns orange on hover
+  like every other control. The corner square where two bars meet is
+  transparent like the track — Blink paints it white otherwise, which reads
+  as a stray tile on any dark ground.
 
 ## Typography
 
