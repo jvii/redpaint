@@ -32,11 +32,13 @@ export const setUndoPoint = (context: Context): void => {
   context.state.canvas.hasTrueColorPixels = colorIndex.hasTrueColorPixels();
 };
 
-// Empties the history. Loading an image starts a new document: undoing back
-// into the previous picture would cross a canvas resize (which undo doesn't
-// survive visually), and the buffer holds whole-canvas snapshots worth
-// megabytes each. The caller follows up with setUndoPoint for the fresh
-// content, making it the single history entry.
+// Empties the history. Loading an image starts a new document, so undoing back
+// into the previous picture isn't wanted — and note that's a policy call, not a
+// technical one: history does survive a canvas resize (useUndo restores each
+// snapshot's own resolution before repainting). The reason is cost and sense:
+// the buffer holds whole-canvas snapshots worth megabytes each, and the two
+// pictures' histories have nothing to do with each other. The caller follows up
+// with setUndoPoint for the fresh content, making it the single history entry.
 export const reset = (context: Context): void => {
   undoBuffer.clear();
   context.state.undo.currentIndex = null;
