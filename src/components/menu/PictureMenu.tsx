@@ -3,9 +3,10 @@ import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCa
 import { cycleDriver } from '../../canvas/CycleDriver';
 import { encodeIlbm } from '../../fileformat/ilbm';
 import { plainPalette } from '../../algorithm/imageColors';
-import { useAppState } from '../../overmind';
-import { Gadget, GadgetGroup } from './MenuGadgets';
+import { useActions, useAppState } from '../../overmind';
+import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
+import { CropIcon } from './transformIcons';
 import { saveCanvasAsPng, saveFile } from './saveAsPng';
 import './DrawerMenu.css';
 
@@ -16,6 +17,7 @@ import './DrawerMenu.css';
 // row.
 export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const state = useAppState();
+  const actions = useActions();
 
   const handleImageSave = (): void => {
     // The PNG is read straight off the drawing buffer, which would bake a
@@ -100,6 +102,22 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             onClick={handleImageSaveIlbm}
           />
         </GadgetGroup>
+      </div>
+      {/* Its own headed cluster rather than a fourth gadget on the File row:
+          that row is disk I/O, and one layout per group (style guide) means a
+          stacked gadget cannot join a horizontal one anyway. Stacked and
+          headed matches the brush transforms, which is what Crop is — an
+          operation on the picture, not a file. */}
+      <div className="drawer-menu__row">
+        <GadgetCluster head="Canvas">
+          <Gadget
+            icon={<CropIcon />}
+            label="Crop"
+            stacked
+            title="Crop the canvas — drag a box, right-click or Enter to apply"
+            onClick={(): void => actions.crop.begin()}
+          />
+        </GadgetCluster>
       </div>
       <div className="drawer-menu__spacer" />
     </div>

@@ -183,3 +183,16 @@ export function RestoreIcon({ size = 24 }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+// The two overlapping corner marks a photographer's crop L's make — the
+// long-standing glyph for the operation, and legible at 24px in a way a
+// dashed rectangle is not. Drawn as two polylines rather than four lines so
+// each corner is one mitred joint, matching the other glyphs' joins.
+export function CropIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <polyline points="7,2 7,17 22,17" />
+      <polyline points="2,7 17,7 17,22" />
+    </svg>
+  );
+}

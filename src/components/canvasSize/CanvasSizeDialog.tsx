@@ -122,8 +122,8 @@ function CanvasSizeDialogOpen(): JSX.Element {
             back with the pixels. */}
         {wouldCrop && (
           <p className="canvas-size__note">
-            Smaller than the current canvas — pixels are cropped from the right and bottom. Use
-            Crop... to choose the region instead. Undo puts them back either way.
+            Smaller than the current canvas — pixels are cropped from the right and bottom. Use Crop
+            in the Picture menu to choose the region instead. Undo puts them back either way.
           </p>
         )}
         {valid && undoLevels < 25 && (
@@ -133,19 +133,6 @@ function CanvasSizeDialogOpen(): JSX.Element {
           </p>
         )}
       </div>
-      {/* Cropping by typing a size and picking a corner is a poor way to
-          answer "which part of the picture do I keep" — you can't see the
-          answer. This hands the question to the canvas, where the box is
-          visible and adjustable, and closes the requester behind it. */}
-      <RetroButton
-        variant="secondary"
-        onClick={(): void => {
-          actions.dialog.close();
-          actions.crop.begin();
-        }}
-      >
-        Crop...
-      </RetroButton>
       <RetroButton variant="secondary" onClick={(): void => actions.dialog.close()}>
         Cancel
       </RetroButton>
