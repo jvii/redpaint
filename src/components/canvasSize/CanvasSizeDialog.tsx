@@ -6,7 +6,7 @@ import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroFieldset } from '../ui/RetroFieldset';
-import { RetroNumberField } from '../ui/RetroNumberField';
+import { RetroInputField } from '../ui/RetroInputField';
 import { undoLevelsForCanvas } from '../../overmind/undo/UndoBuffer';
 
 // DPaint calls this the page size, on its own Pict menu item, deliberately
@@ -101,17 +101,19 @@ function CanvasSizeDialogOpen(): JSX.Element {
             onChange={(value): void => setChoice(value as SizeChoice)}
           />
           <div className="canvas-size__fields">
-            <RetroNumberField
+            <RetroInputField
               label="Width:"
               value={choice === 'screen' && screen ? String(screen.width) : width}
               onChange={setWidth}
               disabled={choice === 'screen'}
+              numeric
             />
-            <RetroNumberField
+            <RetroInputField
               label="Height:"
               value={choice === 'screen' && screen ? String(screen.height) : height}
               onChange={setHeight}
               disabled={choice === 'screen'}
+              numeric
             />
           </div>
         </RetroFieldset>

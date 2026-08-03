@@ -1,23 +1,29 @@
 /* Layout only — the field's look is the shared .retro-input class in
    index.css, which it wears alongside the RetroLabeledSlider readout. */
-.retro-number {
+.retro-input-field {
   display: inline-flex;
   align-items: center;
   gap: 12px;
 }
 
-.retro-number__label {
+.retro-input-field__label {
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   font-size: 16px;
   color: black;
 }
 
-.retro-number__input {
+/* free text reads from the left; a short figure sits better centred, which is
+   also where the slider readouts have always put theirs */
+.retro-input-field__input {
+  text-align: left;
+}
+
+.retro-input-field__input--numeric {
   text-align: center;
 }
 
 /* matches the slider's disabled treatment: the label dims with its field */
-.retro-number--disabled .retro-number__label {
+.retro-input-field--disabled .retro-input-field__label {
   opacity: 0.4;
 }

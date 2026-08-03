@@ -106,7 +106,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Text entry, shared by every field you type into (RetroNumberField, the
+/* Text entry, shared by every field you type into (RetroInputField, the
    readout beside a RetroLabeledSlider). Styled after retroui.dev's Input
    (border-2, rounded, shadow-sm, focus ring) — the softer, rounded sibling of
    RetroButton's sharp-cornered, hard-shadowed gadget look, which is the point:
