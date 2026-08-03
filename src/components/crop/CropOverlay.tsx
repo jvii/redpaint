@@ -7,6 +7,37 @@ import './CropOverlay.css';
 // The eight resize grips, named by which edges each one moves. Corner grips
 // move two edges, edge grips one — which is the whole definition, so the hit
 // areas and the cursors both fall out of it rather than being listed twice.
+// The grip glyph: one double-headed arrow, rotated to match the axis each grip
+// drags along. Action-glyph register per the style guide — currentColor stroke,
+// no fill — so it tracks the grip's own colour for free. The rotation is
+// already implied by the cursor, so it's derived rather than listed twice.
+const ARROW_ROTATION: Record<string, number> = {
+  'ew-resize': 0,
+  'ns-resize': 90,
+  'nwse-resize': 45,
+  'nesw-resize': -45,
+};
+
+function GripArrow({ cursor }: { cursor: string }): JSX.Element {
+  return (
+    <svg
+      className="crop-overlay__arrow"
+      viewBox="0 0 14 14"
+      width="14"
+      height="14"
+      aria-hidden="true"
+      style={{ transform: `rotate(${ARROW_ROTATION[cursor] ?? 0}deg)` }}
+    >
+      <path
+        d="M1 7 H13 M1 7 L4.5 3.5 M1 7 L4.5 10.5 M13 7 L9.5 3.5 M13 7 L9.5 10.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+      />
+    </svg>
+  );
+}
+
 // How far the pointer must travel outside the box before it counts as drawing
 // a new one rather than as a click that should do nothing. Canvas pixels, so
 // it tightens as you zoom in, which is the right way round.
@@ -241,7 +272,9 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
             onPointerDown={(event): void =>
               onPointerDown({ kind: 'resize', grip, start: rect })(event)
             }
-          />
+          >
+            <GripArrow cursor={grip.cursor} />
+          </span>
         ))}
       </div>
     </div>

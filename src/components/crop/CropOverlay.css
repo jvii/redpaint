@@ -40,15 +40,29 @@
    negative coordinates where they cannot be grabbed at all. Inside is always
    reachable, which beats always pretty. Sized generously for the same reason:
    against busy artwork, and at the canvas edges where there is no surrounding
-   dim to set them off, a small grip is hard to find at all. */
+   dim to set them off, a small grip is hard to find at all — and at this size
+   each one can carry the arrow that says which way it drags. */
 .crop-overlay__grip {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  background-color: white;
+  width: 22px;
+  height: 22px;
+  /* translucent so the artwork under a grip is still readable — they are
+     large enough to hide something that matters otherwise, and at the corners
+     they sit exactly where you are judging the crop */
+  background-color: rgba(255, 255, 255, 0.75);
   border: 2px solid black;
   box-sizing: border-box;
   touch-action: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+}
+
+/* the arrow is decoration; pointer events belong to the grip itself, so a
+   drag never starts with the path as its target */
+.crop-overlay__arrow {
+  pointer-events: none;
 }
 
 .crop-overlay__grip--nw,
@@ -66,7 +80,7 @@
 .crop-overlay__grip--n,
 .crop-overlay__grip--s {
   left: 50%;
-  margin-left: -7px;
+  margin-left: -11px;
 }
 
 .crop-overlay__grip--nw,
@@ -84,16 +98,18 @@
 .crop-overlay__grip--w,
 .crop-overlay__grip--e {
   top: 50%;
-  margin-top: -7px;
+  margin-top: -11px;
 }
 
 /* The live size, in the small monospace register the style guide reserves for
-   status values. Pinned inside the box's top-left, clear of the corner grip
-   that sits there — at 6px it read as sitting underneath it. */
+   status values. Sits below the top row of grips rather than beside them: at
+   the top-left it collided with the corner grip, and moving it right only
+   traded that for the top-centre one, which slides along the edge as the box
+   is resized and would collide again at some other width. */
 .crop-overlay__size {
   position: absolute;
-  top: 6px;
-  left: 22px;
+  top: 28px;
+  left: 6px;
   padding: 3px 6px;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
