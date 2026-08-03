@@ -105,3 +105,51 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Text entry, shared by every field you type into (RetroNumberField, the
+   readout beside a RetroLabeledSlider). Styled after retroui.dev's Input
+   (border-2, rounded, shadow-sm, focus ring) — the softer, rounded sibling of
+   RetroButton's sharp-cornered, hard-shadowed gadget look, which is the point:
+   a field you type into should not read as a button you press. That makes the
+   4px radius the second scoped exception to the Chrome section's no-radius
+   rule, alongside the keycap hint.
+
+   A regular monospace face, not Press Start 2P: the bitmap font only looks
+   crisp at multiples of 8px, and 16px reads fine but is wider than a small
+   numeric field wants. A proportional monospace isn't grid-locked, so it sits
+   compact at any size. Needs its own font-smoothing — the bitmap face's `none`
+   is inherited otherwise, and Safari renders the difference.
+
+   Defined once here rather than per component: this drifted into two slightly
+   different treatments the first time it was written out twice. Callers own
+   only their own width and alignment. */
+.retro-input {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  color: black;
+  font-variant-numeric: tabular-nums;
+  padding: 7px 5px;
+  border: 2px solid black;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 2px 2px 0 0 black;
+  transition:
+    box-shadow 0.2s,
+    transform 0.2s;
+}
+
+/* pressing in on focus, the same gesture a gadget makes when pressed */
+.retro-input:focus {
+  outline: 2px solid var(--wb-blue);
+  outline-offset: 2px;
+  box-shadow: 1px 1px 0 0 black;
+  transform: translate(1px, 1px);
+}
+
+.retro-input:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

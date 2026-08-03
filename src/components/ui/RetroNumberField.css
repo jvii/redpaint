@@ -1,7 +1,5 @@
-/* A labelled number entry, in the same chrome as every other gadget: 2px ink
-   border, paper face, one hard 4px drop shadow, no radius (Chrome rules in
-   docs/style-guide.md). The label sits inline before the field rather than
-   above it, matching DPaint's own Set Page Size requester ("Width: [   ]"). */
+/* Layout only — the field's look is the shared .retro-input class in
+   index.css, which it wears alongside the RetroLabeledSlider readout. */
 .retro-number {
   display: inline-flex;
   align-items: center;
@@ -16,47 +14,10 @@
 }
 
 .retro-number__input {
-  font-family: 'Press Start 2P';
-  -webkit-font-smoothing: none;
-  font-size: 16px;
-  color: black;
-  background-color: var(--paper);
-  border: 2px solid black;
-  box-shadow: 4px 4px 0 0 black;
-  border-radius: 0;
-  padding: 10px 8px;
-  text-align: right;
+  text-align: center;
 }
 
-/* Orange on focus, the accent every other control uses for its live state.
-   The default focus ring is a rounded platform halo, which is exactly the
-   shape the Chrome rules exclude. */
-.retro-number__input:focus {
-  outline: none;
-  border-color: var(--wb-orange);
-  color: var(--wb-orange);
-}
-
-/* Spinner arrows off: rounded, gradiented platform chrome that no amount of
-   bordering makes look like Workbench, and a pixel count is typed rather than
-   nudged one at a time. */
-.retro-number__input::-webkit-outer-spin-button,
-.retro-number__input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.retro-number__input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-.retro-number--disabled .retro-number__label,
-.retro-number__input:disabled {
-  color: var(--dim-label);
-}
-
-.retro-number__input:disabled {
-  border-color: var(--dim-label);
-  box-shadow: 4px 4px 0 0 var(--dim-label);
+/* matches the slider's disabled treatment: the label dims with its field */
+.retro-number--disabled .retro-number__label {
+  opacity: 0.4;
 }

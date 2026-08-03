@@ -66,7 +66,7 @@ export function RetroLabeledSlider({
         />
       </div>
       <input
-        className="retro-labeled-slider__input"
+        className="retro-input retro-labeled-slider__input"
         type="text"
         inputMode="numeric"
         value={text}

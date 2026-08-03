@@ -68,8 +68,15 @@ These rules are absolute — they, not icon style, make the app read retro:
 - Pressed-in = Workbench blue fill, orange label, inset `3px 3px 0 0` deep
   blue. Hover = orange fill, white label. Disabled = dimmed label, no hover
   feedback.
-- No border-radius (the transform gadgets' keycap hint is the one
-  exception — see "Text on controls" below). No gradients (see the
+- No border-radius, with two scoped exceptions: the transform gadgets'
+  keycap hint (see "Text on controls" below) and **fields you type into**
+  (`.retro-input` in `index.css` — the number fields and the readout beside
+  a `RetroLabeledSlider`). Those take a softer, rounded, 2px-shadowed
+  treatment deliberately, so a field reads as something you type in rather
+  than a button you press; on focus they press in (blue ring, shadow
+  halves, 1px translate) the way a gadget does. Apply the shared class,
+  never restyle an input per component — this drifted into two different
+  treatments the first time it was written out twice. No gradients (see the
   rainbow rule). No transparency except the menu panel's ground and the
   deliberate dim-label colors.
 - Gadgets on a row share one fixed height so seams and shadows line up.
