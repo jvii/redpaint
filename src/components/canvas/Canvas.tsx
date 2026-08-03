@@ -299,7 +299,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         height={state.canvas.resolution.height}
         style={canvasStyle}
       />
-      {!isZoomCanvas && <CropOverlay displayScale={displayScale} />}
+      {!isZoomCanvas && state.crop.rect && <CropOverlay displayScale={displayScale} />}
       {usePreciseCursor && !state.app.isLoading && (
         <div ref={cursorRef} className="canvas-cursor" />
       )}

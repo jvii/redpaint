@@ -169,6 +169,16 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
     if (!drag) {
       return;
     }
+    // A move with no button held cannot be a drag, so a drag still recorded
+    // here is a stale one whose pointerup went missing — the overlay's DOM can
+    // vanish mid-gesture when a right-click commits, taking the captured
+    // element and its pointerup with it. Drop it rather than acting on it:
+    // otherwise the box follows the pointer around with nothing pressed, and
+    // its first move snaps to a rect measured in a previous crop.
+    if (event.buttons === 0) {
+      dragRef.current = null;
+      return;
+    }
     const at = pointerToCanvas(event);
 
     if (drag.kind === 'move') {
