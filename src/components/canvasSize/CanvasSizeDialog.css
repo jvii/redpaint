@@ -1,0 +1,57 @@
+/* The Canvas Size requester: one column, since it asks one question. Narrow
+   enough that the Modal never needs its scrollbar. */
+.canvas-size__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 30px 28px 30px;
+  text-align: left;
+}
+
+/* What the canvas is now, in the status-strip idiom shared with the load
+   requester's Image line — the figure the typed one is being compared against */
+.canvas-size__current {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  line-height: 1.4;
+  color: black;
+}
+
+.canvas-size__current-label {
+  display: block;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: black;
+  margin-bottom: 5px;
+}
+
+/* The two fields sit on one row under the Screen/Custom toggle, as they do in
+   DPaint's own requester. 20px apart, plus the 4px each shadow casts, gives
+   the same 16px of daylight the menu's gadget groups leave between them. */
+.canvas-size__fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Consequence notes (cropping, and the large-canvas cost). Quiet supporting
+   text, not a warning colour: nothing is wrong and nothing is blocked — same
+   register and reasoning as the image load requester's advisory. */
+.canvas-size__note {
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+  max-width: 52ch;
+}

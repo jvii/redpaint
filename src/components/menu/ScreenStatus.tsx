@@ -76,10 +76,10 @@ export function ScreenStatus(): JSX.Element {
     actions.app.closeMenu();
   };
 
-  // The canvas has no requester of its own yet; the screen format one is where
-  // it gets resized today (its fit / crop / keep question). Point this at a
-  // dedicated Canvas Size requester once that exists.
-  const openCanvasSize = openScreenFormat;
+  const openCanvasSize = (): void => {
+    actions.dialog.open('CANVAS_SIZE');
+    actions.app.closeMenu();
+  };
 
   return (
     <>
