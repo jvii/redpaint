@@ -7,6 +7,11 @@ import './CropOverlay.css';
 // The eight resize grips, named by which edges each one moves. Corner grips
 // move two edges, edge grips one — which is the whole definition, so the hit
 // areas and the cursors both fall out of it rather than being listed twice.
+// How far the pointer must travel outside the box before it counts as drawing
+// a new one rather than as a click that should do nothing. Canvas pixels, so
+// it tightens as you zoom in, which is the right way round.
+const DRAW_THRESHOLD = 3;
+
 type Grip = {
   id: string;
   // which edges this grip moves; the ones it omits stay put
@@ -31,7 +36,11 @@ const GRIPS: Grip[] = [
 type Drag =
   | { kind: 'move'; grab: Point; start: CropRect }
   | { kind: 'resize'; grip: Grip; start: CropRect }
-  | { kind: 'draw'; origin: Point };
+  // Pressing outside the box arms a redraw but changes nothing yet: a click
+  // out there must leave the box alone, so the new one only begins once the
+  // pointer has actually travelled. Without that, every stray click collapsed
+  // the box to a single pixel under the cursor.
+  | { kind: 'draw'; origin: Point; started: boolean };
 
 // The interactive crop box: drag the body to move it, a grip to resize, or the
 // dimmed area to draw a fresh box. Enter (or a double-click inside) commits,
@@ -132,12 +141,18 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
     }
 
     if (drag.kind === 'draw') {
+      const width = Math.abs(at.x - drag.origin.x);
+      const height = Math.abs(at.y - drag.origin.y);
+      if (!drag.started && width < DRAW_THRESHOLD && height < DRAW_THRESHOLD) {
+        return; // still within a click's worth of movement
+      }
+      drag.started = true;
       actions.crop.setRect(
         clampRect({
           x: Math.min(drag.origin.x, at.x),
           y: Math.min(drag.origin.y, at.y),
-          width: Math.abs(at.x - drag.origin.x) || 1,
-          height: Math.abs(at.y - drag.origin.y) || 1,
+          width: Math.max(1, width),
+          height: Math.max(1, height),
         })
       );
       return;
@@ -174,12 +189,11 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
       ref={hostRef}
       className="crop-overlay"
       style={{ width: canvas.width * scale.x, height: canvas.height * scale.y }}
-      onPointerDown={(event): void => {
-        // on the dimmed area: start a fresh box from here
-        const at = pointerToCanvas(event);
-        onPointerDown({ kind: 'draw', origin: at })(event);
-        actions.crop.setRect(clampRect({ x: at.x, y: at.y, width: 1, height: 1 }));
-      }}
+      onPointerDown={(event): void =>
+        // on the dimmed area: arm a redraw, but leave the box as it is until
+        // the pointer moves — see the 'draw' case above
+        onPointerDown({ kind: 'draw', origin: pointerToCanvas(event), started: false })(event)
+      }
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}

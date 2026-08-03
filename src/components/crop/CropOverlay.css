@@ -11,28 +11,26 @@
   touch-action: none;
 }
 
-/* The kept region. The discarded area is dimmed by this element's own outward
-   shadow rather than by four separate cover divs: one box, no seams to keep in
-   sync, and it can't disagree with the outline it surrounds. The spread is
-   deliberately larger than any canvas, since it only has to reach the edges. */
+/* The kept region. Everything drawn outside the box's own edges is a
+   box-shadow — the two-colour outline as well as the dim — because a shadow
+   does not contribute to the scroll container's overflow, where a positioned
+   pseudo-element does: an outline drawn at inset -4px put scrollbars on the
+   canvas the moment the tool armed, since the box starts flush with it.
+
+   The dim is the same one element rather than four cover divs: no seams to
+   keep in sync, and it cannot disagree with the outline it surrounds. Its
+   spread only has to reach the canvas edges. White over black so the box stays
+   visible against artwork of any brightness — the problem the WebGL selection
+   indicator solves by inverting what is under it, answered here with two
+   colours that cannot both vanish. */
 .crop-overlay__box {
   position: absolute;
-  box-shadow: 0 0 0 20000px rgba(0, 0, 0, 0.55);
-  outline: 2px solid white;
+  box-shadow:
+    0 0 0 2px white,
+    0 0 0 4px black,
+    0 0 0 20000px rgba(0, 0, 0, 0.55);
   cursor: move;
   touch-action: none;
-}
-
-/* Second, offset outline in ink, so the box stays visible against artwork of
-   any brightness — the same problem the WebGL selection indicator solves by
-   inverting the pixels under it, answered here with two colours that can't
-   both vanish. */
-.crop-overlay__box::after {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border: 2px solid black;
-  pointer-events: none;
 }
 
 /* Grips sit just inside the box's corners and edges, not outside them. Outside
