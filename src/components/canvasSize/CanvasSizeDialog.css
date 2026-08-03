@@ -55,3 +55,31 @@
   color: rgba(0, 0, 0, 0.65);
   max-width: 52ch;
 }
+
+/* The anchor grid's cells carry a dot rather than a word — the 3x3 shape
+   already says which position each one is, and RetroToggle's pressed-in
+   selected segment marks the chosen one. Square cells so the grid reads as a
+   picture of the canvas rather than three rows of buttons.
+   inline-grid, not the class's own block grid: a stretched 3-column grid puts
+   each square at the left of a wide column, which pulls the seams apart and
+   leaves the group's shared border floating. Sized by min-width/height on the
+   segments, the house pattern for grid toggles, so the 1fr columns settle on
+   the content. */
+.canvas-size__anchor .retro-toggle {
+  display: inline-grid;
+}
+
+.canvas-size__anchor .retro-toggle__segment {
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+}
+
+/* currentColor, so the dot follows its segment's own label color through
+   selected (orange), hover (white) and disabled — no extra rules */
+.canvas-size__anchor-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+}

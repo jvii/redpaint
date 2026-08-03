@@ -8,6 +8,7 @@ import {
   medianCutPalette,
 } from '../../algorithm/quantize';
 import { countDistinctColors } from '../../algorithm/imageColors';
+import { CanvasAnchor, TOP_LEFT } from '../../domain/CanvasColorIndex';
 import { Color } from '../../types';
 import { Point } from '../../types';
 import { PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
@@ -62,12 +63,12 @@ export const resizeCanvasScalingContent = (
 
 export const resizeCanvasPlacingContent = (
   context: Context,
-  { width, height }: Resolution
+  { width, height, anchor = TOP_LEFT }: Resolution & { anchor?: CanvasAnchor }
 ): void => {
   const current = paintingCanvasController.getCanvasColorIndex();
   if (current && current.width > 0 && current.height > 0) {
     const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
-    setPendingCanvasContent(current.placedInto(width, height, backgroundColorNumber));
+    setPendingCanvasContent(current.placedInto(width, height, backgroundColorNumber, anchor));
   }
   context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
