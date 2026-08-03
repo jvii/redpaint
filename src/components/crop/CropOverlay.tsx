@@ -43,8 +43,8 @@ type Drag =
   | { kind: 'draw'; origin: Point; started: boolean };
 
 // The interactive crop box: drag the body to move it, a grip to resize, or the
-// dimmed area to draw a fresh box. Enter (or a double-click inside) commits,
-// Escape cancels.
+// dimmed area to draw a fresh box. Right-click commits, as does Enter or a
+// double-click inside; Escape cancels.
 //
 // Deliberately DOM rather than the WebGL overlay the other previews use. This
 // is chrome, not pixels — it wants hover cursors, forgiving grip hit areas and
@@ -102,6 +102,17 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
     };
   };
 
+  // Moving keeps the box's size and stops against the edges. Clamping its
+  // extents instead — the rule the other two gestures want — made a box shoved
+  // right shrink against the edge rather than halt at it.
+  const clampMoved = (next: CropRect): CropRect => ({
+    ...next,
+    x: Math.max(0, Math.min(next.x, canvas.width - next.width)),
+    y: Math.max(0, Math.min(next.y, canvas.height - next.height)),
+  });
+
+  // Resizing and drawing move one edge at a time, so here it is the edges that
+  // are held inside the canvas.
   const clampRect = (next: CropRect): CropRect => {
     const x = Math.max(0, Math.min(next.x, canvas.width - 1));
     const y = Math.max(0, Math.min(next.y, canvas.height - 1));
@@ -131,7 +142,7 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
 
     if (drag.kind === 'move') {
       actions.crop.setRect(
-        clampRect({
+        clampMoved({
           ...drag.start,
           x: drag.start.x + (at.x - drag.grab.x),
           y: drag.start.y + (at.y - drag.grab.y),
@@ -197,6 +208,14 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onContextMenu={(event): void => {
+        // Right-click is the commit gesture. Taken on contextmenu rather than
+        // on the button number in pointerdown because it bubbles: one handler
+        // here covers the dimmed area, the box and every grip, and the same
+        // call is what suppresses the browser's menu.
+        event.preventDefault();
+        actions.crop.apply();
+      }}
     >
       <div
         className="crop-overlay__box"
