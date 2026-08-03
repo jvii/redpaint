@@ -57,6 +57,50 @@
 .menubar__mode-indicator {
   grid-area: modeIndicator;
   margin: 10px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* What an armed mode lets you do. The supporting-text register (style guide:
+   Press Start 2P has a 16px floor, so anything smaller is the monospace
+   stack) at the dim-label ink, so it reads as a caption to the mode name
+   rather than competing with the orange it sits beside. Sentence case, since
+   it reads as a sentence and not a title. */
+.menubar__hint {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--dim-label);
+  white-space: nowrap;
+}
+
+.menubar__hint-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* the shared keycap base, stepped down to the hint's own size — currentColor
+   on both border and text means it dims with the caption automatically */
+.menubar__hint-key {
+  font-size: 11px;
+  padding: 2px 5px;
+}
+
+/* The bar shares one row with the title and the status indicators. On a narrow
+   window the hint is the part that can go: the mode name alone still says
+   which mode is armed, and the canvas is the thing that should keep the
+   pixels. */
+@media (max-width: 1000px) {
+  .menubar__hint {
+    display: none;
+  }
 }
 
 /* an armed modal brush transform (Stretch) replaces the mode text — accent

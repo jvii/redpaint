@@ -61,6 +61,16 @@ export function Menubar(): JSX.Element {
   // mode, which is the whole reason the slot says so. Crop wins over a
   // transform because its overlay covers the canvas outright.
   const armedMode = state.crop.rect ? 'Crop' : armedTransform;
+  // What an armed mode lets you do, beside the mode's own name. Keycaps are
+  // for keyboard keys only — a mouse gesture written as a cap would be
+  // pretending a button is a key — so those stay plain text. Kept to two
+  // chips: this shares a row with the title and the indicators, and a hint
+  // that crowds them is worse than a hint that says less.
+  const armedHint: { key?: string; text: string }[] | null = state.crop.rect
+    ? [{ text: 'right-click to apply' }, { key: 'ESC', text: 'cancel' }]
+    : armedTransform
+      ? [{ text: 'drag on canvas' }, { key: 'ESC', text: 'cancel' }]
+      : null;
   // Flood Fill targets whatever pixel is under the cursor rather than a
   // fixed FG/BG color, so a hover swatch previews what the fill would hit.
   const floodFillHoverColor = state.tool.floodFillTool.hoverColor;
@@ -93,11 +103,19 @@ export function Menubar(): JSX.Element {
       {/* while a modal state is armed — a brush transform, a crop — a click
           does that instead of painting with the mode, so the slot says so */}
       <div
-        className={
-          'menubar__mode-indicator' + (armedMode ? ' menubar__mode-indicator--armed' : '')
-        }
+        className={'menubar__mode-indicator' + (armedMode ? ' menubar__mode-indicator--armed' : '')}
       >
         {armedMode ?? mode}
+        {armedHint && (
+          <span className="menubar__hint">
+            {armedHint.map((hint) => (
+              <span className="menubar__hint-item" key={hint.text}>
+                {hint.key && <kbd className="wb-gadget__keycap menubar__hint-key">{hint.key}</kbd>}
+                {hint.text}
+              </span>
+            ))}
+          </span>
+        )}
       </div>
       {/* Both indicators are transient, so they share one left-aligned
           cluster: the Color Fill Box comes first (DPaint put it directly
