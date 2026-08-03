@@ -71,6 +71,11 @@ function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
   if (state.paletteEditor.isOpen || state.symmetry.settingsOpen) {
     return true;
   }
+  // An armed crop owns the keyboard: the overlay takes Enter and Escape, and
+  // every other hotkey would act on a canvas the user has stopped painting on.
+  if (state.crop.rect) {
+    return true;
+  }
 
   const activeToolId = state.toolbox.activeToolId;
   return activeToolId === 'textFilled' || activeToolId === 'textNoFill';

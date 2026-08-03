@@ -25,11 +25,12 @@ function App(): JSX.Element {
   // zoomed container reads it from (uiScale.ts). A layout effect, not a plain
   // one, so the restored setting is in place before the first paint rather
   // than a frame of full-size chrome later.
-  const uiScale = useAppState().app.uiScale;
+  const state = useAppState();
+  const uiScale = state.app.uiScale;
   useLayoutEffect((): void => applyUiScale(uiScale), [uiScale]);
 
   return (
-    <div className="app">
+    <div className={'app' + (state.crop.rect ? ' app--cropping' : '')}>
       <Menubar />
       <Menu />
       <div className="canvas-toolbox-container">

@@ -11,6 +11,9 @@ export const begin = (context: Context): void => {
   if (width <= 0 || height <= 0) {
     return;
   }
+  // the panel would otherwise sit open over the canvas and inert (App.css's
+  // .app--cropping), which reads as a hang rather than as a mode
+  context.actions.app.closeMenu();
   context.state.crop.rect = { x: 0, y: 0, width, height };
 };
 

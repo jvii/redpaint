@@ -28,3 +28,19 @@
   overflow: hidden; /* never show a scrollbar here */
   border-left: 1px solid black;
 }
+
+/* While a crop is armed the chrome is inert: the menubar, the drop-down panel
+   and the whole toolbox column stop taking pointer events, so the only thing
+   on screen that responds is the crop box. Picking a tool or a color for a
+   canvas you have stopped painting on does nothing useful, and letting the
+   click land would leave the app in a state the crop then overwrites.
+
+   Deliberately not dimmed as well. The style guide allows transparency only
+   for the menu panel's ground and the dim-label colors, and the mode is
+   already announced where armed modes are announced — the menubar slot reads
+   Crop, in orange. */
+.app--cropping .menubar,
+.app--cropping .menu,
+.app--cropping .toolbox-container {
+  pointer-events: none;
+}
