@@ -8,7 +8,6 @@ import { RetroToggle } from '../ui/RetroToggle';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroInputField } from '../ui/RetroInputField';
 import { undoLevelsForCanvas } from '../../overmind/undo/UndoBuffer';
-import { CanvasAnchor } from '../../domain/CanvasColorIndex';
 
 // DPaint calls this the page size, on its own Pict menu item, deliberately
 // separate from the screen format: the format is the display being simulated,
@@ -25,21 +24,6 @@ const MIN_SIDE = 1;
 const MAX_SIDE = 16384; // GL_MAX_TEXTURE_SIZE on anything we run on
 
 type SizeChoice = 'screen' | 'custom';
-
-// The 3x3 anchor grid, row-major from the top-left. Each cell is a fraction of
-// the size difference per axis, so the same control means "which corner stays
-// put" when cropping and "where the artwork sits" when growing.
-const ANCHORS: { anchor: CanvasAnchor; title: string }[] = [
-  { anchor: { x: 0, y: 0 }, title: 'Top left' },
-  { anchor: { x: 0.5, y: 0 }, title: 'Top' },
-  { anchor: { x: 1, y: 0 }, title: 'Top right' },
-  { anchor: { x: 0, y: 0.5 }, title: 'Left' },
-  { anchor: { x: 0.5, y: 0.5 }, title: 'Center' },
-  { anchor: { x: 1, y: 0.5 }, title: 'Right' },
-  { anchor: { x: 0, y: 1 }, title: 'Bottom left' },
-  { anchor: { x: 0.5, y: 1 }, title: 'Bottom' },
-  { anchor: { x: 1, y: 1 }, title: 'Bottom right' },
-];
 
 export function CanvasSizeDialog(): JSX.Element | null {
   const state = useAppState();
@@ -64,9 +48,6 @@ function CanvasSizeDialogOpen(): JSX.Element {
     : null;
 
   const [choice, setChoice] = useState<SizeChoice>('custom');
-  // top-left by default: DPaint's behaviour, and what every resize did before
-  // this control existed
-  const [anchorIndex, setAnchorIndex] = useState(0);
   const [width, setWidth] = useState(String(current.width));
   const [height, setHeight] = useState(String(current.height));
 
@@ -93,7 +74,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
     // own undo entry through the resize upload, so Ctrl+Z puts back both the
     // pixels and the old canvas size (useUndo restores a snapshot's own
     // resolution). That's why a crop needs no confirmation of its own.
-    actions.canvas.resizeCanvasPlacingContent({ ...target, anchor: ANCHORS[anchorIndex].anchor });
+    actions.canvas.resizeCanvasPlacingContent(target);
     actions.dialog.close();
   };
 
@@ -136,34 +117,13 @@ function CanvasSizeDialogOpen(): JSX.Element {
             />
           </div>
         </RetroFieldset>
-        {/* Which part of the picture survives a crop, and where it sits inside
-            a growth — the same question either way, so one control answers
-            both. Dots rather than words: the grid's own shape says where each
-            cell is, and nine text labels would say it nine times over.
-            Deliberately not disabled while the size is unchanged: choosing the
-            anchor before typing the size is the natural order, and a control
-            that silently ignores the first half of that is worse than one that
-            is briefly a no-op. */}
-        <RetroFieldset legend="Anchor" className="canvas-size__anchor">
-          <RetroToggle
-            variant="grid"
-            columns={3}
-            options={ANCHORS.map((entry, index) => ({
-              value: String(index),
-              label: <span className="canvas-size__anchor-dot" />,
-              title: entry.title,
-            }))}
-            value={String(anchorIndex)}
-            onChange={(value): void => setAnchorIndex(Number(value))}
-          />
-        </RetroFieldset>
         {/* Both notes state a consequence rather than asking for confirmation:
             the change is one Ctrl+Z away, and undo carries the canvas size
             back with the pixels. */}
         {wouldCrop && (
           <p className="canvas-size__note">
-            Smaller than the current canvas — pixels outside the new size are cropped from{' '}
-            {croppedFrom(ANCHORS[anchorIndex].anchor)}. Undo puts them back.
+            Smaller than the current canvas — pixels are cropped from the right and bottom. Use
+            Crop... to choose the region instead. Undo puts them back either way.
           </p>
         )}
         {valid && undoLevels < 25 && (
@@ -194,17 +154,6 @@ function CanvasSizeDialogOpen(): JSX.Element {
       </RetroButton>
     </Modal>
   );
-}
-
-// Names the edges a crop actually takes from, which is the opposite of the
-// anchored one: anchoring the top-left crops the right and bottom.
-function croppedFrom(anchor: CanvasAnchor): string {
-  if (anchor.x === 0.5 && anchor.y === 0.5) {
-    return 'all four sides';
-  }
-  const horizontal = anchor.x === 0 ? 'the right' : anchor.x === 1 ? 'the left' : 'both sides';
-  const vertical = anchor.y === 0 ? 'bottom' : anchor.y === 1 ? 'top' : 'top and bottom';
-  return `${horizontal} and ${vertical}`;
 }
 
 function clamp(value: number): number {

@@ -53,7 +53,7 @@ describe('placedInto', () => {
     return rows;
   };
 
-  test('defaults to the top-left, growing to the right and bottom', () => {
+  test('grows to the right and bottom', () => {
     expect(grid(source().placedInto(3, 3, 9))).toEqual([
       [1, 2, 9],
       [3, 4, 9],
@@ -61,34 +61,13 @@ describe('placedInto', () => {
     ]);
   });
 
-  test('anchors a growth to the bottom-right', () => {
-    expect(grid(source().placedInto(3, 3, 9, { x: 1, y: 1 }))).toEqual([
-      [9, 9, 9],
-      [9, 1, 2],
-      [9, 3, 4],
-    ]);
-  });
 
-  test('centers a growth, laying an even border around the artwork', () => {
-    expect(grid(source().placedInto(4, 4, 9, { x: 0.5, y: 0.5 }))).toEqual([
-      [9, 9, 9, 9],
-      [9, 1, 2, 9],
-      [9, 3, 4, 9],
-      [9, 9, 9, 9],
-    ]);
-  });
 
-  test('crops from the right and bottom when anchored top-left', () => {
+  test('crops from the right and bottom', () => {
     expect(grid(source().placedInto(1, 1, 9))).toEqual([[1]]);
   });
 
-  test('crops from the left and top when anchored bottom-right', () => {
-    expect(grid(source().placedInto(1, 1, 9, { x: 1, y: 1 }))).toEqual([[4]]);
-  });
 
-  test('crops one axis while growing the other', () => {
-    expect(grid(source().placedInto(1, 3, 9, { x: 1, y: 0 }))).toEqual([[2], [4], [9]]);
-  });
 });
 
 describe('croppedTo', () => {

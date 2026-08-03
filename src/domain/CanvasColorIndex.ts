@@ -10,16 +10,6 @@ export const ALPHA_TRANSPARENT = 0;
 export const ALPHA_INDEXED = 127;
 export const ALPHA_TRUECOLOR = 255;
 
-// Where existing pixels sit when the canvas changes size — a fraction of the
-// size difference per axis, so 0 pins the left/top edge, 0.5 centers and 1 pins
-// the right/bottom. Only those three values are offered in the UI, but nothing
-// here needs them to be discrete.
-export type CanvasAnchor = { x: number; y: number };
-
-// DPaint's behaviour, and so the default everywhere: a canvas that grows adds
-// to the right and bottom, one that shrinks takes from there.
-export const TOP_LEFT: CanvasAnchor = { x: 0, y: 0 };
-
 export class CanvasColorIndex {
   width: number;
   height: number;
@@ -192,36 +182,14 @@ export class CanvasColorIndex {
     return new CanvasColorIndex(width, height, destArray);
   }
 
-  // Places this content, unscaled, into a new canvas of the given size,
-  // positioned by the anchor. The rest is filled with the background color;
-  // content that falls outside the new size is cropped. This is how the canvas
-  // grows and crops without scaling the pixels — the Canvas Size requester's
-  // whole job, and the screen format's fit/crop answer.
-  //
-  // The anchor is a fraction of the size difference in each axis: {x:0,y:0}
-  // pins the top-left (grow adds to the right and bottom, crop takes from
-  // there), {x:0.5,y:0.5} centers, {x:1,y:1} pins the bottom-right. It applies
-  // to growing and cropping alike, since they're the same operation with the
-  // difference's sign flipped: centering a crop takes an even margin off all
-  // four sides, centering a growth lays an even border around the artwork.
-  //
-  // Rows are stored bottom-up, so canvas row y lives at array row
-  // (height - 1 - y) in both source and destination.
-  placedInto(
-    width: number,
-    height: number,
-    backgroundColorNumber: number,
-    anchor: CanvasAnchor = TOP_LEFT
-  ): CanvasColorIndex {
-    return this.copiedInto(
-      width,
-      height,
-      backgroundColorNumber,
-      // where the source's origin lands in destination canvas coordinates —
-      // negative when cropping, which is what shifts the copied window
-      Math.round((width - this.width) * anchor.x),
-      Math.round((height - this.height) * anchor.y)
-    );
+  // Places this content, unscaled, into the top-left of a new canvas of the
+  // given size. The rest is filled with the background color; content that
+  // falls outside is cropped. DPaint's behaviour, and how the canvas grows and
+  // crops without scaling the pixels: a canvas that grows adds to the right
+  // and bottom, one that shrinks takes from there. Cropping to a chosen region
+  // is croppedTo's job, not an anchor's.
+  placedInto(width: number, height: number, backgroundColorNumber: number): CanvasColorIndex {
+    return this.copiedInto(width, height, backgroundColorNumber, 0, 0);
   }
 
   // Keeps just the given canvas-coordinate rectangle, which is what an
