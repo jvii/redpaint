@@ -1,0 +1,108 @@
+/* Covers the canvas exactly while a crop is armed. Sits above it so pointer
+   events stop here — which is what makes the mode modal, no painting
+   underneath — and is positioned against the canvas element's own box, so the
+   crop box lines up with artwork pixels at any display scale. */
+.crop-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+/* The kept region. The discarded area is dimmed by this element's own outward
+   shadow rather than by four separate cover divs: one box, no seams to keep in
+   sync, and it can't disagree with the outline it surrounds. The spread is
+   deliberately larger than any canvas, since it only has to reach the edges. */
+.crop-overlay__box {
+  position: absolute;
+  box-shadow: 0 0 0 20000px rgba(0, 0, 0, 0.55);
+  outline: 2px solid white;
+  cursor: move;
+  touch-action: none;
+}
+
+/* Second, offset outline in ink, so the box stays visible against artwork of
+   any brightness — the same problem the WebGL selection indicator solves by
+   inverting the pixels under it, answered here with two colours that can't
+   both vanish. */
+.crop-overlay__box::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid black;
+  pointer-events: none;
+}
+
+/* Grips sit just inside the box's corners and edges, not outside them. Outside
+   looks tidier — nothing covers the artwork being judged — but the box starts
+   out flush with the canvas, so the top and left grips would hang off the
+   canvas element, and with the canvas against the window edge they land at
+   negative coordinates where they cannot be grabbed at all. Inside is always
+   reachable, which beats always pretty. */
+.crop-overlay__grip {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border: 2px solid black;
+  box-sizing: border-box;
+  touch-action: none;
+}
+
+.crop-overlay__grip--nw,
+.crop-overlay__grip--w,
+.crop-overlay__grip--sw {
+  left: 0;
+}
+
+.crop-overlay__grip--ne,
+.crop-overlay__grip--e,
+.crop-overlay__grip--se {
+  right: 0;
+}
+
+.crop-overlay__grip--n,
+.crop-overlay__grip--s {
+  left: 50%;
+  margin-left: -5px;
+}
+
+.crop-overlay__grip--nw,
+.crop-overlay__grip--n,
+.crop-overlay__grip--ne {
+  top: 0;
+}
+
+.crop-overlay__grip--sw,
+.crop-overlay__grip--s,
+.crop-overlay__grip--se {
+  bottom: 0;
+}
+
+.crop-overlay__grip--w,
+.crop-overlay__grip--e {
+  top: 50%;
+  margin-top: -5px;
+}
+
+/* The live size, in the small monospace register the style guide reserves for
+   status values. Pinned inside the box's top-left, and hidden by its own
+   overflow when the box gets too small to hold it. */
+.crop-overlay__size {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  padding: 3px 6px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}

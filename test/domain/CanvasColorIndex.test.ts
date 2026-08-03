@@ -90,3 +90,49 @@ describe('placedInto', () => {
     expect(grid(source().placedInto(1, 3, 9, { x: 1, y: 0 }))).toEqual([[2], [4], [9]]);
   });
 });
+
+describe('croppedTo', () => {
+  // 3x3, distinct color number per pixel in canvas coordinates:
+  //   1 2 3
+  //   4 5 6
+  //   7 8 9
+  const source = (): CanvasColorIndex => {
+    const canvas = CanvasColorIndex.createEmptyWithBackgroundColor(3, 3, 1);
+    let n = 1;
+    for (let y = 0; y < 3; y++) {
+      for (let x = 0; x < 3; x++) {
+        canvas.setPixel32({ x, y }, CanvasColorIndex.packIndexed(n++));
+      }
+    }
+    return canvas;
+  };
+
+  const grid = (canvas: CanvasColorIndex): number[][] => {
+    const rows: number[][] = [];
+    for (let y = 0; y < canvas.height; y++) {
+      const row: number[] = [];
+      for (let x = 0; x < canvas.width; x++) {
+        row.push((canvas.getPixel32({ x, y }) & 0xff) + 1);
+      }
+      rows.push(row);
+    }
+    return rows;
+  };
+
+  test('keeps an interior region', () => {
+    expect(grid(source().croppedTo({ x: 1, y: 1, width: 2, height: 2 }, 1))).toEqual([
+      [5, 6],
+      [8, 9],
+    ]);
+  });
+
+  test('keeps a single pixel', () => {
+    expect(grid(source().croppedTo({ x: 2, y: 0, width: 1, height: 1 }, 1))).toEqual([[3]]);
+  });
+
+  test('the whole canvas is a no-op crop', () => {
+    expect(grid(source().croppedTo({ x: 0, y: 0, width: 3, height: 3 }, 1))).toEqual(
+      grid(source())
+    );
+  });
+});

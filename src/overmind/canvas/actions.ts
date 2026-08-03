@@ -9,6 +9,7 @@ import {
 } from '../../algorithm/quantize';
 import { countDistinctColors } from '../../algorithm/imageColors';
 import { CanvasAnchor, TOP_LEFT } from '../../domain/CanvasColorIndex';
+import { CropRect } from '../crop/state';
 import { Color } from '../../types';
 import { Point } from '../../types';
 import { PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
@@ -71,6 +72,23 @@ export const resizeCanvasPlacingContent = (
     setPendingCanvasContent(current.placedInto(width, height, backgroundColorNumber, anchor));
   }
   context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
+};
+
+// Keeps just the given canvas-coordinate rectangle. The crop counterpart of
+// resizeCanvasPlacingContent: same pending-content path, so it lands as one
+// undo entry and undo restores the pre-crop size along with the pixels — a
+// crop box can sit anywhere, which no anchor can express.
+export const cropCanvas = (context: Context, rect: CropRect): void => {
+  const current = paintingCanvasController.getCanvasColorIndex();
+  if (current && current.width > 0 && current.height > 0) {
+    const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
+    setPendingCanvasContent(current.croppedTo(rect, backgroundColorNumber));
+  }
+  context.actions.canvas.setResolution({
+    width: rect.width,
+    height: rect.height,
+    recordUndoPoint: false,
+  });
 };
 
 // Holds a screen format change that hasn't been applied yet, while the shrink

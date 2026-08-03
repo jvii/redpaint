@@ -6,6 +6,10 @@ import { Color, PaintColor, Point } from '../types';
 // only here at the storage boundary, so all 256 palette slots are usable).
 // True-color pixels store a literal RGB color. ALPHA_TRANSPARENT is only
 // meaningful in brush textures (the canvas itself is never transparent).
+export const ALPHA_TRANSPARENT = 0;
+export const ALPHA_INDEXED = 127;
+export const ALPHA_TRUECOLOR = 255;
+
 // Where existing pixels sit when the canvas changes size — a fraction of the
 // size difference per axis, so 0 pins the left/top edge, 0.5 centers and 1 pins
 // the right/bottom. Only those three values are offered in the UI, but nothing
@@ -15,10 +19,6 @@ export type CanvasAnchor = { x: number; y: number };
 // DPaint's behaviour, and so the default everywhere: a canvas that grows adds
 // to the right and bottom, one that shrinks takes from there.
 export const TOP_LEFT: CanvasAnchor = { x: 0, y: 0 };
-
-export const ALPHA_TRANSPARENT = 0;
-export const ALPHA_INDEXED = 127;
-export const ALPHA_TRUECOLOR = 255;
 
 export class CanvasColorIndex {
   width: number;
@@ -213,15 +213,43 @@ export class CanvasColorIndex {
     backgroundColorNumber: number,
     anchor: CanvasAnchor = TOP_LEFT
   ): CanvasColorIndex {
+    return this.copiedInto(
+      width,
+      height,
+      backgroundColorNumber,
+      // where the source's origin lands in destination canvas coordinates —
+      // negative when cropping, which is what shifts the copied window
+      Math.round((width - this.width) * anchor.x),
+      Math.round((height - this.height) * anchor.y)
+    );
+  }
+
+  // Keeps just the given canvas-coordinate rectangle, which is what an
+  // interactive crop selects. The same copy as placedInto, addressed by the
+  // region to keep rather than by where the old content should sit: a crop box
+  // can be anywhere, which no anchor can express.
+  croppedTo(
+    rect: { x: number; y: number; width: number; height: number },
+    backgroundColorNumber: number
+  ): CanvasColorIndex {
+    return this.copiedInto(rect.width, rect.height, backgroundColorNumber, -rect.x, -rect.y);
+  }
+
+  // offsetX/offsetY say where this content's origin lands in the destination's
+  // canvas coordinates; anything falling outside is cropped, anything left
+  // uncovered keeps the background color.
+  private copiedInto(
+    width: number,
+    height: number,
+    backgroundColorNumber: number,
+    offsetX: number,
+    offsetY: number
+  ): CanvasColorIndex {
     const dest = CanvasColorIndex.createEmptyWithBackgroundColor(
       width,
       height,
       backgroundColorNumber
     );
-    // where the source's origin lands in destination canvas coordinates —
-    // negative when cropping, which is what shifts the copied window
-    const offsetX = Math.round((width - this.width) * anchor.x);
-    const offsetY = Math.round((height - this.height) * anchor.y);
     const startX = Math.max(0, offsetX);
     const endX = Math.min(width, offsetX + this.width);
     const startY = Math.max(0, offsetY);

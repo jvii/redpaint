@@ -7,6 +7,7 @@ import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCa
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from '../../types';
 import './Canvas.css';
+import { CropOverlay } from '../crop/CropOverlay';
 
 interface Props {
   isZoomCanvas: boolean;
@@ -298,6 +299,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         height={state.canvas.resolution.height}
         style={canvasStyle}
       />
+      {!isZoomCanvas && <CropOverlay displayScale={displayScale} />}
       {usePreciseCursor && !state.app.isLoading && (
         <div ref={cursorRef} className="canvas-cursor" />
       )}
