@@ -56,6 +56,11 @@ export function Menubar(): JSX.Element {
                 state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
               ? 'Bend'
               : null;
+  // Any armed modal state takes the mode slot, not just the brush transforms:
+  // while one is up, a click does that thing instead of painting with the
+  // mode, which is the whole reason the slot says so. Crop wins over a
+  // transform because its overlay covers the canvas outright.
+  const armedMode = state.crop.rect ? 'Crop' : armedTransform;
   // Flood Fill targets whatever pixel is under the cursor rather than a
   // fixed FG/BG color, so a hover swatch previews what the fill would hit.
   const floodFillHoverColor = state.tool.floodFillTool.hoverColor;
@@ -85,14 +90,14 @@ export function Menubar(): JSX.Element {
           ...
         </div>
       </div>
-      {/* while a modal brush transform is armed, a click reshapes the brush
-          instead of painting with the mode — so the mode slot says so */}
+      {/* while a modal state is armed — a brush transform, a crop — a click
+          does that instead of painting with the mode, so the slot says so */}
       <div
         className={
-          'menubar__mode-indicator' + (armedTransform ? ' menubar__mode-indicator--transform' : '')
+          'menubar__mode-indicator' + (armedMode ? ' menubar__mode-indicator--armed' : '')
         }
       >
-        {armedTransform ?? mode}
+        {armedMode ?? mode}
       </div>
       {/* Both indicators are transient, so they share one left-aligned
           cluster: the Color Fill Box comes first (DPaint put it directly

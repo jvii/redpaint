@@ -38,11 +38,13 @@
    out flush with the canvas, so the top and left grips would hang off the
    canvas element, and with the canvas against the window edge they land at
    negative coordinates where they cannot be grabbed at all. Inside is always
-   reachable, which beats always pretty. */
+   reachable, which beats always pretty. Sized generously for the same reason:
+   against busy artwork, and at the canvas edges where there is no surrounding
+   dim to set them off, a small grip is hard to find at all. */
 .crop-overlay__grip {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   background-color: white;
   border: 2px solid black;
   box-sizing: border-box;
@@ -64,7 +66,7 @@
 .crop-overlay__grip--n,
 .crop-overlay__grip--s {
   left: 50%;
-  margin-left: -5px;
+  margin-left: -7px;
 }
 
 .crop-overlay__grip--nw,
@@ -82,16 +84,16 @@
 .crop-overlay__grip--w,
 .crop-overlay__grip--e {
   top: 50%;
-  margin-top: -5px;
+  margin-top: -7px;
 }
 
 /* The live size, in the small monospace register the style guide reserves for
-   status values. Pinned inside the box's top-left, and hidden by its own
-   overflow when the box gets too small to hold it. */
+   status values. Pinned inside the box's top-left, clear of the corner grip
+   that sits there — at 6px it read as sitting underneath it. */
 .crop-overlay__size {
   position: absolute;
   top: 6px;
-  left: 6px;
+  left: 22px;
   padding: 3px 6px;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
