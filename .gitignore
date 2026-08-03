@@ -28,3 +28,6 @@ yarn-error.log*
 # local-only reference material (vendored DPaint source, manual text/scans) —
 # not part of the app, kept off the remote
 /docs/reference/
+
+# local-only design notes — working material, not something the repo carries
+/docs/local/

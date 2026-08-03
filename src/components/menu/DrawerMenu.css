@@ -68,6 +68,21 @@
   align-items: flex-start;
 }
 
+/* the Preferences drawer's undo-memory readout — same register as
+   .brush-menu__current above: small monospace reads as a status value rather
+   than a control, which is what keeps it from looking like a setting the user
+   is meant to change. Needs its own font-smoothing (style guide: the bitmap
+   face's `none` is inherited otherwise). */
+.prefs-menu__readout {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+
 /* a setting's toggle (the Preferences drawer) needs the usual gadget face:
    RetroToggle's segments are transparent, and the menu's own blue would
    swallow the unselected ones. Same reason as Menu.css's mode row. */

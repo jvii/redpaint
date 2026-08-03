@@ -21,18 +21,11 @@ export const setUndoPoint = (context: Context): void => {
     colorIndex,
     palette: plainPalette(context.state.palette.paletteArray),
   };
-  if (context.state.undo.currentIndex === null) {
-    undoBuffer.setBuffer([entry]);
-    context.state.undo.currentIndex = 0;
-  } else {
-    undoBuffer.setBuffer(
-      undoBuffer
-        .getBuffer()
-        .slice(0, context.state.undo.currentIndex + 1)
-        .concat(entry)
-    );
-    context.state.undo.currentIndex = ++context.state.undo.currentIndex;
-  }
+  // push owns both the array and the resulting index: it discards the redo
+  // future and evicts old entries to stay inside the memory budget, either of
+  // which shifts where the new entry lands (see UndoBuffer).
+  context.state.undo.currentIndex = undoBuffer.push(entry, context.state.undo.currentIndex);
+  syncBufferSize(context);
   context.state.undo.lastUndoPointTime = Date.now();
   // every committed content change passes through here, which is what keeps
   // this flag exact (the scan is memoized on the snapshot)
@@ -45,9 +38,17 @@ export const setUndoPoint = (context: Context): void => {
 // megabytes each. The caller follows up with setUndoPoint for the fresh
 // content, making it the single history entry.
 export const reset = (context: Context): void => {
-  undoBuffer.setBuffer([]);
+  undoBuffer.clear();
   context.state.undo.currentIndex = null;
+  syncBufferSize(context);
 };
+
+// Keeps the state mirrors of the buffer's size in step with the buffer itself
+// (see undo/state.ts) — call after every write to it.
+function syncBufferSize(context: Context): void {
+  context.state.undo.bufferBytes = undoBuffer.getTotalBytes();
+  context.state.undo.bufferEntryCount = undoBuffer.getBuffer().length;
+}
 
 export const undo = (context: Context): void => {
   if (!context.state.undo.currentIndex) {
