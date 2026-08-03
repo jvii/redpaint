@@ -19,6 +19,7 @@ import { RetroFieldset } from '../ui/RetroFieldset';
 import { LoadPreview } from './LoadPreview';
 import { drawLoadPreview } from './drawLoadPreview';
 import { plainPalette } from '../../algorithm/imageColors';
+import { undoLevelsForCanvas, MAX_UNDO_ENTRIES } from '../../overmind/undo/UndoBuffer';
 
 // How the loaded image's colors are treated (the image always loads at its
 // own size — resizing is the screen format's business):
@@ -35,6 +36,14 @@ const COUNT_OPTIONS = [2, 4, 8, 16, 32, 64, 128, 256].map((n) => ({
   value: String(n),
   label: String(n),
 }));
+
+// Below this many levels of history, a big image is worth mentioning before it
+// loads. Deliberately well under MAX_UNDO_ENTRIES rather than at it: the byte
+// budget starts trimming somewhere around a 1024x768 image, which is nobody's
+// idea of large and would make this a permanent nag. 25 levels lands the notice
+// at roughly 2.5 megapixels, which is also about where the per-stroke cost
+// starts to be felt (~0.6 ms per megapixel per brush stamp, measured).
+const ADVISE_BELOW_UNDO_LEVELS = 25;
 
 export function ImageLoadDialog(): JSX.Element | null {
   const state = useAppState();
@@ -61,6 +70,13 @@ function ImageLoadDialogOpen(): JSX.Element {
 
   const [mode, setMode] = useState<ColorMode>('true');
   const [count, setCount] = useState(smallestSufficient ?? 256);
+
+  // A big image loads at its own size and is never refused — someone wanting to
+  // paint on a photo for fun is welcome to. But it costs, in ways that are
+  // invisible until they bite (strokes get slower, history stops going as far
+  // back), so say so up front while OK/Cancel is still on screen.
+  const undoLevels = undoLevelsForCanvas(info.width, info.height);
+  const megapixels = (info.width * info.height) / 1_000_000;
 
   // One preview showing the image as the draft treatment would load it — the
   // same palette and mapping OK would commit, re-rendered when the mode or
@@ -157,6 +173,15 @@ function ImageLoadDialogOpen(): JSX.Element {
           exactNote={fitsPalette ? 'fits a palette exactly' : undefined}
           canvasRef={previewRef}
         />
+        {/* directly under the size it is talking about, and above the fold: the
+            body scrolls on a short window, and a notice you have to scroll to
+            find is not a notice */}
+        {undoLevels < ADVISE_BELOW_UNDO_LEVELS && (
+          <p className="image-load__advisory">
+            {megapixels.toFixed(1)} megapixels. Painting will be slower at this size, and undo will
+            hold about {undoLevels} steps instead of {MAX_UNDO_ENTRIES}.
+          </p>
+        )}
         <RetroFieldset legend="Colors">
           <RetroToggle
             variant="column"

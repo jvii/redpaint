@@ -11,3 +11,22 @@
   text-align: center;
   min-width: 88px;
 }
+
+/* The large-image notice. Deliberately the quiet supporting-text register, not
+   a warning colour: nothing is wrong and nothing is being prevented — the image
+   loads either way — so this states a cost, it doesn't raise an alarm. Red is
+   reserved for errors and orange reads as an accent (the "fits a palette
+   exactly" note beside it is orange precisely because it's good news). Needs
+   its own font-smoothing: the modal's Press Start 2P sets `none`, which the
+   system font inherits and Safari renders visibly thinner for. */
+.image-load__advisory {
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+  max-width: 60ch;
+}

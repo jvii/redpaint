@@ -36,6 +36,18 @@ function entryBytes(entry: UndoEntry): number {
   return entry.colorIndex.indexArray.byteLength;
 }
 
+// How many levels of history a canvas of this size will actually get, once the
+// budget and both bounds are applied — the same arithmetic push() performs,
+// answered ahead of time. The image-load requester uses it to say what a large
+// image is about to cost; 4 bytes per pixel, matching CanvasColorIndex.
+export function undoLevelsForCanvas(width: number, height: number): number {
+  const bytes = width * height * 4;
+  if (bytes <= 0) {
+    return MAX_UNDO_ENTRIES;
+  }
+  return Math.min(MAX_UNDO_ENTRIES, Math.max(MIN_UNDO_LEVELS, Math.floor(MAX_UNDO_BYTES / bytes)));
+}
+
 class UndoBuffer {
   constructor() {
     this.undoBuffer = [];

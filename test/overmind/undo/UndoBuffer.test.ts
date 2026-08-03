@@ -5,6 +5,7 @@ import {
   MAX_UNDO_ENTRIES,
   MAX_UNDO_BYTES,
   MIN_UNDO_LEVELS,
+  undoLevelsForCanvas,
 } from '../../../src/overmind/undo/UndoBuffer';
 import { CanvasColorIndex } from '../../../src/domain/CanvasColorIndex';
 
@@ -114,6 +115,44 @@ describe('eviction', () => {
     expect(undoBuffer.getBuffer()).toHaveLength(MIN_UNDO_LEVELS);
     expect(undoBuffer.getTotalBytes()).toBeGreaterThan(MAX_UNDO_BYTES);
     expect(index).toBe(MIN_UNDO_LEVELS - 1);
+  });
+});
+
+describe('undoLevelsForCanvas', () => {
+  test('gives the full history at every Amiga screen format', () => {
+    for (const [w, h] of [
+      [320, 200],
+      [320, 256],
+      [640, 400],
+      [640, 512],
+    ]) {
+      expect(undoLevelsForCanvas(w, h)).toBe(MAX_UNDO_ENTRIES);
+    }
+  });
+
+  test('is trimmed by the byte budget on a large canvas', () => {
+    const levels = undoLevelsForCanvas(3000, 2000); // 24 MB per entry
+    expect(levels).toBeLessThan(MAX_UNDO_ENTRIES);
+    expect(levels).toBeGreaterThan(MIN_UNDO_LEVELS);
+    expect(levels * bytesFor(3000, 2000)).toBeLessThanOrEqual(MAX_UNDO_BYTES);
+  });
+
+  test('never drops below the floor, however large the canvas', () => {
+    expect(undoLevelsForCanvas(8000, 8000)).toBe(MIN_UNDO_LEVELS);
+  });
+
+  test('agrees with what the buffer actually holds', () => {
+    const w = 2560;
+    const h = 1600;
+    let index: number | null = null;
+    for (let i = 0; i < MAX_UNDO_ENTRIES; i++) {
+      index = undoBuffer.push(sizedEntry(bytesFor(w, h)), index);
+    }
+    expect(undoBuffer.getBuffer()).toHaveLength(undoLevelsForCanvas(w, h));
+  });
+
+  test('treats an uninitialized canvas as unconstrained', () => {
+    expect(undoLevelsForCanvas(0, 0)).toBe(MAX_UNDO_ENTRIES);
   });
 });
 
