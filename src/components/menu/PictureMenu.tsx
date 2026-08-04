@@ -27,6 +27,17 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   const baseName = state.app.documentName || 'redpaint';
   // Only reached on the browsers with no showSaveFilePicker; saveFile decides,
   // since it is the one that knows which route it is taking.
+  // A written file is now what the document is: it takes that name, and there is
+  // nothing left unsaved. Both save routes end here — the name comes back from
+  // saveFile because only it knows what the OS picker was told.
+  const remember = (savedName: string | null): void => {
+    if (savedName === null) {
+      return; // cancelled, or nothing written
+    }
+    actions.app.setDocumentName(savedName);
+    actions.app.markDocumentClean();
+  };
+
   const promptForName = (suggested: string): Promise<string | null> => {
     const extension = suggested.slice(suggested.lastIndexOf('.'));
     // The menu is still open — a save is clicked from inside it — and its panel
@@ -45,14 +56,9 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     void cycleDriver.withBaseColors(async (): Promise<void> => {
       // preserveDrawingBuffer is on, but render once to be sure the buffer is current
       paintingCanvasController.render();
-      const saved = await saveCanvasAsPng(
-        paintingCanvasController.mainCanvas,
-        `${baseName}.png`,
-        promptForName
+      remember(
+        await saveCanvasAsPng(paintingCanvasController.mainCanvas, `${baseName}.png`, promptForName)
       );
-      if (saved) {
-        actions.app.markDocumentClean();
-      }
     });
   };
 
@@ -92,11 +98,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
       `${baseName}.iff`,
       { description: 'IFF ILBM image', mime: 'image/x-ilbm', extension: '.iff' },
       promptForName
-    ).then((saved): void => {
-      if (saved) {
-        actions.app.markDocumentClean();
-      }
-    });
+    ).then(remember);
   };
 
   return (

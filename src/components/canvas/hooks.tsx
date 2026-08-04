@@ -134,8 +134,11 @@ export function useCanvasContentUpload(): void {
       actions.undo.setUndoPoint();
     }
     if (pending.freshDocument) {
-      // a picture just loaded from a file already matches one, so it starts
-      // clean — the same reading an editor gives a file it has just opened
+      // A picture just loaded from a file already matches one, so it starts
+      // clean — the same reading an editor gives a file it has just opened. It
+      // gives up the previous document's name too: whatever was on screen
+      // before, this is not it.
+      actions.app.setDocumentName('');
       actions.app.markDocumentClean();
     }
     actions.app.setLoading(false);

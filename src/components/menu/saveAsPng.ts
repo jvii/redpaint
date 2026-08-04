@@ -48,19 +48,23 @@ export function withExtension(name: string, extension: string): string {
 // own OK click is a fresh gesture, so the download that follows has newer
 // activation than the picker path does.
 //
-// Returns whether a file was actually written, which the caller needs in order
-// to know the document now matches one: every early return here is a cancel or
-// a failure, and neither should clear the tab title's unsaved marker.
+// Returns the base name it wrote, without the extension, or null if nothing was
+// written — every early return here is a cancel or a failure, and neither should
+// clear the tab title's unsaved marker or rename the document.
+//
+// The name has to come back from here because only this function knows it: on
+// the picker branch the user typed it into an OS dialog, and the returned handle
+// is the only place it appears.
 export async function saveFile(
   makeBlob: () => Promise<Blob | null>,
   suggestedName: string,
   fileType: SaveFileType,
   promptForName?: PromptForName
-): Promise<boolean> {
+): Promise<string | null> {
   type SaveFilePicker = (options?: {
     suggestedName?: string;
     types?: { description: string; accept: Record<string, string[]> }[];
-  }) => Promise<{ createWritable: () => Promise<WritableStream> }>;
+  }) => Promise<{ name: string; createWritable: () => Promise<WritableStream> }>;
   const showSaveFilePicker = (window as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
 
   let fileHandle = null;
@@ -74,12 +78,12 @@ export async function saveFile(
         ],
       });
     } catch {
-      return false; // user cancelled the picker
+      return null; // user cancelled the picker
     }
   } else if (promptForName) {
     const chosen = await promptForName(suggestedName);
     if (chosen === null) {
-      return false; // user cancelled the requester
+      return null; // user cancelled the requester
     }
     // The requester sanitizes as it previews, so this is belt and braces —
     // idempotent, and the one thing standing between a hand-written
@@ -90,7 +94,7 @@ export async function saveFile(
 
   const blob = await makeBlob();
   if (!blob) {
-    return false;
+    return null;
   }
 
   if (fileHandle) {
@@ -98,7 +102,9 @@ export async function saveFile(
     const writer = writable.getWriter();
     await writer.write(blob);
     await writer.close();
-    return true;
+    // What the user actually called it in the OS dialog, which may be nothing
+    // like what was suggested.
+    return baseName(fileHandle.name, fileType.extension);
   }
 
   // fallback: regular browser download
@@ -110,14 +116,22 @@ export async function saveFile(
   link.click();
   link.remove();
   setTimeout((): void => URL.revokeObjectURL(url), 1000);
-  return true;
+  return baseName(downloadName, fileType.extension);
+}
+
+// Strips the format's extension, so what comes back is a name that can be
+// offered to any format's save rather than one carrying another's suffix.
+function baseName(name: string, extension: string): string {
+  return name.toLowerCase().endsWith(extension.toLowerCase())
+    ? name.slice(0, -extension.length)
+    : name;
 }
 
 export async function saveCanvasAsPng(
   canvas: HTMLCanvasElement,
   suggestedName: string,
   promptForName?: PromptForName
-): Promise<boolean> {
+): Promise<string | null> {
   return saveFile(
     () => new Promise((resolve): void => canvas.toBlob(resolve, 'image/png')),
     suggestedName,

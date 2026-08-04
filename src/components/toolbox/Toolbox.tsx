@@ -7,8 +7,8 @@ import './Toolbox.css';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function Toolbox(): JSX.Element {
-  const state = useAppState()
-  const actions = useActions()
+  const state = useAppState();
+  const actions = useActions();
   return (
     <div className="toolbox">
       <ToolboxToggleButton
@@ -135,6 +135,10 @@ export function Toolbox(): JSX.Element {
         onClick={(): void => {
           paintingCanvasController.clear();
           actions.undo.setUndoPoint();
+          // A cleared canvas is a new picture: it is not the file it was, so it
+          // gives up that file's name and starts clean again.
+          actions.app.setDocumentName('');
+          actions.app.markDocumentClean();
         }}
       />
     </div>

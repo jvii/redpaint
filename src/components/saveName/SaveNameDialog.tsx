@@ -50,9 +50,9 @@ function SaveNameDialogOpen(): JSX.Element {
     if (!valid) {
       return;
     }
-    // Remember it: the next save offers this name instead of the default, and
-    // the document is now called something.
-    actions.app.setDocumentName(cleaned);
+    // Only answers the prompt. Naming the document is the save handler's job,
+    // once a file has actually been written — this branch and the OS picker
+    // branch both go through it, so they cannot disagree.
     close(cleaned);
   };
 
