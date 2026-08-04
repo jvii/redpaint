@@ -107,9 +107,11 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           that row is disk I/O, and one layout per group (style guide) means a
           stacked gadget cannot join a horizontal one anyway. Stacked and
           headed matches the brush transforms, which is what Crop is — an
-          operation on the picture, not a file. */}
+          operation on the picture, not a file. Headed Size for the same reason
+          the Brush drawer's first transform cluster is: it changes how big the
+          thing is. */}
       <div className="drawer-menu__row">
-        <GadgetCluster head="Canvas">
+        <GadgetCluster head="Size">
           <Gadget
             icon={<CropIcon />}
             label="Crop"
