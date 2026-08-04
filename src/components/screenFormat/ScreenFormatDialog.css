@@ -48,13 +48,14 @@
    when selected and blue-on-blue is nothing at all. currentColor also follows
    hover, selected and disabled for free.
 
-   Full strength, not dimmed. It read as secondary to the format name until
-   2026-08-04, which had it backwards: the resolution is the concrete half of
-   the choice — Amiga Lo-Res says less than 320×256 does — and everywhere else
-   in the app a dimension is a value given more weight than its label, not
-   less. Dimming also washed out the orange label on the selected row. */
+   Dimmed to 0.75, so the resolution reads as detail beside the name that
+   labels the row. A segment is a control, not a readout: the thing being
+   chosen is the format, and its size supports that choice rather than being
+   the value on offer — which is why the readout rule elsewhere (a dimension
+   outweighs its label) does not reach in here. */
 .screen-format__format-res {
   white-space: nowrap;
+  opacity: 0.75;
 }
 
 .screen-format__colors .retro-toggle__segment {

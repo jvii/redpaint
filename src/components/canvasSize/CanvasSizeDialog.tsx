@@ -102,7 +102,16 @@ function CanvasSizeDialogOpen(): JSX.Element {
             options={[
               {
                 value: 'fit',
-                label: fit ? `${fit.label} (${fit.width}\u00d7${fit.height})` : 'Screen Size',
+                label: fit ? (
+                  <>
+                    {fit.label}
+                    <span className="canvas-size__option-res">
+                      {fit.width}×{fit.height}
+                    </span>
+                  </>
+                ) : (
+                  'Screen Size'
+                ),
                 disabled: !fit,
               },
               { value: 'custom', label: 'Custom Size' },

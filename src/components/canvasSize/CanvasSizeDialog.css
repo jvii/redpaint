@@ -76,3 +76,17 @@
   color: rgba(0, 0, 0, 0.65);
   max-width: 64ch;
 }
+
+/* The size behind Window/Screen Size, in the same register as the Screen
+   Format list's resolutions: dimmed detail beside the name that labels the
+   option, currentColor so it survives the segment turning blue when selected.
+   No parentheses — the dimming already sets it apart, and the brackets were
+   doing that job a second time. */
+.canvas-size__option-res {
+  white-space: nowrap;
+  opacity: 0.75;
+  /* The gap is a margin, not a space in the markup: a RetroToggle segment is
+     a flex row, and flex drops whitespace-only text nodes between its items —
+     the space was in the DOM and nowhere on screen. */
+  margin-left: 12px;
+}

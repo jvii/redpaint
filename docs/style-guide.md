@@ -44,12 +44,14 @@ x, and never spaced. The `×` centres on the digits' baseline where the x sits
 2px low in Press Start 2P (`ScreenStatus`'s `Dimensions` has the measurement).
 Their colour follows the ground they sit on, which is the one thing that is
 not uniform and cannot be: on a static ground they are a value and take the
-blue above; inside a control whose ground changes — a `RetroToggle` segment,
-whose selected state fills with that same blue — they take plain
-`currentColor` instead, which stays legible on every segment state and follows
-hover, selected and disabled for nothing. Not dimmed in either case: a
-dimension is the concrete half of whatever names it, and every other readout
-in the app gives the figure more weight than its label, not less.
+blue above, outweighing the caption that names it. Inside a control they take
+`currentColor` at `0.75` opacity instead — never that blue, since a
+`RetroToggle` segment fills with it when selected, and dimmed because the rank
+inverts: a segment is a control, so the thing being chosen is the name and its
+size is detail supporting that choice (the Screen Format list, the Canvas Size
+requester's Window/Screen Size option). `currentColor` also follows hover,
+selected and disabled for nothing. No parentheses around either — the
+treatment already sets the figure apart.
 
 Semantic exceptions, deliberately scarce:
 
