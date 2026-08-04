@@ -45,7 +45,14 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     void cycleDriver.withBaseColors(async (): Promise<void> => {
       // preserveDrawingBuffer is on, but render once to be sure the buffer is current
       paintingCanvasController.render();
-      await saveCanvasAsPng(paintingCanvasController.mainCanvas, `${baseName}.png`, promptForName);
+      const saved = await saveCanvasAsPng(
+        paintingCanvasController.mainCanvas,
+        `${baseName}.png`,
+        promptForName
+      );
+      if (saved) {
+        actions.app.markDocumentClean();
+      }
     });
   };
 
@@ -85,7 +92,11 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
       `${baseName}.iff`,
       { description: 'IFF ILBM image', mime: 'image/x-ilbm', extension: '.iff' },
       promptForName
-    );
+    ).then((saved): void => {
+      if (saved) {
+        actions.app.markDocumentClean();
+      }
+    });
   };
 
   return (

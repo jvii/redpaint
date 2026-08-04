@@ -47,12 +47,16 @@ export function withExtension(name: string, extension: string): string {
 // The activation concern inverts on that branch, in our favour: the requester's
 // own OK click is a fresh gesture, so the download that follows has newer
 // activation than the picker path does.
+//
+// Returns whether a file was actually written, which the caller needs in order
+// to know the document now matches one: every early return here is a cancel or
+// a failure, and neither should clear the tab title's unsaved marker.
 export async function saveFile(
   makeBlob: () => Promise<Blob | null>,
   suggestedName: string,
   fileType: SaveFileType,
   promptForName?: PromptForName
-): Promise<void> {
+): Promise<boolean> {
   type SaveFilePicker = (options?: {
     suggestedName?: string;
     types?: { description: string; accept: Record<string, string[]> }[];
@@ -70,12 +74,12 @@ export async function saveFile(
         ],
       });
     } catch {
-      return; // user cancelled the picker
+      return false; // user cancelled the picker
     }
   } else if (promptForName) {
     const chosen = await promptForName(suggestedName);
     if (chosen === null) {
-      return; // user cancelled the requester
+      return false; // user cancelled the requester
     }
     // The requester sanitizes as it previews, so this is belt and braces —
     // idempotent, and the one thing standing between a hand-written
@@ -86,7 +90,7 @@ export async function saveFile(
 
   const blob = await makeBlob();
   if (!blob) {
-    return;
+    return false;
   }
 
   if (fileHandle) {
@@ -94,7 +98,7 @@ export async function saveFile(
     const writer = writable.getWriter();
     await writer.write(blob);
     await writer.close();
-    return;
+    return true;
   }
 
   // fallback: regular browser download
@@ -106,14 +110,15 @@ export async function saveFile(
   link.click();
   link.remove();
   setTimeout((): void => URL.revokeObjectURL(url), 1000);
+  return true;
 }
 
 export async function saveCanvasAsPng(
   canvas: HTMLCanvasElement,
   suggestedName: string,
   promptForName?: PromptForName
-): Promise<void> {
-  await saveFile(
+): Promise<boolean> {
+  return saveFile(
     () => new Promise((resolve): void => canvas.toBlob(resolve, 'image/png')),
     suggestedName,
     { description: 'PNG image', mime: 'image/png', extension: '.png' },

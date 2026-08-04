@@ -133,6 +133,11 @@ export function useCanvasContentUpload(): void {
     if (pending.recordUndoPoint) {
       actions.undo.setUndoPoint();
     }
+    if (pending.freshDocument) {
+      // a picture just loaded from a file already matches one, so it starts
+      // clean — the same reading an editor gives a file it has just opened
+      actions.app.markDocumentClean();
+    }
     actions.app.setLoading(false);
   }, [state.canvas.resolution]);
 }

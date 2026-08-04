@@ -23,6 +23,13 @@ export type State = {
   // the file will end up called. Null when it is closed. The typed answer goes
   // back through pendingSaveName, not through here — see that module.
   saveNamePrompt: { suggested: string; extension: string } | null;
+  // When the document last matched something outside the app: a fresh canvas,
+  // a just-loaded image, or a just-written file. Anything later in the undo
+  // timestamps means there are changes no file has — which is what the tab
+  // title's marker reports. A time rather than a boolean so it can be compared
+  // against those timestamps instead of having to be cleared by every path
+  // that touches the picture.
+  lastCleanTime: number;
   menuOpen: boolean;
   // Which of the menu's drawers (Picture: image disk I/O; Brush: transforms
   // + brush disk; Prefs: app settings) is open — a radio group, only one at
@@ -44,6 +51,7 @@ export const state: State = {
   isLoading: false,
   documentName: '',
   saveNamePrompt: null,
+  lastCleanTime: 0,
   menuOpen: false,
   openDrawer: null,
   uiScale: loadUiScale(),

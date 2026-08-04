@@ -120,6 +120,10 @@ export function MainCanvas(): JSX.Element {
       width: Math.round(canvasDivRef.current.offsetWidth * dpr),
       height: Math.round(canvasDivRef.current.offsetHeight * dpr),
     });
+    // An empty canvas nobody has painted on is not unsaved work — after the
+    // baseline snapshot setResolution just took, not before it, or the marker
+    // would be showing before the first stroke.
+    actions.app.markDocumentClean();
   }, []);
 
   return (

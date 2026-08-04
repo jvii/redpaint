@@ -147,6 +147,11 @@ export const clearBrushLoadInfo = (context: Context): void => {
   context.state.app.brushLoadInfo = null;
 };
 
+// The document now matches a file (or is a fresh, empty one): nothing to save.
+export const markDocumentClean = (context: Context): void => {
+  context.state.app.lastCleanTime = Date.now();
+};
+
 export const setDocumentName = (context: Context, name: string): void => {
   context.state.app.documentName = name;
 };

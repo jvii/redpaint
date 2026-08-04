@@ -16,6 +16,7 @@ import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
 import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
 import { CanvasSizeDialog } from './canvasSize/CanvasSizeDialog';
 import { SaveNameDialog } from './saveName/SaveNameDialog';
+import { useDocumentTitle } from './useDocumentTitle';
 import { BrushLoadDialog } from './imageLoad/BrushLoadDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
 import { FillStyleSettings } from './fillStyle/FillStyleSettings';
@@ -28,6 +29,7 @@ function App(): JSX.Element {
   // than a frame of full-size chrome later.
   const state = useAppState();
   const uiScale = state.app.uiScale;
+  useDocumentTitle();
   useLayoutEffect((): void => applyUiScale(uiScale), [uiScale]);
 
   return (
