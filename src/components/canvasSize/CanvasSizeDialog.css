@@ -45,14 +45,14 @@
    nothing is wrong and nothing is blocked — same register and reasoning as the
    image load requester's advisory.
 
-   The height is reserved for the longest state this can reach (four lines at
-   64ch: a change that crops one axis and grows the other, which carries both
-   clauses plus the crop advice). Requesters do not resize as their own content
-   changes — see docs/style-guide.md — and this text changes on every
-   keystroke, so without the floor the window would grow and shrink under the
-   pointer while someone types a width. */
+   The height is reserved for the longest state this can reach — three lines at
+   64ch, which is the purely-larger case, the only one carrying the note that
+   the picture keeps its place. Requesters do not resize as their own content
+   changes (see docs/style-guide.md), and this text changes on every keystroke,
+   so without the floor the window would grow and shrink under the pointer
+   while someone types a width. Re-measure this if the wording changes. */
 .canvas-size__note {
-  min-height: 72px;
+  min-height: 54px;
   margin: 0;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;

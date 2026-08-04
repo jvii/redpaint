@@ -166,11 +166,9 @@ function resizeNote(
   const edges = (list: (string | null)[]): string => list.join(' and ');
   const cropClause = `pixels are cropped from the ${edges(cropped)}`;
   const newSpace = `the new space at the ${edges(grown)} is filled with the background color`;
-  const cropAdvice =
-    ' Use Crop in the Picture menu to choose the region instead. Undo puts them back either way.';
 
   if (!grown.length) {
-    return `Smaller than the current canvas — ${cropClause}.${cropAdvice}`;
+    return `Smaller than the current canvas — ${cropClause}.`;
   }
   if (!cropped.length) {
     // worth saying only here: when nothing is cropped, "larger" could be read
@@ -178,7 +176,7 @@ function resizeNote(
     // requester never does
     return `Larger than the current canvas — the picture keeps its place, and ${newSpace}.`;
   }
-  return `${capitalize(cropClause)}, and ${newSpace}.${cropAdvice}`;
+  return `${capitalize(cropClause)}, and ${newSpace}.`;
 }
 
 function capitalize(text: string): string {
