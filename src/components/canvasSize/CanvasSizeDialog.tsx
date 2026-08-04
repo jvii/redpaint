@@ -92,7 +92,9 @@ function CanvasSizeDialogOpen(): JSX.Element {
       <div className="canvas-size__body">
         <div className="canvas-size__current">
           <span className="canvas-size__current-label">Current</span>
-          {current.width}x{current.height}
+          <b>
+            {current.width}×{current.height}
+          </b>
         </div>
         <RetroFieldset legend="Select New Size">
           <RetroToggle
@@ -100,7 +102,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
             options={[
               {
                 value: 'fit',
-                label: fit ? `${fit.label} (${fit.width} x ${fit.height})` : 'Screen Size',
+                label: fit ? `${fit.label} (${fit.width}\u00d7${fit.height})` : 'Screen Size',
                 disabled: !fit,
               },
               { value: 'custom', label: 'Custom Size' },

@@ -34,7 +34,7 @@ function formatOptions(videoStandard: VideoStandard) {
           <>
             <span className="screen-format__format-name">{format.name}</span>
             <span className="screen-format__format-res">
-              {width}x{height}
+              {width}×{height}
             </span>
           </>
         ),

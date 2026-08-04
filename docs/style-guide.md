@@ -39,6 +39,16 @@ down (16px), centred on the name rather than sharing its baseline — the
 bitmap face has no descenders to speak of, so a common baseline hangs the
 smaller text low instead of tying the two together.
 
+**Dimensions are always `W×H`** — the multiplication sign, never a lowercase
+x, and never spaced. The `×` centres on the digits' baseline where the x sits
+2px low in Press Start 2P (`ScreenStatus`'s `Dimensions` has the measurement).
+Their colour follows the ground they sit on, which is the one thing that is
+not uniform and cannot be: on a static ground they are a value and take the
+blue above; inside a control whose ground changes — a `RetroToggle` segment,
+whose selected state fills with that same blue — they take `currentColor` at
+`0.75` opacity instead, which stays legible and tracks hover, selected and
+disabled for nothing.
+
 Semantic exceptions, deliberately scarce:
 
 - **One rainbow, ever.** The TRUE COLOR `ON` gradient is the only gradient

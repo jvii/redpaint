@@ -10,6 +10,13 @@
 
 /* What the canvas is now, in the status-strip idiom shared with the load
    requester's Image line — the figure the typed one is being compared against */
+/* The size it is now, in the caption-over-value idiom ScreenStatus uses: the
+   figure is a value, so it takes the blue the style guide reserves for those. */
+.canvas-size__current b {
+  color: var(--wb-blue);
+  font-weight: normal;
+}
+
 .canvas-size__current {
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;

@@ -43,12 +43,12 @@
 }
 
 .screen-format__format-name,
+/* Dimensions inside a control, not on a static ground: currentColor at reduced
+   opacity, never the blue a readout takes, because the segment's own ground
+   turns blue when selected and blue-on-blue is nothing at all. Dimming it this
+   way also tracks hover, selected and disabled for free. */
 .screen-format__format-res {
   white-space: nowrap;
-}
-
-/* resolution reads as secondary to the format name */
-.screen-format__format-res {
   opacity: 0.75;
 }
 
