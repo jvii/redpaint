@@ -45,9 +45,11 @@ x, and never spaced. The `×` centres on the digits' baseline where the x sits
 Their colour follows the ground they sit on, which is the one thing that is
 not uniform and cannot be: on a static ground they are a value and take the
 blue above; inside a control whose ground changes — a `RetroToggle` segment,
-whose selected state fills with that same blue — they take `currentColor` at
-`0.75` opacity instead, which stays legible and tracks hover, selected and
-disabled for nothing.
+whose selected state fills with that same blue — they take plain
+`currentColor` instead, which stays legible on every segment state and follows
+hover, selected and disabled for nothing. Not dimmed in either case: a
+dimension is the concrete half of whatever names it, and every other readout
+in the app gives the figure more weight than its label, not less.
 
 Semantic exceptions, deliberately scarce:
 

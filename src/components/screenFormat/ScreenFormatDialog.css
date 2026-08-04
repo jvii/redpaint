@@ -43,13 +43,18 @@
 }
 
 .screen-format__format-name,
-/* Dimensions inside a control, not on a static ground: currentColor at reduced
-   opacity, never the blue a readout takes, because the segment's own ground
-   turns blue when selected and blue-on-blue is nothing at all. Dimming it this
-   way also tracks hover, selected and disabled for free. */
+/* Dimensions inside a control, not on a static ground: plain currentColor,
+   never the blue a readout takes, because the segment's own ground turns blue
+   when selected and blue-on-blue is nothing at all. currentColor also follows
+   hover, selected and disabled for free.
+
+   Full strength, not dimmed. It read as secondary to the format name until
+   2026-08-04, which had it backwards: the resolution is the concrete half of
+   the choice — Amiga Lo-Res says less than 320×256 does — and everywhere else
+   in the app a dimension is a value given more weight than its label, not
+   less. Dimming also washed out the orange label on the selected row. */
 .screen-format__format-res {
   white-space: nowrap;
-  opacity: 0.75;
 }
 
 .screen-format__colors .retro-toggle__segment {
