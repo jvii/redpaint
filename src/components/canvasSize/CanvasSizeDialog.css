@@ -86,5 +86,5 @@
    flex row, and flex drops whitespace-only text nodes between its items — the
    space was in the DOM and nowhere on screen. */
 .canvas-size__option-res {
-  margin-left: 24px;
+  margin-left: 40px;
 }
