@@ -67,10 +67,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
 
   const valid = Number.isFinite(target.width) && Number.isFinite(target.height);
   const unchanged = valid && target.width === current.width && target.height === current.height;
-  // Not mutually exclusive: one axis can shrink while the other grows, and
-  // that change does both things at once, so it gets both notes.
-  const wouldCrop = valid && (target.width < current.width || target.height < current.height);
-  const wouldGrow = valid && (target.width > current.width || target.height > current.height);
+  const note = valid ? resizeNote(current, target) : null;
 
   const handleOk = (): void => {
     if (!valid || unchanged) {
@@ -124,22 +121,10 @@ function CanvasSizeDialogOpen(): JSX.Element {
             />
           </div>
         </RetroFieldset>
-        {/* What the change does to the picture, for whichever direction it
-            goes — stated as a consequence rather than as a question, since it
-            is one Ctrl+Z away and undo carries the canvas size back with the
-            pixels. */}
-        {wouldCrop && (
-          <p className="canvas-size__note">
-            Smaller than the current canvas — pixels are cropped from the right and bottom. Use Crop
-            in the Picture menu to choose the region instead. Undo puts them back either way.
-          </p>
-        )}
-        {wouldGrow && (
-          <p className="canvas-size__note">
-            Larger than the current canvas — the picture keeps its size and position, and the new
-            space at the right and bottom is filled with the background color.
-          </p>
-        )}
+        {/* What the change does to the picture — stated as a consequence
+            rather than as a question, since it is one Ctrl+Z away and undo
+            carries the canvas size back with the pixels. */}
+        {note && <p className="canvas-size__note">{note}</p>}
       </div>
       <RetroButton variant="secondary" onClick={(): void => actions.dialog.close()}>
         Cancel
@@ -149,6 +134,51 @@ function CanvasSizeDialogOpen(): JSX.Element {
       </RetroButton>
     </Modal>
   );
+}
+
+// What the resize will do to the picture, in one sentence.
+//
+// Written per edge rather than per direction, because a change can crop one
+// axis while growing the other — and "smaller than the current canvas" and
+// "larger than the current canvas" cannot both be true of the same canvas.
+// Only a change that goes one way throughout gets to make that overall claim;
+// a mixed one simply names what happens at each edge.
+function resizeNote(
+  current: { width: number; height: number },
+  target: { width: number; height: number }
+): string | null {
+  const cropped = [
+    target.width < current.width ? 'right' : null,
+    target.height < current.height ? 'bottom' : null,
+  ].filter(Boolean);
+  const grown = [
+    target.width > current.width ? 'right' : null,
+    target.height > current.height ? 'bottom' : null,
+  ].filter(Boolean);
+  if (!cropped.length && !grown.length) {
+    return null;
+  }
+
+  const edges = (list: (string | null)[]): string => list.join(' and ');
+  const cropClause = `pixels are cropped from the ${edges(cropped)}`;
+  const newSpace = `the new space at the ${edges(grown)} is filled with the background color`;
+  const cropAdvice =
+    ' Use Crop in the Picture menu to choose the region instead. Undo puts them back either way.';
+
+  if (!grown.length) {
+    return `Smaller than the current canvas — ${cropClause}.${cropAdvice}`;
+  }
+  if (!cropped.length) {
+    // worth saying only here: when nothing is cropped, "larger" could be read
+    // as the picture being scaled up to fit, which is the one thing this
+    // requester never does
+    return `Larger than the current canvas — the picture keeps its place, and ${newSpace}.`;
+  }
+  return `${capitalize(cropClause)}, and ${newSpace}.${cropAdvice}`;
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function clamp(value: number): number {
