@@ -7,7 +7,6 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroInputField } from '../ui/RetroInputField';
-import { undoLevelsForCanvas } from '../../overmind/undo/UndoBuffer';
 
 // DPaint calls this the page size, on its own Pict menu item, deliberately
 // separate from the screen format: the format is the display being simulated,
@@ -68,8 +67,10 @@ function CanvasSizeDialogOpen(): JSX.Element {
 
   const valid = Number.isFinite(target.width) && Number.isFinite(target.height);
   const unchanged = valid && target.width === current.width && target.height === current.height;
+  // Not mutually exclusive: one axis can shrink while the other grows, and
+  // that change does both things at once, so it gets both notes.
   const wouldCrop = valid && (target.width < current.width || target.height < current.height);
-  const undoLevels = valid ? undoLevelsForCanvas(target.width, target.height) : 0;
+  const wouldGrow = valid && (target.width > current.width || target.height > current.height);
 
   const handleOk = (): void => {
     if (!valid || unchanged) {
@@ -123,19 +124,20 @@ function CanvasSizeDialogOpen(): JSX.Element {
             />
           </div>
         </RetroFieldset>
-        {/* Both notes state a consequence rather than asking for confirmation:
-            the change is one Ctrl+Z away, and undo carries the canvas size
-            back with the pixels. */}
+        {/* What the change does to the picture, for whichever direction it
+            goes — stated as a consequence rather than as a question, since it
+            is one Ctrl+Z away and undo carries the canvas size back with the
+            pixels. */}
         {wouldCrop && (
           <p className="canvas-size__note">
             Smaller than the current canvas — pixels are cropped from the right and bottom. Use Crop
             in the Picture menu to choose the region instead. Undo puts them back either way.
           </p>
         )}
-        {valid && undoLevels < 25 && (
+        {wouldGrow && (
           <p className="canvas-size__note">
-            {((target.width * target.height) / 1_000_000).toFixed(1)} megapixels. Painting will be
-            slower at this size, and undo will hold about {undoLevels} steps.
+            Larger than the current canvas — the picture keeps its size and position, and the new
+            space at the right and bottom is filled with the background color.
           </p>
         )}
       </div>
