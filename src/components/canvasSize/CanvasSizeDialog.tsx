@@ -5,7 +5,6 @@ import { resolveScreenFormat } from '../../overmind/canvas/state';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
-import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroInputField } from '../ui/RetroInputField';
 
 // DPaint calls this the page size, on its own Pict menu item, deliberately
@@ -96,54 +95,46 @@ function CanvasSizeDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Canvas Size" width={560}>
+    <Modal header="Set Canvas Size" width={560}>
       <div className="canvas-size__body">
-        <div className="canvas-size__current">
-          <span className="canvas-size__current-label">Current</span>
-          <b>
-            {current.width}×{current.height}
-          </b>
-        </div>
-        <RetroFieldset legend="Select New Size">
-          <RetroToggle
-            variant="column"
-            options={[
-              {
-                value: 'fit',
-                label: fit ? (
-                  <>
-                    {fit.label}
-                    <span className="canvas-size__option-res toggle-detail">
-                      {fit.width}×{fit.height}
-                    </span>
-                  </>
-                ) : (
-                  'Screen Size'
-                ),
-                disabled: !fit,
-              },
-              { value: 'custom', label: 'Custom Size' },
-            ]}
-            value={choice}
-            onChange={(value): void => setChoice(value as SizeChoice)}
+        <RetroToggle
+          variant="column"
+          options={[
+            {
+              value: 'fit',
+              label: fit ? (
+                <>
+                  {fit.label}
+                  <span className="canvas-size__option-res toggle-detail">
+                    {fit.width}×{fit.height}
+                  </span>
+                </>
+              ) : (
+                'Screen Size'
+              ),
+              disabled: !fit,
+            },
+            { value: 'custom', label: 'Custom Size' },
+          ]}
+          value={choice}
+          onChange={(value): void => setChoice(value as SizeChoice)}
+        />
+        <div className="canvas-size__fields">
+          <RetroInputField
+            label="Width:"
+            value={choice === 'fit' && fit ? String(fit.width) : width}
+            onChange={(value): void => setWidth(digitsOnly(value))}
+            disabled={choice === 'fit'}
+            numeric
           />
-          <div className="canvas-size__fields">
-            <RetroInputField
-              label="Width:"
-              value={choice === 'fit' && fit ? String(fit.width) : width}
-              onChange={(value): void => setWidth(digitsOnly(value))}
-              disabled={choice === 'fit'}
-              numeric
-            />
-            <RetroInputField
-              label="Height:"
-              value={choice === 'fit' && fit ? String(fit.height) : height}
-              onChange={(value): void => setHeight(digitsOnly(value))}
-              disabled={choice === 'fit'}
-              numeric
-            />
-          </div>
-        </RetroFieldset>
+          <RetroInputField
+            label="Height:"
+            value={choice === 'fit' && fit ? String(fit.height) : height}
+            onChange={(value): void => setHeight(digitsOnly(value))}
+            disabled={choice === 'fit'}
+            numeric
+          />
+        </div>
         {/* What the change does to the picture — stated as a consequence
             rather than as a question, since it is one Ctrl+Z away and undo
             carries the canvas size back with the pixels. */}
