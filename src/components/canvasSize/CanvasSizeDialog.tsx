@@ -92,7 +92,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
           <span className="canvas-size__current-label">Current</span>
           {current.width}x{current.height}
         </div>
-        <RetroFieldset legend="Size">
+        <RetroFieldset legend="Select New Size">
           <RetroToggle
             variant="column"
             options={[
