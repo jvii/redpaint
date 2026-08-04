@@ -23,7 +23,7 @@ import { undoLevelsForCanvas } from '../../overmind/undo/UndoBuffer';
 const MIN_SIDE = 1;
 const MAX_SIDE = 16384; // GL_MAX_TEXTURE_SIZE on anything we run on
 
-type SizeChoice = 'screen' | 'custom';
+type SizeChoice = 'fit' | 'custom';
 
 export function CanvasSizeDialog(): JSX.Element | null {
   const state = useAppState();
@@ -39,21 +39,28 @@ function CanvasSizeDialogOpen(): JSX.Element {
   const actions = useActions();
 
   const current = state.canvas.resolution;
-  // Only a simulated screen has a size to snap to. At Native there is no
-  // screen being simulated, so the option has nothing to mean and is offered
-  // greyed out rather than hidden — a missing option reads as a bug, a
-  // disabled one explains itself next to the format that would enable it.
+  // The size that fills the display, whatever the display currently is: a
+  // simulated screen's own dimensions, or — at Native, where no screen is
+  // being simulated — the drawing pane itself, which is what the app sizes
+  // the canvas to at startup anyway. Naming both cases in one slot means the
+  // option is never the greyed-out dead weight it was at Native.
   const screen = state.canvas.screenFormatId
     ? resolveScreenFormat(state.canvas.screenFormatId, state.canvas.videoStandard)
     : null;
+  const viewport = state.canvas.viewportSize;
+  const fit = screen
+    ? { label: 'Screen Size', width: screen.width, height: screen.height }
+    : viewport.width > 0 && viewport.height > 0
+      ? { label: 'Window Size', width: viewport.width, height: viewport.height }
+      : null;
 
   const [choice, setChoice] = useState<SizeChoice>('custom');
   const [width, setWidth] = useState(String(current.width));
   const [height, setHeight] = useState(String(current.height));
 
   const target =
-    choice === 'screen' && screen
-      ? { width: screen.width, height: screen.height }
+    choice === 'fit' && fit
+      ? { width: fit.width, height: fit.height }
       : {
           width: clamp(Number.parseInt(width, 10)),
           height: clamp(Number.parseInt(height, 10)),
@@ -90,10 +97,9 @@ function CanvasSizeDialogOpen(): JSX.Element {
             variant="column"
             options={[
               {
-                value: 'screen',
-                label: screen ? `Screen Size (${screen.width} x ${screen.height})` : 'Screen Size',
-                disabled: !screen,
-                title: screen ? undefined : 'No screen is simulated — the canvas is shown 1:1',
+                value: 'fit',
+                label: fit ? `${fit.label} (${fit.width} x ${fit.height})` : 'Screen Size',
+                disabled: !fit,
               },
               { value: 'custom', label: 'Custom Size' },
             ]}
@@ -103,16 +109,16 @@ function CanvasSizeDialogOpen(): JSX.Element {
           <div className="canvas-size__fields">
             <RetroInputField
               label="Width:"
-              value={choice === 'screen' && screen ? String(screen.width) : width}
+              value={choice === 'fit' && fit ? String(fit.width) : width}
               onChange={setWidth}
-              disabled={choice === 'screen'}
+              disabled={choice === 'fit'}
               numeric
             />
             <RetroInputField
               label="Height:"
-              value={choice === 'screen' && screen ? String(screen.height) : height}
+              value={choice === 'fit' && fit ? String(fit.height) : height}
               onChange={setHeight}
-              disabled={choice === 'screen'}
+              disabled={choice === 'fit'}
               numeric
             />
           </div>

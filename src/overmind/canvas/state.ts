@@ -126,6 +126,14 @@ export type State = {
   // time MainCanvas recomputes its own copy; {1,1} until the canvas has
   // mounted once.
   displayScale: Point;
+  // The main drawing pane's size in artwork pixels (its CSS box times the
+  // device pixel ratio) — what "fit to window" means at Native, where one
+  // artwork pixel is one physical screen pixel and the app already sizes the
+  // canvas this way at startup. Mirrored from MainCanvas for the same reason
+  // displayScale is: it depends on the live window and the chrome around it,
+  // and the Canvas Size requester has no way to measure that pane itself.
+  // {0,0} until the canvas has mounted once.
+  viewportSize: { width: number; height: number };
   // Whether the committed canvas holds any true-color pixels (hybrid rather
   // than fully indexed). Maintained by the undo actions: every committed
   // content change passes through setUndoPoint, and undo/redo restore the
@@ -170,6 +178,7 @@ export const state: State = {
   scrollFocusPoint: null,
   zoomFocusPoint: null,
   displayScale: { x: 1, y: 1 },
+  viewportSize: { width: 0, height: 0 },
   hasTrueColorPixels: false,
   trueColorEnabled: true,
   pendingScreenFormat: null,

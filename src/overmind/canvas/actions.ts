@@ -1,4 +1,4 @@
-import { Context } from '../../overmind'
+import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
@@ -107,10 +107,7 @@ export interface SetScreenFormatParams {
 // window is an independent view preference (see toggleScaleMode), and resizing the
 // canvas to the screen is a separate, conditional step (see the Screen Format
 // requester): grow/crop/scale only when it matters.
-export const setScreenFormat = (
-  context: Context,
-  { formatId }: SetScreenFormatParams
-): void => {
+export const setScreenFormat = (context: Context, { formatId }: SetScreenFormatParams): void => {
   context.state.canvas.screenFormatId = formatId;
 };
 
@@ -136,6 +133,13 @@ export const toggleScaleMode = (context: Context): void => {
 // state — see state.ts's displayScale comment for why.
 export const setDisplayScale = (context: Context, scale: Point): void => {
   context.state.canvas.displayScale = scale;
+};
+
+export const setViewportSize = (
+  context: Context,
+  size: { width: number; height: number }
+): void => {
+  context.state.canvas.viewportSize = size;
 };
 
 // Loading an image as True Color opts the new document back into true color;

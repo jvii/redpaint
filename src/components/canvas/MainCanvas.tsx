@@ -89,6 +89,24 @@ export function MainCanvas(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formatId, scaleMode, videoStandard, dpr]);
 
+  // The drawing pane's own size in artwork pixels, tracked whatever the
+  // screen format is — the effect above returns early at Native, and this is
+  // exactly the case that needs it. Feeds the Canvas Size requester's fit
+  // option; the same measurement the startup sizing below performs once.
+  useEffect((): (() => void) => {
+    const pane = canvasDivRef.current;
+    const measure = (): void =>
+      actions.canvas.setViewportSize({
+        width: Math.round(pane.offsetWidth * dpr),
+        height: Math.round(pane.offsetHeight * dpr),
+      });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(pane);
+    return (): void => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dpr]);
+
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);
   useCanvasContentUpload();
 
