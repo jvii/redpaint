@@ -43,6 +43,10 @@
 }
 
 .screen-format__format-name,
+.screen-format__format-res {
+  white-space: nowrap;
+}
+
 /* Dimensions inside a control, not on a static ground: plain currentColor,
    never the blue a readout takes, because the segment's own ground turns blue
    when selected and blue-on-blue is nothing at all. currentColor also follows
@@ -52,9 +56,12 @@
    labels the row. A segment is a control, not a readout: the thing being
    chosen is the format, and its size supports that choice rather than being
    the value on offer — which is why the readout rule elsewhere (a dimension
-   outweighs its label) does not reach in here. */
+   outweighs its label) does not reach in here.
+
+   Its own rule, deliberately: the nowrap above is shared with the name, and
+   putting the opacity in that selector list dimmed both, which is exactly the
+   distinction this is for. */
 .screen-format__format-res {
-  white-space: nowrap;
   opacity: 0.75;
 }
 

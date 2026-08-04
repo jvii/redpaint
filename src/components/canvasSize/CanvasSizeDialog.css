@@ -88,5 +88,5 @@
   /* The gap is a margin, not a space in the markup: a RetroToggle segment is
      a flex row, and flex drops whitespace-only text nodes between its items —
      the space was in the DOM and nowhere on screen. */
-  margin-left: 12px;
+  margin-left: 24px;
 }
