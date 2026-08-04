@@ -52,7 +52,13 @@
    so without the floor the window would grow and shrink under the pointer
    while someone types a width. Re-measure this if the wording changes. */
 .canvas-size__note {
+  /* Centred in the reserved box rather than pinned to its top: the reserve is
+     exactly the tallest state, so the shorter ones would otherwise sit under a
+     growing gap, which reads as the note having been pushed up rather than as
+     one line where three can fit. */
   min-height: 54px;
+  display: flex;
+  align-items: center;
   margin: 0;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
