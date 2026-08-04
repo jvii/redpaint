@@ -110,10 +110,15 @@
 }
 
 /* the shared keycap base, stepped down to the hint's own size — currentColor
-   on both border and text means it dims with the caption automatically */
-.menubar__hint-key {
+   on border, shadow and text means it dims with the caption automatically */
+.menubar__hint .menubar__hint-key {
   font-size: 11px;
   padding: 2px 5px;
+  /* a 2px offset under an 11px cap reads as a thick edge rather than a
+     shadow, since both are the same ink — the smallest cap takes the
+     smallest step. Nested selector so it outranks the shared base whatever
+     order the stylesheets happen to load in. */
+  box-shadow: 1px 1px 0 0 currentColor;
 }
 
 /* The bar shares one row with the title and the status indicators. On a narrow

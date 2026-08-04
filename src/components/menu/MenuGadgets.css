@@ -109,9 +109,19 @@
   font-size: 16px;
   line-height: 1;
   color: inherit;
+  /* Neobrutalist chip: 2px edge and a hard, unblurred offset shadow, which is
+     the same language as the app's own gadgets — those cast 4px 4px 0 black
+     per group; a cap is small, so it takes the 2px scale .retro-input uses.
+     Both in currentColor, not black: that is what keeps a cap tracking its
+     button through hover, pressed and disabled with no extra rules, and a
+     black-bordered cap on a pressed blue gadget would read as a hole in it.
+     Transparent face for the same reason — a cap rides on paper, on blue and
+     on the white menubar, and only a face that lets the ground through works
+     on all three. */
   background: none;
-  border: 1px solid currentColor;
-  border-radius: 3px;
+  border: 2px solid currentColor;
+  border-radius: 5px;
+  box-shadow: 2px 2px 0 0 currentColor;
   padding: 3px 6px;
 }
 
