@@ -109,21 +109,9 @@
   font-size: 16px;
   line-height: 1;
   color: inherit;
-  /* Neobrutalist chip — a hard, unblurred offset shadow, the same language as
-     the app's own gadgets, which cast 4px 4px 0 black per group. Held to the
-     lightest weight that still reads as one: a cap is a hint about a key, not
-     a control you press, and at 2px of edge and offset it drew more attention
-     than the gadget it annotates.
-     Border, shadow and text are all currentColor, not black: that is what
-     keeps a cap tracking its button through hover, pressed and disabled with
-     no extra rules, and a black-bordered cap on a pressed blue gadget would
-     read as a hole in it. Transparent face for the same reason — a cap rides
-     on paper, on blue and on the white menubar, and only a face that lets the
-     ground through works on all three. */
   background: none;
   border: 1px solid currentColor;
-  border-radius: 5px;
-  box-shadow: 1px 1px 0 0 currentColor;
+  border-radius: 3px;
   padding: 3px 6px;
 }
 

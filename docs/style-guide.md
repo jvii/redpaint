@@ -226,20 +226,12 @@ Consistency is judged within each control type, not across them:
 - Keyboard shortcuts live in gadget `title` tooltips, plus a monospace
   keycap on two controls that get one, styled with a shared base class
   (`.wb-gadget__keycap`, `MenuGadgets.css`) so they read as one system: a
-  1px-bordered, 5px-`border-radius`ed cap with a hard 1px offset shadow —
-  neobrutalism's kbd, which is the same flat-edge-plus-unblurred-shadow
-  language the app's gadgets already speak (they cast `4px 4px 0 black` per
-  group). Held to the lightest weight that still reads as a chip: a cap is a
-  hint about a key, not a control you press, and at 2px of edge and offset it
-  drew more attention than the gadget it annotates. The
-  radius is a deliberate, scoped exception to the Chrome section's
-  "no border-radius" rule, there because a keycap needs to read as a keycap
-  rather than another squared-off gadget.
-  `color`, `border-color` and the shadow are all `currentColor`, so the cap
-  tracks its button's own hover/pressed/disabled state for free, no extra
-  rules — that is also why the face stays transparent and the ink is never
-  literal black: a cap rides on paper, on pressed blue and on the white
-  menubar, and only a face that lets the ground through works on all three.
+  bordered, 3px-`border-radius`ed single letter — the radius is a
+  deliberate, scoped exception to the Chrome section's "no border-radius"
+  rule, the only rounded corner in the app, there because a keycap needs to
+  read as a keycap rather than another squared-off gadget.
+  `color`/`border-color: currentColor` on both so the cap always tracks its
+  button's own hover/pressed/disabled state for free, no extra rules.
   - **Stacked transform gadgets** (`Gadget`'s `shortcut` prop): after the
     label, same line, at the label's own 16px rather than the smaller
     supporting-text sizes the Typography section otherwise reserves
