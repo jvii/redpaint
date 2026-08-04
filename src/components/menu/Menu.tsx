@@ -118,21 +118,21 @@ export function Menu(): JSX.Element {
                   <Gadget
                     icon={<PixelIcon map={icons.image} scale={1} />}
                     label="Picture"
-                    title="Picture disk I/O"
+                    title="Open Picture menu"
                     on={state.app.openDrawer === 'picture'}
                     onClick={(): void => actions.app.toggleDrawer('picture')}
                   />
                   <Gadget
                     icon={<PixelIcon map={icons.brush} scale={3} />}
                     label="Brush"
-                    title="Brush tools"
+                    title="Open Brush menu"
                     on={state.app.openDrawer === 'brush'}
                     onClick={(): void => actions.app.toggleDrawer('brush')}
                   />
                   <Gadget
                     icon={<PixelIcon map={icons.prefs} scale={2} />}
                     label="Prefs"
-                    title="Preferences"
+                    title="Open Prefs menu"
                     on={state.app.openDrawer === 'prefs'}
                     onClick={(): void => actions.app.toggleDrawer('prefs')}
                   />
