@@ -118,6 +118,15 @@ laptop screens. Consequences for new UI:
   scrollbar its ~15px without the content losing anything — Fill Style's 820
   covers it, and its two-column layout means it no longer needs the scroll on
   a 125%-scaled 1080p screen at all.
+- **A window never resizes because its own content changed.** Text that
+  varies with what has been typed or selected, a readout that comes and
+  goes, a note that grows a line — reserve the space for the tallest state
+  (a `min-height` measured from it) and let the short states sit in it.
+  A requester that grows and shrinks under the pointer while someone types
+  is harder to aim at than one with a little slack in it, and a footer that
+  moves is a footer whose button you miss. The Canvas Size requester's
+  consequence note is the worked example: it rewrites on every keystroke,
+  and its box is held at the height of its longest message.
 - **Scrollbars** anywhere (requester body, menu panel, either canvas view)
   use the shared `.retro-scrollbar` class from `index.css`, never
   hand-rolled per component. They keep the platform's rounded, inset shape —

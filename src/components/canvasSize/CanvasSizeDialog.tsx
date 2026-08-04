@@ -67,7 +67,11 @@ function CanvasSizeDialogOpen(): JSX.Element {
 
   const valid = Number.isFinite(target.width) && Number.isFinite(target.height);
   const unchanged = valid && target.width === current.width && target.height === current.height;
-  const note = valid ? resizeNote(current, target) : null;
+  // Always something, never nothing: the note's space is reserved either way
+  // (see CanvasSizeDialog.css), so an empty one is a hole rather than a saving,
+  // and both of these states are worth a word — one explains a disabled OK,
+  // the other confirms that OK would do nothing.
+  const note = valid ? resizeNote(current, target) : 'Enter a width and a height.';
 
   const handleOk = (): void => {
     if (!valid || unchanged) {
@@ -124,7 +128,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
         {/* What the change does to the picture — stated as a consequence
             rather than as a question, since it is one Ctrl+Z away and undo
             carries the canvas size back with the pixels. */}
-        {note && <p className="canvas-size__note">{note}</p>}
+        <p className="canvas-size__note">{note}</p>
       </div>
       <RetroButton variant="secondary" onClick={(): void => actions.dialog.close()}>
         Cancel
@@ -146,7 +150,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
 function resizeNote(
   current: { width: number; height: number },
   target: { width: number; height: number }
-): string | null {
+): string {
   const cropped = [
     target.width < current.width ? 'right' : null,
     target.height < current.height ? 'bottom' : null,
@@ -156,7 +160,7 @@ function resizeNote(
     target.height > current.height ? 'bottom' : null,
   ].filter(Boolean);
   if (!cropped.length && !grown.length) {
-    return null;
+    return 'The same size as the current canvas — nothing to change.';
   }
 
   const edges = (list: (string | null)[]): string => list.join(' and ');
