@@ -136,9 +136,9 @@ export function useCanvasContentUpload(): void {
     if (pending.freshDocument) {
       // A picture just loaded from a file already matches one, so it starts
       // clean — the same reading an editor gives a file it has just opened. It
-      // gives up the previous document's name too: whatever was on screen
-      // before, this is not it.
-      actions.app.setDocumentName('');
+      // takes that file's name, or none at all when the pixels came from
+      // somewhere unnamed; either way the previous document's name is gone.
+      actions.app.setDocumentName(pending.documentName);
       actions.app.markDocumentClean();
     }
     actions.app.setLoading(false);

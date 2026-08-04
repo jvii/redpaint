@@ -17,7 +17,8 @@ export function DialogManager(): JSX.Element | null {
   const pasteAsImage = (): void => {
     actions.dialog.close();
     // decodes, then opens the load requester — the same flow as Image > Open
-    actions.app.beginImageLoad(state.app.pasteBufferImageObjectURL);
+    // pasted pixels have no file behind them, so the document stays unnamed
+    actions.app.beginImageLoad({ url: state.app.pasteBufferImageObjectURL });
   };
 
   const cancelPaste = (): void => {

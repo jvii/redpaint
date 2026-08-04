@@ -21,7 +21,16 @@ export const imageFileToPasteBuffer = (context: Context, imageFile: File): void 
 // pixels wait in canvas/pendingImage.ts for the requester's answer; the URL
 // is consumed (revoked) here either way. Both Image > Open and "Paste as new
 // image" come through this.
-export const beginImageLoad = async (context: Context, url: string): Promise<void> => {
+// A loaded file names the document, as opening a file does in any editor.
+// Without its extension, so the name can be offered to either save format.
+function documentNameFrom(fileName: string): string {
+  return fileName.replace(/\.[^./\\]+$/, '');
+}
+
+export const beginImageLoad = async (
+  context: Context,
+  { url, fileName }: { url: string; fileName?: string }
+): Promise<void> => {
   context.actions.app.setLoading(true);
   try {
     const image = new Image();
@@ -45,6 +54,8 @@ export const beginImageLoad = async (context: Context, url: string): Promise<voi
       width: image.width,
       height: image.height,
       colorCount: countDistinctColors(imageData.data),
+      // held until the requester's OK, which is what commits the load
+      documentName: fileName ? documentNameFrom(fileName) : '',
     };
     context.actions.dialog.open('IMAGE_LOAD');
   } catch {
@@ -80,7 +91,10 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
     const colorIndex = CanvasColorIndex.fromIndexedPixels(image.width, image.height, image.pixels);
     // the canvas resizes to the image; the resolution effect uploads the
     // queued content once the resize commits and resets undo history to it
-    setPendingCanvasContent(colorIndex, { freshDocument: true });
+    setPendingCanvasContent(colorIndex, {
+      freshDocument: true,
+      documentName: documentNameFrom(file.name),
+    });
     context.actions.canvas.setResolution({
       width: image.width,
       height: image.height,
@@ -99,7 +113,9 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
     }
   } catch (error) {
     alert(
-      error instanceof IlbmError ? `Failed to open IFF file: ${error.message}` : 'Failed to open file!'
+      error instanceof IlbmError
+        ? `Failed to open IFF file: ${error.message}`
+        : 'Failed to open file!'
     );
   } finally {
     context.actions.app.setLoading(false);

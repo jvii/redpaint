@@ -16,11 +16,18 @@ type PendingCanvasContent = {
   content: CanvasColorIndex;
   freshDocument: boolean;
   recordUndoPoint: boolean;
+  // What to call the new document, for a freshDocument upload: the loaded
+  // file's name without its extension, or '' when the pixels came from
+  // somewhere unnamed (the clipboard). Carried with the content rather than
+  // set when the load starts, so a load the user cancels never renames the
+  // picture that is still on screen.
+  documentName: string;
 };
 
 type Options = {
   freshDocument?: boolean;
   recordUndoPoint?: boolean;
+  documentName?: string;
 };
 
 let pending: PendingCanvasContent | null = null;
@@ -30,6 +37,7 @@ export function setPendingCanvasContent(content: CanvasColorIndex, options: Opti
     content,
     freshDocument: options.freshDocument ?? false,
     recordUndoPoint: options.recordUndoPoint ?? true,
+    documentName: options.documentName ?? '',
   };
 }
 

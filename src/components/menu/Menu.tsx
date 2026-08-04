@@ -57,7 +57,7 @@ export function Menu(): JSX.Element {
         actions.app.beginIlbmLoad(file);
       } else {
         // decodes, then opens the load requester (color treatment)
-        actions.app.beginImageLoad(URL.createObjectURL(file));
+        actions.app.beginImageLoad({ url: URL.createObjectURL(file), fileName: file.name });
       }
     })();
   };

@@ -8,7 +8,12 @@ export type State = {
   // What the image load requester shows about the decoded image awaiting a
   // color-treatment choice (the pixels themselves wait outside Overmind, in
   // canvas/pendingImage.ts). null while no load is in progress.
-  imageLoadInfo: { width: number; height: number; colorCount: number } | null;
+  imageLoadInfo: {
+    width: number;
+    height: number;
+    colorCount: number;
+    documentName: string;
+  } | null;
   // Same, for the brush load requester (pixels wait in canvas/pendingBrush.ts).
   // colorCount only counts opaque pixels — a brush's transparent pixels never
   // compete for a palette slot.
