@@ -35,7 +35,9 @@ label or a mode name — ScreenStatus's dimensions and palette count, the load
 preview's colour count, the menubar's live crop size and rotate angle. It
 leaves orange free to mean "armed" rather than having to carry the figure as
 well, and a Press Start 2P readout beside a 24px name takes the next size
-down (16px) so the two sit on one baseline as a single line of text.
+down (16px), centred on the name rather than sharing its baseline — the
+bitmap face has no descenders to speak of, so a common baseline hangs the
+smaller text low instead of tying the two together.
 
 Semantic exceptions, deliberately scarce:
 

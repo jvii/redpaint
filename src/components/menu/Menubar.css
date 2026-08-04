@@ -63,12 +63,14 @@
 }
 
 /* The mode name and its readout travel together, closer to each other than
-   either is to the hint beyond them. Baseline-aligned rather than centred:
-   the readout is a size step down, and two Press Start 2P sizes sitting on
-   one baseline read as one line of text where centring them reads as two. */
+   either is to the hint beyond them. Centred on each other rather than sharing
+   a baseline: Press Start 2P's glyphs fill their box evenly with no descenders
+   to speak of, so a common baseline hangs the smaller readout low against the
+   name instead of tying the two together the way it would in a proportional
+   face. */
 .menubar__mode-name {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
 }
 
