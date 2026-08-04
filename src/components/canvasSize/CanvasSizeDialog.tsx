@@ -20,7 +20,17 @@ import { RetroInputField } from '../ui/RetroInputField';
 // big the paper is. (The Screen Format requester does offer to scale, because
 // fitting artwork to a newly chosen screen is a real want; this isn't that.)
 const MIN_SIDE = 1;
-const MAX_SIDE = 16384; // GL_MAX_TEXTURE_SIZE on anything we run on
+// GL_MAX_TEXTURE_SIZE on anything we run on — past this the canvas would not
+// render at all, whatever the memory says.
+const MAX_SIDE = 16384;
+// The area limit, which is the one that actually bites: cost scales with pixel
+// count, not with either side, so 16384x1 is nothing and 16384x16384 is a
+// gigabyte per undo snapshot. 16 megapixels sits above the 12 MP benched as
+// working-but-slow (docs/local/undo-memory.md) and well below where the tab
+// stops surviving. It guards a slipped keystroke rather than a considered
+// choice — loading a photo larger than this is still allowed, with a word
+// about what it will cost.
+const MAX_PIXELS = 16_000_000;
 
 type SizeChoice = 'fit' | 'custom';
 
@@ -60,18 +70,16 @@ function CanvasSizeDialogOpen(): JSX.Element {
   const target =
     choice === 'fit' && fit
       ? { width: fit.width, height: fit.height }
-      : {
-          width: clamp(Number.parseInt(width, 10)),
-          height: clamp(Number.parseInt(height, 10)),
-        };
+      : { width: parseSide(width), height: parseSide(height) };
 
-  const valid = Number.isFinite(target.width) && Number.isFinite(target.height);
+  const problem = sizeProblem(target);
+  const valid = problem === null;
   const unchanged = valid && target.width === current.width && target.height === current.height;
   // Always something, never nothing: the note's space is reserved either way
   // (see CanvasSizeDialog.css), so an empty one is a hole rather than a saving,
   // and both of these states are worth a word — one explains a disabled OK,
   // the other confirms that OK would do nothing.
-  const note = valid ? resizeNote(current, target) : 'Enter a width and a height.';
+  const note = problem ?? resizeNote(current, target);
 
   const handleOk = (): void => {
     if (!valid || unchanged) {
@@ -123,14 +131,14 @@ function CanvasSizeDialogOpen(): JSX.Element {
             <RetroInputField
               label="Width:"
               value={choice === 'fit' && fit ? String(fit.width) : width}
-              onChange={setWidth}
+              onChange={(value): void => setWidth(digitsOnly(value))}
               disabled={choice === 'fit'}
               numeric
             />
             <RetroInputField
               label="Height:"
               value={choice === 'fit' && fit ? String(fit.height) : height}
-              onChange={setHeight}
+              onChange={(value): void => setHeight(digitsOnly(value))}
               disabled={choice === 'fit'}
               numeric
             />
@@ -194,9 +202,37 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-function clamp(value: number): number {
-  if (!Number.isFinite(value)) {
-    return NaN;
+// Keeps the field to digits as it is typed, so a minus sign, a decimal point
+// or a letter never reaches the value at all — there is no reading of "-5" or
+// "12abc" worth guessing at.
+//
+// The leading run, not every digit in the string: deleting the non-digits from
+// "12.5" would join what is left into 125, a paste that comes out ten times
+// what was pasted, where truncating at the dot gives the 12 that was meant.
+function digitsOnly(value: string): string {
+  return (value.match(/^\d*/) ?? [''])[0];
+}
+
+function parseSide(value: string): number {
+  return value === '' ? NaN : Number(value);
+}
+
+// What is wrong with the typed size, or null if nothing is. Returned as the
+// message itself: the note is the only place this requester says anything, and
+// OK stays disabled while there is one.
+function sizeProblem(target: { width: number; height: number }): string | null {
+  if (!Number.isFinite(target.width) || !Number.isFinite(target.height)) {
+    return 'Enter a width and a height.';
   }
-  return Math.min(MAX_SIDE, Math.max(MIN_SIDE, Math.trunc(value)));
+  if (target.width < MIN_SIDE || target.height < MIN_SIDE) {
+    return `The canvas must be at least ${MIN_SIDE} pixel on each side.`;
+  }
+  if (target.width > MAX_SIDE || target.height > MAX_SIDE) {
+    return `${MAX_SIDE} pixels is the most on any one side.`;
+  }
+  const megapixels = (target.width * target.height) / 1_000_000;
+  if (target.width * target.height > MAX_PIXELS) {
+    return `That is ${megapixels.toFixed(1)} megapixels — ${MAX_PIXELS / 1_000_000} is the most the canvas can be.`;
+  }
+  return null;
 }
