@@ -101,14 +101,17 @@
   margin-top: -11px;
 }
 
-/* The live size, in the small monospace register the style guide reserves for
-   status values. Centred under the top-middle grip: below the grip row so it
-   never collides with one, and centred so it stays put as the box is resized
-   from either side — anchored to a corner it would slide about relative to
-   the box, and anchored to the left it read as belonging to the corner grip
-   above it. A box narrow enough for the text to overhang spills it evenly to
-   both sides, which is the least misleading way to overflow. */
-.crop-overlay__size {
+/* What to do with the box, until the first drag answers it. The live size
+   lives in the menubar instead, beside the mode name, where this app already
+   puts a mode's readout — on the box it competed with the artwork for the
+   same few pixels, and it is wanted while judging the crop rather than only
+   while dragging.
+
+   Centred under the top-middle grip: below the grip row so it cannot collide
+   with one, and centred so it does not slide about relative to the box as
+   either edge is dragged. Sentence case, per the style guide's rule for hint
+   text that reads as a sentence. */
+.crop-overlay__hint {
   position: absolute;
   top: 28px;
   left: 50%;

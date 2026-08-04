@@ -1,4 +1,4 @@
-import React, { JSX, useEffect, useRef } from 'react';
+import React, { JSX, useEffect, useRef, useState } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { CropRect } from '../../overmind/crop/state';
 import { Point } from '../../types';
@@ -87,6 +87,12 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
   const actions = useActions();
   const rect = state.crop.rect;
   const dragRef = useRef<Drag | null>(null);
+  // Shown until the first drag actually moves something, then gone for the
+  // rest of the session — it answers "what do I do here", which stops being a
+  // question the moment you have done it. Component state, not Overmind: the
+  // overlay is mounted only while a crop is armed, so every crop starts by
+  // saying this once.
+  const [showHint, setShowHint] = useState(true);
   const hostRef = useRef<HTMLDivElement>(null);
 
   // The scale comes from the canvas component that owns it rather than from
@@ -179,6 +185,7 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
       dragRef.current = null;
       return;
     }
+    setShowHint(false);
     const at = pointerToCanvas(event);
 
     if (drag.kind === 'move') {
@@ -271,9 +278,7 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
         }
         onDoubleClick={(): void => actions.crop.apply()}
       >
-        <span className="crop-overlay__size">
-          {rect.width}x{rect.height}
-        </span>
+        {showHint && <span className="crop-overlay__hint">Drag handles to adjust the crop</span>}
         {GRIPS.map((grip) => (
           <span
             key={grip.id}

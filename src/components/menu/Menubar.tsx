@@ -60,7 +60,13 @@ export function Menubar(): JSX.Element {
   // while one is up, a click does that thing instead of painting with the
   // mode, which is the whole reason the slot says so. Crop wins over a
   // transform because its overlay covers the canvas outright.
-  const armedMode = state.crop.rect ? 'Crop' : armedTransform;
+  // A crop carries its live size the way an active rotate carries its angle:
+  // the box's own dimensions are the thing you are deciding, and the menubar
+  // is where this app already puts a mode's live readout. The multiplication
+  // sign, not a lowercase x — it centres on the digits' baseline where the x
+  // sits 2px low (see ScreenStatus's Dimensions).
+  const cropRect = state.crop.rect;
+  const armedMode = cropRect ? `Crop ${cropRect.width}\u00d7${cropRect.height}` : armedTransform;
   // What an armed mode lets you do, beside the mode's own name. Keycaps are
   // for keyboard keys only — a mouse gesture written as a cap would be
   // pretending a button is a key — so those stay plain text. Kept to two
