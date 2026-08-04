@@ -1,0 +1,30 @@
+/* One question, so one column and no group headings — the requester's own
+   header carries the purpose. */
+.save-name__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 30px 28px 30px;
+  text-align: left;
+}
+
+/* What the file will actually be called, in the quiet supporting register the
+   other requesters use for a consequence. The name itself takes the blue this
+   app writes values in, so the part that changes as you type is the part that
+   stands out. */
+.save-name__note {
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+  max-width: 56ch;
+}
+
+.save-name__note b {
+  color: var(--wb-blue);
+  font-weight: normal;
+}

@@ -147,6 +147,21 @@ export const clearBrushLoadInfo = (context: Context): void => {
   context.state.app.brushLoadInfo = null;
 };
 
+export const setDocumentName = (context: Context, name: string): void => {
+  context.state.app.documentName = name;
+};
+
+export const openSaveNamePrompt = (
+  context: Context,
+  prompt: { suggested: string; extension: string }
+): void => {
+  context.state.app.saveNamePrompt = prompt;
+};
+
+export const closeSaveNamePrompt = (context: Context): void => {
+  context.state.app.saveNamePrompt = null;
+};
+
 export const setLoading = (context: Context, isLoading: boolean): void => {
   context.state.app.isLoading = isLoading;
 };

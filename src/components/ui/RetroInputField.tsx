@@ -21,6 +21,9 @@ type Props = {
   // the slider readouts have always sat). Free text stays left-aligned, where
   // reading a filename starts.
   numeric?: boolean;
+  // Enter commits, for a field whose requester has one obvious action — typing
+  // a name and reaching for the mouse to confirm it is a step nobody wants.
+  onEnter?: () => void;
 };
 
 // A labelled text entry: an optional Press Start 2P label beside the shared
@@ -40,6 +43,7 @@ export function RetroInputField({
   disabled = false,
   size = 4,
   numeric = false,
+  onEnter,
 }: Props): JSX.Element {
   const input = (
     <input
@@ -53,6 +57,15 @@ export function RetroInputField({
       disabled={disabled}
       style={{ width: `${size + 1}ch` }}
       onChange={(event): void => onChange(event.target.value)}
+      onKeyDown={
+        onEnter &&
+        ((event): void => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            onEnter();
+          }
+        })
+      }
     />
   );
 

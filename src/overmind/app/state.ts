@@ -14,6 +14,15 @@ export type State = {
   // compete for a palette slot.
   brushLoadInfo: { width: number; height: number; colorCount: number } | null;
   isLoading: boolean;
+  // The document's name without an extension, as last saved or loaded — the
+  // name a save offers, and (later) what the tab title and the autosave record
+  // will carry. Empty until something names it, which the save requester reads
+  // as "untitled".
+  documentName: string;
+  // The save-name requester's subject while it is open: what to offer and what
+  // the file will end up called. Null when it is closed. The typed answer goes
+  // back through pendingSaveName, not through here — see that module.
+  saveNamePrompt: { suggested: string; extension: string } | null;
   menuOpen: boolean;
   // Which of the menu's drawers (Picture: image disk I/O; Brush: transforms
   // + brush disk; Prefs: app settings) is open — a radio group, only one at
@@ -33,6 +42,8 @@ export const state: State = {
   imageLoadInfo: null,
   brushLoadInfo: null,
   isLoading: false,
+  documentName: '',
+  saveNamePrompt: null,
   menuOpen: false,
   openDrawer: null,
   uiScale: loadUiScale(),
