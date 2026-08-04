@@ -153,3 +153,25 @@ body {
   opacity: 0.4;
   cursor: default;
 }
+
+/* A supporting figure inside a RetroToggle segment — the resolution beside a
+   screen format's name, the size beside Window/Screen Size. Dimmed because the
+   rank inverts inside a control: the name is the thing being chosen and the
+   figure is detail about it, the opposite of a readout, where the figure
+   outweighs its caption. currentColor rather than a fixed ink, since the
+   segment's ground turns Workbench blue when selected.
+
+   Defined once here because two requesters wanted it and a third will: the
+   first time it was written out twice, the two copies had already drifted. */
+.toggle-detail {
+  white-space: nowrap;
+  opacity: 0.75;
+}
+
+/* Hover puts the whole label in white on the orange (RetroToggle.css), so the
+   detail comes up to full strength with it — 75% white on orange reads as a
+   third colour rather than as the same label. Not on a selected segment, whose
+   hover is a deliberate no-op, nor on a disabled one. */
+.retro-toggle__segment:hover:not(.retro-toggle__segment--selected):not(:disabled) .toggle-detail {
+  opacity: 1;
+}

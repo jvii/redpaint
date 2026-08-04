@@ -50,8 +50,11 @@ blue above, outweighing the caption that names it. Inside a control they take
 inverts: a segment is a control, so the thing being chosen is the name and its
 size is detail supporting that choice (the Screen Format list, the Canvas Size
 requester's Window/Screen Size option). `currentColor` also follows hover,
-selected and disabled for nothing. No parentheses around either — the
-treatment already sets the figure apart.
+selected and disabled for nothing, and hover brings it back to full strength
+so the whole label is white on the orange, as ScreenStatus does. Apply the
+shared `.toggle-detail` class (`index.css`) rather than restyling per
+requester — written out twice, the two copies had already drifted. No
+parentheses around either — the treatment already sets the figure apart.
 
 Semantic exceptions, deliberately scarce:
 

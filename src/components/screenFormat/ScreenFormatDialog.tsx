@@ -33,7 +33,7 @@ function formatOptions(videoStandard: VideoStandard) {
         label: (
           <>
             <span className="screen-format__format-name">{format.name}</span>
-            <span className="screen-format__format-res">
+            <span className="screen-format__format-res toggle-detail">
               {width}×{height}
             </span>
           </>

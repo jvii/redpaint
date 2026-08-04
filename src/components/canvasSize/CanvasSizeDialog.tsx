@@ -105,7 +105,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
                 label: fit ? (
                   <>
                     {fit.label}
-                    <span className="canvas-size__option-res">
+                    <span className="canvas-size__option-res toggle-detail">
                       {fit.width}×{fit.height}
                     </span>
                   </>

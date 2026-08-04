@@ -77,16 +77,14 @@
   max-width: 64ch;
 }
 
-/* The size behind Window/Screen Size, in the same register as the Screen
-   Format list's resolutions: dimmed detail beside the name that labels the
-   option, currentColor so it survives the segment turning blue when selected.
-   No parentheses — the dimming already sets it apart, and the brackets were
-   doing that job a second time. */
+/* The size behind Window/Screen Size takes the shared .toggle-detail treatment
+   (index.css), same as the Screen Format list's resolutions; only the gap is
+   this option's own. No parentheses — the dimming already sets the figure
+   apart, and the brackets were doing that job a second time.
+
+   The gap is a margin, not a space in the markup: a RetroToggle segment is a
+   flex row, and flex drops whitespace-only text nodes between its items — the
+   space was in the DOM and nowhere on screen. */
 .canvas-size__option-res {
-  white-space: nowrap;
-  opacity: 0.75;
-  /* The gap is a margin, not a space in the markup: a RetroToggle segment is
-     a flex row, and flex drops whitespace-only text nodes between its items —
-     the space was in the DOM and nowhere on screen. */
   margin-left: 24px;
 }
