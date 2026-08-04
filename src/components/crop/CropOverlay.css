@@ -102,14 +102,17 @@
 }
 
 /* The live size, in the small monospace register the style guide reserves for
-   status values. Sits below the top row of grips rather than beside them: at
-   the top-left it collided with the corner grip, and moving it right only
-   traded that for the top-centre one, which slides along the edge as the box
-   is resized and would collide again at some other width. */
+   status values. Centred under the top-middle grip: below the grip row so it
+   never collides with one, and centred so it stays put as the box is resized
+   from either side — anchored to a corner it would slide about relative to
+   the box, and anchored to the left it read as belonging to the corner grip
+   above it. A box narrow enough for the text to overhang spills it evenly to
+   both sides, which is the least misleading way to overflow. */
 .crop-overlay__size {
   position: absolute;
   top: 28px;
-  left: 6px;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 3px 6px;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
