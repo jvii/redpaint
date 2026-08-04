@@ -109,9 +109,12 @@
   gap: 7px;
 }
 
-/* the shared keycap base, stepped down to the hint's own size — currentColor
-   on border, shadow and text means it dims with the caption automatically */
-.menubar__hint-key {
+/* The shared keycap base, stepped down to the hint's own size — currentColor
+   on border, shadow and text means it dims with the caption automatically.
+   Selector doubled to outweigh .wb-gadget__keycap: one class each is the same
+   specificity, and MenuGadgets.css loads later, so the base's 16px was winning
+   and the cap came out bigger than the words beside it. */
+.menubar__hint .menubar__hint-key {
   font-size: 11px;
   padding: 2px 5px;
 }
