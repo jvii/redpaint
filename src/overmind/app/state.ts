@@ -18,7 +18,9 @@ export type State = {
   // Which of the menu's drawers (Picture: image disk I/O; Brush: transforms
   // + brush disk; Prefs: app settings) is open — a radio group, only one at
   // a time — or null if all are collapsed. Remembered across menu open/close
-  // so it reopens the way it was left.
+  // so it reopens the way it was left, but starts collapsed: the first look
+  // at the panel should be the Mode row and the three drawer buttons, not one
+  // drawer's contents already spread below them.
   openDrawer: Drawer | null;
   // How much the app chrome is scaled down, for OS display scaling and small
   // screens — see uiScale.ts. Persisted in localStorage, not part of a
@@ -32,6 +34,6 @@ export const state: State = {
   brushLoadInfo: null,
   isLoading: false,
   menuOpen: false,
-  openDrawer: 'brush',
+  openDrawer: null,
   uiScale: loadUiScale(),
 };
