@@ -286,6 +286,14 @@ function useBrushTransformHotkeys(): void {
           armed === 'brushBendVerticalTool'
         ) {
           actions.toolbox.toggleBrushTransformMode(armed);
+        } else if (armed === 'sizeBuiltInBrushTool') {
+          // The built-in resize is armed by a different route (a right-click
+          // on a brush icon, not a transform gadget) and leaves by its own
+          // action rather than toggleBrushTransformMode, whose guard rejects
+          // built-in brushes outright — so it needs its own arm here. It is
+          // the same kind of modal drag to the user, and the menubar hint
+          // offers them the same Escape.
+          actions.toolbox.exitSizeBuiltInBrushMode();
         } else {
           return;
         }
