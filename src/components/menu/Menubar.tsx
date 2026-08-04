@@ -54,10 +54,12 @@ export function Menubar(): JSX.Element {
           ? { name: 'Shear' }
           : selectorId === 'brushRotateTool'
             ? {
+                // shown from the moment the mode is armed, reading 0° until a
+                // drag moves it — same as a crop showing its size before you
+                // touch the box. brushRotateStart resets the angle whenever a
+                // drag ends, so this is never a stale figure from last time.
                 name: 'Rotate',
-                value: state.tool.brushRotateTool.center
-                  ? `${state.tool.brushRotateTool.angle}\u00b0`
-                  : undefined,
+                value: `${state.tool.brushRotateTool.angle}\u00b0`,
               }
             : selectorId === 'brushBendHorizontalTool' || selectorId === 'brushBendVerticalTool'
               ? { name: 'Bend' }

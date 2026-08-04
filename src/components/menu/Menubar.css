@@ -71,7 +71,7 @@
 .menubar__mode-name {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
 }
 
 /* The live value a mode is deciding — a crop's size, a rotate's angle. One
