@@ -62,6 +62,27 @@
   gap: 20px;
 }
 
+/* The mode name and its readout travel together, closer to each other than
+   either is to the hint beyond them. Baseline-aligned rather than centred:
+   the readout is a size step down, and two Press Start 2P sizes sitting on
+   one baseline read as one line of text where centring them reads as two. */
+.menubar__mode-name {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+/* The live value a mode is deciding — a crop's size, a rotate's angle. One
+   Press Start 2P step down from the name (24 to 16, its sizes stay on
+   multiples of 8) and in blue, which is the colour this app already writes
+   values in: ScreenStatus's dimensions and palette count, the load preview's
+   colour count. That leaves orange to mean "a mode is armed" rather than
+   having to carry the number as well. */
+.menubar__mode-value {
+  font-size: 16px;
+  color: var(--wb-blue);
+}
+
 /* What an armed mode lets you do. The supporting-text register (style guide:
    Press Start 2P has a 16px floor, so anything smaller is the monospace
    stack) at the dim-label ink, so it reads as a caption to the mode name

@@ -39,40 +39,42 @@ export function Menubar(): JSX.Element {
   const state = useAppState();
 
   const mode = state.brush.mode;
-  // the armed modal brush transform's display name (null when none is armed);
-  // an active rotate drag appends its live angle readout
-  const armedTransform =
-    state.toolbox.selectedSelectorToolId === 'brushStretchTool'
-      ? 'Stretch'
-      : state.toolbox.selectedSelectorToolId === 'sizeBuiltInBrushTool'
-        ? 'Resize'
-        : state.toolbox.selectedSelectorToolId === 'brushShearTool'
-          ? 'Shear'
-          : state.toolbox.selectedSelectorToolId === 'brushRotateTool'
-            ? state.tool.brushRotateTool.center
-              ? `Rotate ${state.tool.brushRotateTool.angle}°`
-              : 'Rotate'
-            : state.toolbox.selectedSelectorToolId === 'brushBendHorizontalTool' ||
-                state.toolbox.selectedSelectorToolId === 'brushBendVerticalTool'
-              ? 'Bend'
+  // The armed modal state, as a name plus an optional live readout: the name
+  // is the mode, the readout is the thing the mode is deciding — a crop's
+  // size, a rotate's angle. Split rather than one string so the two can take
+  // different weights (see Menubar.css): the name is the loud part, the
+  // number is a value, and this app writes values in blue.
+  const selectorId = state.toolbox.selectedSelectorToolId;
+  const armedTransform: { name: string; value?: string } | null =
+    selectorId === 'brushStretchTool'
+      ? { name: 'Stretch' }
+      : selectorId === 'sizeBuiltInBrushTool'
+        ? { name: 'Resize' }
+        : selectorId === 'brushShearTool'
+          ? { name: 'Shear' }
+          : selectorId === 'brushRotateTool'
+            ? {
+                name: 'Rotate',
+                value: state.tool.brushRotateTool.center
+                  ? `${state.tool.brushRotateTool.angle}\u00b0`
+                  : undefined,
+              }
+            : selectorId === 'brushBendHorizontalTool' || selectorId === 'brushBendVerticalTool'
+              ? { name: 'Bend' }
               : null;
-  // Any armed modal state takes the mode slot, not just the brush transforms:
-  // while one is up, a click does that thing instead of painting with the
-  // mode, which is the whole reason the slot says so. Crop wins over a
-  // transform because its overlay covers the canvas outright.
-  // A crop carries its live size the way an active rotate carries its angle:
-  // the box's own dimensions are the thing you are deciding, and the menubar
-  // is where this app already puts a mode's live readout. The multiplication
-  // sign, not a lowercase x — it centres on the digits' baseline where the x
-  // sits 2px low (see ScreenStatus's Dimensions).
+  // A crop carries its live size the way an active rotate carries its angle.
+  // The multiplication sign, not a lowercase x — it centres on the digits'
+  // baseline where the x sits 2px low (see ScreenStatus's Dimensions).
   const cropRect = state.crop.rect;
-  const armedMode = cropRect ? `Crop ${cropRect.width}\u00d7${cropRect.height}` : armedTransform;
+  const armedMode: { name: string; value?: string } | null = cropRect
+    ? { name: 'Crop', value: `${cropRect.width}\u00d7${cropRect.height}` }
+    : armedTransform;
   // What an armed mode lets you do, beside the mode's own name. Keycaps are
   // for keyboard keys only — a mouse gesture written as a cap would be
   // pretending a button is a key — so those stay plain text. Kept to two
   // chips: this shares a row with the title and the indicators, and a hint
   // that crowds them is worse than a hint that says less.
-  const armedHint: { key?: string; text: string }[] | null = state.crop.rect
+  const armedHint: { key?: string; text: string }[] | null = cropRect
     ? [{ text: 'right-click to apply' }, { key: 'ESC', text: 'cancel' }]
     : armedTransform
       ? [{ text: 'drag on canvas' }, { key: 'ESC', text: 'cancel' }]
@@ -111,7 +113,10 @@ export function Menubar(): JSX.Element {
       <div
         className={'menubar__mode-indicator' + (armedMode ? ' menubar__mode-indicator--armed' : '')}
       >
-        {armedMode ?? mode}
+        <span className="menubar__mode-name">
+          {armedMode?.name ?? mode}
+          {armedMode?.value && <span className="menubar__mode-value">{armedMode.value}</span>}
+        </span>
         {armedHint && (
           <span className="menubar__hint">
             {armedHint.map((hint) => (

@@ -29,6 +29,14 @@ keyword (nothing to get wrong), and `pixelIcons.tsx` keeps literal copies of
 the blue and orange because it feeds them to SVG `fill` attributes, which
 don't resolve `var()`.
 
+**Blue also means "this is a value."** Beyond its ground/pressed roles,
+`--wb-blue` is the ink for a readout's number wherever one sits beside a
+label or a mode name — ScreenStatus's dimensions and palette count, the load
+preview's colour count, the menubar's live crop size and rotate angle. It
+leaves orange free to mean "armed" rather than having to carry the figure as
+well, and a Press Start 2P readout beside a 24px name takes the next size
+down (16px) so the two sit on one baseline as a single line of text.
+
 Semantic exceptions, deliberately scarce:
 
 - **One rainbow, ever.** The TRUE COLOR `ON` gradient is the only gradient
