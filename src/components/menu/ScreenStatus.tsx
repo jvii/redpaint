@@ -88,7 +88,7 @@ export function ScreenStatus(): JSX.Element {
           className="screen-status__segment"
           type="button"
           onClick={openScreenFormat}
-          title="Change screen format"
+          title="Set screen format"
         >
           <span className="screen-status__field">
             <span className="screen-status__label">Resolution</span>
@@ -121,7 +121,7 @@ export function ScreenStatus(): JSX.Element {
           className="screen-status__segment"
           type="button"
           onClick={openCanvasSize}
-          title="Change canvas size"
+          title="Set canvas size"
         >
           <span className="screen-status__field">
             <span className="screen-status__label">Canvas</span>
