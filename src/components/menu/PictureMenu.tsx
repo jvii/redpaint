@@ -4,6 +4,7 @@ import { cycleDriver } from '../../canvas/CycleDriver';
 import { encodeIlbm } from '../../fileformat/ilbm';
 import { plainPalette } from '../../algorithm/imageColors';
 import { useActions, useAppState } from '../../overmind';
+import { UNTITLED_DOCUMENT } from '../../overmind/app/state';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { CropIcon } from './transformIcons';
@@ -22,10 +23,10 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   const actions = useActions();
 
   // What a save offers as the name: whatever the document is already called,
-  // falling back to the app's own default. Held without an extension, so
-  // saving a PNG and then an IFF offers "mypic.png" and "mypic.iff" rather
-  // than "mypic.png.iff".
-  const baseName = state.app.documentName || 'redpaint';
+  // or the same word the tab title uses for one that is not called anything.
+  // Held without an extension, so saving a PNG and then an IFF offers
+  // "mypic.png" and "mypic.iff" rather than "mypic.png.iff".
+  const baseName = state.app.documentName || UNTITLED_DOCUMENT;
   // Only reached on the browsers with no showSaveFilePicker; saveFile decides,
   // since it is the one that knows which route it is taking.
   // A written file is now what the document is: it takes that name, there is

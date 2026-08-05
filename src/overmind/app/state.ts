@@ -1,5 +1,10 @@
 import { loadUiScale } from '../../uiScale';
 
+// What a document with no name of its own is called — in the tab title, and as
+// the name a save offers. One spelling, so the title and the save requester
+// cannot disagree about what the picture is currently called.
+export const UNTITLED_DOCUMENT = 'Untitled';
+
 // The menu's drawers (Menu.tsx) — mutually exclusive, one panel each.
 export type Drawer = 'picture' | 'brush' | 'prefs';
 

@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useAppState } from '../overmind';
+import { UNTITLED_DOCUMENT } from '../overmind/app/state';
 
 const APP_NAME = 'ReDPaint';
-const UNTITLED = 'Untitled';
 
 // The editor convention for "there are changes no file has". An asterisk rather
 // than a bullet: it is the older Windows/vim form, which reads as "modified" to
@@ -24,7 +24,7 @@ const MODIFIED_MARKER = '*';
 // written until a Save) and the asterisk is the only place the app draws it.
 export function useDocumentTitle(): void {
   const state = useAppState();
-  const name = state.app.documentName || UNTITLED;
+  const name = state.app.documentName || UNTITLED_DOCUMENT;
   // Both timestamps, because either kind of history move leaves the canvas
   // differing from the file: a new stroke appends an entry, and an undo or redo
   // steps to a different one without appending anything.
