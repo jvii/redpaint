@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { json } from 'overmind';
 import { useActions, useAppState } from '../overmind';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
+import { undoBuffer } from '../overmind/undo/UndoBuffer';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { setPendingCanvasContent } from '../canvas/pendingCanvasContent';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
@@ -103,7 +104,13 @@ export function useDocumentAutosave(): void {
     if (!restored.current || !worthSaving) {
       return;
     }
-    const colorIndex = paintingCanvasController.getCanvasColorIndex();
+    // The committed raster from the undo buffer, not a fresh read of the
+    // canvas. setUndoPoint has just put exactly these pixels there, so reading
+    // the canvas again would repeat a full-canvas GPU readback for nothing —
+    // and the timer can fire after the next stroke has begun, which would
+    // capture it half-drawn and stall the drag by the length of that readback
+    // (tens of milliseconds on a large canvas).
+    const colorIndex = undoBuffer.getItem(state.undo.currentIndex)?.colorIndex;
     if (!colorIndex) {
       return;
     }
