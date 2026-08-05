@@ -13,11 +13,14 @@ import {
   saveDocument,
 } from '../persistence/documentAutosave';
 
-// How long after a committed stroke the picture is written. Long enough that a
-// flurry of quick strokes writes once, short enough that little is lost to a
-// crash — and the write is off the main thread anyway, so this is about disk
-// churn rather than about jank.
-const WRITE_DELAY_MS = 2000;
+// How long after a committed stroke the picture is written, so a flurry of
+// quick strokes writes once rather than a dozen times.
+const WRITE_IDLE_MS = 400;
+// ...and the longest a change may sit unwritten however fast they keep coming.
+// Without this the timer restarted on every stroke, so painting steadily wrote
+// nothing at all until the pointer rested — losing not the last moment's work
+// but all of it. This bounds what a reload can cost, whatever you are doing.
+const WRITE_MAX_WAIT_MS = 1500;
 
 // Reopening the app puts the picture back where it was left, and keeps it there
 // as it changes. Deliberately silent: no dialog asks whether to restore, since
@@ -31,6 +34,9 @@ export function useDocumentAutosave(): void {
   // StrictMode mounts twice in development, and a second restore would fight
   // the first over the canvas.
   const restored = useRef(false);
+  // When the oldest unwritten change happened, or null when everything is
+  // written. Drives the maximum wait below.
+  const pendingSince = useRef<number | null>(null);
 
   useEffect((): void => {
     if (restored.current) {
@@ -88,35 +94,76 @@ export function useDocumentAutosave(): void {
   // that window should get.
   const worthSaving = state.undo.bufferEntryCount > 1 || state.app.documentName !== '';
 
+  // The write itself, kept in a ref so the timer and the page-is-going-away
+  // listeners always call the current one rather than the closure they were
+  // registered with.
+  const writeNow = useRef<() => void>(() => undefined);
+  writeNow.current = (): void => {
+    pendingSince.current = null;
+    if (!restored.current || !worthSaving) {
+      return;
+    }
+    const colorIndex = paintingCanvasController.getCanvasColorIndex();
+    if (!colorIndex) {
+      return;
+    }
+    void saveDocument({
+      version: 1,
+      width: colorIndex.width,
+      height: colorIndex.height,
+      // A copy, not the live view: the snapshot this came from is also the
+      // undo buffer's, and handing the same buffer to a structured clone
+      // while the app may still write to it is asking for a torn record.
+      pixels: new Uint8Array(colorIndex.indexArray),
+      // json() unwraps Overmind's proxies — a proxy cannot be structure-cloned
+      palette: json(state.palette.paletteArray),
+      ranges: json(state.palette.ranges),
+      screenFormatId: state.canvas.screenFormatId,
+      videoStandard: state.canvas.videoStandard,
+      trueColorEnabled: state.canvas.trueColorEnabled,
+      documentName: state.app.documentName,
+      // as the tab title computes it — see useDocumentTitle
+      modified: changedAt > cleanAt,
+    });
+  };
+
   useEffect((): (() => void) | void => {
     if (!restored.current || !worthSaving || changedAt === 0) {
       return;
     }
-    const timer = window.setTimeout((): void => {
-      const colorIndex = paintingCanvasController.getCanvasColorIndex();
-      if (!colorIndex) {
-        return;
-      }
-      void saveDocument({
-        version: 1,
-        width: colorIndex.width,
-        height: colorIndex.height,
-        // A copy, not the live view: the snapshot this came from is also the
-        // undo buffer's, and handing the same buffer to a structured clone
-        // while the app may still write to it is asking for a torn record.
-        pixels: new Uint8Array(colorIndex.indexArray),
-        // json() unwraps Overmind's proxies — a proxy cannot be structure-cloned
-        palette: json(state.palette.paletteArray),
-        ranges: json(state.palette.ranges),
-        screenFormatId: state.canvas.screenFormatId,
-        videoStandard: state.canvas.videoStandard,
-        trueColorEnabled: state.canvas.trueColorEnabled,
-        documentName: state.app.documentName,
-        // as the tab title computes it — see useDocumentTitle
-        modified: changedAt > cleanAt,
-      });
-    }, WRITE_DELAY_MS);
+    if (pendingSince.current === null) {
+      pendingSince.current = Date.now();
+    }
+    // Idle delay, but never past the maximum wait measured from the first
+    // change still unwritten.
+    const waited = Date.now() - pendingSince.current;
+    const delay = Math.max(0, Math.min(WRITE_IDLE_MS, WRITE_MAX_WAIT_MS - waited));
+    const timer = window.setTimeout((): void => writeNow.current(), delay);
     return (): void => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [changedAt, cleanAt, worthSaving]);
+
+  // Closing, reloading or switching away is the last chance to write, so the
+  // pending change goes out then rather than waiting for a timer that will not
+  // fire. Best effort: the browser may tear the page down before IndexedDB
+  // finishes, which is why the delays above are short enough to stand on their
+  // own — this narrows the window rather than being relied on to close it.
+  useEffect((): (() => void) => {
+    const flush = (): void => {
+      if (pendingSince.current !== null) {
+        writeNow.current();
+      }
+    };
+    const onHidden = (): void => {
+      if (document.visibilityState === 'hidden') {
+        flush();
+      }
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHidden);
+    return (): void => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onHidden);
+    };
+  }, []);
 }
