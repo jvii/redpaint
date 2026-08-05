@@ -68,7 +68,9 @@ export function useDocumentAutosave(): void {
     actions.canvas.setScreenFormat({ formatId: record.screenFormatId as ScreenFormatId | null });
     actions.canvas.setVideoStandard(record.videoStandard as VideoStandard);
     setPendingCanvasContent(
-      new CanvasColorIndex(record.width, record.height, record.pixels),
+      record.packed
+        ? CanvasColorIndex.fromIndexedPixels(record.width, record.height, record.pixels)
+        : new CanvasColorIndex(record.width, record.height, record.pixels),
       // freshDocument: the restored picture is the document, and the history of
       // how it got there is not being restored with it
       { freshDocument: true, documentName: record.documentName, documentModified: record.modified }
@@ -114,14 +116,19 @@ export function useDocumentAutosave(): void {
     if (!colorIndex) {
       return;
     }
+    // One byte per pixel where the picture allows it; toIndexedPixels returns
+    // null the moment any pixel is true colour, which is exactly the test.
+    const indices = colorIndex.toIndexedPixels();
     void saveDocument({
       version: 1,
       width: colorIndex.width,
       height: colorIndex.height,
-      // A copy, not the live view: the snapshot this came from is also the
-      // undo buffer's, and handing the same buffer to a structured clone
-      // while the app may still write to it is asking for a torn record.
-      pixels: new Uint8Array(colorIndex.indexArray),
+      // A copy in the unpacked case, not the live view: that buffer is the undo
+      // buffer's snapshot too, and handing it to a structured clone while the
+      // app may still write to it is asking for a torn record. The packed form
+      // is freshly built and needs no copy.
+      pixels: indices ?? new Uint8Array(colorIndex.indexArray),
+      packed: indices !== null,
       // json() unwraps Overmind's proxies — a proxy cannot be structure-cloned
       palette: json(state.palette.paletteArray),
       ranges: json(state.palette.ranges),

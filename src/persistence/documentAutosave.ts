@@ -144,9 +144,16 @@ export type DocumentRecord = {
   version: number;
   width: number;
   height: number;
-  // The colour-index raster verbatim, 4 bytes per pixel, exactly as
-  // CanvasColorIndex holds it.
+  // The raster. One byte per pixel when the picture is fully indexed, which is
+  // nearly always: the texture keeps 4 bytes each because it is an RGBA
+  // texture, but only R carries anything unless there are true-colour pixels,
+  // and then the other three are a constant. A quarter of the bytes to write,
+  // every write, for a canvas that is written every second or two.
+  //
+  // `packed` says which form this is, because a picture can gain true-colour
+  // pixels mid-session and the record must be read back as it was written.
   pixels: Uint8Array;
+  packed: boolean;
   palette: Color[];
   ranges: (CycleRange | null)[];
   // The screen being simulated travels with the picture: the raster is
@@ -313,8 +320,9 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
     height > 0 &&
     pixels instanceof Uint8Array &&
     // the one check that catches a truncated write, which is otherwise a
-    // plausible-looking record that paints garbage
-    pixels.length === width * height * 4 &&
+    // plausible-looking record that paints garbage — against whichever form
+    // the record says it is in
+    pixels.length === width * height * (record.packed ? 1 : 4) &&
     Array.isArray(palette) &&
     palette.length > 0
   );
