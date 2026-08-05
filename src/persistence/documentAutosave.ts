@@ -14,23 +14,108 @@ import { idbDelete, idbGet, idbKeys, idbSet } from './idb';
 const KEY_PREFIX = 'doc:';
 const TAB_KEY = 'redpaint.tabId';
 
-function tabId(): string {
+// Which ids are in use, and when each was last heard from. Needed because
+// sessionStorage is not quite as private as it looks: duplicating a tab, or
+// opening one through a link or window.open, *copies* it — so the new tab
+// arrives holding an id another tab is already painting under, and the two
+// would share one record and clobber each other, which is the whole thing per-
+// tab keys exist to prevent.
+const TABS_KEY = 'redpaint.tabs';
+// How often a tab says it is still here, and how long silence means it is gone.
+// Generous, because the cost of guessing wrong is small (see claimTabId).
+const HEARTBEAT_MS = 4000;
+const TAB_SILENT_MS = 15000;
+
+function readTabs(): Record<string, number> {
   try {
-    const existing = window.sessionStorage.getItem(TAB_KEY);
-    if (existing) {
-      return existing;
-    }
-    const fresh =
-      typeof crypto?.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : String(Date.now()) + Math.random().toString(36).slice(2);
-    window.sessionStorage.setItem(TAB_KEY, fresh);
-    return fresh;
+    const raw = window.localStorage.getItem(TABS_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, number>) : {};
   } catch {
-    // storage blocked: this tab simply cannot keep an identity across reloads,
-    // so it behaves like a new one each time — it still saves and still adopts
-    return 'volatile';
+    return {};
   }
+}
+
+function writeTabs(tabs: Record<string, number>): void {
+  try {
+    window.localStorage.setItem(TABS_KEY, JSON.stringify(tabs));
+  } catch {
+    // storage blocked; duplicate detection simply does not operate
+  }
+}
+
+function newId(): string {
+  return typeof crypto?.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : String(Date.now()) + Math.random().toString(36).slice(2);
+}
+
+let claimed: string | null = null;
+
+// This tab's id, minting a fresh one if the id we were handed is already being
+// used by a tab that is still talking — which means we were copied from it.
+//
+// A reload of our own tab is not that: releaseTabId drops the claim on the way
+// out, so the id is free when we come back and we keep it, along with our own
+// record. An unclean exit can leave a claim standing, and then a quick reopen
+// looks like a duplicate and mints a new id — costing that tab its own record
+// and sending it to adoption instead, which restores the same picture anyway.
+// A mild wrong answer in a rare case, which is why the silence window is long
+// rather than tight.
+function tabId(): string {
+  if (claimed) {
+    return claimed;
+  }
+  try {
+    const tabs = readTabs();
+    const now = Date.now();
+    const inherited = window.sessionStorage.getItem(TAB_KEY);
+    const takenByAnother = inherited && tabs[inherited] && now - tabs[inherited] < TAB_SILENT_MS;
+    const id = !inherited || takenByAnother ? newId() : inherited;
+    if (id !== inherited) {
+      window.sessionStorage.setItem(TAB_KEY, id);
+    }
+    // drop tabs that have gone quiet while we are in here anyway
+    const live: Record<string, number> = { [id]: now };
+    for (const [other, at] of Object.entries(tabs)) {
+      if (other !== id && now - at < TAB_SILENT_MS) {
+        live[other] = at;
+      }
+    }
+    writeTabs(live);
+    claimed = id;
+    return id;
+  } catch {
+    // storage blocked: this tab cannot keep an identity across reloads, so it
+    // behaves like a new one each time — it still saves and still adopts
+    claimed = 'volatile';
+    return claimed;
+  }
+}
+
+// Says this tab is still here, so a tab copied from it knows to mint its own
+// id. Returns the stop function.
+export function startTabHeartbeat(): () => void {
+  const id = tabId();
+  const beat = (): void => {
+    const tabs = readTabs();
+    tabs[id] = Date.now();
+    writeTabs(tabs);
+  };
+  beat();
+  const timer = window.setInterval(beat, HEARTBEAT_MS);
+  const release = (): void => {
+    const tabs = readTabs();
+    delete tabs[id];
+    writeTabs(tabs);
+  };
+  // Released on the way out so our own reload finds the id free and keeps it.
+  window.addEventListener('pagehide', release);
+  return (): void => {
+    window.clearInterval(timer);
+    window.removeEventListener('pagehide', release);
+    release();
+  };
 }
 
 function ownKey(): string {

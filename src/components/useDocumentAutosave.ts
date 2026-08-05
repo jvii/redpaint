@@ -11,6 +11,7 @@ import {
   finishRestore,
   loadDocument,
   saveDocument,
+  startTabHeartbeat,
 } from '../persistence/documentAutosave';
 
 // How long after a committed stroke the picture is written. Long enough that a
@@ -31,6 +32,11 @@ export function useDocumentAutosave(): void {
   // StrictMode mounts twice in development, and a second restore would fight
   // the first over the canvas.
   const restored = useRef(false);
+
+  // Started before anything reads the tab's id, so a tab copied from another
+  // one (duplicate tab, or a link opened in a new tab, both of which clone
+  // sessionStorage) discovers the collision and takes an id of its own.
+  useEffect((): (() => void) => startTabHeartbeat(), []);
 
   useEffect((): void => {
     if (restored.current) {
