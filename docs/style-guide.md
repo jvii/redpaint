@@ -184,6 +184,25 @@ laptop screens. Consequences for new UI:
   rule — File/Size/Flip/Rotate/Bend). One rule per section, not per
   cluster: a panel full of underlines is noise, not structure.
 
+## Words
+
+DPaint's own vocabulary, where it has one — the app is a re-imagining of it,
+and half-borrowed terminology reads as neither.
+
+- **Picture**, not image, for the thing being painted: `Load Picture`, "Paste
+  as New Picture", "the picture has True Color pixels". `Pict` was DPaint's
+  own menu. Reserve *image* for what it means outside the app — an
+  `ImageData`, a `mime: 'image/png'`, an `<img>`.
+- **Canvas** for the paintable area and its size, **screen** for the format
+  being simulated, **page** where DPaint said page. See
+  `docs/local/page-size.md`.
+- **Brush** for anything stamped, built-in or captured — never "cursor" or
+  "pen", both of which mean something else here.
+
+Filenames are the deliberate exception: a save dialog's type list reads "PNG
+image" because that is what every other program calls it there, and the OS
+chrome is not ours to restyle.
+
 ## Capitalization
 
 UI text defaults to Title Case — every word capitalized ("Color Palette",

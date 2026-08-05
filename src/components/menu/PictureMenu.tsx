@@ -95,7 +95,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     const pixels = colorIndex?.toIndexedPixels();
     if (!colorIndex || !pixels) {
       alert(
-        'The image has True Color pixels — IFF ILBM stores palette-indexed pixels only. ' +
+        'The picture has True Color pixels — IFF ILBM stores palette-indexed pixels only. ' +
           'Turn True Color off in Screen Format first.'
       );
       return;
@@ -157,7 +157,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
-            title="Open image..."
+            title="Open a picture..."
             onClick={onOpenFile}
           />
         </GadgetGroup>
@@ -165,19 +165,19 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
-            title="Save the picture, to the same file where the browser allows it"
+            title="Save the picture as PNG, to the same file where the browser allows it"
             onClick={savePng}
           />
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save As"
-            title="Save the picture under a new name..."
+            title="Save the picture as PNG under a new name..."
             onClick={savePngAs}
           />
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save IFF"
-            title="Save as IFF..."
+            title="Save the picture as IFF ILBM..."
             onClick={handleImageSaveIlbm}
           />
         </GadgetGroup>

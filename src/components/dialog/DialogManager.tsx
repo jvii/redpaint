@@ -67,9 +67,9 @@ export function DialogManager(): JSX.Element | null {
   switch (state.dialog.activeDialog) {
     case 'PASTE_SELECT':
       return (
-        <Dialog header="Image from clipboard" prompt="Select how to use this image.">
+        <Dialog header="Picture from clipboard" prompt="Select how to use this picture.">
           <RetroButton onClick={pasteAsBrush}>Paste as Brush</RetroButton>
-          <RetroButton onClick={pasteAsImage}>Paste as New Image</RetroButton>
+          <RetroButton onClick={pasteAsImage}>Paste as New Picture</RetroButton>
           <RetroButton variant="secondary" onClick={cancelPaste}>
             Cancel
           </RetroButton>
@@ -78,7 +78,10 @@ export function DialogManager(): JSX.Element | null {
 
     case 'PASTE_ERROR':
       return (
-        <Dialog header="Image from clipboard" prompt="Clipboard item not recognized as an image.">
+        <Dialog
+          header="Picture from clipboard"
+          prompt="Clipboard item not recognized as a picture."
+        >
           <RetroButton variant="primary" onClick={actions.dialog.close}>
             OK
           </RetroButton>
@@ -89,7 +92,7 @@ export function DialogManager(): JSX.Element | null {
       return (
         <Dialog
           header="Screen Format"
-          prompt="The image is larger than the new screen. Resize it to fit, crop it, or keep the canvas at its current size?"
+          prompt="The picture is larger than the new screen. Resize it to fit, crop it, or keep the canvas at its current size?"
         >
           <RetroButton onClick={resizeScreenScale}>Resize</RetroButton>
           <RetroButton onClick={resizeScreenCrop}>Crop</RetroButton>

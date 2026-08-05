@@ -163,10 +163,10 @@ function ImageLoadDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Load Image" width={760}>
+    <Modal header="Load Picture" width={760}>
       <div className="image-load__body">
         <LoadPreview
-          label="Image"
+          label="Picture"
           width={info.width}
           height={info.height}
           colorCount={info.colorCount}
@@ -187,7 +187,7 @@ function ImageLoadDialogOpen(): JSX.Element {
             variant="column"
             options={[
               { value: 'true', label: 'True Color (Original)' },
-              { value: 'new', label: 'New Palette From Image' },
+              { value: 'new', label: 'New Palette From Picture' },
               {
                 value: 'current',
                 label: `Remap To Current Palette (${state.palette.paletteArray.length})`,
