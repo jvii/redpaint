@@ -6,10 +6,58 @@ import { Color } from '../../types';
 // pixel snapshot) because restoring pixels without the palette they were
 // painted against renders them wrong — a depth reduction or a rebuilt palette
 // would leave old indices pointing at missing or different colors.
+//
+// The raster is held as bytes rather than as a CanvasColorIndex, so it can be
+// held packed: one byte per pixel instead of the texture's four, whenever the
+// picture is fully indexed. The texture needs four because it is an RGBA
+// texture, but only R carries anything unless there are true-colour pixels —
+// and then the other three are a constant. Four times the history for the same
+// memory, on every picture that is not true colour.
 export type UndoEntry = {
-  colorIndex: CanvasColorIndex;
   palette: Color[];
+  width: number;
+  height: number;
+  // one byte per pixel (indices) when true, the raw RGBA texture bytes when not
+  packed: boolean;
+  pixels: Uint8Array;
+  // Kept as a field rather than asked of a rebuilt raster: it is the same
+  // question as `packed` (packing succeeds exactly when nothing is true colour)
+  // and undo/redo reads it on every step, where materialising the whole raster
+  // to answer it would be absurd.
+  hasTrueColorPixels: boolean;
+  // Rebuilds the raster the canvas can take. Costs an allocation and a pass
+  // when packed, which is the right way round: this happens on an undo, and
+  // the packing it pays for happens on every stroke.
+  toCanvasColorIndex(): CanvasColorIndex;
 };
+
+// Packs if the picture allows it. toIndexedPixels returns null the moment any
+// pixel is true colour, which is both the test and the conversion.
+export function createUndoEntry(colorIndex: CanvasColorIndex, palette: Color[]): UndoEntry {
+  const indices = colorIndex.toIndexedPixels();
+  const { width, height } = colorIndex;
+  if (indices) {
+    return {
+      palette,
+      width,
+      height,
+      packed: true,
+      pixels: indices,
+      hasTrueColorPixels: false,
+      toCanvasColorIndex: (): CanvasColorIndex =>
+        CanvasColorIndex.fromIndexedPixels(width, height, indices),
+    };
+  }
+  return {
+    palette,
+    width,
+    height,
+    packed: false,
+    pixels: colorIndex.indexArray,
+    hasTrueColorPixels: true,
+    toCanvasColorIndex: (): CanvasColorIndex => colorIndex,
+  };
+}
 
 // History is bounded by bytes first and entries second. An entry count alone is
 // the wrong knob: a snapshot is 4 bytes per pixel, so one costs 256 KB at
@@ -33,7 +81,7 @@ export const MIN_UNDO_LEVELS = 10;
 
 // The palette (a few hundred bytes) is not worth counting next to the raster.
 function entryBytes(entry: UndoEntry): number {
-  return entry.colorIndex.indexArray.byteLength;
+  return entry.pixels.byteLength;
 }
 
 // How many levels of history a canvas of this size will actually get, once the

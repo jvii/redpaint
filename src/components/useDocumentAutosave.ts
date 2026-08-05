@@ -82,9 +82,17 @@ export function useDocumentAutosave(): void {
     });
   };
 
-  // Every committed change moves this, which is exactly when the saved copy has
-  // gone stale — the same signal the tab title's marker reads.
-  const changedAt = state.undo.lastUndoPointTime;
+  // When the picture last became something other than what is saved — the same
+  // expression the tab title's marker uses, and for the same reason: a stroke
+  // appends an entry, while an undo or redo steps to a different one without
+  // appending anything, and both leave the record stale.
+  //
+  // Watching only the stroke timestamp was wrong twice over. Undo and redo
+  // never triggered a write, so the record kept a picture the canvas no longer
+  // showed; and because the write is deferred and reads whichever entry is
+  // current when it fires, undoing inside that delay made a pending write save
+  // the entry it had stepped *back* to.
+  const changedAt = Math.max(state.undo.lastUndoPointTime, state.undo.lastUndoRedoTime);
   // And this moves when the picture starts or stops matching a file. Writing a
   // record is the only way that fact reaches the next visit, and a save changes
   // it without touching the pixels — so a record written before the save would
@@ -106,29 +114,28 @@ export function useDocumentAutosave(): void {
     if (!restored.current || !worthSaving) {
       return;
     }
-    // The committed raster from the undo buffer, not a fresh read of the
+    // The committed snapshot from the undo buffer, not a fresh read of the
     // canvas. setUndoPoint has just put exactly these pixels there, so reading
     // the canvas again would repeat a full-canvas GPU readback for nothing —
     // and the timer can fire after the next stroke has begun, which would
     // capture it half-drawn and stall the drag by the length of that readback
     // (tens of milliseconds on a large canvas).
-    const colorIndex = undoBuffer.getItem(state.undo.currentIndex)?.colorIndex;
-    if (!colorIndex) {
+    //
+    // It arrives already packed where the picture allows it, which is the form
+    // this wants to write anyway: no conversion here at all.
+    const entry = undoBuffer.getItem(state.undo.currentIndex);
+    if (!entry) {
       return;
     }
-    // One byte per pixel where the picture allows it; toIndexedPixels returns
-    // null the moment any pixel is true colour, which is exactly the test.
-    const indices = colorIndex.toIndexedPixels();
     void saveDocument({
       version: 1,
-      width: colorIndex.width,
-      height: colorIndex.height,
-      // A copy in the unpacked case, not the live view: that buffer is the undo
-      // buffer's snapshot too, and handing it to a structured clone while the
-      // app may still write to it is asking for a torn record. The packed form
-      // is freshly built and needs no copy.
-      pixels: indices ?? new Uint8Array(colorIndex.indexArray),
-      packed: indices !== null,
+      width: entry.width,
+      height: entry.height,
+      // A copy, not the entry's own array: that buffer belongs to the undo
+      // history, and handing it to a structured clone while the app may still
+      // be using it is asking for a torn record.
+      pixels: new Uint8Array(entry.pixels),
+      packed: entry.packed,
       // json() unwraps Overmind's proxies — a proxy cannot be structure-cloned
       palette: json(state.palette.paletteArray),
       ranges: json(state.palette.ranges),

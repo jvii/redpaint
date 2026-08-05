@@ -39,7 +39,7 @@ export function useContextLossRecovery(
       paintingCanvasController.restoreContext();
       const entry = undoBuffer.getItem(overmind.state.undo.currentIndex);
       if (entry) {
-        paintingCanvasController.setCanvasColorIndex(entry.colorIndex);
+        paintingCanvasController.setCanvasColorIndex(entry.toCanvasColorIndex());
       }
       paintingCanvasController.render();
     };
@@ -89,7 +89,7 @@ export function useUndo(): void {
     if (!entry) {
       throw new Error('No entry in undo buffer at index ' + state.undo.currentIndex);
     }
-    const colorIndex = entry.colorIndex;
+    const colorIndex = entry.toCanvasColorIndex();
     // History can cross canvas sizes (a snapshot from before a resize). A
     // repaint into a different-size GL buffer would show the snapshot cropped
     // or stretched, so restore the snapshot's own resolution first and let the

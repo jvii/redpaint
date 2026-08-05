@@ -1,5 +1,6 @@
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
+  createUndoEntry,
   undoBuffer,
   UndoEntry,
   MAX_UNDO_ENTRIES,
@@ -16,15 +17,15 @@ beforeEach((): void => {
 });
 
 function entry(width: number, height: number): UndoEntry {
-  return {
-    colorIndex: CanvasColorIndex.createEmptyWithBackgroundColor(width, height, 1),
-    palette: [],
-  };
+  return createUndoEntry(CanvasColorIndex.createEmptyWithBackgroundColor(width, height, 1), []);
 }
 
-// 4 bytes per pixel — the size that makes the byte budget necessary in the
-// first place.
+// What a true-colour snapshot costs: 4 bytes per pixel, the texture's own
+// layout, and the size that makes the byte budget necessary in the first place.
 const bytesFor = (width: number, height: number): number => width * height * 4;
+// What an indexed one costs, which is what createUndoEntry stores whenever the
+// picture allows it.
+const packedBytesFor = (width: number, height: number): number => width * height;
 
 // The eviction tests need entries of realistic size (tens of MB), which is far
 // too much to actually allocate — and pointlessly, since the buffer only ever
@@ -32,8 +33,15 @@ const bytesFor = (width: number, height: number): number => width * height * 4;
 // reports a size without holding one; the tests above use real canvases.
 function sizedEntry(bytes: number): UndoEntry {
   return {
-    colorIndex: { indexArray: { byteLength: bytes } } as unknown as CanvasColorIndex,
     palette: [],
+    width: bytes,
+    height: 1,
+    packed: true,
+    pixels: { byteLength: bytes } as unknown as Uint8Array,
+    hasTrueColorPixels: false,
+    toCanvasColorIndex: () => {
+      throw new Error('stub entry has no raster');
+    },
   };
 }
 
@@ -59,16 +67,47 @@ describe('push', () => {
     undoBuffer.push(entry(4, 4), null);
     undoBuffer.push(entry(4, 4), 0);
     undoBuffer.push(entry(4, 4), 1);
-    expect(undoBuffer.getTotalBytes()).toBe(3 * bytesFor(4, 4));
+    expect(undoBuffer.getTotalBytes()).toBe(3 * packedBytesFor(4, 4));
 
     undoBuffer.push(entry(4, 4), 0);
-    expect(undoBuffer.getTotalBytes()).toBe(2 * bytesFor(4, 4));
+    expect(undoBuffer.getTotalBytes()).toBe(2 * packedBytesFor(4, 4));
   });
 
   test('tracks total bytes across a resize', () => {
     undoBuffer.push(entry(2, 2), null);
     undoBuffer.push(entry(8, 8), 0);
-    expect(undoBuffer.getTotalBytes()).toBe(bytesFor(2, 2) + bytesFor(8, 8));
+    expect(undoBuffer.getTotalBytes()).toBe(packedBytesFor(2, 2) + packedBytesFor(8, 8));
+  });
+});
+
+describe('packing', () => {
+  test('an indexed picture costs one byte a pixel', () => {
+    undoBuffer.push(entry(16, 16), null);
+    expect(undoBuffer.getTotalBytes()).toBe(packedBytesFor(16, 16));
+    expect(undoBuffer.getItem(0)?.packed).toBe(true);
+    expect(undoBuffer.getItem(0)?.hasTrueColorPixels).toBe(false);
+  });
+
+  test('a true-colour picture keeps all four', () => {
+    const canvas = CanvasColorIndex.createEmptyWithBackgroundColor(16, 16, 1);
+    canvas.setPixel32(
+      { x: 3, y: 3 },
+      CanvasColorIndex.packPaintColor({ kind: 'rgb', color: { r: 9, g: 9, b: 9 } })
+    );
+    undoBuffer.push(createUndoEntry(canvas, []), null);
+    expect(undoBuffer.getTotalBytes()).toBe(bytesFor(16, 16));
+    expect(undoBuffer.getItem(0)?.packed).toBe(false);
+    expect(undoBuffer.getItem(0)?.hasTrueColorPixels).toBe(true);
+  });
+
+  test('unpacks to the same pixels it was given', () => {
+    const canvas = CanvasColorIndex.createEmptyWithBackgroundColor(4, 3, 1);
+    canvas.setPixel32({ x: 0, y: 0 }, CanvasColorIndex.packIndexed(7));
+    canvas.setPixel32({ x: 3, y: 2 }, CanvasColorIndex.packIndexed(12));
+    const restored = createUndoEntry(canvas, []).toCanvasColorIndex();
+    expect(restored.width).toBe(4);
+    expect(restored.height).toBe(3);
+    expect([...restored.indexArray]).toEqual([...canvas.indexArray]);
   });
 });
 

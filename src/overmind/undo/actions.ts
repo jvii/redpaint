@@ -2,7 +2,7 @@ import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Color } from '../../types';
-import { undoBuffer, UndoEntry } from './UndoBuffer';
+import { createUndoEntry, undoBuffer } from './UndoBuffer';
 import { newGradientSeed } from '../../brush/fillStyleDraw';
 import { plainPalette } from '../../algorithm/imageColors';
 
@@ -17,10 +17,7 @@ export const setUndoPoint = (context: Context): void => {
     console.warn('setUndoPoint: no canvas color index available');
     return;
   }
-  const entry: UndoEntry = {
-    colorIndex,
-    palette: plainPalette(context.state.palette.paletteArray),
-  };
+  const entry = createUndoEntry(colorIndex, plainPalette(context.state.palette.paletteArray));
   // push owns both the array and the resulting index: it discards the redo
   // future and evicts old entries to stay inside the memory budget, either of
   // which shifts where the new entry lands (see UndoBuffer).
@@ -80,7 +77,7 @@ export const redo = (context: Context): void => {
 // point at missing or different colors.
 function restoreEntryState(context: Context): void {
   const entry = undoBuffer.getItem(context.state.undo.currentIndex);
-  context.state.canvas.hasTrueColorPixels = entry ? entry.colorIndex.hasTrueColorPixels() : false;
+  context.state.canvas.hasTrueColorPixels = entry ? entry.hasTrueColorPixels : false;
   if (entry && !paletteEquals(entry.palette, context.state.palette.paletteArray)) {
     context.actions.palette.replacePalette(entry.palette);
     paintingCanvasController.updatePalette();
