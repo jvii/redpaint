@@ -29,14 +29,20 @@ export function SaveNameDialog(): JSX.Element | null {
 function SaveNameDialogOpen(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
-  const prompt = state.app.saveNamePrompt as NonNullable<typeof state.app.saveNamePrompt>;
+  const suggested = state.app.saveNamePrompt as string;
 
   // The offered name arrives with its extension already on it; the field shows
   // the base only, since the extension is not the user's to change here — the
   // format was chosen by which Save was clicked.
-  const base = prompt.suggested.toLowerCase().endsWith(prompt.extension.toLowerCase())
-    ? prompt.suggested.slice(0, -prompt.extension.length)
-    : prompt.suggested;
+  //
+  // Split here rather than passed in beside the name: which part is the
+  // extension is a fact about the string, so deriving it where it is needed
+  // cannot disagree with the name the way a stored copy could. The last dot,
+  // so a name with dots of its own keeps them; no dot at all leaves the whole
+  // string as the base and no extension, which is the only sane reading.
+  const dot = suggested.lastIndexOf('.');
+  const base = dot === -1 ? suggested : suggested.slice(0, dot);
+  const extension = dot === -1 ? '' : suggested.slice(dot);
   const [name, setName] = useState(base);
 
   // Sanitized here rather than only on the way out, so the name previewed below
@@ -89,7 +95,7 @@ function SaveNameDialogOpen(): JSX.Element {
         <p className="save-name__note">
           <span>
             Saved to your downloads folder as{' '}
-            <b>{withExtension(valid ? cleaned : base, prompt.extension)}</b>, and saving again adds
+            <b>{withExtension(valid ? cleaned : base, extension)}</b>, and saving again adds
             a numbered copy. To pick the folder and overwrite instead, turn on your browser&rsquo;s
             &ldquo;ask where to save each file&rdquo; setting.
           </span>

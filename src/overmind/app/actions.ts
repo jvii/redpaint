@@ -49,13 +49,14 @@ export const beginImageLoad = async (
     ctx.drawImage(image, 0, 0);
     const imageData = ctx.getImageData(0, 0, image.width, image.height);
 
-    setPendingImage(imageData);
+    // The name rides with the pixels rather than sitting in state: nothing
+    // renders it, the requester's OK just passes it through, and it belongs
+    // with the rest of the payload waiting for that answer.
+    setPendingImage(imageData, fileName ? documentNameFrom(fileName) : '');
     context.state.app.imageLoadInfo = {
       width: image.width,
       height: image.height,
       colorCount: countDistinctColors(imageData.data),
-      // held until the requester's OK, which is what commits the load
-      documentName: fileName ? documentNameFrom(fileName) : '',
     };
     context.actions.dialog.open('IMAGE_LOAD');
   } catch {
@@ -178,11 +179,10 @@ export const setDocumentName = (context: Context, name: string): void => {
   context.state.app.documentName = name;
 };
 
-export const openSaveNamePrompt = (
-  context: Context,
-  prompt: { suggested: string; extension: string }
-): void => {
-  context.state.app.saveNamePrompt = prompt;
+// The name to offer, extension included — the requester splits it, since which
+// part is the extension follows from the string itself.
+export const openSaveNamePrompt = (context: Context, suggested: string): void => {
+  context.state.app.saveNamePrompt = suggested;
 };
 
 export const closeSaveNamePrompt = (context: Context): void => {

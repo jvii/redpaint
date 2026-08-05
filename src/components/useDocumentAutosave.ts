@@ -82,8 +82,7 @@ export function useDocumentAutosave(): void {
     });
   };
 
-  // When the picture last became something other than what is saved — the same
-  // expression the tab title's marker uses, and for the same reason: a stroke
+  // When the picture last became something other than what is saved — a stroke
   // appends an entry, while an undo or redo steps to a different one without
   // appending anything, and both leave the record stale.
   //
@@ -92,6 +91,10 @@ export function useDocumentAutosave(): void {
   // showed; and because the write is deferred and reads whichever entry is
   // current when it fires, undoing inside that delay made a pending write save
   // the entry it had stepped *back* to.
+  //
+  // The raw timestamps rather than app.documentModified, because these are what
+  // schedule the write: a second stroke has to restart the timer even though
+  // the document was already modified before it and still is after.
   const changedAt = Math.max(state.undo.lastUndoPointTime, state.undo.lastUndoRedoTime);
   // And this moves when the picture starts or stops matching a file. Writing a
   // record is the only way that fact reaches the next visit, and a save changes
@@ -107,46 +110,54 @@ export function useDocumentAutosave(): void {
 
   // The write itself, kept in a ref so the timer and the page-is-going-away
   // listeners always call the current one rather than the closure they were
-  // registered with.
+  // registered with. Refreshed in an effect rather than assigned during render:
+  // a render that never commits must not leave its closure behind for a
+  // listener registered by one that did.
+  //
+  // No dependency array, so it is refreshed after every commit — and declared
+  // above the effects that call it, so they only ever schedule against a
+  // closure this render has already installed.
   const writeNow = useRef<() => void>(() => undefined);
-  writeNow.current = (): void => {
-    pendingSince.current = null;
-    if (!restored.current || !worthSaving) {
-      return;
-    }
-    // The committed snapshot from the undo buffer, not a fresh read of the
-    // canvas. setUndoPoint has just put exactly these pixels there, so reading
-    // the canvas again would repeat a full-canvas GPU readback for nothing —
-    // and the timer can fire after the next stroke has begun, which would
-    // capture it half-drawn and stall the drag by the length of that readback
-    // (tens of milliseconds on a large canvas).
-    //
-    // It arrives already packed where the picture allows it, which is the form
-    // this wants to write anyway: no conversion here at all.
-    const entry = undoBuffer.getItem(state.undo.currentIndex);
-    if (!entry) {
-      return;
-    }
-    void saveDocument({
-      version: 1,
-      width: entry.width,
-      height: entry.height,
-      // A copy, not the entry's own array: that buffer belongs to the undo
-      // history, and handing it to a structured clone while the app may still
-      // be using it is asking for a torn record.
-      pixels: new Uint8Array(entry.pixels),
-      packed: entry.packed,
-      // json() unwraps Overmind's proxies — a proxy cannot be structure-cloned
-      palette: json(state.palette.paletteArray),
-      ranges: json(state.palette.ranges),
-      screenFormatId: state.canvas.screenFormatId,
-      videoStandard: state.canvas.videoStandard,
-      trueColorEnabled: state.canvas.trueColorEnabled,
-      documentName: state.app.documentName,
-      // as the tab title computes it — see useDocumentTitle
-      modified: changedAt > cleanAt,
-    });
-  };
+  useEffect((): void => {
+    writeNow.current = (): void => {
+      pendingSince.current = null;
+      if (!restored.current || !worthSaving) {
+        return;
+      }
+      // The committed snapshot from the undo buffer, not a fresh read of the
+      // canvas. setUndoPoint has just put exactly these pixels there, so
+      // reading the canvas again would repeat a full-canvas GPU readback for
+      // nothing — and the timer can fire after the next stroke has begun, which
+      // would capture it half-drawn and stall the drag by the length of that
+      // readback (tens of milliseconds on a large canvas).
+      //
+      // It arrives already packed where the picture allows it, which is the
+      // form this wants to write anyway: no conversion here at all.
+      const entry = undoBuffer.getItem(state.undo.currentIndex);
+      if (!entry) {
+        return;
+      }
+      void saveDocument({
+        version: 1,
+        width: entry.width,
+        height: entry.height,
+        // A copy, not the entry's own array: that buffer belongs to the undo
+        // history, and handing it to a structured clone while the app may still
+        // be using it is asking for a torn record.
+        pixels: new Uint8Array(entry.pixels),
+        packed: entry.packed,
+        // json() unwraps Overmind's proxies — a proxy cannot be structure-cloned
+        palette: json(state.palette.paletteArray),
+        ranges: json(state.palette.ranges),
+        screenFormatId: state.canvas.screenFormatId,
+        videoStandard: state.canvas.videoStandard,
+        trueColorEnabled: state.canvas.trueColorEnabled,
+        documentName: state.app.documentName,
+        // the same value the tab title's asterisk reports, by construction
+        modified: state.app.documentModified,
+      });
+    };
+  });
 
   useEffect((): (() => void) | void => {
     if (!restored.current || !worthSaving || changedAt === 0) {

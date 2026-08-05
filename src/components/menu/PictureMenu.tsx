@@ -4,7 +4,6 @@ import { cycleDriver } from '../../canvas/CycleDriver';
 import { encodeIlbm } from '../../fileformat/ilbm';
 import { plainPalette } from '../../algorithm/imageColors';
 import { useActions, useAppState } from '../../overmind';
-import { UNTITLED_DOCUMENT } from '../../overmind/app/state';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { CropIcon } from './transformIcons';
@@ -23,10 +22,11 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   const actions = useActions();
 
   // What a save offers as the name: whatever the document is already called,
-  // or the same word the tab title uses for one that is not called anything.
-  // Held without an extension, so saving a PNG and then an IFF offers
-  // "mypic.png" and "mypic.iff" rather than "mypic.png.iff".
-  const baseName = state.app.documentName || UNTITLED_DOCUMENT;
+  // or the same word the tab title uses for one that is not called anything —
+  // the one derived, so the two cannot drift apart. Held without an extension,
+  // so saving a PNG and then an IFF offers "mypic.png" and "mypic.iff" rather
+  // than "mypic.png.iff".
+  const baseName = state.app.displayName;
   // Only reached on the browsers with no showSaveFilePicker; saveFile decides,
   // since it is the one that knows which route it is taking.
   // A written file is now what the document is: it takes that name, there is
@@ -42,13 +42,12 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   };
 
   const promptForName = (suggested: string): Promise<string | null> => {
-    const extension = suggested.slice(suggested.lastIndexOf('.'));
     // The menu is still open — a save is clicked from inside it — and its panel
     // is translucent and above the requesters, so leaving it up would tint this
     // one blue and swallow its clicks. Every other route into a requester
     // closes the menu the same way (ScreenStatus, crop.begin).
     actions.app.closeMenu();
-    actions.app.openSaveNamePrompt({ suggested, extension });
+    actions.app.openSaveNamePrompt(suggested);
     return beginSaveNamePrompt();
   };
 

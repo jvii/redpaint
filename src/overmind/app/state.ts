@@ -1,3 +1,5 @@
+import { derived } from 'overmind';
+import { OvermindState } from '..';
 import { loadUiScale } from '../../uiScale';
 
 // What a document with no name of its own is called — in the tab title, and as
@@ -13,26 +15,25 @@ export type State = {
   // What the image load requester shows about the decoded image awaiting a
   // color-treatment choice (the pixels themselves wait outside Overmind, in
   // canvas/pendingImage.ts). null while no load is in progress.
-  imageLoadInfo: {
-    width: number;
-    height: number;
-    colorCount: number;
-    documentName: string;
-  } | null;
+  imageLoadInfo: { width: number; height: number; colorCount: number } | null;
   // Same, for the brush load requester (pixels wait in canvas/pendingBrush.ts).
   // colorCount only counts opaque pixels — a brush's transparent pixels never
   // compete for a palette slot.
   brushLoadInfo: { width: number; height: number; colorCount: number } | null;
   isLoading: boolean;
   // The document's name without an extension, as last saved or loaded — the
-  // name a save offers, and (later) what the tab title and the autosave record
-  // will carry. Empty until something names it, which the save requester reads
-  // as "untitled".
+  // name a save offers, and what the tab title and the autosave record carry.
+  // Empty until something names it; read displayName for the name to show.
   documentName: string;
-  // The save-name requester's subject while it is open: what to offer and what
-  // the file will end up called. Null when it is closed. The typed answer goes
-  // back through pendingSaveName, not through here — see that module.
-  saveNamePrompt: { suggested: string; extension: string } | null;
+  // What the document is called on screen: its own name, or the one word the
+  // app uses for a picture that has none. Derived so the tab title and the save
+  // requester cannot pick different words for the same nameless picture.
+  displayName: string;
+  // The name the save-name requester offers, extension included, or null when
+  // it is closed. The extension is not stored alongside it: it is a function of
+  // this string, and a second field could only ever disagree with it. The typed
+  // answer goes back through pendingSaveName, not through here.
+  saveNamePrompt: string | null;
   // When the document last matched something outside the app: a fresh canvas,
   // a just-loaded image, or a just-written file. Anything later in the undo
   // timestamps means there are changes no file has — which is what the tab
@@ -40,6 +41,19 @@ export type State = {
   // against those timestamps instead of having to be cleared by every path
   // that touches the picture.
   lastCleanTime: number;
+  // Whether the picture has changes no file carries — the tab title's asterisk,
+  // and what the autosave record records about itself. Derived rather than
+  // recomputed at each site: both compare the same two timestamps, and a copy
+  // of that comparison in two files is one edit away from the title and the
+  // record disagreeing about whether the picture is saved.
+  //
+  // Both undo timestamps, because either kind of history move leaves the canvas
+  // differing from the file: a stroke appends an entry, and an undo or redo
+  // steps to a different one without appending anything.
+  //
+  // NOTE: deriveds read as undefined from inside actions with the bundled
+  // Overmind build (see palette/state.ts) — this is for components only.
+  documentModified: boolean;
   menuOpen: boolean;
   // Which of the menu's drawers (Picture: image disk I/O; Brush: transforms
   // + brush disk; Prefs: app settings) is open — a radio group, only one at
@@ -60,8 +74,14 @@ export const state: State = {
   brushLoadInfo: null,
   isLoading: false,
   documentName: '',
+  displayName: derived((state: State) => state.documentName || UNTITLED_DOCUMENT),
   saveNamePrompt: null,
   lastCleanTime: 0,
+  documentModified: derived(
+    (state: State, rootState: OvermindState) =>
+      Math.max(rootState.undo.lastUndoPointTime, rootState.undo.lastUndoRedoTime) >
+      state.lastCleanTime
+  ),
   menuOpen: false,
   openDrawer: null,
   uiScale: loadUiScale(),

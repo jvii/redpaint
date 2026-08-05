@@ -4,19 +4,25 @@
 // build the canvas content, Cancel discards it. Kept outside Overmind — a
 // multi-megabyte ImageData has no business inside a proxied state tree; the
 // requester renders from app.imageLoadInfo instead.
-let pending: ImageData | null = null;
+//
+// The document name the file supplies waits here too. It is part of the same
+// payload — decoded on the way in, applied only if the requester is answered
+// with OK — and nothing renders it, so state would be the wrong home for it.
+type PendingImage = { image: ImageData; documentName: string };
 
-export function setPendingImage(image: ImageData): void {
-  pending = image;
+let pending: PendingImage | null = null;
+
+export function setPendingImage(image: ImageData, documentName: string): void {
+  pending = { image, documentName };
 }
 
-export function takePendingImage(): ImageData | null {
-  const image = pending;
+export function takePendingImage(): PendingImage | null {
+  const taken = pending;
   pending = null;
-  return image;
+  return taken;
 }
 
 // For the requester's preview: look without consuming.
 export function peekPendingImage(): ImageData | null {
-  return pending;
+  return pending?.image ?? null;
 }

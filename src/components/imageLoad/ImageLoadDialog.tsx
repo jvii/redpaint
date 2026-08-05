@@ -114,11 +114,12 @@ function ImageLoadDialogOpen(): JSX.Element {
   };
 
   const handleOk = (): void => {
-    const image = takePendingImage();
-    if (!image) {
+    const pending = takePendingImage();
+    if (!pending) {
       handleCancel();
       return;
     }
+    const { image, documentName } = pending;
 
     // the load is a new document, so its color choice decides the True Color
     // mode outright: a True Color load opts in, an indexed load opts out —
@@ -152,7 +153,7 @@ function ImageLoadDialogOpen(): JSX.Element {
     // the canvas resizes to the image; the resolution effect uploads the
     // queued content once the resize commits, and — as a fresh document —
     // resets the undo history to it
-    setPendingCanvasContent(colorIndex, { freshDocument: true, documentName: info.documentName });
+    setPendingCanvasContent(colorIndex, { freshDocument: true, documentName });
     actions.canvas.setResolution({
       width: image.width,
       height: image.height,
