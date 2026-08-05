@@ -1,120 +1,20 @@
 import { Color } from '../types';
 import { CycleRange } from '../algorithm/paletteRange';
 import { idbDelete, idbGet, idbKeys, idbSet } from './idb';
+import { ensureTabId, tabId } from './tabIdentity';
+import {
+  interruptedRecordKey,
+  markRestoreFinished,
+  markRestoreStarted,
+  restoreMarker,
+} from './restoreGuard';
 
-// One record per tab, not one for the origin. Two tabs share IndexedDB, so a
-// single key meant whichever painted last owned the backup and the other tab's
-// was gone — and a reloaded tab got back whatever its neighbour had been doing
-// rather than its own picture.
-//
-// The id lives in sessionStorage, which is the piece that makes this work: it
-// is unique per tab, it survives a reload of that tab, and it goes away when
-// the tab does. So a reload finds its own record, and a genuinely new tab finds
-// none and adopts instead (see loadDocument).
+// One record per tab, not one for the origin — see tabIdentity.ts for why, and
+// for how a tab keeps the same id across a reload.
 const KEY_PREFIX = 'doc:';
-const TAB_KEY = 'redpaint.tabId';
 
-// Whether an id we inherited is already being painted under by a live tab.
-//
-// sessionStorage is not quite per tab: duplicating a tab, or opening one from a
-// link or window.open, copies it — so a new tab can arrive holding an id
-// another tab is already using, and the two would share a record.
-//
-// Asked over a BroadcastChannel rather than tracked in storage. The first
-// attempt kept a registry of live ids in localStorage, which every tab
-// read-modify-wrote: a tab releasing its claim on reload had it written straight
-// back by another tab's heartbeat mid-flight, so it came back, believed itself a
-// duplicate, and minted a new id — losing its own record every single reload.
-// A question asked of the tabs themselves cannot go stale, cannot race, and
-// leaves nothing behind to clean up.
-const CHANNEL = 'redpaint.tabs';
-// Long enough for a live tab to answer, short enough not to hold up the restore.
-const REPLY_WAIT_MS = 250;
-
-function newId(): string {
-  return typeof crypto?.randomUUID === 'function'
-    ? crypto.randomUUID()
-    : String(Date.now()) + Math.random().toString(36).slice(2);
-}
-
-let claimed: string | null = null;
-let responder: BroadcastChannel | null = null;
-
-// Answers "is anyone using this id?" for as long as this tab is open. Started
-// once the id is settled, so a tab never answers on behalf of an id it is about
-// to give up.
-function startResponding(id: string): void {
-  if (responder || typeof BroadcastChannel === 'undefined') {
-    return;
-  }
-  responder = new BroadcastChannel(CHANNEL);
-  responder.onmessage = (event): void => {
-    if (event.data?.type === 'in-use?' && event.data.id === id) {
-      responder?.postMessage({ type: 'in-use', id });
-    }
-  };
-}
-
-async function isIdLive(id: string): Promise<boolean> {
-  if (typeof BroadcastChannel === 'undefined') {
-    return false; // no way to ask; assume it is ours, which it usually is
-  }
-  const channel = new BroadcastChannel(CHANNEL);
-  try {
-    return await new Promise<boolean>((resolve): void => {
-      const timer = window.setTimeout((): void => resolve(false), REPLY_WAIT_MS);
-      channel.onmessage = (event): void => {
-        if (event.data?.type === 'in-use' && event.data.id === id) {
-          window.clearTimeout(timer);
-          resolve(true);
-        }
-      };
-      channel.postMessage({ type: 'in-use?', id });
-    });
-  } finally {
-    channel.close();
-  }
-}
-
-// This tab's id, settled once per page load. An inherited id is kept unless a
-// live tab answers to it, which is the only case that means we were copied —
-// so an ordinary reload keeps its id, and its record.
-export async function ensureTabId(): Promise<string> {
-  if (claimed) {
-    return claimed;
-  }
-  let inherited: string | null = null;
-  try {
-    inherited = window.sessionStorage.getItem(TAB_KEY);
-  } catch {
-    // storage blocked: this tab cannot keep an identity across reloads, so it
-    // behaves like a new one each time — it still saves, it just never restores
-  }
-  const id = inherited && !(await isIdLive(inherited)) ? inherited : newId();
-  if (id !== inherited) {
-    try {
-      window.sessionStorage.setItem(TAB_KEY, id);
-    } catch {
-      // see above
-    }
-  }
-  claimed = id;
-  startResponding(id);
-  return id;
-}
-
-// Settled by ensureTabId, which loadDocument awaits before anything else runs.
-// The fallback is only reachable if a save somehow beat the restore; it uses the
-// inherited id, which is the same answer in every case but a duplicated tab.
 function ownKey(): string {
-  if (claimed) {
-    return KEY_PREFIX + claimed;
-  }
-  try {
-    return KEY_PREFIX + (window.sessionStorage.getItem(TAB_KEY) ?? 'unclaimed');
-  } catch {
-    return KEY_PREFIX + 'unclaimed';
-  }
+  return KEY_PREFIX + tabId();
 }
 
 // How many records to keep. Enough for a few tabs at once without letting a
@@ -168,87 +68,17 @@ export type DocumentRecord = {
   // cleared site or another machine does not have — so a picture that came back
   // unsaved must still say so.
   modified: boolean;
-  // When it was written, which is what decides adoption (the newest orphan) and
-  // pruning (the oldest go). Absent on records from before per-tab keys, which
-  // sort as oldest and so are adopted only when nothing newer exists.
+  // When it was written, which is what decides pruning (the oldest go). Absent
+  // on records from before per-tab keys, which sort as oldest and so are the
+  // first to go.
   savedAt: number;
 };
 
-// A restore that crashed the tab must not be retried forever. The marker goes
-// down before the record is touched and comes up once it is safely applied, so
-// a start that finds it already set knows the last attempt did not survive —
-// and drops the record instead of trying again.
-//
-// localStorage rather than IndexedDB for this one: it has to have landed before
-// the thing that might crash begins, and only a synchronous write guarantees
-// that. A single value, so none of the size objections apply.
-//
-// It holds a time, not a flag, because localStorage is shared by every tab on
-// the origin. A marker seconds old means another tab is restoring right now —
-// which is nothing like "we died last time", and treating it as such let a
-// second tab delete the saved picture out from under the first. Only a marker
-// older than any restore could possibly take means the attempt really did stop.
-const GUARD_KEY = 'redpaint.restoring';
-
-// A restore is a read and an upload: milliseconds. Anything still marked after
-// this was not slow, it was interrupted.
-const GUARD_STALE_MS = 15000;
-
-// Records which record was being applied, not just when. With one key per tab
-// the two can differ — a tab may be applying a record it adopted from another —
-// and dropping "ours" on the next start would leave the one that actually
-// stopped us sitting there for the next tab to adopt.
-function guardSet(recordKey: string): void {
-  try {
-    window.localStorage.setItem(GUARD_KEY, `${Date.now()}:${recordKey}`);
-  } catch {
-    // blocked site data throws rather than returning null; the guard simply
-    // does not operate, which is no worse than not having it
-  }
-}
-
-function guardClear(): void {
-  try {
-    window.localStorage.removeItem(GUARD_KEY);
-  } catch {
-    // see above
-  }
-}
-
-// True only for a marker old enough to mean an interrupted attempt rather than
-// a concurrent one. An unparseable value counts as stale: it is not ours, and
-// leaving it to block restores forever would be worse than one wasted retry.
-// The record an interrupted attempt was applying, or null when there is nothing
-// to do — no marker, or one recent enough to belong to another tab restoring
-// right now. A marker with no key (an older build's, or nonsense) is taken to
-// mean this tab's own record: it is the only guess available, and leaving a
-// marker to block every restore forever would be worse than one wasted retry.
-function interruptedRecordKey(): string | null {
-  try {
-    const marked = window.localStorage.getItem(GUARD_KEY);
-    if (marked === null) {
-      return null;
-    }
-    const separator = marked.indexOf(':');
-    const at = Number(separator === -1 ? marked : marked.slice(0, separator));
-    if (Number.isFinite(at) && Date.now() - at <= GUARD_STALE_MS) {
-      return null;
-    }
-    return (separator === -1 ? '' : marked.slice(separator + 1)) || ownKey();
-  } catch {
-    return null;
-  }
-}
-
 // savedAt is stamped here rather than passed in: the caller has no business
 // deciding when its own write happened, and a record without one sorts as
-// ancient, which would quietly make it unadoptable and first to be pruned.
+// ancient, which would quietly make it first to be pruned.
 export async function saveDocument(record: Omit<DocumentRecord, 'savedAt'>): Promise<boolean> {
-  const written = await idbSet(ownKey(), { ...record, savedAt: Date.now() });
-  if (written) {
-    await prune();
-  }
-  return written;
+  return idbSet(ownKey(), { ...record, savedAt: Date.now() });
 }
 
 export async function clearDocument(): Promise<void> {
@@ -281,13 +111,19 @@ export async function autosaveState(): Promise<unknown> {
   return {
     thisTab: ownKey(),
     records,
-    interruptedMarker: window.localStorage.getItem(GUARD_KEY),
+    interruptedMarker: restoreMarker(),
   };
 }
 
 // Drops the records nobody is coming back for: anything past its week, and
 // anything beyond the newest few. This tab's own is never a candidate, however
 // long it has been idle — it is the one record we know has an owner.
+//
+// Called once at startup, not after each write. Reading `savedAt` means reading
+// the whole record, raster included, so pruning on the write path deserialised
+// every neighbouring record — tens of megabytes — on every autosave, and threw
+// the lot away. Records only accumulate when tabs come and go, never when one
+// tab saves repeatedly, so a startup is exactly as often as this needs to run.
 async function prune(): Promise<void> {
   await idbDelete(LEGACY_KEY);
   const mine = ownKey();
@@ -335,18 +171,21 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
 // kind of failure.
 export async function loadDocument(): Promise<DocumentRecord | null> {
   await ensureTabId();
-  const interrupted = interruptedRecordKey();
+  // Not awaited: nothing here depends on it having finished, and a restore
+  // should not wait on housekeeping for records it will not read.
+  void prune();
+  const interrupted = interruptedRecordKey(ownKey());
   if (interrupted !== null) {
     // the previous attempt never finished: assume the record it was applying is
     // what stopped it, and let that one go rather than reopening the same trap
     // — for this tab, and for the next one that would have adopted it
-    guardClear();
+    markRestoreFinished();
     await idbDelete(interrupted);
     return null;
   }
   const own = await idbGet<DocumentRecord>(ownKey());
   if (isUsable(own)) {
-    guardSet(ownKey());
+    markRestoreStarted(ownKey());
     return own;
   }
   if (own) {
@@ -366,5 +205,5 @@ export async function loadDocument(): Promise<DocumentRecord | null> {
 
 // Called once the record has been applied without incident.
 export function finishRestore(): void {
-  guardClear();
+  markRestoreFinished();
 }
