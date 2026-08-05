@@ -141,7 +141,11 @@ export function useCanvasContentUpload(): void {
       // somewhere unnamed; either way the previous document's name is gone.
       actions.app.setDocumentName(pending.documentName);
       forgetFileHandles();
-      actions.app.markDocumentClean();
+      if (pending.documentModified) {
+        actions.app.markDocumentModified();
+      } else {
+        actions.app.markDocumentClean();
+      }
     }
     actions.app.setLoading(false);
   }, [state.canvas.resolution]);

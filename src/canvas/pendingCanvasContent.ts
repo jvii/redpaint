@@ -22,12 +22,17 @@ type PendingCanvasContent = {
   // set when the load starts, so a load the user cancels never renames the
   // picture that is still on screen.
   documentName: string;
+  // Whether this fresh document arrives with changes no file has. A load or a
+  // paste does not (a file is exactly where it came from); a restored autosave
+  // may, and saying otherwise would claim work is safe when it is not.
+  documentModified: boolean;
 };
 
 type Options = {
   freshDocument?: boolean;
   recordUndoPoint?: boolean;
   documentName?: string;
+  documentModified?: boolean;
 };
 
 let pending: PendingCanvasContent | null = null;
@@ -38,6 +43,7 @@ export function setPendingCanvasContent(content: CanvasColorIndex, options: Opti
     freshDocument: options.freshDocument ?? false,
     recordUndoPoint: options.recordUndoPoint ?? true,
     documentName: options.documentName ?? '',
+    documentModified: options.documentModified ?? false,
   };
 }
 

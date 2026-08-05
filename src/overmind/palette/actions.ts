@@ -1,6 +1,7 @@
 import { Context } from '../../overmind';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
+import { PaletteRange } from './state';
 import { brushRecall } from '../../brush/BrushRecall';
 import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../algorithm/color';
@@ -29,6 +30,12 @@ export const setNumberOfColors = (context: Context, colors: number): void => {
 // Replaces the whole palette with the given colors (the palette extracted
 // from a loaded image), resizing its depth to match — the browser-era
 // equivalent of DPaint loading a picture's palette along with the picture.
+// The cycling ranges as a whole, for the paths that bring a document's own set
+// with it (an ILBM's cycle chunks, a restored autosave) rather than editing one.
+export const replaceRanges = (context: Context, ranges: (PaletteRange | null)[]): void => {
+  context.state.palette.ranges = ranges;
+};
+
 export const replacePalette = (context: Context, colors: Color[]): void => {
   const palette: { [id: string]: Color } = {};
   colors.forEach((color, i): void => {

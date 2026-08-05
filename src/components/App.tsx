@@ -17,6 +17,7 @@ import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
 import { CanvasSizeDialog } from './canvasSize/CanvasSizeDialog';
 import { SaveNameDialog } from './saveName/SaveNameDialog';
 import { useDocumentTitle } from './useDocumentTitle';
+import { useDocumentAutosave } from './useDocumentAutosave';
 import { BrushLoadDialog } from './imageLoad/BrushLoadDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
 import { FillStyleSettings } from './fillStyle/FillStyleSettings';
@@ -30,6 +31,7 @@ function App(): JSX.Element {
   const state = useAppState();
   const uiScale = state.app.uiScale;
   useDocumentTitle();
+  useDocumentAutosave();
   useLayoutEffect((): void => applyUiScale(uiScale), [uiScale]);
 
   return (

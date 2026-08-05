@@ -163,6 +163,12 @@ export const clearBrushLoadInfo = (context: Context): void => {
   context.state.app.brushLoadInfo = null;
 };
 
+// The opposite: there are changes no file has. Zero rather than a flag, so it
+// compares against the undo timestamps the same way markDocumentClean's does.
+export const markDocumentModified = (context: Context): void => {
+  context.state.app.lastCleanTime = 0;
+};
+
 // The document now matches a file (or is a fresh, empty one): nothing to save.
 export const markDocumentClean = (context: Context): void => {
   context.state.app.lastCleanTime = Date.now();
