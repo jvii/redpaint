@@ -76,6 +76,12 @@ export function useDocumentAutosave(): void {
   // Every committed change moves this, which is exactly when the saved copy has
   // gone stale — the same signal the tab title's marker reads.
   const changedAt = state.undo.lastUndoPointTime;
+  // And this moves when the picture starts or stops matching a file. Writing a
+  // record is the only way that fact reaches the next visit, and a save changes
+  // it without touching the pixels — so a record written before the save would
+  // otherwise keep saying "unsaved" forever, and come back with an asterisk it
+  // no longer deserves.
+  const cleanAt = state.app.lastCleanTime;
   // Nothing is written for a canvas nobody has touched: the startup baseline
   // would otherwise save a blank picture at this window's size, and restore it
   // into a differently sized window next time, in place of the fresh canvas
@@ -107,10 +113,10 @@ export function useDocumentAutosave(): void {
         trueColorEnabled: state.canvas.trueColorEnabled,
         documentName: state.app.documentName,
         // as the tab title computes it — see useDocumentTitle
-        modified: changedAt > state.app.lastCleanTime,
+        modified: changedAt > cleanAt,
       });
     }, WRITE_DELAY_MS);
     return (): void => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changedAt, worthSaving]);
+  }, [changedAt, cleanAt, worthSaving]);
 }
