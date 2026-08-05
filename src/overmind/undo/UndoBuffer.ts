@@ -17,18 +17,12 @@ export type UndoEntry = {
   palette: Color[];
   width: number;
   height: number;
-  // one byte per pixel (indices) when true, the raw RGBA texture bytes when not
+  // One byte per pixel (indices) when true, the raw RGBA texture bytes when
+  // not — and so also the answer to "does this entry hold true-colour pixels?",
+  // since packing succeeds exactly when nothing is true colour. One field
+  // rather than two that could never legitimately disagree.
   packed: boolean;
   pixels: Uint8Array;
-  // Kept as a field rather than asked of a rebuilt raster: it is the same
-  // question as `packed` (packing succeeds exactly when nothing is true colour)
-  // and undo/redo reads it on every step, where materialising the whole raster
-  // to answer it would be absurd.
-  hasTrueColorPixels: boolean;
-  // Rebuilds the raster the canvas can take. Costs an allocation and a pass
-  // when packed, which is the right way round: this happens on an undo, and
-  // the packing it pays for happens on every stroke.
-  toCanvasColorIndex(): CanvasColorIndex;
 };
 
 // Packs if the picture allows it. toIndexedPixels returns null the moment any
@@ -36,27 +30,23 @@ export type UndoEntry = {
 export function createUndoEntry(colorIndex: CanvasColorIndex, palette: Color[]): UndoEntry {
   const indices = colorIndex.toIndexedPixels();
   const { width, height } = colorIndex;
-  if (indices) {
-    return {
-      palette,
-      width,
-      height,
-      packed: true,
-      pixels: indices,
-      hasTrueColorPixels: false,
-      toCanvasColorIndex: (): CanvasColorIndex =>
-        CanvasColorIndex.fromIndexedPixels(width, height, indices),
-    };
-  }
-  return {
-    palette,
-    width,
-    height,
-    packed: false,
-    pixels: colorIndex.indexArray,
-    hasTrueColorPixels: true,
-    toCanvasColorIndex: (): CanvasColorIndex => colorIndex,
-  };
+  return indices
+    ? { palette, width, height, packed: true, pixels: indices }
+    : { palette, width, height, packed: false, pixels: colorIndex.indexArray };
+}
+
+// Rebuilds the raster the canvas can take. Costs an allocation and a pass when
+// packed, which is the right way round: this happens on an undo, and the
+// packing it pays for happens on every stroke. Unpacked entries only need the
+// wrapper — the constructor takes a view of the bytes rather than copying them.
+//
+// A free function rather than a method on the entry, so UndoEntry stays a plain
+// data shape: one that can be structure-cloned, and built in a test without
+// having to supply behaviour along with the bytes.
+export function toCanvasColorIndex(entry: UndoEntry): CanvasColorIndex {
+  return entry.packed
+    ? CanvasColorIndex.fromIndexedPixels(entry.width, entry.height, entry.pixels)
+    : new CanvasColorIndex(entry.width, entry.height, entry.pixels);
 }
 
 // History is bounded by bytes first and entries second. An entry count alone is

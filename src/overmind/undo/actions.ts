@@ -71,13 +71,14 @@ export const redo = (context: Context): void => {
 };
 
 // Moving through history changes the committed document, so the state that
-// rides on the entry follows: the true-color flag (memoized on the snapshot —
-// no rescan) and the palette the pixels index into. Without the palette,
-// undoing a depth reduction or a rebuilt palette would restore indices that
-// point at missing or different colors.
+// rides on the entry follows: the true-color flag (read off how the snapshot
+// is held — an entry packs exactly when it has no true-color pixels, so no
+// rescan and no raster to rebuild) and the palette the pixels index into.
+// Without the palette, undoing a depth reduction or a rebuilt palette would
+// restore indices that point at missing or different colors.
 function restoreEntryState(context: Context): void {
   const entry = undoBuffer.getItem(context.state.undo.currentIndex);
-  context.state.canvas.hasTrueColorPixels = entry ? entry.hasTrueColorPixels : false;
+  context.state.canvas.hasTrueColorPixels = entry ? !entry.packed : false;
   if (entry && !paletteEquals(entry.palette, context.state.palette.paletteArray)) {
     context.actions.palette.replacePalette(entry.palette);
     paintingCanvasController.updatePalette();

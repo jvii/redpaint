@@ -1,6 +1,7 @@
 import { describe, expect, test, beforeEach } from 'vitest';
 import {
   createUndoEntry,
+  toCanvasColorIndex,
   undoBuffer,
   UndoEntry,
   MAX_UNDO_ENTRIES,
@@ -38,10 +39,6 @@ function sizedEntry(bytes: number): UndoEntry {
     height: 1,
     packed: true,
     pixels: { byteLength: bytes } as unknown as Uint8Array,
-    hasTrueColorPixels: false,
-    toCanvasColorIndex: () => {
-      throw new Error('stub entry has no raster');
-    },
   };
 }
 
@@ -85,7 +82,6 @@ describe('packing', () => {
     undoBuffer.push(entry(16, 16), null);
     expect(undoBuffer.getTotalBytes()).toBe(packedBytesFor(16, 16));
     expect(undoBuffer.getItem(0)?.packed).toBe(true);
-    expect(undoBuffer.getItem(0)?.hasTrueColorPixels).toBe(false);
   });
 
   test('a true-colour picture keeps all four', () => {
@@ -97,14 +93,30 @@ describe('packing', () => {
     undoBuffer.push(createUndoEntry(canvas, []), null);
     expect(undoBuffer.getTotalBytes()).toBe(bytesFor(16, 16));
     expect(undoBuffer.getItem(0)?.packed).toBe(false);
-    expect(undoBuffer.getItem(0)?.hasTrueColorPixels).toBe(true);
   });
 
   test('unpacks to the same pixels it was given', () => {
     const canvas = CanvasColorIndex.createEmptyWithBackgroundColor(4, 3, 1);
     canvas.setPixel32({ x: 0, y: 0 }, CanvasColorIndex.packIndexed(7));
     canvas.setPixel32({ x: 3, y: 2 }, CanvasColorIndex.packIndexed(12));
-    const restored = createUndoEntry(canvas, []).toCanvasColorIndex();
+    const restored = toCanvasColorIndex(createUndoEntry(canvas, []));
+    expect(restored.width).toBe(4);
+    expect(restored.height).toBe(3);
+    expect([...restored.indexArray]).toEqual([...canvas.indexArray]);
+  });
+
+  // The unpacked path rebuilds a wrapper around the entry's own bytes rather
+  // than handing back the canvas it was given, so it is worth stating that it
+  // still comes back as the same raster.
+  test('a true-colour entry unpacks to the same pixels too', () => {
+    const canvas = CanvasColorIndex.createEmptyWithBackgroundColor(4, 3, 1);
+    canvas.setPixel32(
+      { x: 1, y: 1 },
+      CanvasColorIndex.packPaintColor({ kind: 'rgb', color: { r: 9, g: 9, b: 9 } })
+    );
+    const entry = createUndoEntry(canvas, []);
+    expect(entry.packed).toBe(false);
+    const restored = toCanvasColorIndex(entry);
     expect(restored.width).toBe(4);
     expect(restored.height).toBe(3);
     expect([...restored.indexArray]).toEqual([...canvas.indexArray]);

@@ -3,7 +3,7 @@ import { Point } from '../../types';
 import { forgetFileHandles } from '../menu/savedFileHandle';
 import { overmind } from '../..';
 import { useActions, useAppState } from '../../overmind';
-import { undoBuffer } from '../../overmind/undo/UndoBuffer';
+import { toCanvasColorIndex, undoBuffer } from '../../overmind/undo/UndoBuffer';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import {
@@ -39,7 +39,7 @@ export function useContextLossRecovery(
       paintingCanvasController.restoreContext();
       const entry = undoBuffer.getItem(overmind.state.undo.currentIndex);
       if (entry) {
-        paintingCanvasController.setCanvasColorIndex(entry.toCanvasColorIndex());
+        paintingCanvasController.setCanvasColorIndex(toCanvasColorIndex(entry));
       }
       paintingCanvasController.render();
     };
@@ -89,7 +89,7 @@ export function useUndo(): void {
     if (!entry) {
       throw new Error('No entry in undo buffer at index ' + state.undo.currentIndex);
     }
-    const colorIndex = entry.toCanvasColorIndex();
+    const colorIndex = toCanvasColorIndex(entry);
     // History can cross canvas sizes (a snapshot from before a resize). A
     // repaint into a different-size GL buffer would show the snapshot cropped
     // or stretched, so restore the snapshot's own resolution first and let the
