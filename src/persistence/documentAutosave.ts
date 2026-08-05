@@ -317,33 +317,16 @@ export async function loadDocument(): Promise<DocumentRecord | null> {
   if (own) {
     await clearDocument(); // ours, and unusable
   }
-  // No record of our own: this is a new tab rather than a reloaded one, so it
-  // takes over where the most recent one left off — which is what a single-key
-  // autosave did for every tab, and what someone reopening the app expects.
+  // Nothing of our own, so nothing to restore. A tab gets its own picture back
+  // and no one else's: a new tab opens on a blank canvas, however many records
+  // are sitting in storage.
   //
-  // Adopted by copy, not by claim: the record is left where it is, because a
-  // tab whose id we do not recognise may still be open and painting into it.
-  // Ours is written under our own id at the next stroke, and prune() clears the
-  // duplicate once it is no longer among the newest.
-  const adopted = await newestUsableRecord();
-  if (!adopted) {
-    return null;
-  }
-  guardSet(adopted.key);
-  return adopted.record;
-}
-
-type StoredRecord = { key: string; record: DocumentRecord };
-
-async function newestUsableRecord(): Promise<StoredRecord | null> {
-  const entries = await Promise.all(
-    (await idbKeys()).map(async (key) => ({ key, record: await idbGet<DocumentRecord>(key) }))
-  );
-  return (
-    entries
-      .filter((entry): entry is StoredRecord => isUsable(entry.record))
-      .sort((a, b) => (b.record.savedAt ?? 0) - (a.record.savedAt ?? 0))[0] ?? null
-  );
+  // It used to adopt the most recent one, which read as the tabs being synced —
+  // open a second tab and it showed the first tab's picture; clear one and the
+  // other came back empty. Reaching a backup that is not this tab's own is a
+  // deliberate act, and belongs to a Restore requester you ask for rather than
+  // to something that happens by itself at startup.
+  return null;
 }
 
 // Called once the record has been applied without incident.
