@@ -14,35 +14,22 @@ import { idbDelete, idbGet, idbKeys, idbSet } from './idb';
 const KEY_PREFIX = 'doc:';
 const TAB_KEY = 'redpaint.tabId';
 
-// Which ids are in use, and when each was last heard from. Needed because
-// sessionStorage is not quite as private as it looks: duplicating a tab, or
-// opening one through a link or window.open, *copies* it — so the new tab
-// arrives holding an id another tab is already painting under, and the two
-// would share one record and clobber each other, which is the whole thing per-
-// tab keys exist to prevent.
-const TABS_KEY = 'redpaint.tabs';
-// How often a tab says it is still here, and how long silence means it is gone.
-// Generous, because the cost of guessing wrong is small (see claimTabId).
-const HEARTBEAT_MS = 4000;
-const TAB_SILENT_MS = 15000;
-
-function readTabs(): Record<string, number> {
-  try {
-    const raw = window.localStorage.getItem(TABS_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : null;
-    return parsed && typeof parsed === 'object' ? (parsed as Record<string, number>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeTabs(tabs: Record<string, number>): void {
-  try {
-    window.localStorage.setItem(TABS_KEY, JSON.stringify(tabs));
-  } catch {
-    // storage blocked; duplicate detection simply does not operate
-  }
-}
+// Whether an id we inherited is already being painted under by a live tab.
+//
+// sessionStorage is not quite per tab: duplicating a tab, or opening one from a
+// link or window.open, copies it — so a new tab can arrive holding an id
+// another tab is already using, and the two would share a record.
+//
+// Asked over a BroadcastChannel rather than tracked in storage. The first
+// attempt kept a registry of live ids in localStorage, which every tab
+// read-modify-wrote: a tab releasing its claim on reload had it written straight
+// back by another tab's heartbeat mid-flight, so it came back, believed itself a
+// duplicate, and minted a new id — losing its own record every single reload.
+// A question asked of the tabs themselves cannot go stale, cannot race, and
+// leaves nothing behind to clean up.
+const CHANNEL = 'redpaint.tabs';
+// Long enough for a live tab to answer, short enough not to hold up the restore.
+const REPLY_WAIT_MS = 250;
 
 function newId(): string {
   return typeof crypto?.randomUUID === 'function'
@@ -51,75 +38,83 @@ function newId(): string {
 }
 
 let claimed: string | null = null;
+let responder: BroadcastChannel | null = null;
 
-// This tab's id, minting a fresh one if the id we were handed is already being
-// used by a tab that is still talking — which means we were copied from it.
-//
-// A reload of our own tab is not that: releaseTabId drops the claim on the way
-// out, so the id is free when we come back and we keep it, along with our own
-// record. An unclean exit can leave a claim standing, and then a quick reopen
-// looks like a duplicate and mints a new id — costing that tab its own record
-// and sending it to adoption instead, which restores the same picture anyway.
-// A mild wrong answer in a rare case, which is why the silence window is long
-// rather than tight.
-function tabId(): string {
+// Answers "is anyone using this id?" for as long as this tab is open. Started
+// once the id is settled, so a tab never answers on behalf of an id it is about
+// to give up.
+function startResponding(id: string): void {
+  if (responder || typeof BroadcastChannel === 'undefined') {
+    return;
+  }
+  responder = new BroadcastChannel(CHANNEL);
+  responder.onmessage = (event): void => {
+    if (event.data?.type === 'in-use?' && event.data.id === id) {
+      responder?.postMessage({ type: 'in-use', id });
+    }
+  };
+}
+
+async function isIdLive(id: string): Promise<boolean> {
+  if (typeof BroadcastChannel === 'undefined') {
+    return false; // no way to ask; assume it is ours, which it usually is
+  }
+  const channel = new BroadcastChannel(CHANNEL);
+  try {
+    return await new Promise<boolean>((resolve): void => {
+      const timer = window.setTimeout((): void => resolve(false), REPLY_WAIT_MS);
+      channel.onmessage = (event): void => {
+        if (event.data?.type === 'in-use' && event.data.id === id) {
+          window.clearTimeout(timer);
+          resolve(true);
+        }
+      };
+      channel.postMessage({ type: 'in-use?', id });
+    });
+  } finally {
+    channel.close();
+  }
+}
+
+// This tab's id, settled once per page load. An inherited id is kept unless a
+// live tab answers to it, which is the only case that means we were copied —
+// so an ordinary reload keeps its id, and its record.
+export async function ensureTabId(): Promise<string> {
   if (claimed) {
     return claimed;
   }
+  let inherited: string | null = null;
   try {
-    const tabs = readTabs();
-    const now = Date.now();
-    const inherited = window.sessionStorage.getItem(TAB_KEY);
-    const takenByAnother = inherited && tabs[inherited] && now - tabs[inherited] < TAB_SILENT_MS;
-    const id = !inherited || takenByAnother ? newId() : inherited;
-    if (id !== inherited) {
-      window.sessionStorage.setItem(TAB_KEY, id);
-    }
-    // drop tabs that have gone quiet while we are in here anyway
-    const live: Record<string, number> = { [id]: now };
-    for (const [other, at] of Object.entries(tabs)) {
-      if (other !== id && now - at < TAB_SILENT_MS) {
-        live[other] = at;
-      }
-    }
-    writeTabs(live);
-    claimed = id;
-    return id;
+    inherited = window.sessionStorage.getItem(TAB_KEY);
   } catch {
     // storage blocked: this tab cannot keep an identity across reloads, so it
-    // behaves like a new one each time — it still saves and still adopts
-    claimed = 'volatile';
-    return claimed;
+    // behaves like a new one each time — it still saves, it just never restores
   }
+  const id = inherited && !(await isIdLive(inherited)) ? inherited : newId();
+  if (id !== inherited) {
+    try {
+      window.sessionStorage.setItem(TAB_KEY, id);
+    } catch {
+      // see above
+    }
+  }
+  claimed = id;
+  startResponding(id);
+  return id;
 }
 
-// Says this tab is still here, so a tab copied from it knows to mint its own
-// id. Returns the stop function.
-export function startTabHeartbeat(): () => void {
-  const id = tabId();
-  const beat = (): void => {
-    const tabs = readTabs();
-    tabs[id] = Date.now();
-    writeTabs(tabs);
-  };
-  beat();
-  const timer = window.setInterval(beat, HEARTBEAT_MS);
-  const release = (): void => {
-    const tabs = readTabs();
-    delete tabs[id];
-    writeTabs(tabs);
-  };
-  // Released on the way out so our own reload finds the id free and keeps it.
-  window.addEventListener('pagehide', release);
-  return (): void => {
-    window.clearInterval(timer);
-    window.removeEventListener('pagehide', release);
-    release();
-  };
-}
-
+// Settled by ensureTabId, which loadDocument awaits before anything else runs.
+// The fallback is only reachable if a save somehow beat the restore; it uses the
+// inherited id, which is the same answer in every case but a duplicated tab.
 function ownKey(): string {
-  return KEY_PREFIX + tabId();
+  if (claimed) {
+    return KEY_PREFIX + claimed;
+  }
+  try {
+    return KEY_PREFIX + (window.sessionStorage.getItem(TAB_KEY) ?? 'unclaimed');
+  } catch {
+    return KEY_PREFIX + 'unclaimed';
+  }
 }
 
 // How many records to keep. Enough for a few tabs at once without letting a
@@ -279,7 +274,6 @@ export async function autosaveState(): Promise<unknown> {
   return {
     thisTab: ownKey(),
     records,
-    liveTabs: readTabs(),
     interruptedMarker: window.localStorage.getItem(GUARD_KEY),
   };
 }
@@ -332,6 +326,7 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
 // anyway — a restore is a convenience, and failing it silently is the right
 // kind of failure.
 export async function loadDocument(): Promise<DocumentRecord | null> {
+  await ensureTabId();
   const interrupted = interruptedRecordKey();
   if (interrupted !== null) {
     // the previous attempt never finished: assume the record it was applying is
