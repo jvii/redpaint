@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from "react-dom/client";
+import ReactDOM from 'react-dom/client';
 import App from './components/App';
 import { createOvermind } from 'overmind';
 import { Provider } from 'overmind-react';
@@ -8,6 +8,7 @@ import * as serviceWorker from './serviceWorker';
 import './canvas/util/benchmark';
 import './canvas/util/effectHarness';
 import './index.css';
+import { autosaveState } from './persistence/documentAutosave';
 
 export const overmind = createOvermind(config, {
   devtools: false, // defaults to 'localhost:3031'
@@ -15,13 +16,15 @@ export const overmind = createOvermind(config, {
 
 // debug access from the devtools console
 (window as unknown as { __redpaint: typeof overmind }).__redpaint = overmind;
+// why a restore did or did not happen — see documentAutosave.autosaveState
+(window as unknown as { __redpaintAutosave: unknown }).__redpaintAutosave = autosaveState;
 
-const root = ReactDOM.createRoot(document.getElementById("root")!);
+const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
     <Provider value={overmind}>
-    <App />
-  </Provider>
+      <App />
+    </Provider>
   </React.StrictMode>
 );
 

@@ -253,10 +253,42 @@ export async function clearDocument(): Promise<void> {
   await idbDelete(ownKey());
 }
 
+// The single key everything shared before records were per tab. Nothing looks
+// for it any more, so it would sit there forever taking up quota; a build that
+// old is also the one whose records this build cannot vouch for.
+const LEGACY_KEY = 'document';
+
+// What is actually in storage, for working out why a restore did or did not
+// happen. Dev-only convenience, reached from the console as
+// __redpaint.autosaveState() — nothing in the app calls it.
+export async function autosaveState(): Promise<unknown> {
+  const keys = await idbKeys();
+  const records = await Promise.all(
+    keys.map(async (key) => {
+      const record = await idbGet<DocumentRecord>(key);
+      return {
+        key,
+        mine: key === ownKey(),
+        size: record ? `${record.width}x${record.height}` : null,
+        bytes: record?.pixels?.length ?? null,
+        usable: isUsable(record ?? null),
+        savedAt: record?.savedAt ? new Date(record.savedAt).toISOString() : null,
+      };
+    })
+  );
+  return {
+    thisTab: ownKey(),
+    records,
+    liveTabs: readTabs(),
+    interruptedMarker: window.localStorage.getItem(GUARD_KEY),
+  };
+}
+
 // Drops the records nobody is coming back for: anything past its week, and
 // anything beyond the newest few. This tab's own is never a candidate, however
 // long it has been idle — it is the one record we know has an owner.
 async function prune(): Promise<void> {
+  await idbDelete(LEGACY_KEY);
   const mine = ownKey();
   const keys = (await idbKeys()).filter((key) => key !== mine);
   const dated = await Promise.all(
