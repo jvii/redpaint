@@ -48,12 +48,22 @@ export type DocumentRecord = {
 //
 // localStorage rather than IndexedDB for this one: it has to have landed before
 // the thing that might crash begins, and only a synchronous write guarantees
-// that. A single flag, so none of the size objections apply.
+// that. A single value, so none of the size objections apply.
+//
+// It holds a time, not a flag, because localStorage is shared by every tab on
+// the origin. A marker seconds old means another tab is restoring right now —
+// which is nothing like "we died last time", and treating it as such let a
+// second tab delete the saved picture out from under the first. Only a marker
+// older than any restore could possibly take means the attempt really did stop.
 const GUARD_KEY = 'redpaint.restoring';
+
+// A restore is a read and an upload: milliseconds. Anything still marked after
+// this was not slow, it was interrupted.
+const GUARD_STALE_MS = 15000;
 
 function guardSet(): void {
   try {
-    window.localStorage.setItem(GUARD_KEY, '1');
+    window.localStorage.setItem(GUARD_KEY, String(Date.now()));
   } catch {
     // blocked site data throws rather than returning null; the guard simply
     // does not operate, which is no worse than not having it
@@ -68,9 +78,17 @@ function guardClear(): void {
   }
 }
 
-function guardIsSet(): boolean {
+// True only for a marker old enough to mean an interrupted attempt rather than
+// a concurrent one. An unparseable value counts as stale: it is not ours, and
+// leaving it to block restores forever would be worse than one wasted retry.
+function guardIsStale(): boolean {
   try {
-    return window.localStorage.getItem(GUARD_KEY) !== null;
+    const marked = window.localStorage.getItem(GUARD_KEY);
+    if (marked === null) {
+      return false;
+    }
+    const at = Number(marked);
+    return !Number.isFinite(at) || Date.now() - at > GUARD_STALE_MS;
   } catch {
     return false;
   }
@@ -111,7 +129,7 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
 // anyway — a restore is a convenience, and failing it silently is the right
 // kind of failure.
 export async function loadDocument(): Promise<DocumentRecord | null> {
-  if (guardIsSet()) {
+  if (guardIsStale()) {
     // the previous attempt never finished: assume this record is what stopped
     // it, and let it go rather than reopening the same trap every launch
     guardClear();
