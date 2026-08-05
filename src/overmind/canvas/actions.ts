@@ -142,6 +142,42 @@ export const setViewportSize = (
   context.state.canvas.viewportSize = size;
 };
 
+// The one automatic sizing, at startup, fitting a Native canvas to the drawing
+// pane. MainCanvas may call it more than once while the chrome around the pane
+// finishes laying out (see the settle window there), so it resets the history
+// rather than appending to it — otherwise a second call would leave two
+// baseline entries, which reads as "this canvas has been painted on" to
+// everything downstream, the autosave included.
+//
+// Refuses in every case where the size is no longer this action's to decide:
+// once a screen format is driving it, once anything has named the document, and
+// once there is more history than the single baseline. Nothing calls this after
+// startup — from then on the size changes only through the Canvas Size
+// requester or a crop.
+export const setStartupResolution = (
+  context: Context,
+  { width, height }: Resolution
+): void => {
+  const current = context.state.canvas.resolution;
+  if (width <= 0 || height <= 0 || (width === current.width && height === current.height)) {
+    return;
+  }
+  if (context.state.canvas.screenFormatId !== null) {
+    return; // a format owns the size; this is the Native path only
+  }
+  const { lastUndoPointTime, lastUndoRedoTime, bufferEntryCount } = context.state.undo;
+  const painted = Math.max(lastUndoPointTime, lastUndoRedoTime) > context.state.app.lastCleanTime;
+  if (context.state.app.documentName !== '' || bufferEntryCount > 1 || painted) {
+    return; // no longer a blank startup canvas
+  }
+  context.actions.undo.reset();
+  context.actions.canvas.setResolution({ width, height });
+  // An empty canvas nobody has painted on is not unsaved work — after the
+  // baseline snapshot setResolution just took, not before it, or the marker
+  // would be showing before the first stroke.
+  context.actions.app.markDocumentClean();
+};
+
 // Loading an image as True Color opts the new document back into true color;
 // the Screen Format requester's switch goes through applyScreenFormat instead
 // (turning it off there also conforms the pixels).

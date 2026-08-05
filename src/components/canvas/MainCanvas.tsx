@@ -114,16 +114,38 @@ export function MainCanvas(): JSX.Element {
   // pixels (offsetWidth/Height times dpr), not CSS pixels, so the freshly
   // initialized canvas has one artwork pixel per physical screen pixel here
   // too (see the displayScale comment above).
+  //
+  // Tracked while the canvas is still blank rather than measured once at mount:
+  // React mounts after `load` and before the chrome around the pane has
+  // settled, so no page event marks the moment this number is final — only the
+  // pane itself does. A size measured too early is wrong for the whole session.
+  //
+  // It stops at the first click or keypress. From then on the size is the
+  // document's and changes only through the Canvas Size requester or a crop —
+  // at Native the canvas is the paper, not a view of it, so following the
+  // window would crop or pad the picture. setStartupResolution refuses in every
+  // other case where the canvas has stopped being a blank startup one.
+  useEffect((): (() => void) => {
+    const pane = canvasDivRef.current;
+    const fitToPane = (): void =>
+      actions.canvas.setStartupResolution({
+        width: Math.round(pane.offsetWidth * dpr),
+        height: Math.round(pane.offsetHeight * dpr),
+      });
+    fitToPane();
 
-  useEffect((): void => {
-    actions.canvas.setResolution({
-      width: Math.round(canvasDivRef.current.offsetWidth * dpr),
-      height: Math.round(canvasDivRef.current.offsetHeight * dpr),
-    });
-    // An empty canvas nobody has painted on is not unsaved work — after the
-    // baseline snapshot setResolution just took, not before it, or the marker
-    // would be showing before the first stroke.
-    actions.app.markDocumentClean();
+    const observer = new ResizeObserver(fitToPane);
+    observer.observe(pane);
+    const stopTracking = (): void => observer.disconnect();
+    const listen: AddEventListenerOptions = { once: true, capture: true };
+    window.addEventListener('pointerdown', stopTracking, listen);
+    window.addEventListener('keydown', stopTracking, listen);
+    return (): void => {
+      observer.disconnect();
+      window.removeEventListener('pointerdown', stopTracking, listen);
+      window.removeEventListener('keydown', stopTracking, listen);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
