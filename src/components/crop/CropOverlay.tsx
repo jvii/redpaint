@@ -128,6 +128,12 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
   // it's drawn in. displayScale is per axis, since a screen format's pixels
   // need not be square.
   const toCss = (value: number, axis: 'x' | 'y'): number => value * scale[axis];
+  //
+  // Rounded, where the painting tools' getMousePos floors. Deliberate, and the
+  // difference is what each is picking: a tool picks the pixel the pointer is
+  // over, so it truncates to that pixel's own coordinate; a crop grip picks the
+  // *edge* between two pixels, and the nearest edge is the one the pointer is
+  // closest to. Flooring here would bias every edge half a pixel up and left.
   const pointerToCanvas = (event: React.PointerEvent): Point => {
     const bounds = hostRef.current?.getBoundingClientRect();
     if (!bounds) {
