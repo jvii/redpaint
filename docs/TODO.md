@@ -55,6 +55,20 @@ Effects design and status: docs/effects.md — the full DPaint II Mode set
 - [ ] **Paged palette UI** if editing 256 colors gets unwieldy (later DPaints
       paged their palette requester). 256 is the deliberate cap — larger palettes
       considered and rejected; hybrid true color covers the rest.
+- [ ] **Animated GIF export**, as the way to get a color-cycling animation out
+      of the app — the one cycling produces that no still format can carry.
+      Needs an encoder of our own: `canvas.toBlob` will not write GIF at any
+      quality setting, and asking it for a type it cannot encode silently
+      returns PNG bytes rather than failing. Less work than it sounds — the
+      frames are the cycled palettes applied to one unchanged raster, which is
+      exactly what `cycledPalette` already computes and what a GIF's per-frame
+      local color table is for, and `toIndexedPixels()` hands over the indices
+      unchanged. `src/fileformat/ilbm.ts` is the precedent for writing a format
+      by hand.
+
+Still PNG for the plain Save, deliberately: it is lossless and indexed-friendly,
+where JPEG smears exactly the hard edges this program exists to make. WebP would
+save bytes and change nothing else.
 
 ## Polish / faithfulness
 
