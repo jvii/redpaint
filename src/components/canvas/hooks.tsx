@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Point } from '../../types';
+import { forgetFileHandles } from '../menu/savedFileHandle';
 import { overmind } from '../..';
 import { useActions, useAppState } from '../../overmind';
 import { undoBuffer } from '../../overmind/undo/UndoBuffer';
@@ -139,6 +140,7 @@ export function useCanvasContentUpload(): void {
       // takes that file's name, or none at all when the pixels came from
       // somewhere unnamed; either way the previous document's name is gone.
       actions.app.setDocumentName(pending.documentName);
+      forgetFileHandles();
       actions.app.markDocumentClean();
     }
     actions.app.setLoading(false);

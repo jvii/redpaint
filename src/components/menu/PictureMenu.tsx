@@ -7,7 +7,8 @@ import { useActions, useAppState } from '../../overmind';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { CropIcon } from './transformIcons';
-import { saveCanvasAsPng, saveFile } from './saveAsPng';
+import { canvasPngBlob, PNG_FILE_TYPE, saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
+import { fileHandleFor, rememberFileHandle, SaveFormat } from './savedFileHandle';
 import { beginSaveNamePrompt } from './pendingSaveName';
 import './DrawerMenu.css';
 
@@ -27,14 +28,15 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   const baseName = state.app.documentName || 'redpaint';
   // Only reached on the browsers with no showSaveFilePicker; saveFile decides,
   // since it is the one that knows which route it is taking.
-  // A written file is now what the document is: it takes that name, and there is
-  // nothing left unsaved. Both save routes end here — the name comes back from
-  // saveFile because only it knows what the OS picker was told.
-  const remember = (savedName: string | null): void => {
-    if (savedName === null) {
+  // A written file is now what the document is: it takes that name, there is
+  // nothing left unsaved, and — where the browser gave us one — the handle is
+  // kept so the next plain Save can go straight back to that file.
+  const remember = (format: SaveFormat, target: SaveTarget | null): void => {
+    if (target === null) {
       return; // cancelled, or nothing written
     }
-    actions.app.setDocumentName(savedName);
+    rememberFileHandle(format, target.handle);
+    actions.app.setDocumentName(target.name);
     actions.app.markDocumentClean();
   };
 
@@ -49,16 +51,41 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     return beginSaveNamePrompt();
   };
 
-  const handleImageSave = (): void => {
-    // The PNG is read straight off the drawing buffer, which would bake a
-    // mid-cycle palette rotation into the file — hold the base colors until
-    // the capture (which happens after the async save picker) completes.
+  // The PNG is read straight off the drawing buffer, which would bake a
+  // mid-cycle palette rotation into the file — hold the base colors until the
+  // capture (which happens after the async save picker) completes.
+  const withPngBlob = (use: (makeBlob: () => Promise<Blob | null>) => Promise<void>): void => {
     void cycleDriver.withBaseColors(async (): Promise<void> => {
-      // preserveDrawingBuffer is on, but render once to be sure the buffer is current
+      // preserveDrawingBuffer is on, but render once to be sure it is current
       paintingCanvasController.render();
-      remember(
-        await saveCanvasAsPng(paintingCanvasController.mainCanvas, `${baseName}.png`, promptForName)
-      );
+      await use(canvasPngBlob(paintingCanvasController.mainCanvas));
+    });
+  };
+
+  const savePngAs = (): void => {
+    withPngBlob(async (makeBlob): Promise<void> => {
+      remember('png', await saveFileAs(makeBlob, `${baseName}.png`, PNG_FILE_TYPE, promptForName));
+    });
+  };
+
+  // Plain Save: back to the same file with no dialog where the browser allows
+  // it, and otherwise straight to a download under the name already chosen. It
+  // only asks when there is nothing to repeat — a document nobody has named
+  // yet, or a handle that has gone stale.
+  const savePng = (): void => {
+    withPngBlob(async (makeBlob): Promise<void> => {
+      const handle = fileHandleFor('png');
+      if (handle && (await writeToHandle(handle, makeBlob))) {
+        actions.app.markDocumentClean();
+        return;
+      }
+      if (state.app.documentName && !handle) {
+        // the download branch: no handle to write to, but a name to reuse, so
+        // this saves without asking again
+        remember('png', await saveFileAs(makeBlob, `${baseName}.png`, PNG_FILE_TYPE));
+        return;
+      }
+      remember('png', await saveFileAs(makeBlob, `${baseName}.png`, PNG_FILE_TYPE, promptForName));
     });
   };
 
@@ -93,12 +120,24 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
       pixels,
       cycleRanges,
     });
-    void saveFile(
-      async () => new Blob([bytes], { type: 'image/x-ilbm' }),
-      `${baseName}.iff`,
-      { description: 'IFF ILBM image', mime: 'image/x-ilbm', extension: '.iff' },
-      promptForName
-    ).then(remember);
+    const makeBlob = async (): Promise<Blob> => new Blob([bytes], { type: 'image/x-ilbm' });
+    const fileType = { description: 'IFF ILBM image', mime: 'image/x-ilbm', extension: '.iff' };
+    void (async (): Promise<void> => {
+      const handle = fileHandleFor('iff');
+      if (handle && (await writeToHandle(handle, makeBlob))) {
+        actions.app.markDocumentClean();
+        return;
+      }
+      remember(
+        'iff',
+        await saveFileAs(
+          makeBlob,
+          `${baseName}.iff`,
+          fileType,
+          state.app.documentName && !handle ? undefined : promptForName
+        )
+      );
+    })();
   };
 
   return (
@@ -125,8 +164,14 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
-            title="Save image..."
-            onClick={handleImageSave}
+            title="Save the picture, to the same file where the browser allows it"
+            onClick={savePng}
+          />
+          <Gadget
+            icon={<PixelIcon map={icons.diskSave} scale={2} />}
+            label="Save As"
+            title="Save the picture under a new name..."
+            onClick={savePngAs}
           />
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}

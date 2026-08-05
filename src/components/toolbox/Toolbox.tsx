@@ -5,6 +5,7 @@ import { ToolboxActionButton } from './buttons/ToolboxActionButton';
 import { useActions, useAppState } from '../../overmind';
 import './Toolbox.css';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { forgetFileHandles } from '../menu/savedFileHandle';
 
 export function Toolbox(): JSX.Element {
   const state = useAppState();
@@ -139,6 +140,7 @@ export function Toolbox(): JSX.Element {
           // gives up that file's name and starts clean again.
           actions.app.setDocumentName('');
           actions.app.markDocumentClean();
+          forgetFileHandles();
         }}
       />
     </div>

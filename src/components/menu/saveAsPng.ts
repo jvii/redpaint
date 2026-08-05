@@ -10,6 +10,21 @@ interface SaveFileType {
 // Overmind — the requester lives in the component layer where it belongs.
 export type PromptForName = (suggested: string) => Promise<string | null>;
 
+// A handle to the file the picker wrote, kept so a later save can write to it
+// again — same file, no dialog, no numbered duplicate. Only Chromium's
+// showSaveFilePicker produces one; the download branch has no equivalent,
+// which is the whole reason repeat saves are numbered there.
+export type SaveFileHandle = {
+  name: string;
+  createWritable: () => Promise<WritableStream>;
+  queryPermission?: (options: { mode: string }) => Promise<PermissionState>;
+  requestPermission?: (options: { mode: string }) => Promise<PermissionState>;
+};
+
+// Where a save ended up: the base name it was given, and the handle to write to
+// next time if the browser gave us one.
+export type SaveTarget = { name: string; handle: SaveFileHandle | null };
+
 // Everything a file name may not contain, plus leading dots (a name starting
 // with one is hidden on every unix, and "..." is nothing at all). Browsers
 // sanitize the download attribute themselves, but silently and differently, so
@@ -55,19 +70,19 @@ export function withExtension(name: string, extension: string): string {
 // The name has to come back from here because only this function knows it: on
 // the picker branch the user typed it into an OS dialog, and the returned handle
 // is the only place it appears.
-export async function saveFile(
+export async function saveFileAs(
   makeBlob: () => Promise<Blob | null>,
   suggestedName: string,
   fileType: SaveFileType,
   promptForName?: PromptForName
-): Promise<string | null> {
+): Promise<SaveTarget | null> {
   type SaveFilePicker = (options?: {
     suggestedName?: string;
     types?: { description: string; accept: Record<string, string[]> }[];
-  }) => Promise<{ name: string; createWritable: () => Promise<WritableStream> }>;
+  }) => Promise<SaveFileHandle>;
   const showSaveFilePicker = (window as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
 
-  let fileHandle = null;
+  let fileHandle: SaveFileHandle | null = null;
   let downloadName = suggestedName;
   if (showSaveFilePicker) {
     try {
@@ -103,8 +118,9 @@ export async function saveFile(
     await writer.write(blob);
     await writer.close();
     // What the user actually called it in the OS dialog, which may be nothing
-    // like what was suggested.
-    return baseName(fileHandle.name, fileType.extension);
+    // like what was suggested — and the handle itself, so the next save can go
+    // straight back to this file.
+    return { name: baseName(fileHandle.name, fileType.extension), handle: fileHandle };
   }
 
   // fallback: regular browser download
@@ -116,7 +132,47 @@ export async function saveFile(
   link.click();
   link.remove();
   setTimeout((): void => URL.revokeObjectURL(url), 1000);
-  return baseName(downloadName, fileType.extension);
+  // No handle: a download is fire-and-forget, and the page never learns where
+  // it landed or gets to write there again.
+  return { name: baseName(downloadName, fileType.extension), handle: null };
+}
+
+// Writes to a file already chosen, with no dialog of any kind — the "Save" half
+// of Save/Save As, and the only way to overwrite rather than accumulate
+// numbered copies. Returns false if the handle has gone stale (the file moved
+// or deleted, or permission lapsed after a reload), which the caller answers by
+// asking again.
+export async function writeToHandle(
+  handle: SaveFileHandle,
+  makeBlob: () => Promise<Blob | null>
+): Promise<boolean> {
+  try {
+    // Granted at pick time and kept for the session, so this is normally a
+    // formality — but a handle restored later needs asking again, and that has
+    // to happen inside the click that triggered the save.
+    if (
+      handle.queryPermission &&
+      (await handle.queryPermission({ mode: 'readwrite' })) !== 'granted'
+    ) {
+      if (
+        !handle.requestPermission ||
+        (await handle.requestPermission({ mode: 'readwrite' })) !== 'granted'
+      ) {
+        return false;
+      }
+    }
+    const blob = await makeBlob();
+    if (!blob) {
+      return false;
+    }
+    const writable = await handle.createWritable();
+    const writer = writable.getWriter();
+    await writer.write(blob);
+    await writer.close();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // Strips the format's extension, so what comes back is a name that can be
@@ -127,15 +183,20 @@ function baseName(name: string, extension: string): string {
     : name;
 }
 
+export const PNG_FILE_TYPE: SaveFileType = {
+  description: 'PNG image',
+  mime: 'image/png',
+  extension: '.png',
+};
+
+export function canvasPngBlob(canvas: HTMLCanvasElement): () => Promise<Blob | null> {
+  return () => new Promise((resolve): void => canvas.toBlob(resolve, 'image/png'));
+}
+
 export async function saveCanvasAsPng(
   canvas: HTMLCanvasElement,
   suggestedName: string,
   promptForName?: PromptForName
-): Promise<string | null> {
-  return saveFile(
-    () => new Promise((resolve): void => canvas.toBlob(resolve, 'image/png')),
-    suggestedName,
-    { description: 'PNG image', mime: 'image/png', extension: '.png' },
-    promptForName
-  );
+): Promise<SaveTarget | null> {
+  return saveFileAs(canvasPngBlob(canvas), suggestedName, PNG_FILE_TYPE, promptForName);
 }
