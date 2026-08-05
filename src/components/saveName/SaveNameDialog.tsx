@@ -12,6 +12,11 @@ import { RetroInputField } from '../ui/RetroInputField';
 // downloads folder under whatever name the caller happened to pass. DPaint asked
 // for a filename in its own requester too, so this is the period behaviour that
 // Chromium's picker stands in for rather than an addition to it.
+// Long enough for any name someone means, short enough that the note below
+// cannot outgrow the height reserved for it — and filesystems stop caring well
+// before this anyway.
+const MAX_NAME_LENGTH = 40;
+
 export function SaveNameDialog(): JSX.Element | null {
   const state = useAppState();
   if (!state.app.saveNamePrompt) {
@@ -59,13 +64,35 @@ function SaveNameDialogOpen(): JSX.Element {
   return (
     <Modal header="Save As" width={520}>
       <div className="save-name__body">
-        <RetroInputField label="Name:" value={name} onChange={setName} size={24} onEnter={save} />
+        <RetroInputField
+          label="Name:"
+          value={name}
+          onChange={(value): void => setName(value.slice(0, MAX_NAME_LENGTH))}
+          size={24}
+          onEnter={save}
+        />
         {/* The extension is stated rather than typed: the format follows from
             which Save was chosen, and a field that let you type .iff onto a PNG
-            would be offering a choice that does not exist. */}
+            would be offering a choice that does not exist.
+
+            The second half is only true on this branch, which is the only place
+            this requester appears: with no showSaveFilePicker the page cannot
+            choose where the file goes or overwrite one, and the browser numbers
+            what it already has. The setting named is the one thing that changes
+            that, and it belongs to the reader, not to us — so it is said once,
+            here, where it is relevant.
+
+            Deliberately not naming a browser or a menu path: Firefox calls it
+            "Always ask you where to save files" and Safari "Ask for each
+            download", and sniffing the user agent to pick between them risks
+            confidently giving the wrong instructions. */}
         <p className="save-name__note">
-          Saved to your downloads folder as{' '}
-          <b>{withExtension(valid ? cleaned : base, prompt.extension)}</b>.
+          <span>
+            Saved to your downloads folder as{' '}
+            <b>{withExtension(valid ? cleaned : base, prompt.extension)}</b>, and saving again adds
+            a numbered copy. To pick the folder and overwrite instead, turn on your browser&rsquo;s
+            &ldquo;ask where to save each file&rdquo; setting.
+          </span>
         </p>
       </div>
       <RetroButton variant="secondary" onClick={(): void => close(null)}>
