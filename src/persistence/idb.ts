@@ -56,6 +56,16 @@ export async function idbSet(key: string, value: unknown): Promise<boolean> {
   }
 }
 
+// Every key in the store, for the caller that has to reason about all the
+// records at once — which one to adopt, which to prune.
+export async function idbKeys(): Promise<string[]> {
+  try {
+    return (await run<IDBValidKey[]>('readonly', (store) => store.getAllKeys())).map(String);
+  } catch {
+    return [];
+  }
+}
+
 export async function idbDelete(key: string): Promise<void> {
   try {
     await run('readwrite', (store) => store.delete(key));

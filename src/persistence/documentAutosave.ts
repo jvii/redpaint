@@ -1,8 +1,50 @@
 import { Color } from '../types';
 import { CycleRange } from '../algorithm/paletteRange';
-import { idbDelete, idbGet, idbSet } from './idb';
+import { idbDelete, idbGet, idbKeys, idbSet } from './idb';
 
-const KEY = 'document';
+// One record per tab, not one for the origin. Two tabs share IndexedDB, so a
+// single key meant whichever painted last owned the backup and the other tab's
+// was gone — and a reloaded tab got back whatever its neighbour had been doing
+// rather than its own picture.
+//
+// The id lives in sessionStorage, which is the piece that makes this work: it
+// is unique per tab, it survives a reload of that tab, and it goes away when
+// the tab does. So a reload finds its own record, and a genuinely new tab finds
+// none and adopts instead (see loadDocument).
+const KEY_PREFIX = 'doc:';
+const TAB_KEY = 'redpaint.tabId';
+
+function tabId(): string {
+  try {
+    const existing = window.sessionStorage.getItem(TAB_KEY);
+    if (existing) {
+      return existing;
+    }
+    const fresh =
+      typeof crypto?.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : String(Date.now()) + Math.random().toString(36).slice(2);
+    window.sessionStorage.setItem(TAB_KEY, fresh);
+    return fresh;
+  } catch {
+    // storage blocked: this tab simply cannot keep an identity across reloads,
+    // so it behaves like a new one each time — it still saves and still adopts
+    return 'volatile';
+  }
+}
+
+function ownKey(): string {
+  return KEY_PREFIX + tabId();
+}
+
+// How many records to keep. Enough for a few tabs at once without letting a
+// browsing history of closed tabs accumulate: these run to tens of megabytes
+// each on a large canvas, and the origin's quota is not ours alone.
+const MAX_RECORDS = 4;
+// And nothing older than this, however few there are. A week-old backup of a
+// picture you have not opened since is not what anyone means by "where I left
+// off".
+const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Bumped whenever the shape below changes in a way an older record cannot
 // satisfy. A record from another version is discarded rather than migrated:
@@ -39,6 +81,10 @@ export type DocumentRecord = {
   // cleared site or another machine does not have — so a picture that came back
   // unsaved must still say so.
   modified: boolean;
+  // When it was written, which is what decides adoption (the newest orphan) and
+  // pruning (the oldest go). Absent on records from before per-tab keys, which
+  // sort as oldest and so are adopted only when nothing newer exists.
+  savedAt: number;
 };
 
 // A restore that crashed the tab must not be retried forever. The marker goes
@@ -61,9 +107,13 @@ const GUARD_KEY = 'redpaint.restoring';
 // this was not slow, it was interrupted.
 const GUARD_STALE_MS = 15000;
 
-function guardSet(): void {
+// Records which record was being applied, not just when. With one key per tab
+// the two can differ — a tab may be applying a record it adopted from another —
+// and dropping "ours" on the next start would leave the one that actually
+// stopped us sitting there for the next tab to adopt.
+function guardSet(recordKey: string): void {
   try {
-    window.localStorage.setItem(GUARD_KEY, String(Date.now()));
+    window.localStorage.setItem(GUARD_KEY, `${Date.now()}:${recordKey}`);
   } catch {
     // blocked site data throws rather than returning null; the guard simply
     // does not operate, which is no worse than not having it
@@ -81,25 +131,61 @@ function guardClear(): void {
 // True only for a marker old enough to mean an interrupted attempt rather than
 // a concurrent one. An unparseable value counts as stale: it is not ours, and
 // leaving it to block restores forever would be worse than one wasted retry.
-function guardIsStale(): boolean {
+// The record an interrupted attempt was applying, or null when there is nothing
+// to do — no marker, or one recent enough to belong to another tab restoring
+// right now. A marker with no key (an older build's, or nonsense) is taken to
+// mean this tab's own record: it is the only guess available, and leaving a
+// marker to block every restore forever would be worse than one wasted retry.
+function interruptedRecordKey(): string | null {
   try {
     const marked = window.localStorage.getItem(GUARD_KEY);
     if (marked === null) {
-      return false;
+      return null;
     }
-    const at = Number(marked);
-    return !Number.isFinite(at) || Date.now() - at > GUARD_STALE_MS;
+    const separator = marked.indexOf(':');
+    const at = Number(separator === -1 ? marked : marked.slice(0, separator));
+    if (Number.isFinite(at) && Date.now() - at <= GUARD_STALE_MS) {
+      return null;
+    }
+    return (separator === -1 ? '' : marked.slice(separator + 1)) || ownKey();
   } catch {
-    return false;
+    return null;
   }
 }
 
-export async function saveDocument(record: DocumentRecord): Promise<boolean> {
-  return idbSet(KEY, record);
+// savedAt is stamped here rather than passed in: the caller has no business
+// deciding when its own write happened, and a record without one sorts as
+// ancient, which would quietly make it unadoptable and first to be pruned.
+export async function saveDocument(record: Omit<DocumentRecord, 'savedAt'>): Promise<boolean> {
+  const written = await idbSet(ownKey(), { ...record, savedAt: Date.now() });
+  if (written) {
+    await prune();
+  }
+  return written;
 }
 
 export async function clearDocument(): Promise<void> {
-  await idbDelete(KEY);
+  await idbDelete(ownKey());
+}
+
+// Drops the records nobody is coming back for: anything past its week, and
+// anything beyond the newest few. This tab's own is never a candidate, however
+// long it has been idle — it is the one record we know has an owner.
+async function prune(): Promise<void> {
+  const mine = ownKey();
+  const keys = (await idbKeys()).filter((key) => key !== mine);
+  const dated = await Promise.all(
+    keys.map(async (key) => ({ key, at: (await idbGet<DocumentRecord>(key))?.savedAt ?? 0 }))
+  );
+  const now = Date.now();
+  const survivors = dated
+    .filter((entry) => now - entry.at <= MAX_AGE_MS)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, MAX_RECORDS - 1)
+    .map((entry) => entry.key);
+  await Promise.all(
+    dated.filter((entry) => !survivors.includes(entry.key)).map((entry) => idbDelete(entry.key))
+  );
 }
 
 // Anything read back is untrusted input from an older build or a half-written
@@ -129,22 +215,50 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
 // anyway — a restore is a convenience, and failing it silently is the right
 // kind of failure.
 export async function loadDocument(): Promise<DocumentRecord | null> {
-  if (guardIsStale()) {
-    // the previous attempt never finished: assume this record is what stopped
-    // it, and let it go rather than reopening the same trap every launch
+  const interrupted = interruptedRecordKey();
+  if (interrupted !== null) {
+    // the previous attempt never finished: assume the record it was applying is
+    // what stopped it, and let that one go rather than reopening the same trap
+    // — for this tab, and for the next one that would have adopted it
     guardClear();
-    await clearDocument();
+    await idbDelete(interrupted);
     return null;
   }
-  const record = await idbGet<DocumentRecord>(KEY);
-  if (!isUsable(record)) {
-    if (record) {
-      await clearDocument();
-    }
+  const own = await idbGet<DocumentRecord>(ownKey());
+  if (isUsable(own)) {
+    guardSet(ownKey());
+    return own;
+  }
+  if (own) {
+    await clearDocument(); // ours, and unusable
+  }
+  // No record of our own: this is a new tab rather than a reloaded one, so it
+  // takes over where the most recent one left off — which is what a single-key
+  // autosave did for every tab, and what someone reopening the app expects.
+  //
+  // Adopted by copy, not by claim: the record is left where it is, because a
+  // tab whose id we do not recognise may still be open and painting into it.
+  // Ours is written under our own id at the next stroke, and prune() clears the
+  // duplicate once it is no longer among the newest.
+  const adopted = await newestUsableRecord();
+  if (!adopted) {
     return null;
   }
-  guardSet();
-  return record;
+  guardSet(adopted.key);
+  return adopted.record;
+}
+
+type StoredRecord = { key: string; record: DocumentRecord };
+
+async function newestUsableRecord(): Promise<StoredRecord | null> {
+  const entries = await Promise.all(
+    (await idbKeys()).map(async (key) => ({ key, record: await idbGet<DocumentRecord>(key) }))
+  );
+  return (
+    entries
+      .filter((entry): entry is StoredRecord => isUsable(entry.record))
+      .sort((a, b) => (b.record.savedAt ?? 0) - (a.record.savedAt ?? 0))[0] ?? null
+  );
 }
 
 // Called once the record has been applied without incident.
