@@ -5,6 +5,7 @@ import { getEventHandler, isMiddleMouseButton } from '../../tools/util/util';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
+import { hoverBrushPreview } from '../../canvas/hoverBrushPreview';
 import { Point } from '../../types';
 import './Canvas.css';
 import { CropOverlay } from '../crop/CropOverlay';
@@ -76,6 +77,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
 
   const paintingCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   const overlayCanvasRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
+  const hoverBrushRef = useRef<HTMLCanvasElement>(document.createElement('canvas'));
 
   useEffect((): (() => void) => {
     if (isZoomCanvas) {
@@ -85,9 +87,17 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
       paintingCanvasController.attachMainCanvas(paintingCanvasRef.current);
       overlayCanvasController.attachMainCanvas(overlayCanvasRef.current);
     }
+    // Both views register: the same buffer coordinates position each view's
+    // preview through its own host rect, which is what gives the zoom view
+    // its magnified hover ghost (docs/dom-hover-preview.md).
+    const unregisterHoverPreview = hoverBrushPreview.register(
+      paintingCanvasRef.current,
+      hoverBrushRef.current
+    );
 
     // Cleanup function to dispose of WebGL resources when component unmounts
     return () => {
+      unregisterHoverPreview();
       if (isZoomCanvas) {
         // Clean up zoom canvas resources
         paintingCanvasController.disposeZoomCanvas();
@@ -244,6 +254,8 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           if (isMiddleMouseButton(event)) {
             return; // reserved app-wide for the menu toggle, not a paint tool
           }
+          // the drag's own preview takes over from the DOM hover ghost
+          hoverBrushPreview.hide();
           getEventHandler(tool, 'onMouseDown')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseDownOverlay')(event);
@@ -273,6 +285,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         onMouseLeave={(event): void => {
           hideCursor();
           hideResizeCursor();
+          hoverBrushPreview.hide();
           getEventHandler(tool, 'onMouseLeave')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseLeaveOverlay')(event);
@@ -300,6 +313,9 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         style={canvasStyle}
       />
       {!isZoomCanvas && state.crop.rect && <CropOverlay displayScale={displayScale} />}
+      {/* always mounted (registration is tied to the component's lifetime);
+          shown/hidden imperatively by hoverBrushPreview like the cursor div */}
+      <canvas ref={hoverBrushRef} className="canvas-hover-brush" />
       {usePreciseCursor && !state.app.isLoading && (
         <div ref={cursorRef} className="canvas-cursor" />
       )}

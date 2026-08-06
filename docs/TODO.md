@@ -19,6 +19,12 @@ is scheduled. Design details live in the linked docs where they exist.
       and Ctrl-Y alongside it — see `useUndoHotkeys`.)
 - [ ] **Menu final design.** The pull-down menu got a cleanup pass
       (bottom-aligned, spacebar toggle) but the final look/structure is undecided.
+- [x] **DOM hover preview** — hovering no longer commits to the overlay
+      canvas: on the Windows test machine any per-mousemove WebGL commit
+      presents a frame-plus late (all browsers), which was the real cause of
+      the pointer lag 74b53c1 mis-attributed to the cursor div. Design, full
+      bisection record, and the still-open painting-throughput findings for
+      that machine: docs/dom-hover-preview.md.
 
 ## Performance
 
