@@ -1,5 +1,5 @@
-/* Press Start 2P is loaded via a <link> in index.html, not @import'd here —
-   see the comment there. */
+/* Press Start 2P is self-hosted from public/fonts and declared in index.html,
+   not here — see the comment there for why. */
 
 /* The Workbench 1.3 palette (docs/style-guide.md). Defined once here because
    these five values were hand-typed at 46 sites across a dozen stylesheets —
