@@ -1,6 +1,7 @@
 # Autosave — simplification design
 
-Status: proposed 2026-07-23, not implemented. A review of the browser-autosave
+Status: proposed 2026-08-06, §1 assumption verified, §3 implemented. A review of
+the browser-autosave
 stack (`src/persistence/`, `useDocumentAutosave.ts`) after its first week,
 prompted by the feeling that edge-case fixes were piling up — tabs messaging
 each other, staleness windows, a three-knob write scheduler. The conclusion:
@@ -60,6 +61,30 @@ Why this is not just shorter but *stronger*:
   one runs script, so a reload finds its own lock free — the
   self-duplicate-report bug cannot be expressed. No responder lifecycle, no
   `pagehide` handler.
+
+  This is the assumption the whole section rests on, and it is exactly the one
+  that failed for `BroadcastChannel` — there the outgoing document was still
+  alive to answer the incoming one's question. **Tested before adopting**
+  (2026-08-06, headless Chromium): 18 inherited reloads across two runs,
+  including reloads issued 40 ms apart while the previous load was still in
+  flight, zero denials, one id throughout. The control matters as much as the
+  result — `navigator.locks.query()` confirmed the lock was genuinely held, and
+  a same-origin iframe (a separate document sharing the origin's lock manager,
+  contending exactly as a duplicated tab does) asking for the same name was
+  correctly refused. Without that control, "no denials" would equally describe a
+  lock that was never taken.
+
+  The two mechanisms differ structurally, which is the real argument rather than
+  the measurement: the channel needed the outgoing document to be unable to run
+  script *for 250 ms*, and a document being torn down can still service an event
+  inside that window. A lock needs it only to be destroyed *at the instant of the
+  request*, and `ifAvailable` answers synchronously. The failure mode is not
+  merely less likely; it has nowhere to live.
+
+  Caveat, in the same spirit: the `BroadcastChannel` bug was never reproduced
+  headless either — it took a real browser and a `__redpaintAutosave()` dump to
+  prove. A clean headless result is weaker evidence than it looks, so confirm a
+  reload storm on a real machine before the old mechanism is deleted.
 - `ifAvailable` answers immediately. No reply timeout, no 250 ms worst-case
   startup wait, no "long enough for a live tab to answer" tuning.
 - The `couldBeACopy()` navigation-type heuristic becomes unnecessary — the
@@ -105,8 +130,25 @@ loadDocument():
 A guard entry found at startup can only mean *our* last attempt died — no
 other tab writes our key (duplicated tabs get fresh ids before this runs).
 So: no timestamp, no `GUARD_STALE_MS`, no "recent enough to be another tab"
-reasoning, no localStorage at all. The existing prune cleans up guard
-entries of dead tabs alongside their records.
+reasoning, no localStorage at all.
+
+**`prune()` has to be taught about these keys first.** As written it would
+delete them, including the live one belonging to the tab currently restoring:
+
+```ts
+const mine = ownKey();                       // "doc:<id>" — never "guard:<id>"
+const keys = (await idbKeys()).filter(k => k !== mine);
+{ key, at: (await idbGet<DocumentRecord>(key))?.savedAt ?? 0 }  // guard has none → 0
+// → now - 0 > MAX_AGE_MS → not a survivor → deleted
+```
+
+and because `loadDocument` fires `void prune()` before writing the guard, the
+two race: the guard would usually be removed moments after being set, silently
+disabling the crash detection it exists for. So prune must select on the `doc:`
+prefix rather than taking every key, and drop a `guard:<id>` only when no
+`doc:<id>` survives alongside it. Cheap, but not automatic — the current "cleans
+up guard entries alongside their records" only becomes true once prune is
+prefix-aware.
 
 The current comment argues localStorage is needed because "only a
 synchronous write guarantees" the marker lands before the crash. The awaited
@@ -157,6 +199,17 @@ restore hook already knows the answer; expose it, or just kick the fit from
 the same effect's `else` branch). The `hasPendingCanvasContent()` check in
 `setStartupResolution` then loses its startup justification — it can stay as
 a cheap invariant, but nothing depends on winning a race anymore.
+
+One consequence to decide rather than discover: the fit becomes asynchronous.
+Today it measures at mount, synchronously. Gated on the restore it waits on
+`loadDocument()` → `ensureTabId()` → a Web Lock request → an IDB read, and
+`canvas.resolution` starts at `{0, 0}` — so until that chain settles there is no
+canvas at all. Normally milliseconds, and `ifAvailable` never blocks, but the
+behaviour in a private window, with site data blocked, or with a slow IDB open
+should be chosen up front: either fit anyway after a short deadline, or accept a
+brief zero-size canvas. The current `idb.ts` contract (resolve, never throw)
+means the chain always settles, so a deadline is belt-and-braces rather than
+strictly required.
 
 (The `queueMicrotask` in `hooks.tsx` is unrelated to autosave — it is the
 standard React commit-phase workaround for the undo-across-resize repaint —
