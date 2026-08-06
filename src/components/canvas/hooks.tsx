@@ -141,6 +141,13 @@ export function useCanvasContentUpload(): void {
   useEffect((): void => {
     const pending = takePendingCanvasContent();
     if (!pending) {
+      // No queued content, but the resize still happened: setResolution's
+      // init() rebuilds the textures and leaves the drawing buffer cleared
+      // without ever presenting it, so a canvas nobody is uploading to would
+      // otherwise never be drawn at all. Chromium composites the cleared buffer
+      // regardless; Safari waits for a draw, and showed nothing until some
+      // later event forced one — a click.
+      paintingCanvasController.render();
       return;
     }
     paintingCanvasController.setCanvasColorIndex(pending.content);
