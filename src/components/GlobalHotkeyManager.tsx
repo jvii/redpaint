@@ -18,6 +18,7 @@ export function GlobalHotKeyManager(): null {
   usePaste();
   useMenuHotkey();
   useCyclingHotkey();
+  useUndoHotkeys();
   useMiddleClickMenuToggle();
   useBrushTransformHotkeys();
   useModeHotkeys();
@@ -119,6 +120,58 @@ function useCyclingHotkey(): void {
     }
     event.preventDefault();
     actions.palette.toggleCycling();
+  }
+
+  useEffect((): (() => void) => {
+    document.addEventListener('keydown', handleKey);
+    return (): void => document.removeEventListener('keydown', handleKey);
+  }, []);
+}
+
+// Undo and redo from the keyboard. Until now they had none at all: the only
+// way in was the toolbox UNDO gadget, left-click to undo and right-click to
+// redo, which is DPaint's own arrangement but leaves redo all but invisible —
+// nobody right-clicks a button to find out what happens.
+//
+// Both vocabularies, because they cost one key each and their users don't
+// overlap:
+//
+//  - U, DPaint's own ("Keyboard Equivalent: U; Mnemonic: undo", DP2 manual).
+//    Unshifted letters are this app's native register, as the brush transforms
+//    are, and U was free.
+//  - Ctrl/Cmd-Z, which anyone who has used anything else will try first, with
+//    Shift for redo. Ctrl-Y too, since that is redo on Windows.
+//
+// preventDefault on the chords only: they are the browser's own undo, and
+// leaving them through would have the page act on a keystroke meant for the
+// picture. Plain U needs no such claim.
+//
+// No bare-letter redo. DPaint had none to copy, and a second letter spent on
+// the rarer half of the pair is a letter not available to a tool.
+function useUndoHotkeys(): void {
+  const actions = useActions();
+
+  function handleKey(event: KeyboardEvent): void {
+    // hotkeysSuspended covers a focused text field, where Ctrl-Z belongs to
+    // the field, and an open requester, where it belongs to nothing yet.
+    if (hotkeysSuspended(event)) {
+      return;
+    }
+    const chord = event.ctrlKey || event.metaKey;
+    const key = event.key.toLowerCase();
+    if (chord && key === 'z') {
+      event.preventDefault();
+      if (event.shiftKey) {
+        actions.undo.redo();
+      } else {
+        actions.undo.undo();
+      }
+    } else if (chord && key === 'y') {
+      event.preventDefault();
+      actions.undo.redo();
+    } else if (!chord && !event.altKey && event.key === 'u') {
+      actions.undo.undo();
+    }
   }
 
   useEffect((): (() => void) => {

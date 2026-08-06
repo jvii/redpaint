@@ -14,8 +14,9 @@ is scheduled. Design details live in the linked docs where they exist.
       the brush pipeline like DPaint's text-as-brush.
 - [ ] **More canvas hotkeys.** The `hotkeysSuspended()` guard in
       `GlobalHotkeyManager` makes these cheap now. Candidates from DPaint: `b`
-      brush selector, `s` symmetry, `u` undo, `,`/`.` FG/BG pick, `+`/`-` brush
-      size, `F10` toggle toolbar.
+      brush selector, `s` symmetry, `,`/`.` FG/BG pick, `+`/`-` brush size,
+      `F10` toggle toolbar. (`u` undo is done, with Ctrl/Cmd-Z, Ctrl/Cmd-Shift-Z
+      and Ctrl-Y alongside it — see `useUndoHotkeys`.)
 - [ ] **Menu final design.** The pull-down menu got a cleanup pass
       (bottom-aligned, spacebar toggle) but the final look/structure is undecided.
 
