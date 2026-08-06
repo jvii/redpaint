@@ -5,8 +5,9 @@ session on the affected Windows machine; hover verified smooth there for
 both brush kinds (the PixelBrush default and CustomBrush bitmaps). Fixes the
 hovering pointer/brush preview visibly trailing the mouse on Windows — in
 Chrome, Edge *and* Firefox — by taking the overlay canvas out of the hover
-path entirely. Painting throughput on that machine remains open — see
-"Painting: still slow there, and why that's out of scope" at the end.
+path entirely. The machine-side mystery is solved too: the flat
+per-present cost came from the external monitor hanging off a USB-C dock's
+indirect display path — see "Painting: still slow there" at the end.
 
 ## The problem, and what it is not
 
@@ -35,6 +36,8 @@ variable per step):
 | The July 15 build (`3f05f8c`, the evening the pointer landed) likewise | **lags identically** |
 | Rebooting the machine | no change — the state is persistent, not wedged |
 | Implemented DOM hover preview, this doc | **hover smooth**, both brush kinds |
+| `chrome://gpu`: overlays all NONE, same Intel GPU enumerated under two LUIDs | indirect display driver in the present path |
+| Same app on the laptop's built-in display instead of the USB-C-docked monitor | **everything smooth — painting included** |
 
 **Root cause:** on this machine, any WebGL canvas commit issued per mousemove
 adds a frame or more of input-to-photon latency — browser-independent,
@@ -179,10 +182,26 @@ falsified:
 
 Unlike hover, painting cannot avoid per-move canvas commits — that is what
 painting is — so there is no by-construction fix; this is machine-level.
-Where to look on the machine itself: the GPU driver's install date against
-the mid-July "it was fine" memory (top suspect), Windows Update history,
-per-app GPU preference in Windows graphics settings, and `chrome://gpu` for
-anything software-rasterized.
+
+**Resolved: it was the monitor's connection, not the machine.** The
+`chrome://gpu` dump showed hardware overlay support entirely absent (every
+format NONE — impossible for a healthy Meteor Lake iGPU) and the same Intel
+GPU enumerated under two different LUIDs — the signature of an **indirect
+display driver**: the external monitor hangs off a USB-C dock's USB-graphics
+path, so every present is copied/encoded through the dock instead of scanned
+out — a flat per-frame fee that ignores pixel counts, browsers, and WebGL
+flags, exactly the profile every experiment above measured. Confirmed by
+moving the browser to the laptop's built-in display: everything, painting
+included, is smooth there. This also explains the native cursor's immunity —
+indirect display drivers move the pointer through their own hardware-cursor
+path without re-presenting the frame — which is the asymmetry that
+originally framed the app-drawn cursor as the suspect.
+
+Remedy is at the desk, not in the code: connect the monitor through a direct
+HDMI/DisplayPort output (or a dock port that passes DP alt-mode natively,
+rather than USB-graphics). The DOM hover preview stays valuable regardless —
+docked laptops are common, and it makes hover immune to any such display
+path by construction.
 
 ## Out of scope
 
