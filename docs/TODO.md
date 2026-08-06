@@ -5,10 +5,11 @@ is scheduled. Design details live in the linked docs where they exist.
 
 ## Near-term
 
-- [ ] **Palette editor: separate editing from painting-color selection.** The
-      editor should carry its own `editedColorId` and use an embedded palette
-      variant that doesn't call `setForegroundColor` — picking a slot to edit must
-      not change what you paint with.
+- [x] **Palette editor: separate editing from painting-color selection.** The
+      editor carries its own `editedColorId` (`overmind/paletteEditor/state.ts`)
+      and passes `Palette` an `onSelectColor`, which it uses in place of
+      `setForegroundColor` — so picking a slot to edit leaves what you paint
+      with alone.
 - [ ] **Text tool.** Currently a stub (captures `window.onkeydown`, renders
       nothing useful). Needs font selection, sizing, and committing glyphs through
       the brush pipeline like DPaint's text-as-brush.
@@ -33,7 +34,11 @@ is scheduled. Design details live in the linked docs where they exist.
       itself. Scissor the repaint to the stroke's bounding box.
       `window.__redpaintBench(stamps, brushSize, reps)` is the console harness;
       note that machine perf drifts between sessions — only compare numbers from
-      the same session.
+      the same session. Scoped by a finding elsewhere: it will not help a
+      machine whose display sits behind an indirect driver, where the cost is
+      per present and Lo-Res already proved pixel count irrelevant
+      (docs/dom-hover-preview.md, "Painting: still slow there"). This remains
+      the right fix for throughput and for Safari.
 - [ ] **Memoize `symmetryCopies()` transform closures** on settings if it ever
       shows up in profiling (noted in docs/symmetry-tool.md).
 - [ ] **Safari performance pass.** Safari is noticeably slower than Chrome,
@@ -42,6 +47,11 @@ is scheduled. Design details live in the linked docs where they exist.
       should come down). Dirty-rect is the main fix; also revisit
       `preserveDrawingBuffer: true` on the painting canvas — it forces a
       framebuffer copy per composite, disproportionately expensive in Safari.
+      That last one is now a Safari-only rationale: `preserveDrawingBuffer:
+      false` was measured on the slow Windows machine and changed nothing
+      there. Note too that `desynchronized: true` is disqualified while pDB
+      stays — together they made painting drastically slower, so dropping pDB
+      is the prerequisite for even testing it (docs/dom-hover-preview.md).
 
 ## Effects (own feature, enabled by true-color mode)
 
@@ -87,13 +97,23 @@ save bytes and change nothing else.
 
 ## Infrastructure
 
-- [ ] **Autosave simplification** — replace the tab-liveness broadcast
-      protocol with Web Locks, the shared restore-guard key with a per-tab
-      one, the debounce+max-wait scheduler with a plain throttle, and the
-      startup fit/restore race with a sequence. Design:
-      docs/autosave-simplification.md.
-- [ ] **Migrate off Create React App** (Vite) and update Node tooling. CRA is
-      dead upstream; blocks dependency upgrades.
-- [ ] **Tests.** There are none (`npm test` finds no test files). The pure
-      layers are very testable: `algorithm/` (shape, floodfill, symmetry),
-      `domain/` (CanvasColorIndex/BrushColorIndex packing and tags).
+- [x] **Autosave simplification** — all four sections done: Web Locks for tab
+      identity, a per-tab restore marker in IndexedDB, a plain throttle for
+      write scheduling, and the startup fit sequenced behind the restore
+      instead of refereed against it. Design, the measurements each decision
+      rests on, and the corrections testing forced: docs/autosave-simplification.md.
+- [ ] **Retire the last Create React App remnant.** The Vite migration itself
+      is done — `vite.config.ts`, `vite`/`vite build`/`vitest run`, and no
+      `react-scripts` anywhere. What is left is ESLint: `.eslintrc` still
+      extends `react-app` and `react-app/jest` from `eslint-config-react-app`,
+      the second of which configures a test runner this project no longer uses.
+      A flat config of our own would drop the dependency and stop pinning the
+      ESLint version to CRA's.
+- [ ] **Widen test coverage.** There are tests now — 24 files, 223 cases over
+      `algorithm/` (shape against PNG fixtures, floodfill, image colors),
+      `domain/`, `fileformat/` and `overmind/undo/`. Still untested, and where
+      this session's bugs actually were: `src/persistence/` (tab identity, the
+      restore marker, pruning) and the write scheduler, all currently verified
+      by CDP scripts against a running app rather than by anything `npm test`
+      runs. The throttle's timing and the guard's mark-apply-clear sequence are
+      pure enough to extract and test directly.
