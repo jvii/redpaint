@@ -4,28 +4,41 @@
 // the backup and the other tab's was gone — and a reloaded tab got back
 // whatever its neighbour had been doing rather than its own picture.
 //
-// The id lives in sessionStorage, which is the piece that makes this work: it
-// is unique per tab, it survives a reload of that tab, and it goes away when
-// the tab does. So a reload finds its own record, and a genuinely new tab finds
+// The id lives in sessionStorage: unique per tab, survives that tab's reloads,
+// dies with it. So a reload finds its own record, and a genuinely new tab finds
 // none.
 const TAB_KEY = 'redpaint.tabId';
 
-// Whether an id we inherited is already being painted under by a live tab.
+// sessionStorage is not quite per tab, which is the whole difficulty here.
+// Duplicate Tab, window.open and opening a link all *copy* it, so a new tab can
+// arrive holding an id another tab is already painting under, and the two would
+// share a record.
 //
-// sessionStorage is not quite per tab: duplicating a tab, or opening one from a
-// link or window.open, copies it — so a new tab can arrive holding an id
-// another tab is already using, and the two would share a record.
+// A Web Lock settles it by construction. Each tab holds a lock named for its id
+// for as long as its document lives, and the browser releases it when that
+// document is destroyed. So `ifAvailable` answers the only question that
+// matters — is a live document already using this id — immediately, with no
+// protocol, no timeout, and nothing left behind to clean up.
 //
-// Asked over a BroadcastChannel rather than tracked in storage. The first
-// attempt kept a registry of live ids in localStorage, which every tab
-// read-modify-wrote: a tab releasing its claim on reload had it written straight
-// back by another tab's heartbeat mid-flight, so it came back, believed itself a
-// duplicate, and minted a new id — losing its own record every single reload.
-// A question asked of the tabs themselves cannot go stale, cannot race, and
-// leaves nothing behind to clean up.
-const CHANNEL = 'redpaint.tabs';
-// Long enough for a live tab to answer, short enough not to hold up the restore.
-const REPLY_WAIT_MS = 250;
+// Both earlier attempts failed by trying to infer that answer instead:
+//
+//   A heartbeat registry in localStorage, read-modify-written by every tab. A
+//   tab releasing its claim on reload had it written straight back by another
+//   tab's heartbeat mid-flight, so it returned, believed itself a duplicate,
+//   and lost its own record on every single reload.
+//
+//   A BroadcastChannel question with a 250ms reply window. The document being
+//   replaced was still alive to answer, so a reloading tab reported itself as
+//   its own duplicate. Closing the responder on pagehide helped, and a
+//   navigation-type check — only a fresh navigation can be a copy — avoided
+//   asking on reload. But Duplicate Tab restores the session history, so its
+//   navigation type is `reload`: the copy skipped the check and adopted the
+//   original's record. The heuristic was wrong in precisely the case it existed
+//   to catch.
+//
+// A lock has no window in which to be wrong: it is held or it is not, and the
+// answer comes back without waiting for anyone.
+const LOCK_PREFIX = 'redpaint.tab.';
 
 function newId(): string {
   return typeof crypto?.randomUUID === 'function'
@@ -34,69 +47,27 @@ function newId(): string {
 }
 
 let claimed: string | null = null;
-let responder: BroadcastChannel | null = null;
 
-// Answers "is anyone using this id?" for as long as this tab is open. Started
-// once the id is settled, so a tab never answers on behalf of an id it is about
-// to give up.
-function startResponding(id: string): void {
-  if (responder || typeof BroadcastChannel === 'undefined') {
-    return;
+// Takes the lock for an id, or reports false when a live document holds it.
+// The callback's promise is deliberately never settled, so the lock is held for
+// the life of this document — there is no release to arrange, or to forget.
+function claim(id: string): Promise<boolean> {
+  if (!navigator.locks) {
+    return Promise.resolve(true); // no way to ask; assume it is ours, as it usually is
   }
-  responder = new BroadcastChannel(CHANNEL);
-  responder.onmessage = (event): void => {
-    if (event.data?.type === 'in-use?' && event.data.id === id) {
-      responder?.postMessage({ type: 'in-use', id });
-    }
-  };
-  // Stop answering the moment this document starts going away. On a reload the
-  // next document asks about the very id this one is holding, and this one is
-  // still alive to answer — so it would report itself as a live duplicate, and
-  // the reloaded tab would mint a new id and lose its own record. Every time.
-  window.addEventListener('pagehide', (): void => {
-    responder?.close();
-    responder = null;
+  return new Promise<boolean>((resolve): void => {
+    void navigator.locks
+      .request(LOCK_PREFIX + id, { ifAvailable: true }, (lock): Promise<void> => {
+        resolve(lock !== null);
+        return lock ? new Promise<void>((): void => undefined) : Promise.resolve();
+      })
+      .catch((): void => resolve(true));
   });
 }
 
-async function isIdLive(id: string): Promise<boolean> {
-  if (typeof BroadcastChannel === 'undefined') {
-    return false; // no way to ask; assume it is ours, which it usually is
-  }
-  const channel = new BroadcastChannel(CHANNEL);
-  try {
-    return await new Promise<boolean>((resolve): void => {
-      const timer = window.setTimeout((): void => resolve(false), REPLY_WAIT_MS);
-      channel.onmessage = (event): void => {
-        if (event.data?.type === 'in-use' && event.data.id === id) {
-          window.clearTimeout(timer);
-          resolve(true);
-        }
-      };
-      channel.postMessage({ type: 'in-use?', id });
-    });
-  } finally {
-    channel.close();
-  }
-}
-
-// Whether this document could be a copy of another tab at all. Reloading, and
-// coming back through history, are by definition the same tab continuing — the
-// inherited id is ours and there is nothing to ask. Only a fresh navigation can
-// be Duplicate Tab, window.open or a link, which are the ways sessionStorage
-// gets copied.
-//
-// Asking anyway was not merely wasteful: it is the question the outgoing
-// document could answer, and a reload that believes itself a duplicate loses
-// its record. Not asking removes the race rather than narrowing it.
-function couldBeACopy(): boolean {
-  const [entry] = performance.getEntriesByType('navigation');
-  return !entry || (entry as PerformanceNavigationTiming).type === 'navigate';
-}
-
-// This tab's id, settled once per page load. An inherited id is kept unless
-// this is a fresh navigation *and* a live tab answers to it, which together
-// mean we were copied — so an ordinary reload keeps its id, and its record.
+// This tab's id, settled once per page load. The inherited id is kept unless a
+// live document already holds its lock, which is the only thing that means we
+// were copied — so an ordinary reload keeps its id, and its record.
 export async function ensureTabId(): Promise<string> {
   if (claimed) {
     return claimed;
@@ -108,8 +79,11 @@ export async function ensureTabId(): Promise<string> {
     // storage blocked: this tab cannot keep an identity across reloads, so it
     // behaves like a new one each time — it still saves, it just never restores
   }
-  const copied = inherited !== null && couldBeACopy() && (await isIdLive(inherited));
-  const id = inherited && !copied ? inherited : newId();
+  let id = inherited ?? newId();
+  if (!(await claim(id))) {
+    id = newId(); // a live document holds it: we are the copy
+    await claim(id); // a fresh uuid, so uncontended
+  }
   if (id !== inherited) {
     try {
       window.sessionStorage.setItem(TAB_KEY, id);
@@ -118,7 +92,6 @@ export async function ensureTabId(): Promise<string> {
     }
   }
   claimed = id;
-  startResponding(id);
   return id;
 }
 
