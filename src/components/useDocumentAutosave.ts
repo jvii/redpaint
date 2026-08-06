@@ -14,8 +14,17 @@ import {
   saveDocument,
 } from '../persistence/documentAutosave';
 
-// How long after a committed stroke the picture is written, so a flurry of
-// quick strokes writes once rather than a dozen times.
+// The shortest gap between two writes, so a flurry of quick strokes writes
+// once rather than a dozen times. It is a gap between writes and not a delay
+// before one: the first change after things have settled goes out immediately,
+// and only the ones crowding in behind it wait.
+//
+// It used to be a plain delay, which meant a 400ms window after every stroke
+// where the work was not saved anywhere — and "paint one stroke, refresh" is
+// precisely the sequence someone performs while trying the app out, so that
+// window was hit far more often than its length suggests. The pagehide flush
+// cannot cover it: the browser tears the document down before IndexedDB
+// commits, whatever the write does.
 const WRITE_IDLE_MS = 400;
 // ...and the longest a change may sit unwritten however fast they keep coming.
 // Without this the timer restarted on every stroke, so painting steadily wrote
@@ -38,6 +47,9 @@ export function useDocumentAutosave(): void {
   // When the oldest unwritten change happened, or null when everything is
   // written. Drives the maximum wait below.
   const pendingSince = useRef<number | null>(null);
+  // When the last write went out, so the gap between writes can be honored
+  // without delaying a change that is not crowding another.
+  const lastWriteAt = useRef(0);
 
   useEffect((): void => {
     if (restored.current) {
@@ -121,6 +133,7 @@ export function useDocumentAutosave(): void {
   useEffect((): void => {
     writeNow.current = (): void => {
       pendingSince.current = null;
+      lastWriteAt.current = Date.now();
       if (!restored.current || !worthSaving) {
         return;
       }
@@ -166,10 +179,20 @@ export function useDocumentAutosave(): void {
     if (pendingSince.current === null) {
       pendingSince.current = Date.now();
     }
-    // Idle delay, but never past the maximum wait measured from the first
-    // change still unwritten.
+    // Long enough since the last write that this change is not crowding one:
+    // go now, so a refresh a moment later still finds it.
+    const sinceLastWrite = Date.now() - lastWriteAt.current;
+    if (sinceLastWrite >= WRITE_IDLE_MS) {
+      writeNow.current();
+      return;
+    }
+    // Otherwise wait out the remaining gap — but never past the maximum wait,
+    // measured from the first change still unwritten.
     const waited = Date.now() - pendingSince.current;
-    const delay = Math.max(0, Math.min(WRITE_IDLE_MS, WRITE_MAX_WAIT_MS - waited));
+    const delay = Math.max(
+      0,
+      Math.min(WRITE_IDLE_MS - sinceLastWrite, WRITE_MAX_WAIT_MS - waited)
+    );
     const timer = window.setTimeout((): void => writeNow.current(), delay);
     return (): void => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps

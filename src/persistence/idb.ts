@@ -22,15 +22,44 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
+// One connection, opened once and kept. Every call used to open its own and
+// close it again, which is not merely wasteful: the last write of a session is
+// the one started from `pagehide`, and a connection that still has to be opened
+// asynchronously will not be — the document is torn down first and the write is
+// lost. Opening at startup and holding it means that final write begins on a
+// live connection, which the browser will let a transaction finish on.
+//
+// Dropped if the connection goes away (another tab upgrading the schema, or the
+// browser reclaiming it), so the next call simply opens a new one.
+let connection: Promise<IDBDatabase> | null = null;
+
+function database(): Promise<IDBDatabase> {
+  if (!connection) {
+    connection = openDatabase().then((db): IDBDatabase => {
+      db.onclose = (): void => {
+        connection = null;
+      };
+      db.onversionchange = (): void => {
+        db.close();
+        connection = null;
+      };
+      return db;
+    });
+    connection.catch((): void => {
+      connection = null;
+    });
+  }
+  return connection;
+}
+
 function run<T>(mode: IDBTransactionMode, use: (store: IDBObjectStore) => IDBRequest): Promise<T> {
-  return openDatabase().then(
-    (database): Promise<T> =>
+  return database().then(
+    (db): Promise<T> =>
       new Promise((resolve, reject): void => {
-        const transaction = database.transaction(STORE, mode);
+        const transaction = db.transaction(STORE, mode);
         const request = use(transaction.objectStore(STORE));
         request.onsuccess = (): void => resolve(request.result as T);
         request.onerror = (): void => reject(request.error);
-        transaction.oncomplete = (): void => database.close();
       })
   );
 }
