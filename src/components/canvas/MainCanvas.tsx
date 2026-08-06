@@ -4,6 +4,7 @@ import { useCanvasContentUpload, useDevicePixelRatio, useScrollToFocusPoint } fr
 import { useActions, useAppState } from '../../overmind';
 import { resolveScreenFormat } from '../../overmind/canvas/state';
 import { Point } from '../../types';
+import { restoreSettled } from '../../persistence/restoreSettled';
 import './Canvas.css';
 
 export function MainCanvas(): JSX.Element {
@@ -125,6 +126,15 @@ export function MainCanvas(): JSX.Element {
   // at Native the canvas is the paper, not a view of it, so following the
   // window would crop or pad the picture. setStartupResolution refuses in every
   // other case where the canvas has stopped being a blank startup one.
+  //
+  // And it does not start until the restore has answered, because a saved
+  // record carries its own size and there is nothing to fit when one is coming
+  // back. The two used to run concurrently and be refereed inside
+  // setStartupResolution, where the fit could win and re-init the canvas out
+  // from under a restore in progress. Sequencing them means the question of who
+  // decides the startup size has one answer rather than a race with a guard on
+  // it (docs/autosave-simplification.md §4). It costs a read that measured
+  // 10-25ms for a 4.6MB record.
   useEffect((): (() => void) => {
     const pane = canvasDivRef.current;
     const fitToPane = (): void =>
@@ -132,16 +142,28 @@ export function MainCanvas(): JSX.Element {
         width: Math.round(pane.offsetWidth * dpr),
         height: Math.round(pane.offsetHeight * dpr),
       });
-    fitToPane();
 
-    const observer = new ResizeObserver(fitToPane);
-    observer.observe(pane);
-    const stopTracking = (): void => observer.disconnect();
+    let observer: ResizeObserver | null = null;
+    let stopped = false;
+    const stopTracking = (): void => {
+      stopped = true;
+      observer?.disconnect();
+    };
+    void restoreSettled.then((restored): void => {
+      // A restored record has already set the size; nothing to fit, ever.
+      if (restored || stopped) {
+        return;
+      }
+      fitToPane();
+      observer = new ResizeObserver(fitToPane);
+      observer.observe(pane);
+    });
+
     const listen: AddEventListenerOptions = { once: true, capture: true };
     window.addEventListener('pointerdown', stopTracking, listen);
     window.addEventListener('keydown', stopTracking, listen);
     return (): void => {
-      observer.disconnect();
+      stopTracking();
       window.removeEventListener('pointerdown', stopTracking, listen);
       window.removeEventListener('keydown', stopTracking, listen);
     };

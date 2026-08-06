@@ -13,6 +13,7 @@ import {
   loadDocument,
   saveDocument,
 } from '../persistence/documentAutosave';
+import { markRestoreSettled } from '../persistence/restoreSettled';
 
 // The shortest gap between two writes. A change arriving with at least this
 // much since the last write goes out at once; anything crowding in behind it
@@ -61,12 +62,20 @@ export function useDocumentAutosave(): void {
     }
     restored.current = true;
     void (async (): Promise<void> => {
-      const record = await loadDocument();
-      if (!record) {
-        return;
+      let record: DocumentRecord | null = null;
+      try {
+        record = await loadDocument();
+        if (record) {
+          applyDocument(record);
+          await finishRestore();
+        }
+      } finally {
+        // The startup canvas fit waits on this and runs only when there was
+        // nothing to restore, so the two never both decide the size. In the
+        // `finally` because a fit that never happens leaves no canvas at all —
+        // a failed restore must still release it.
+        markRestoreSettled(record !== null);
       }
-      applyDocument(record);
-      await finishRestore();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

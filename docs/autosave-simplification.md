@@ -1,7 +1,7 @@
 # Autosave — simplification design
 
-Status: proposed 2026-08-06, §1 assumption verified, §3 implemented. A review of
-the browser-autosave
+Status: proposed 2026-08-06, all four sections implemented the same day. A
+review of the browser-autosave
 stack (`src/persistence/`, `useDocumentAutosave.ts`) after its first week,
 prompted by the feeling that edge-case fixes were piling up — tabs messaging
 each other, staleness windows, a three-knob write scheduler. The conclusion:
@@ -199,6 +199,19 @@ restore hook already knows the answer; expose it, or just kick the fit from
 the same effect's `else` branch). The `hasPendingCanvasContent()` check in
 `setStartupResolution` then loses its startup justification — it can stay as
 a cheap invariant, but nothing depends on winning a race anymore.
+
+Decided: **pure sequence, no deadline.** The read was measured at 10–25 ms for a
+4.6 MB record on a Retina-sized canvas, and the lock request at 0.7 ms, so the
+wait is a frame or so and needs no cover. `hasPendingCanvasContent()` stays, but
+demoted from referee to cheap invariant — and it is not dead either way, since
+the fit's ResizeObserver lives until the first click, and dropping an image onto
+a canvas nobody has clicked yet queues content with no pointerdown to stop it.
+
+The tail risk that argued for a deadline is `indexedDB.open()` blocking, which
+would leave `resolution` at `{0, 0}` and no canvas at all. It cannot happen with
+a schema that never upgrades; if that ever changes, the fix belongs in
+`idb.ts` — a timeout on the open, so a hang degrades to "no restore" rather than
+"no canvas" — and would be a deliberate amendment to the not-up-for-change list.
 
 One consequence to decide rather than discover: the fit becomes asynchronous.
 Today it measures at mount, synchronously. Gated on the restore it waits on
