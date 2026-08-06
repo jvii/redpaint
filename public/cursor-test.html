@@ -1,0 +1,141 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>cursor latency isolation</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #ececec; color: #222; font: 14px monospace; overflow: hidden; cursor: none; }
+  * { cursor: none; }
+  #cross { position: fixed; left: 0; top: 0; width: 47px; height: 47px;
+           pointer-events: none; will-change: transform; z-index: 10; visibility: hidden; }
+  #hud { position: fixed; right: 8px; top: 8px; text-align: right; z-index: 10; white-space: pre; }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; }
+  #paint { display: none; }
+  #overlay { display: none; }
+</style>
+<canvas id="paint"></canvas>
+<canvas id="overlay"></canvas>
+<div id="cross">
+  <svg xmlns="http://www.w3.org/2000/svg" width="47" height="47" viewBox="0 0 47 47" shape-rendering="crispEdges">
+    <rect x="21" y="0" width="2" height="2" fill="#555555" />
+    <rect x="24" y="0" width="2" height="2" fill="#555555" />
+    <rect x="0" y="21" width="2" height="2" fill="#555555" />
+    <rect x="0" y="24" width="2" height="2" fill="#555555" />
+    <rect x="21" y="4" width="2" height="1" fill="#656565" />
+    <rect x="24" y="4" width="2" height="1" fill="#656565" />
+    <rect x="4" y="21" width="1" height="2" fill="#656565" />
+    <rect x="4" y="24" width="1" height="2" fill="#656565" />
+    <rect x="21" y="7" width="2" height="3" fill="#656565" />
+    <rect x="24" y="7" width="2" height="3" fill="#656565" />
+    <rect x="7" y="21" width="3" height="2" fill="#656565" />
+    <rect x="7" y="24" width="3" height="2" fill="#656565" />
+    <rect x="21" y="12" width="2" height="8" fill="#757575" />
+    <rect x="24" y="12" width="2" height="8" fill="#757575" />
+    <rect x="12" y="21" width="8" height="2" fill="#757575" />
+    <rect x="12" y="24" width="8" height="2" fill="#757575" />
+    <rect x="21" y="27" width="2" height="8" fill="#757575" />
+    <rect x="24" y="27" width="2" height="8" fill="#757575" />
+    <rect x="27" y="21" width="8" height="2" fill="#757575" />
+    <rect x="27" y="24" width="8" height="2" fill="#757575" />
+    <rect x="21" y="37" width="2" height="3" fill="#656565" />
+    <rect x="24" y="37" width="2" height="3" fill="#656565" />
+    <rect x="37" y="21" width="3" height="2" fill="#656565" />
+    <rect x="37" y="24" width="3" height="2" fill="#656565" />
+    <rect x="21" y="42" width="2" height="1" fill="#656565" />
+    <rect x="24" y="42" width="2" height="1" fill="#656565" />
+    <rect x="42" y="21" width="1" height="2" fill="#656565" />
+    <rect x="42" y="24" width="1" height="2" fill="#656565" />
+    <rect x="21" y="45" width="2" height="2" fill="#555555" />
+    <rect x="24" y="45" width="2" height="2" fill="#555555" />
+    <rect x="45" y="21" width="2" height="2" fill="#555555" />
+    <rect x="45" y="24" width="2" height="2" fill="#555555" />
+  </svg>
+</div>
+<div id="hud"></div>
+<script>
+  // Isolates redpaint's hover-lag outside the app. Same cursor technique as
+  // the app (hidden native pointer, crosshair div moved by transform).
+  //
+  //   g — toggle the stacked canvases, mimicking the app's structure:
+  //       an opaque "painting" canvas (preserveDrawingBuffer:true, alpha:false)
+  //       and a transparent "overlay" canvas (alpha:true) on top.
+  //   d — toggle a per-mousemove draw on the transparent overlay: full clear +
+  //       a scissored square at the pointer, mimicking the app's per-move
+  //       brush-preview commit. Requires g.
+  //
+  // Expectation from in-app bisection: crosshair smooth with d off, trailing
+  // with d on. If that holds here, this page is a minimal repro independent
+  // of redpaint — compare Firefox on the same machine.
+  const HOTSPOT = 47 / 2;
+  const cross = document.getElementById('cross');
+  const hud = document.getElementById('hud');
+  const paint = document.getElementById('paint');
+  const overlay = document.getElementById('overlay');
+  let glOn = false;
+  let drawOn = false;
+  let overlayGl = null;
+  let moves = 0;
+  let last = { x: 0, y: 0 };
+
+  function initCanvases() {
+    paint.width = innerWidth;
+    paint.height = innerHeight;
+    const pg = paint.getContext('webgl', { preserveDrawingBuffer: true, antialias: false, alpha: false });
+    pg.clearColor(0.93, 0.93, 0.93, 1);
+    pg.clear(pg.COLOR_BUFFER_BIT);
+    overlay.width = innerWidth;
+    overlay.height = innerHeight;
+    overlayGl = overlay.getContext('webgl', { preserveDrawingBuffer: false, antialias: false });
+    overlayGl.clearColor(0, 0, 0, 0);
+    overlayGl.clear(overlayGl.COLOR_BUFFER_BIT);
+  }
+
+  // The app's per-move overlay work in miniature: clear the transparent
+  // canvas, then put a small opaque square at the pointer (scissored clear —
+  // no shaders needed; the cost being tested is the commit, not the draw).
+  function overlayDraw(x, y) {
+    const g = overlayGl;
+    g.disable(g.SCISSOR_TEST);
+    g.clearColor(0, 0, 0, 0);
+    g.clear(g.COLOR_BUFFER_BIT);
+    g.enable(g.SCISSOR_TEST);
+    g.scissor(x - 8, overlay.height - y - 8, 16, 16);
+    g.clearColor(0.55, 0.2, 0.2, 1);
+    g.clear(g.COLOR_BUFFER_BIT);
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    moves++;
+    last = { x: e.clientX, y: e.clientY };
+    cross.style.transform = `translate(${e.clientX - HOTSPOT}px, ${e.clientY - HOTSPOT}px)`;
+    cross.style.visibility = 'visible';
+    if (drawOn && overlayGl) {
+      overlayDraw(e.clientX, e.clientY);
+    }
+  });
+
+  addEventListener('keydown', (e) => {
+    if (e.key === 'g') {
+      glOn = !glOn;
+      paint.style.display = overlay.style.display = glOn ? 'block' : 'none';
+      if (glOn && !overlayGl) {
+        initCanvases();
+      }
+    }
+    if (e.key === 'd') {
+      drawOn = !drawOn && glOn;
+    }
+  });
+
+  let windowStart = performance.now();
+  let frames = 0;
+  let fps = 0;
+  let mps = 0;
+  (function loop(t) {
+    frames++;
+    if (t - windowStart >= 1000) {
+      fps = frames; mps = moves; frames = 0; moves = 0; windowStart = t;
+    }
+    hud.textContent =
+      `rAF: ${fps}/s\nmousemove: ${mps}/s\ncanvases [g]: ${glOn ? 'ON' : 'off'}\nper-move overlay draw [d]: ${drawOn ? 'ON' : 'off'}`;
+    requestAnimationFrame(loop);
+  })(performance.now());
+</script>
