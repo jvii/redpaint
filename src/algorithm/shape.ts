@@ -92,7 +92,6 @@ export function unfilledRect(start: Point, end: Point): (LineH | LineV)[] {
   return rect;
 }
 
-// eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function filledCircle(center: Point, r: number): LineH[] {
   if (r === 0) {
@@ -143,7 +142,6 @@ export function filledCircle(center: Point, r: number): LineH[] {
   return circle;
 }
 
-// eslint-disable-next-line max-len
 // adapted from https://stackoverflow.com/questions/45743774/fastest-way-to-draw-and-fill-a-not-anti-aliasing-circle-in-html5canvas
 export function unfilledCircle(center: Point, r: number): Point[] {
   if (r === 0) {
@@ -183,7 +181,6 @@ export function unfilledCircle(center: Point, r: number): Point[] {
 
 // The ellipse boundary is a rotated conic
 // ((x*cos(phi) + y*sin(phi))^2)/a^2 + ((x*sin(phi) - y*cos(phi))^2)/b^2 = 1
-// eslint-disable-next-line max-len
 // (https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1),
 // symmetric in x and y. Sampling only "given x, solve for y" undersamples any
 // column where the true boundary is steep (nearly vertical) — near-vertical

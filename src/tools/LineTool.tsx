@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftMouseButton } from './util/util';
 import { overmind } from '../index';

@@ -3,7 +3,6 @@ import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from 
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
-/* eslint-disable max-len */
 export class GeometricRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;

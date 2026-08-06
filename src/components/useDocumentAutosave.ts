@@ -208,7 +208,6 @@ export function useDocumentAutosave(): void {
       WRITE_INTERVAL_MS - sinceLastWrite
     );
     return (): void => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [changedAt, cleanAt, worthSaving]);
 
   // Closing, reloading or switching away is the last chance to write, so the

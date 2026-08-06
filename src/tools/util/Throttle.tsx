@@ -9,7 +9,7 @@ export class Throttle {
     this.lastRan = null;
   }
 
-  public call(func: Function): void {
+  public call(func: () => void): void {
     if (!this.lastRan) {
       func();
       this.lastRan = Date.now();

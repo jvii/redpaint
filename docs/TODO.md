@@ -102,13 +102,13 @@ save bytes and change nothing else.
       write scheduling, and the startup fit sequenced behind the restore
       instead of refereed against it. Design, the measurements each decision
       rests on, and the corrections testing forced: docs/autosave-simplification.md.
-- [ ] **Retire the last Create React App remnant.** The Vite migration itself
-      is done — `vite.config.ts`, `vite`/`vite build`/`vitest run`, and no
-      `react-scripts` anywhere. What is left is ESLint: `.eslintrc` still
-      extends `react-app` and `react-app/jest` from `eslint-config-react-app`,
-      the second of which configures a test runner this project no longer uses.
-      A flat config of our own would drop the dependency and stop pinning the
-      ESLint version to CRA's.
+- [x] **Create React App fully retired.** `eslint.config.mjs` is a flat config
+      of our own (ESLint 9, typescript-eslint 8, eslint-plugin-react-hooks 5,
+      prettier last), replacing `eslint-config-react-app` — which used to be
+      what pulled ESLint in at all, pinning its version and configuring jest
+      for a runner this repo does not use. Also dropped: `eslint-config-react`
+      and `cross-env` (declared, never referenced) and `@types/jest`. Rule
+      coverage is deliberately unchanged, warning for warning.
 - [ ] **Widen test coverage.** There are tests now — 24 files, 223 cases over
       `algorithm/` (shape against PNG fixtures, floodfill, image colors),
       `domain/`, `fileformat/` and `overmind/undo/`. Still untested, and where

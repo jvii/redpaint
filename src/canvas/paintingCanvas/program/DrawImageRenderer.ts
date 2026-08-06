@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 

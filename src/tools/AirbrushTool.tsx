@@ -33,7 +33,7 @@ export class AirbrushTool implements Tool {
 
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const draw = (): void => {
-      let points: Point[] = [];
+      const points: Point[] = [];
       for (let i = 50; i--;) {
         const angle = getRandomFloat(0, Math.PI * 2);
         const radius = getRandomFloat(0, 30);

@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftLine, shiftPoint } from '../../util/util';
 import { Line, PaintColor, Point } from '../../../types';
