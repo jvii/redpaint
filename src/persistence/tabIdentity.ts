@@ -49,6 +49,14 @@ function startResponding(id: string): void {
       responder?.postMessage({ type: 'in-use', id });
     }
   };
+  // Stop answering the moment this document starts going away. On a reload the
+  // next document asks about the very id this one is holding, and this one is
+  // still alive to answer — so it would report itself as a live duplicate, and
+  // the reloaded tab would mint a new id and lose its own record. Every time.
+  window.addEventListener('pagehide', (): void => {
+    responder?.close();
+    responder = null;
+  });
 }
 
 async function isIdLive(id: string): Promise<boolean> {
@@ -72,9 +80,23 @@ async function isIdLive(id: string): Promise<boolean> {
   }
 }
 
-// This tab's id, settled once per page load. An inherited id is kept unless a
-// live tab answers to it, which is the only case that means we were copied —
-// so an ordinary reload keeps its id, and its record.
+// Whether this document could be a copy of another tab at all. Reloading, and
+// coming back through history, are by definition the same tab continuing — the
+// inherited id is ours and there is nothing to ask. Only a fresh navigation can
+// be Duplicate Tab, window.open or a link, which are the ways sessionStorage
+// gets copied.
+//
+// Asking anyway was not merely wasteful: it is the question the outgoing
+// document could answer, and a reload that believes itself a duplicate loses
+// its record. Not asking removes the race rather than narrowing it.
+function couldBeACopy(): boolean {
+  const [entry] = performance.getEntriesByType('navigation');
+  return !entry || (entry as PerformanceNavigationTiming).type === 'navigate';
+}
+
+// This tab's id, settled once per page load. An inherited id is kept unless
+// this is a fresh navigation *and* a live tab answers to it, which together
+// mean we were copied — so an ordinary reload keeps its id, and its record.
 export async function ensureTabId(): Promise<string> {
   if (claimed) {
     return claimed;
@@ -86,7 +108,8 @@ export async function ensureTabId(): Promise<string> {
     // storage blocked: this tab cannot keep an identity across reloads, so it
     // behaves like a new one each time — it still saves, it just never restores
   }
-  const id = inherited && !(await isIdLive(inherited)) ? inherited : newId();
+  const copied = inherited !== null && couldBeACopy() && (await isIdLive(inherited));
+  const id = inherited && !copied ? inherited : newId();
   if (id !== inherited) {
     try {
       window.sessionStorage.setItem(TAB_KEY, id);
