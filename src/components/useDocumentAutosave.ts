@@ -14,23 +14,26 @@ import {
   saveDocument,
 } from '../persistence/documentAutosave';
 
-// The shortest gap between two writes, so a flurry of quick strokes writes
-// once rather than a dozen times. It is a gap between writes and not a delay
-// before one: the first change after things have settled goes out immediately,
-// and only the ones crowding in behind it wait.
+// The shortest gap between two writes. A change arriving with at least this
+// much since the last write goes out at once; anything crowding in behind it
+// waits out the remainder, and one trailing write covers the whole flurry.
 //
-// It used to be a plain delay, which meant a 400ms window after every stroke
-// where the work was not saved anywhere — and "paint one stroke, refresh" is
-// precisely the sequence someone performs while trying the app out, so that
-// window was hit far more often than its length suggests. The pagehide flush
-// cannot cover it: the browser tears the document down before IndexedDB
-// commits, whatever the write does.
-const WRITE_IDLE_MS = 400;
-// ...and the longest a change may sit unwritten however fast they keep coming.
-// Without this the timer restarted on every stroke, so painting steadily wrote
-// nothing at all until the pointer rested — losing not the last moment's work
-// but all of it. This bounds what a reload can cost, whatever you are doing.
-const WRITE_MAX_WAIT_MS = 1500;
+// A plain leading+trailing throttle, and it is the only knob. What it replaced
+// was three mechanisms that had accreted one per bug — a debounce, a maximum
+// wait so steady painting could not starve it, and a leading edge so a single
+// stroke was not left unsaved for the delay's whole length — which together
+// took two constants, two refs and an arithmetic reconciliation of the two.
+//
+// A throttle needs none of that, because the starvation the maximum wait
+// existed to prevent cannot arise: the leading edge writes immediately when
+// nothing is pending, so the longest a change can go unwritten is one interval,
+// whatever the hand is doing. That is strictly tighter than the 1500 ms bound it
+// replaces (docs/autosave-simplification.md §3).
+//
+// Writes were deliberately made cheap enough to be frequent — the undo
+// snapshot is reused rather than read back from the GPU, and the raster is
+// packed to a byte a pixel — so the interval is not delicate.
+const WRITE_INTERVAL_MS = 400;
 
 // Reopening the app puts the picture back where it was left, and keeps it there
 // as it changes. Deliberately silent: no dialog asks whether to restore, since
@@ -44,11 +47,12 @@ export function useDocumentAutosave(): void {
   // StrictMode mounts twice in development, and a second restore would fight
   // the first over the canvas.
   const restored = useRef(false);
-  // When the oldest unwritten change happened, or null when everything is
-  // written. Drives the maximum wait below.
-  const pendingSince = useRef<number | null>(null);
-  // When the last write went out, so the gap between writes can be honored
-  // without delaying a change that is not crowding another.
+  // Whether the picture has changed since the last write — what the
+  // page-is-going-away flush asks, and all the scheduler needs to remember
+  // besides when it last wrote.
+  const unsaved = useRef(false);
+  // When the last write went out. The throttle measures from here, so a change
+  // that is not crowding another goes straight out.
   const lastWriteAt = useRef(0);
 
   useEffect((): void => {
@@ -132,11 +136,11 @@ export function useDocumentAutosave(): void {
   const writeNow = useRef<() => void>(() => undefined);
   useEffect((): void => {
     writeNow.current = (): void => {
-      pendingSince.current = null;
-      lastWriteAt.current = Date.now();
       if (!restored.current || !worthSaving) {
-        return;
+        return; // nothing to write; leave the throttle's clock where it is
       }
+      unsaved.current = false;
+      lastWriteAt.current = Date.now();
       // The committed snapshot from the undo buffer, not a fresh read of the
       // canvas. setUndoPoint has just put exactly these pixels there, so
       // reading the canvas again would repeat a full-canvas GPU readback for
@@ -176,24 +180,24 @@ export function useDocumentAutosave(): void {
     if (!restored.current || !worthSaving || changedAt === 0) {
       return;
     }
-    if (pendingSince.current === null) {
-      pendingSince.current = Date.now();
-    }
-    // Long enough since the last write that this change is not crowding one:
-    // go now, so a refresh a moment later still finds it.
+    unsaved.current = true;
+    // Leading edge: nothing written recently, so this change is not crowding
+    // anything and goes out at once — a refresh a moment after a single stroke
+    // still finds it.
     const sinceLastWrite = Date.now() - lastWriteAt.current;
-    if (sinceLastWrite >= WRITE_IDLE_MS) {
+    if (sinceLastWrite >= WRITE_INTERVAL_MS) {
       writeNow.current();
       return;
     }
-    // Otherwise wait out the remaining gap — but never past the maximum wait,
-    // measured from the first change still unwritten.
-    const waited = Date.now() - pendingSince.current;
-    const delay = Math.max(
-      0,
-      Math.min(WRITE_IDLE_MS - sinceLastWrite, WRITE_MAX_WAIT_MS - waited)
+    // Trailing edge: wait out what is left of the interval. Each further change
+    // re-runs this effect, which clears the timer and sets another — but for the
+    // same absolute moment, since lastWriteAt does not move until a write
+    // happens. A steady hand therefore cannot push the write further away, which
+    // is the starvation the old maximum wait existed to prevent.
+    const timer = window.setTimeout(
+      (): void => writeNow.current(),
+      WRITE_INTERVAL_MS - sinceLastWrite
     );
-    const timer = window.setTimeout((): void => writeNow.current(), delay);
     return (): void => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [changedAt, cleanAt, worthSaving]);
@@ -205,7 +209,7 @@ export function useDocumentAutosave(): void {
   // own — this narrows the window rather than being relied on to close it.
   useEffect((): (() => void) => {
     const flush = (): void => {
-      if (pendingSince.current !== null) {
+      if (unsaved.current) {
         writeNow.current();
       }
     };
