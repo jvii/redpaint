@@ -81,6 +81,11 @@ save bytes and change nothing else.
 
 ## Infrastructure
 
+- [ ] **Autosave simplification** — replace the tab-liveness broadcast
+      protocol with Web Locks, the shared restore-guard key with a per-tab
+      one, the debounce+max-wait scheduler with a plain throttle, and the
+      startup fit/restore race with a sequence. Design:
+      docs/autosave-simplification.md.
 - [ ] **Migrate off Create React App** (Vite) and update Node tooling. CRA is
       dead upstream; blocks dependency upgrades.
 - [ ] **Tests.** There are none (`npm test` finds no test files). The pure
