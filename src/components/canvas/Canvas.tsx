@@ -100,7 +100,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     };
   }, []);
 
-  useUndo();
+  useUndo(isZoomCanvas);
 
   useInitTool(isZoomCanvas);
 

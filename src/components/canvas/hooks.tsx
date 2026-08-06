@@ -78,11 +78,22 @@ export function useInitTool(isZoomCanvas: boolean): void {
   }, [state.toolbox.activeTool]);
 }
 
-export function useUndo(): void {
+// Repaints the canvas when undo or redo steps to a different entry.
+//
+// The main canvas only, like useInitTool: `Canvas` is mounted twice, and this
+// restoring history once per instance was a real bug. The first instance queued
+// the snapshot and asked for its resolution; the second then re-ran, found the
+// resolution *already* matching the entry, and took the direct branch below —
+// painting into a drawing buffer that had not been resized yet, which the
+// resize then cleared. The queued content was left stranded, so undoing a
+// canvas size change showed nothing at all until some later render happened to
+// flush it. The zoom view needs none of this: it mirrors the painting canvas's
+// texture rather than holding its own.
+export function useUndo(isZoomCanvas: boolean): void {
   const state = useAppState();
   const actions = useActions();
   useEffect((): void => {
-    if (state.undo.currentIndex === null) {
+    if (isZoomCanvas || state.undo.currentIndex === null) {
       return;
     }
     const entry = undoBuffer.getItem(state.undo.currentIndex);
@@ -98,10 +109,18 @@ export function useUndo(): void {
     const resolution = state.canvas.resolution;
     if (colorIndex.width !== resolution.width || colorIndex.height !== resolution.height) {
       setPendingCanvasContent(colorIndex, { recordUndoPoint: false });
-      actions.canvas.setResolution({
-        width: colorIndex.width,
-        height: colorIndex.height,
-        recordUndoPoint: false,
+      // Out of the commit phase before mutating: a resolution change made
+      // synchronously inside an effect did not re-render the canvas at all, so
+      // the element kept its old size, the queued snapshot was never uploaded,
+      // and the picture only appeared once something unrelated — a click —
+      // forced a render. Off a microtask it behaves exactly like the same
+      // change made from an event handler.
+      queueMicrotask((): void => {
+        actions.canvas.setResolution({
+          width: colorIndex.width,
+          height: colorIndex.height,
+          recordUndoPoint: false,
+        });
       });
       return;
     }
