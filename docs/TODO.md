@@ -109,11 +109,16 @@ save bytes and change nothing else.
       for a runner this repo does not use. Also dropped: `eslint-config-react`
       and `cross-env` (declared, never referenced) and `@types/jest`. Rule
       coverage is deliberately unchanged, warning for warning.
-- [ ] **Widen test coverage.** There are tests now — 24 files, 223 cases over
-      `algorithm/` (shape against PNG fixtures, floodfill, image colors),
-      `domain/`, `fileformat/` and `overmind/undo/`. Still untested, and where
-      this session's bugs actually were: `src/persistence/` (tab identity, the
-      restore marker, pruning) and the write scheduler, all currently verified
-      by CDP scripts against a running app rather than by anything `npm test`
-      runs. The throttle's timing and the guard's mark-apply-clear sequence are
-      pure enough to extract and test directly.
+- [ ] **Widen test coverage.** `src/persistence/` is covered now — 35 cases over
+      tab identity (reload keeps its id, a duplicate whose lock is held takes a
+      fresh one, and detection independent of navigation type) and the document
+      store (round trip, record validation, the restore marker's set/clear/
+      interrupted sequence, pruning by age and count and the marker/record
+      prefix split). `test/fakeIndexedDb.ts` and `test/fakeWebLocks.ts` are the
+      hand-rolled stand-ins, alongside `test/png.ts`.
+
+      Still browser-only: the write scheduler in `useDocumentAutosave` (a hook,
+      so it needs a React harness this repo does not have yet — extracting the
+      throttle's decision as a pure function is the cheap way in), the startup
+      fit sequencing, and everything WebGL. The CDP scripts remain the check for
+      those.
