@@ -165,6 +165,15 @@ falsified:
 - Coalescing screen presents to once per animation frame (index to the FBO
   per event, render to screen per rAF) did not help — so it is not the
   *count* of composites but their per-commit cost, at ~60/s, that saturates.
+- `powerPreference: 'high-performance'` on the painting context: no change
+  (the dual-GPU cross-adapter-copy theory).
+- `preserveDrawingBuffer: false` (with full renders replacing incremental
+  draws for the test): no change — the copy-on-present that pDB forces is
+  not the tax either, so the pDB-removal rework the Safari TODO wants would
+  not help this machine (it remains worthwhile for Safari on its own).
+- Dirty-rect rendering (the standing TODO) would not help either, by the
+  same evidence: it shrinks per-commit *pixel* work, and Lo-Res already
+  proved pixel count irrelevant here.
 - A reboot changed nothing: the machine's state is persistently degraded,
   not wedged.
 
