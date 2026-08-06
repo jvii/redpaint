@@ -66,7 +66,7 @@ export function useDocumentAutosave(): void {
         return;
       }
       applyDocument(record);
-      finishRestore();
+      await finishRestore();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

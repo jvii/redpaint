@@ -2,12 +2,6 @@ import { Color } from '../types';
 import { CycleRange } from '../algorithm/paletteRange';
 import { idbDelete, idbGet, idbKeys, idbSet } from './idb';
 import { ensureTabId, tabId } from './tabIdentity';
-import {
-  interruptedRecordKey,
-  markRestoreFinished,
-  markRestoreStarted,
-  restoreMarker,
-} from './restoreGuard';
 
 // One record per tab, not one for the origin — see tabIdentity.ts for why, and
 // for how a tab keeps the same id across a reload.
@@ -15,6 +9,33 @@ const KEY_PREFIX = 'doc:';
 
 function ownKey(): string {
   return KEY_PREFIX + tabId();
+}
+
+// A restore that killed the tab must not be retried forever. The marker goes
+// down before the record is touched and comes up once it is safely applied, so
+// a start that finds its own marker already set knows the last attempt did not
+// survive, and drops that record rather than reopening the same trap.
+//
+// One marker per tab, keyed by the same id as the record. That is the whole
+// design: a shared key could not tell our own dead attempt from another tab's
+// live one, which is why the previous form needed a timestamp, a fifteen-second
+// staleness window, and reasoning about which case a marker described — and why
+// getting that wrong once had a second tab delete the first one's picture.
+// Nobody writes our key but us, so finding it set has exactly one meaning.
+//
+// It holds the record key being applied rather than a bare flag: today that is
+// always our own, but a Restore requester that adopts another tab's record
+// would need to drop the one that actually stopped us.
+//
+// In IndexedDB beside the records, not localStorage. The old comment argued
+// only a synchronous write guarantees the marker lands before the crash; an
+// awaited put gives the same ordering, since the transaction has committed
+// before the risky work begins. The only crash it can miss is one during the
+// await itself, where nothing dangerous is running.
+const GUARD_PREFIX = 'guard:';
+
+function ownGuardKey(): string {
+  return GUARD_PREFIX + tabId();
 }
 
 // How many records to keep. Enough for a few tabs at once without letting a
@@ -96,22 +117,26 @@ const LEGACY_KEY = 'document';
 export async function autosaveState(): Promise<unknown> {
   const keys = await idbKeys();
   const records = await Promise.all(
-    keys.map(async (key) => {
-      const record = await idbGet<DocumentRecord>(key);
-      return {
-        key,
-        mine: key === ownKey(),
-        size: record ? `${record.width}x${record.height}` : null,
-        bytes: record?.pixels?.length ?? null,
-        usable: isUsable(record ?? null),
-        savedAt: record?.savedAt ? new Date(record.savedAt).toISOString() : null,
-      };
-    })
+    keys
+      .filter((key) => key.startsWith(KEY_PREFIX))
+      .map(async (key) => {
+        const record = await idbGet<DocumentRecord>(key);
+        return {
+          key,
+          mine: key === ownKey(),
+          size: record ? `${record.width}x${record.height}` : null,
+          bytes: record?.pixels?.length ?? null,
+          usable: isUsable(record ?? null),
+          savedAt: record?.savedAt ? new Date(record.savedAt).toISOString() : null,
+        };
+      })
   );
   return {
     thisTab: ownKey(),
     records,
-    interruptedMarker: restoreMarker(),
+    // Set only while a restore is in flight, or left behind by one that died.
+    interruptedMarker: await idbGet<string>(ownGuardKey()),
+    otherTabsRestoring: keys.filter((key) => key.startsWith(GUARD_PREFIX) && key !== ownGuardKey()),
   };
 }
 
@@ -127,9 +152,15 @@ export async function autosaveState(): Promise<unknown> {
 async function prune(): Promise<void> {
   await idbDelete(LEGACY_KEY);
   const mine = ownKey();
-  const keys = (await idbKeys()).filter((key) => key !== mine);
+  const keys = await idbKeys();
+  // Records only. Taking every key would treat a guard marker as a record,
+  // and since a marker has no savedAt it would date as ancient and be swept
+  // immediately — including this tab's own, written moments later by the
+  // restore this very call runs alongside, quietly disabling the crash
+  // detection it exists for.
+  const records = keys.filter((key) => key.startsWith(KEY_PREFIX) && key !== mine);
   const dated = await Promise.all(
-    keys.map(async (key) => ({ key, at: (await idbGet<DocumentRecord>(key))?.savedAt ?? 0 }))
+    records.map(async (key) => ({ key, at: (await idbGet<DocumentRecord>(key))?.savedAt ?? 0 }))
   );
   const now = Date.now();
   const survivors = dated
@@ -137,9 +168,22 @@ async function prune(): Promise<void> {
     .sort((a, b) => b.at - a.at)
     .slice(0, MAX_RECORDS - 1)
     .map((entry) => entry.key);
-  await Promise.all(
-    dated.filter((entry) => !survivors.includes(entry.key)).map((entry) => idbDelete(entry.key))
+  // A marker belongs to the tab whose record shares its id, so it goes when
+  // that record does — and so does one that never had a record to begin with,
+  // left by a tab that died before its first write. Never this tab's own.
+  const kept = new Set(
+    [mine, ...survivors].map((key) => key.slice(KEY_PREFIX.length))
   );
+  const staleGuards = keys.filter(
+    (key) =>
+      key.startsWith(GUARD_PREFIX) &&
+      key !== ownGuardKey() &&
+      !kept.has(key.slice(GUARD_PREFIX.length))
+  );
+  const doomed = dated
+    .filter((entry) => !survivors.includes(entry.key))
+    .map((entry) => entry.key);
+  await Promise.all([...doomed, ...staleGuards].map((key) => idbDelete(key)));
 }
 
 // Anything read back is untrusted input from an older build or a half-written
@@ -174,18 +218,20 @@ export async function loadDocument(): Promise<DocumentRecord | null> {
   // Not awaited: nothing here depends on it having finished, and a restore
   // should not wait on housekeeping for records it will not read.
   void prune();
-  const interrupted = interruptedRecordKey(ownKey());
-  if (interrupted !== null) {
+  // Our own marker, so finding it set means our own last attempt died — there
+  // is no other reading of it, and nothing to date or time out.
+  const interrupted = await idbGet<string>(ownGuardKey());
+  if (interrupted) {
     // the previous attempt never finished: assume the record it was applying is
     // what stopped it, and let that one go rather than reopening the same trap
-    // — for this tab, and for the next one that would have adopted it
-    markRestoreFinished();
+    await idbDelete(ownGuardKey());
     await idbDelete(interrupted);
     return null;
   }
   const own = await idbGet<DocumentRecord>(ownKey());
   if (isUsable(own)) {
-    markRestoreStarted(ownKey());
+    // awaited, so the marker has committed before a single pixel is applied
+    await idbSet(ownGuardKey(), ownKey());
     return own;
   }
   if (own) {
@@ -204,6 +250,6 @@ export async function loadDocument(): Promise<DocumentRecord | null> {
 }
 
 // Called once the record has been applied without incident.
-export function finishRestore(): void {
-  markRestoreFinished();
+export async function finishRestore(): Promise<void> {
+  await idbDelete(ownGuardKey());
 }
