@@ -52,3 +52,11 @@ export function takePendingCanvasContent(): PendingCanvasContent | null {
   pending = null;
   return taken;
 }
+
+// Whether content is queued and waiting for its resize to commit. The startup
+// auto-fit asks, because between the resize being requested and the upload
+// landing the canvas looks blank and unnamed while in fact it already belongs
+// to a restored or loaded document — see setStartupResolution.
+export function hasPendingCanvasContent(): boolean {
+  return pending !== null;
+}

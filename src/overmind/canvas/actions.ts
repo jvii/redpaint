@@ -1,7 +1,10 @@
 import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
+import {
+  hasPendingCanvasContent,
+  setPendingCanvasContent,
+} from '../../canvas/pendingCanvasContent';
 import {
   createNearestMapper,
   extractExactPalette,
@@ -164,6 +167,15 @@ export const setStartupResolution = (
   }
   if (context.state.canvas.screenFormatId !== null) {
     return; // a format owns the size; this is the Native path only
+  }
+  // Content queued but not yet uploaded — a restored autosave or a load, whose
+  // setResolution has just fired and whose resize is what woke the observer
+  // that called this. The state below still describes the blank startup canvas
+  // for another tick, so without this the fit would win the race and re-init
+  // the canvas out from under the upload: picture gone, and the queued content
+  // dropped into a buffer that no longer matches it.
+  if (hasPendingCanvasContent()) {
+    return;
   }
   const { lastUndoPointTime, lastUndoRedoTime, bufferEntryCount } = context.state.undo;
   const painted = Math.max(lastUndoPointTime, lastUndoRedoTime) > context.state.app.lastCleanTime;
