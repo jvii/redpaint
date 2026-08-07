@@ -74,6 +74,11 @@ export type State = {
 // what startup had — the point being that "default" has one definition.
 export const DEFAULT_PALETTE_SIZE = 32;
 
+// The slots a session starts on. Color 1 is black in every DPaint default
+// palette, which is what makes it the background a blank page is filled with.
+export const DEFAULT_FOREGROUND_COLOR_ID = '2';
+export const DEFAULT_BACKGROUND_COLOR_ID = '1';
+
 export function defaultPaletteColors(): Color[] {
   return Object.values(createPalette(DEFAULT_PALETTE_SIZE));
 }
@@ -96,8 +101,8 @@ export function defaultRanges(): (PaletteRange | null)[] {
 export const state: State = {
   palette: createPalette(DEFAULT_PALETTE_SIZE),
   paletteArray: derived((state: State) => Object.values(state.palette)),
-  foregroundColorId: '2',
-  backgroundColorId: '1',
+  foregroundColorId: DEFAULT_FOREGROUND_COLOR_ID,
+  backgroundColorId: DEFAULT_BACKGROUND_COLOR_ID,
   foregroundRgb: null,
   ranges: defaultRanges(),
   foregroundColor: derived(

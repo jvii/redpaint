@@ -13,7 +13,12 @@ import {
   DEFAULT_VIDEO_STANDARD,
   findMatchingScreenFormat,
 } from '../canvas/state';
-import { defaultPaletteColors, defaultRanges } from '../palette/state';
+import {
+  DEFAULT_BACKGROUND_COLOR_ID,
+  DEFAULT_FOREGROUND_COLOR_ID,
+  defaultPaletteColors,
+  defaultRanges,
+} from '../palette/state';
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
 import { Drawer } from './state';
@@ -223,6 +228,15 @@ export const newPicture = (context: Context): void => {
   // records whichever palette is current.
   context.actions.palette.replacePalette(defaultPaletteColors());
   context.actions.palette.replaceRanges(defaultRanges());
+  // And the slots selected in it. Without this the ids survive the palette
+  // swap — replacePalette only clamps them into the new depth — so a page
+  // would be filled with the default palette's color at whatever slot the old
+  // background happened to sit in: coherent only by accident, and arbitrary to
+  // anyone who had chosen a background. Back on color 1, black in every DPaint
+  // default palette, which is the page a fresh start begins with.
+  // setForegroundColor also drops any literal RGB foreground.
+  context.actions.palette.setForegroundColor(DEFAULT_FOREGROUND_COLOR_ID);
+  context.actions.palette.setBackgroundColor(DEFAULT_BACKGROUND_COLOR_ID);
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();
 
