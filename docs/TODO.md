@@ -18,8 +18,40 @@ is scheduled. Design details live in the linked docs where they exist.
       brush selector, `s` symmetry, `,`/`.` FG/BG pick, `+`/`-` brush size,
       `F10` toggle toolbar. (`u` undo is done, with Ctrl/Cmd-Z, Ctrl/Cmd-Shift-Z
       and Ctrl-Y alongside it — see `useUndoHotkeys`.)
+- [ ] **Tooltips on the toolbox gadgets**, so the shortcuts are discoverable
+      from the UI rather than from the source. Redo is the case that prompted
+      this: it is a *right-click* on the UNDO gadget, which nobody finds by
+      trying, and it read as "redo doesn't work at all" until the binding was
+      pointed out. The keyboard shortcuts have the same problem — nothing on
+      screen mentions `u` or Ctrl/Cmd-Z. `ToolboxActionButton` and
+      `ToolboxToggleButton` take no `title` today, so it is a small prop plus a
+      decision about wording: the menu gadgets already say things like "Crop the
+      canvas — drag a box, right-click or Enter to apply", which is the register
+      to match.
 - [ ] **Menu final design.** The pull-down menu got a cleanup pass
       (bottom-aligned, spacebar toggle) but the final look/structure is undecided.
+- [ ] **`Restore…` requester**, for reaching a backup that is not this tab's
+      own. Restoring is deliberately per-tab and silent: a tab gets its own
+      picture back and nobody else's, because adopting the newest record read as
+      the tabs being synced. That leaves a closed tab's record reachable by
+      nothing until pruning takes it. A list with thumbnails in the Picture
+      drawer, asked for deliberately, is the counterpart to that decision.
+
+      It is also where a second question should be settled rather than
+      separately: **whether to offer an "auto-backup to browser" switch.** The
+      case against a Preferences checkbox is that it fails the same test the
+      Undo Levels enum failed — a setting needs one regime where it decides
+      something, and storage is already bounded, the write is cheap, and the one
+      real motive (privacy on a shared machine) is better served by the
+      browser's own private windows and clear-site-data, which cover everything
+      rather than just the raster. It also inverts the asymmetry silent restore
+      is built on: a disable toggle is a quiet, persistent *discard*, flipped
+      once and regretted months later. What the request actually wants is a way
+      to get rid of what is stored — which is an affordance beside the list this
+      requester shows (`Saved Backup — 1.2 MB, 3 minutes ago  [ Clear ]`),
+      immediate and legible rather than a promise about future behaviour. If a
+      toggle is ever built anyway, it must delete the existing record, not
+      merely stop writing new ones.
 - [x] **DOM hover preview** — hovering no longer commits to the overlay
       canvas: on the Windows test machine any per-mousemove WebGL commit
       presents a frame-plus late (all browsers), which was the real cause of
