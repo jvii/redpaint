@@ -110,9 +110,13 @@ These rules are absolute — they, not icon style, make the app read retro:
 - **Callouts** (`.wb-callout`, `index.css`) — anything that floats over the
   canvas pointing at the thing it explains: the toolbox gadget hints and the
   palette editor's armed-action instruction. Paper ground and 2px black
-  border like any panel, plus an arrow (two triangles, black then paper inset
-  by the border, so tip and box read as one outlined shape) and one departure
-  from the shadow rule above: **`2px 2px 0 0` Workbench blue, not black**,
+  border like any panel, plus an arrow — a square rotated 45deg carrying the
+  same 2px border on its two outward faces, so the tail's outline is the box's
+  own width by construction; two offset triangles were tried and cannot manage
+  that, since a horizontal offset is not a constant perpendicular one — and one
+  departure from the shadow rule above: **Workbench blue, not black**, applied
+  as a `drop-shadow` filter so it follows the silhouette including the tail
+  (a `box-shadow` cuts straight across it),
   because a callout floats over the picture and a black shadow against a dark
   one is no shadow at all. `--callout-arrow` places the tip; centred unless
   the caller knows better, as a gadget hint does — its arrow lines up with the

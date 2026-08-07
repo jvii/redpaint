@@ -195,7 +195,10 @@ body {
   box-sizing: border-box;
   background-color: var(--paper);
   border: 2px solid black;
-  box-shadow: 2px 2px 0 0 var(--wb-blue);
+  /* drop-shadow, not box-shadow: the shadow follows the rendered silhouette,
+     so it wraps the arrow too. A box-shadow is drawn from the border box and
+     cuts straight across the tail as though it were not there. */
+  filter: drop-shadow(2px 2px 0 var(--wb-blue));
   /* Always on the way to whatever it describes, never in it. */
   pointer-events: none;
   /* Its own, not the container's: the palette editor's instruction inherited
@@ -208,40 +211,38 @@ body {
   --callout-arrow: 50%;
 }
 
-/* The arrow is two triangles: a black one the size of the border, and a paper
-   one over it inset by the border's width, so the tip and the box read as a
-   single outlined shape rather than a bubble with a sticker on it. */
-.wb-callout--points-left::before,
-.wb-callout--points-right::before,
+/* The arrow is a small square rotated 45 degrees, carrying the same 2px black
+   border as the box on its two outward faces, with the paper fill covering the
+   box's own border where they overlap so tail and box read as one shape.
+
+   Two overlapping triangles were the obvious way and are the wrong one: CSS
+   border triangles can only be offset horizontally, and a horizontal offset is
+   not a constant perpendicular one — the outline came out around 1.3px along
+   the slope and left a solid 2px wedge at the tip, so it read thicker and
+   uneven next to a border that is exactly 2px everywhere. A rotated square
+   borrows the box's own border width and cannot disagree with it. */
 .wb-callout--points-left::after,
 .wb-callout--points-right::after {
   content: '';
   position: absolute;
   top: var(--callout-arrow);
-  transform: translateY(-50%);
-  border: 10px solid transparent;
+  width: 13px;
+  height: 13px;
+  background-color: var(--paper);
 }
 
-.wb-callout--points-left::before {
-  right: 100%;
-  border-left: none;
-  border-right: 12px solid black;
-}
 .wb-callout--points-left::after {
-  right: calc(100% - 2px);
-  border: 7px solid transparent;
-  border-left: none;
-  border-right: 9px solid var(--paper);
+  /* -2px: `left: 0` is the padding box, i.e. the inside of the border. */
+  left: -2px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-left: 2px solid black;
+  border-bottom: 2px solid black;
 }
 
-.wb-callout--points-right::before {
-  left: 100%;
-  border-right: none;
-  border-left: 12px solid black;
-}
 .wb-callout--points-right::after {
-  left: calc(100% - 2px);
-  border: 7px solid transparent;
-  border-right: none;
-  border-left: 9px solid var(--paper);
+  /* +2px: `left: 100%` is the padding box, i.e. the inside of the border. */
+  left: calc(100% + 2px);
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-top: 2px solid black;
+  border-right: 2px solid black;
 }
