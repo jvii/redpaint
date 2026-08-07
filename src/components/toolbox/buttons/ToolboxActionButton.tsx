@@ -1,7 +1,9 @@
 import React, { JSX } from 'react';
 import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
+import { GadgetHint } from '../GadgetHint';
 
 interface Props {
+  hint?: GadgetHint;
   buttonClass: string;
   // Hover text. These gadgets are wordless icons and several carry a
   // right-click action nobody would find by trying, so where one does, saying
@@ -12,6 +14,7 @@ interface Props {
 }
 
 export function ToolboxActionButton({
+  hint,
   buttonClass,
   title,
   onClick,
@@ -24,7 +27,7 @@ export function ToolboxActionButton({
     event.preventDefault();
   };
   return (
-    <ToolboxButtonHoverManager isDualToggleButton={false}>
+    <ToolboxButtonHoverManager isDualToggleButton={false} hint={hint}>
       <button
         className={'toolbox__button toolbox__button--' + buttonClass}
         title={title}

@@ -1,0 +1,85 @@
+/* The hover hint for a toolbox gadget: a small Workbench panel, chrome exactly
+   as docs/style-guide.md's Chrome section requires — paper ground, 2px black
+   border, one hard 4px shadow, no border-radius. It is a panel like any other,
+   so it should look like one.
+
+   Fixed, and placed by ToolboxButtonHoverManager from the gadget's own rect:
+   .canvas-toolbox-container hides its overflow, so anything positioned inside
+   the toolbox column would be clipped at its edge. */
+.gadget-hint {
+  position: fixed;
+  z-index: 20; /* over the chrome; below nothing that matters, modals aside */
+  /* Never intercepts anything: the pointer is on its way to the gadget, and a
+     panel that swallowed the click would break the button it describes. */
+  pointer-events: none;
+  box-sizing: border-box;
+  max-width: 340px;
+  padding: 8px 10px;
+  background-color: var(--paper);
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  /* margin from the gadget, applied on the side the panel sits on */
+  margin-right: 8px;
+}
+
+.gadget-hint__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* At the 16px floor the Typography section sets. The face is named here rather
+   than inherited: body is the system stack, and every component that wants the
+   bitmap font asks for it (RetroToggle, RetroFieldset, RetroInputField all do
+   the same). -webkit-font-smoothing: none is what the bitmap face wants, and
+   the monospace rows below set their own back to antialiased. */
+.gadget-hint__name {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  color: black;
+  white-space: nowrap;
+}
+
+/* The shared keycap base stepped down to the supporting-text size, exactly as
+   the menubar hint does it — one keycap system, two sizes. */
+.gadget-hint .gadget-hint__key {
+  font-size: 11px;
+  padding: 2px 5px;
+}
+
+.gadget-hint__rows {
+  display: grid;
+  gap: 4px;
+  margin-top: 9px;
+}
+
+.gadget-hint__row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+}
+
+/* Below 16px means the plain monospace stack, with its own smoothing: the
+   bitmap face's `-webkit-font-smoothing: none` is inherited and makes system
+   text visibly thinner in Safari (Typography section, and it is emphatic). */
+.gadget-hint__gesture,
+.gadget-hint__does {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* The gesture is the index, not the message — dimmed so the eye lands on what
+   the gesture does. */
+.gadget-hint__gesture {
+  color: var(--dim-label);
+  white-space: nowrap;
+}
+
+.gadget-hint__does {
+  color: black;
+}

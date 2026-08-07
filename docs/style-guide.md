@@ -267,8 +267,26 @@ Consistency is judged within each control type, not across them:
   swaps in round caps/joins for its curved arrowheads, the detail that sets
   it apart from plain Horizontal's sharp ones. A per-segment `title` tooltip
   carries the text name that the icon itself doesn't.
-- **Toolbox**: always icon-only (it is a compact palette).
-- Keyboard shortcuts live in gadget `title` tooltips, plus a monospace
+- **Toolbox**: always icon-only (it is a compact palette) — and because of
+  that, every gadget carries a **hover hint panel** instead of a label
+  (`GadgetHint.tsx`, content in `toolboxHints.ts`). It is a small Workbench
+  panel like any other: paper ground, 2px black border, one hard `4px 4px 0
+  0` shadow, no radius. Name in Press Start 2P at the 16px floor, the primary
+  key as a stepped-down `.wb-gadget__keycap`, then one row per gesture in
+  11px monospace — the gesture dimmed (`--dim-label`), what it does in black.
+  A native `title` could not carry that: a shape gadget has three actions
+  between its two halves and a right-click, and several gadgets hide an action
+  behind a right-click that an icon cannot hint at (redo lived on one for
+  months and was reported as broken).
+  - **Every** toolbox gadget gets one, including tools whose icon is already
+    plain. Partial coverage is worse than none: hovering and getting nothing
+    would mean either "no hint written" or "nothing hidden here", and a reader
+    cannot tell which.
+  - Rows are for gestures that are not the obvious one. A plain click
+    selecting a tool needs no row; a right-click opening a requester does.
+  - The panel is `pointer-events: none` and hides on mousedown — it is on the
+    way to the gadget, never in it.
+- Keyboard shortcuts elsewhere live in gadget `title` tooltips, plus a monospace
   keycap on two controls that get one, styled with a shared base class
   (`.wb-gadget__keycap`, `MenuGadgets.css`) so they read as one system: a
   bordered, 3px-`border-radius`ed single letter — the radius is a

@@ -1,7 +1,9 @@
 import React, { JSX } from 'react';
 import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
+import { GadgetHint } from '../GadgetHint';
 
 interface Props {
+  hint?: GadgetHint;
   buttonClass: string;
   isSelected: boolean;
   onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
@@ -9,6 +11,7 @@ interface Props {
 }
 
 export function ToolboxToggleButton({
+  hint,
   buttonClass,
   isSelected,
   onClick,
@@ -22,7 +25,7 @@ export function ToolboxToggleButton({
   };
 
   return (
-    <ToolboxButtonHoverManager isDualToggleButton={false}>
+    <ToolboxButtonHoverManager isDualToggleButton={false} hint={hint}>
       <button
         className={
           'toolbox__button ' +

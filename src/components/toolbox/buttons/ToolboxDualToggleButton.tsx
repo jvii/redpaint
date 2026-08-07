@@ -1,7 +1,9 @@
 import React, { JSX } from 'react';
 import { ToolboxButtonHoverManager } from './ToolboxButtonHoverManager';
+import { GadgetHint } from '../GadgetHint';
 
 interface Props {
+  hint?: GadgetHint;
   buttonClass: string;
   isLowerHalfSelected: boolean;
   isUpperHalfSelected: boolean;
@@ -13,6 +15,7 @@ interface Props {
 }
 
 export function ToolboxDualToggleButton({
+  hint,
   buttonClass,
   isLowerHalfSelected,
   isUpperHalfSelected,
@@ -43,7 +46,7 @@ export function ToolboxDualToggleButton({
     modifier = modifier + '-upper-half-selected';
   }
   return (
-    <ToolboxButtonHoverManager isDualToggleButton={true}>
+    <ToolboxButtonHoverManager isDualToggleButton={true} hint={hint}>
       <button
         className={
           'toolbox__button toolbox__button--' +
