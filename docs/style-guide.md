@@ -107,6 +107,17 @@ These rules are absolute — they, not icon style, make the app read retro:
   rainbow rule). No transparency except the menu panel's ground and the
   deliberate dim-label colors.
 - Gadgets on a row share one fixed height so seams and shadows line up.
+- **Callouts** (`.wb-callout`, `index.css`) — anything that floats over the
+  canvas pointing at the thing it explains: the toolbox gadget hints and the
+  palette editor's armed-action instruction. Paper ground and 2px black
+  border like any panel, plus an arrow (two triangles, black then paper inset
+  by the border, so tip and box read as one outlined shape) and one departure
+  from the shadow rule above: **`2px 2px 0 0` Workbench blue, not black**,
+  because a callout floats over the picture and a black shadow against a dark
+  one is no shadow at all. `--callout-arrow` places the tip; centred unless
+  the caller knows better, as a gadget hint does — its arrow lines up with the
+  gadget, not with the middle of a panel taller than the gadget is. Callers
+  own positioning and typography, nothing else.
 
 ## Sizes and scaling
 
@@ -269,9 +280,9 @@ Consistency is judged within each control type, not across them:
   carries the text name that the icon itself doesn't.
 - **Toolbox**: always icon-only (it is a compact palette) — and because of
   that, every gadget carries a **hover hint panel** instead of a label
-  (`GadgetHint.tsx`, content in `toolboxHints.ts`). It is a small Workbench
-  panel like any other: paper ground, 2px black border, one hard `4px 4px 0
-  0` shadow, no radius. Name in Press Start 2P at the 16px floor, the primary
+  (`GadgetHint.tsx`, content in `toolboxHints.ts`). It is a `.wb-callout`
+  (see Chrome above), the same bubble the palette editor's instruction uses.
+  Name in Press Start 2P at the 16px floor, the primary
   key as a stepped-down `.wb-gadget__keycap`, then one row per gesture in
   11px monospace — the gesture dimmed (`--dim-label`), what it does in black.
   A native `title` could not carry that: a shape gadget has three actions

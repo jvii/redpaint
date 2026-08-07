@@ -1,7 +1,6 @@
-/* The hover hint for a toolbox gadget: a small Workbench panel, chrome exactly
-   as docs/style-guide.md's Chrome section requires — paper ground, 2px black
-   border, one hard 4px shadow, no border-radius. It is a panel like any other,
-   so it should look like one.
+/* The hover hint for a toolbox gadget: a .wb-callout (index.css), the same
+   bubble the palette editor's armed-action instruction uses — one treatment
+   for every floating explanation in the app.
 
    Fixed, and placed by ToolboxButtonHoverManager from the gadget's own rect:
    .canvas-toolbox-container hides its overflow, so anything positioned inside
@@ -12,14 +11,11 @@
   /* Never intercepts anything: the pointer is on its way to the gadget, and a
      panel that swallowed the click would break the button it describes. */
   pointer-events: none;
-  box-sizing: border-box;
   max-width: 340px;
   padding: 8px 10px;
-  background-color: var(--paper);
-  border: 2px solid black;
-  box-shadow: 4px 4px 0 0 black;
-  /* margin from the gadget, applied on the side the panel sits on */
-  margin-right: 8px;
+  /* Ground, border, shadow and the arrow itself: .wb-callout in index.css.
+     Room on the right for the arrow that points back at the gadget. */
+  margin-right: 12px;
 }
 
 .gadget-hint__head {

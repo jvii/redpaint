@@ -175,3 +175,73 @@ body {
 .retro-toggle__segment:hover:not(.retro-toggle__segment--selected):not(:disabled) .toggle-detail {
   opacity: 1;
 }
+
+/* A floating explanation anchored to the thing it is about: the toolbox
+   gadget hints (GadgetHint.tsx) and the palette editor's armed-action
+   instruction. Defined once here because the two were written separately and
+   had already drifted into different bubbles — the same reason .toggle-detail
+   and .retro-input live here.
+
+   Paper ground and black border, the app's ordinary panel chrome. The shadow
+   is the one deliberate departure from the Chrome section's `4px 4px 0 0
+   black`: a callout floats over the canvas, where a black shadow against a
+   dark picture is no shadow at all. Workbench blue reads on both. The palette
+   editor found this first; the gadget hints had the invisible-shadow problem
+   until they inherited it.
+
+   Positioning belongs to the caller — one is fixed and measured from a
+   gadget, the other absolute beside the palette grid — as does typography. */
+.wb-callout {
+  box-sizing: border-box;
+  background-color: var(--paper);
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 var(--wb-blue);
+  /* Always on the way to whatever it describes, never in it. */
+  pointer-events: none;
+  /* Its own, not the container's: the palette editor's instruction inherited
+     text-align: right all the way from the modal window and came out ragged
+     against the left edge it shares with the gadget hints. */
+  text-align: left;
+  /* Where the arrow meets the edge. Centred unless the caller knows better:
+     a gadget hint aligns its arrow with the gadget, which is not the middle
+     of a panel taller than the gadget is. */
+  --callout-arrow: 50%;
+}
+
+/* The arrow is two triangles: a black one the size of the border, and a paper
+   one over it inset by the border's width, so the tip and the box read as a
+   single outlined shape rather than a bubble with a sticker on it. */
+.wb-callout--points-left::before,
+.wb-callout--points-right::before,
+.wb-callout--points-left::after,
+.wb-callout--points-right::after {
+  content: '';
+  position: absolute;
+  top: var(--callout-arrow);
+  transform: translateY(-50%);
+  border: 10px solid transparent;
+}
+
+.wb-callout--points-left::before {
+  right: 100%;
+  border-left: none;
+  border-right: 12px solid black;
+}
+.wb-callout--points-left::after {
+  right: calc(100% - 2px);
+  border: 7px solid transparent;
+  border-left: none;
+  border-right: 9px solid var(--paper);
+}
+
+.wb-callout--points-right::before {
+  left: 100%;
+  border-right: none;
+  border-left: 12px solid black;
+}
+.wb-callout--points-right::after {
+  left: calc(100% - 2px);
+  border: 7px solid transparent;
+  border-right: none;
+  border-left: 9px solid var(--paper);
+}

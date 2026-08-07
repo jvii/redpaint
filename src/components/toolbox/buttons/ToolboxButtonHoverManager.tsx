@@ -1,11 +1,11 @@
 import React, { JSX, useEffect, useRef, useState } from 'react';
 import { GadgetHint, GadgetHintPanel, HintPlacement } from '../GadgetHint';
 
-// Long enough that sweeping across the toolbox on the way somewhere else does
-// not flash a panel per gadget, short enough that pausing on one feels like it
-// answered rather than kept you waiting. Reaching for a tool you already know
-// is the common case, and a hint that arrives then is only in the way.
-const HINT_DELAY_MS = 700;
+// Deliberately long. Reaching for a tool you already know is the overwhelming
+// case, and a panel arriving mid-reach is only in the way; the hint is for
+// someone who has stopped and is wondering, which is a much longer pause than
+// a tooltip's usual half-second assumes.
+const HINT_DELAY_MS = 2000;
 
 // Only one hint is ever open. Each manager owns its own state, so nothing
 // stops two from being shown at once except this: whoever opens closes the
@@ -75,6 +75,12 @@ export function ToolboxButtonHoverManager(props: Props): JSX.Element {
         right: window.innerWidth - rect.left,
         top: belowMiddle ? undefined : rect.top,
         bottom: belowMiddle ? window.innerHeight - rect.bottom : undefined,
+        // The panel's anchored edge is level with the gadget's, so the gadget's
+        // middle is half its height in from that edge — measured, not the CSS
+        // 40px, since the chrome scales with the UI Size setting.
+        arrow: belowMiddle
+          ? `calc(100% - ${rect.height / 2}px)`
+          : `${rect.height / 2}px`,
       });
     }, HINT_DELAY_MS);
   };

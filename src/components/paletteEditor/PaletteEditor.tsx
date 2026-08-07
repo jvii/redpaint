@@ -137,7 +137,7 @@ export function PaletteEditor(): JSX.Element | null {
           {/* armed action's instruction: a callout pointing at the palette
               grid, where the next click belongs; overflows the requester */}
           {state.paletteEditor.armedAction && (
-            <span className="palette-editor__callout">
+            <span className="wb-callout wb-callout--points-left palette-editor__callout">
               {state.paletteEditor.armedAction === 'copy' && 'Select the color to copy to'}
               {state.paletteEditor.armedAction === 'swap' && 'Select the color to swap with'}
               {state.paletteEditor.armedAction === 'spread' &&

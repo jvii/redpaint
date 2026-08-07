@@ -1,4 +1,4 @@
-import { JSX } from 'react';
+import React, { JSX } from 'react';
 import './GadgetHint.css';
 
 // What a toolbox gadget says about itself on hover.
@@ -33,6 +33,10 @@ export type HintPlacement = {
   // off the bottom of the window
   top?: number;
   bottom?: number;
+  // Where the arrow meets the panel's right edge, as a CSS length. Aligned
+  // with the gadget's own middle rather than the panel's: the panel is taller
+  // than a 40px gadget, so a centred arrow would point below it.
+  arrow: string;
 };
 
 export function GadgetHintPanel({
@@ -43,7 +47,17 @@ export function GadgetHintPanel({
   at: HintPlacement;
 }): JSX.Element {
   return (
-    <div className="gadget-hint" style={{ right: at.right, top: at.top, bottom: at.bottom }}>
+    <div
+      className="wb-callout wb-callout--points-right gadget-hint"
+      style={
+        {
+          right: at.right,
+          top: at.top,
+          bottom: at.bottom,
+          '--callout-arrow': at.arrow,
+        } as React.CSSProperties
+      }
+    >
       <div className="gadget-hint__head">
         <span className="gadget-hint__name">{hint.name}</span>
         {hint.key && <kbd className="wb-gadget__keycap gadget-hint__key">{hint.key}</kbd>}
