@@ -133,7 +133,7 @@ export function Toolbox(): JSX.Element {
       <div className="toolbox-button-divider"></div>
       <ToolboxActionButton
         buttonClass="clr"
-        title="Clear the page with the background color — right-click for a new page (fits the window, default palette)"
+        title="Clear the page with the background color — right-click starts a new page: Native, fitted to the window, default palette"
         onClick={(): void => {
           // DPaint's CLR: cover the page with the background color, and nothing
           // else. It used to also drop the document's name and mark it clean,

@@ -162,10 +162,22 @@ export type PendingScreenFormat = {
   target: { width: number; height: number };
 };
 
+// What the display side of a document starts as. Named because the new-page
+// gesture (app.newPicture) restores exactly these, and "default" should have
+// one definition rather than a literal here and a guess there.
+//
+// scaleMode is deliberately not among them: it is how the simulated screen
+// fills the window, a preference owned by a menu toggle and meaningless at
+// Native, and the autosave record does not carry it either. These three it
+// does carry — they belong to the picture.
+export const DEFAULT_SCREEN_FORMAT_ID: ScreenFormatId | null = null;
+export const DEFAULT_VIDEO_STANDARD: VideoStandard = 'PAL';
+export const DEFAULT_TRUE_COLOR_ENABLED = true;
+
 export const state: State = {
   resolution: { width: 0, height: 0 },
-  screenFormatId: null,
-  videoStandard: 'PAL',
+  screenFormatId: DEFAULT_SCREEN_FORMAT_ID,
+  videoStandard: DEFAULT_VIDEO_STANDARD,
   scaleMode: 'stretch',
   pixelAspect: derived((state: State) =>
     state.screenFormatId
@@ -180,6 +192,6 @@ export const state: State = {
   displayScale: { x: 1, y: 1 },
   viewportSize: { width: 0, height: 0 },
   hasTrueColorPixels: false,
-  trueColorEnabled: true,
+  trueColorEnabled: DEFAULT_TRUE_COLOR_ENABLED,
   pendingScreenFormat: null,
 };

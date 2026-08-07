@@ -7,7 +7,12 @@ import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { findMatchingScreenFormat } from '../canvas/state';
+import {
+  DEFAULT_SCREEN_FORMAT_ID,
+  DEFAULT_TRUE_COLOR_ENABLED,
+  DEFAULT_VIDEO_STANDARD,
+  findMatchingScreenFormat,
+} from '../canvas/state';
 import { defaultPaletteColors, defaultRanges } from '../palette/state';
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
@@ -192,12 +197,29 @@ export const markDocumentClean = (context: Context): void => {
 // three back — and a right-click that lands here by accident (the gadget above
 // is UNDO, whose right-click is redo) costs nothing.
 //
-// What undo will not put back is the document's name: that is not in a snapshot
-// and would be odd to make undo move. So the picture returns untitled and needs
-// its Save As again — the smaller surprise, and confined to the one gesture
-// that means "this is not that file any more".
+// Precisely: undo restores the picture — pixels, canvas size and palette, all
+// three of which a snapshot carries. It does not restore the document's name,
+// nor the screen format, video standard and True Color switch, none of which
+// are in one. So undoing a new page gives the painting back on a Native canvas
+// of its old size, untitled.
+//
+// That is a deliberate line rather than an oversight: a snapshot is what the
+// picture looked like, and making undo move the tab title or flip the simulated
+// screen underneath someone would be its own surprise. If it ever needs to be
+// exact, the fix is to widen UndoEntry, not to special-case this action.
 export const newPicture = (context: Context): void => {
-  // Palette first: the GL textures index into it, and the snapshot taken below
+  // The simulated screen goes first, and back to none. Fitting the canvas to
+  // the window is only meaningful at Native: leaving a format selected would
+  // set a Lo-Res document to a window-sized canvas, which is a state no route
+  // through the Screen Format requester can produce. The video standard and
+  // the True Color switch travel with it — the autosave record carries all
+  // three together, which is the app's own statement that they belong to the
+  // picture rather than to the session.
+  context.actions.canvas.setScreenFormat({ formatId: DEFAULT_SCREEN_FORMAT_ID });
+  context.actions.canvas.setVideoStandard(DEFAULT_VIDEO_STANDARD);
+  context.actions.canvas.setTrueColorEnabled(DEFAULT_TRUE_COLOR_ENABLED);
+
+  // Palette next: the GL textures index into it, and the snapshot taken below
   // records whichever palette is current.
   context.actions.palette.replacePalette(defaultPaletteColors());
   context.actions.palette.replaceRanges(defaultRanges());
