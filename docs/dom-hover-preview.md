@@ -197,11 +197,17 @@ indirect display drivers move the pointer through their own hardware-cursor
 path without re-presenting the frame — which is the asymmetry that
 originally framed the app-drawn cursor as the suspect.
 
-Remedy is at the desk, not in the code: connect the monitor through a direct
-HDMI/DisplayPort output (or a dock port that passes DP alt-mode natively,
-rather than USB-graphics). The DOM hover preview stays valuable regardless —
-docked laptops are common, and it makes hover immune to any such display
-path by construction.
+Confirmed to the model number: Windows' Advanced display names the monitor's
+adapter as the **ThinkPad Hybrid USB-C with USB-A Dock** — a DisplayLink
+dock ("Hybrid" = works over USB-A too, which only USB graphics can do; all
+its video outputs are DisplayLink, none pass DP alt-mode). The occasional
+smooth spells on that monitor are DisplayLink's adaptive compression and
+shared USB bandwidth having a good moment, not the machine healing.
+
+Remedy is at the desk, not in the code: a direct HDMI/USB-C cable from the
+laptop to the monitor, or a non-Hybrid (alt-mode/Thunderbolt) dock. The DOM
+hover preview stays valuable regardless — docked laptops are common, and it
+makes hover immune to any such display path by construction.
 
 ## Out of scope
 
