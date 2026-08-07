@@ -5,7 +5,6 @@ import { ToolboxActionButton } from './buttons/ToolboxActionButton';
 import { useActions, useAppState } from '../../overmind';
 import './Toolbox.css';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
-import { forgetFileHandles } from '../menu/savedFileHandle';
 
 export function Toolbox(): JSX.Element {
   const state = useAppState();
@@ -127,21 +126,25 @@ export function Toolbox(): JSX.Element {
       />
       <ToolboxActionButton
         buttonClass="undo"
+        title="Undo (U, Ctrl/Cmd-Z) — right-click to redo (Ctrl/Cmd-Shift-Z)"
         onClick={(): void => actions.undo.undo()}
         onRightClick={(): void => actions.undo.redo()}
       />
       <div className="toolbox-button-divider"></div>
       <ToolboxActionButton
         buttonClass="clr"
+        title="Clear the page with the background color — right-click for a new page (fits the window, default palette)"
         onClick={(): void => {
+          // DPaint's CLR: cover the page with the background color, and nothing
+          // else. It used to also drop the document's name and mark it clean,
+          // which made it half a new-document command and — because a name is
+          // not part of an undo snapshot — left Ctrl+Z returning the picture as
+          // an untitled document. Pixels only, so undo puts back exactly what
+          // this took away. Starting a new page is the right-click below.
           paintingCanvasController.clear();
           actions.undo.setUndoPoint();
-          // A cleared canvas is a new picture: it is not the file it was, so it
-          // gives up that file's name and starts clean again.
-          actions.app.setDocumentName('');
-          actions.app.markDocumentClean();
-          forgetFileHandles();
         }}
+        onRightClick={(): void => actions.app.newPicture()}
       />
     </div>
   );

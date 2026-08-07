@@ -152,7 +152,7 @@ export function useCanvasContentUpload(): void {
     }
     paintingCanvasController.setCanvasColorIndex(pending.content);
     paintingCanvasController.render();
-    if (pending.freshDocument) {
+    if (pending.freshDocument && !pending.keepHistory) {
       // a loaded image starts a new document: drop the old picture's history
       // (setUndoPoint below makes the fresh content its single entry)
       actions.undo.reset();

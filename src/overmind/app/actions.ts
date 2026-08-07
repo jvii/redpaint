@@ -8,6 +8,7 @@ import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { findMatchingScreenFormat } from '../canvas/state';
+import { defaultPaletteColors, defaultRanges } from '../palette/state';
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
 import { Drawer } from './state';
@@ -173,6 +174,55 @@ export const markDocumentModified = (context: Context): void => {
 // The document now matches a file (or is a fresh, empty one): nothing to save.
 export const markDocumentClean = (context: Context): void => {
   context.state.app.lastCleanTime = Date.now();
+};
+
+// A fresh page: the canvas fitted to the window again, the startup palette
+// back, and the document no longer standing for any file. Right-click on CLR,
+// where left-click covers the page with the background color and nothing more.
+//
+// It exists because the autosave took a gesture away. Reloading used to give a
+// clean slate — not by design, but because nothing was kept — and now that the
+// picture comes back, there was no way to start over at all. DPaint had no New
+// either (its File menu begins at Load Picture); CLR was how you started again,
+// with page size and palette carried over as properties of the session. So this
+// is that gesture made deliberate rather than a menu item DPaint never had.
+//
+// Undoable, unlike a load, which drops history. An undo entry already carries
+// the palette and the dimensions as well as the pixels, so one step puts all
+// three back — and a right-click that lands here by accident (the gadget above
+// is UNDO, whose right-click is redo) costs nothing.
+//
+// What undo will not put back is the document's name: that is not in a snapshot
+// and would be odd to make undo move. So the picture returns untitled and needs
+// its Save As again — the smaller surprise, and confined to the one gesture
+// that means "this is not that file any more".
+export const newPicture = (context: Context): void => {
+  // Palette first: the GL textures index into it, and the snapshot taken below
+  // records whichever palette is current.
+  context.actions.palette.replacePalette(defaultPaletteColors());
+  context.actions.palette.replaceRanges(defaultRanges());
+  paintingCanvasController.updatePalette();
+  overlayCanvasController.updatePalette();
+
+  // The drawing pane's size, which is what the canvas is fitted to at startup;
+  // its own resolution if the pane has somehow never been measured.
+  const viewport = context.state.canvas.viewportSize;
+  const size =
+    viewport.width > 0 && viewport.height > 0 ? viewport : context.state.canvas.resolution;
+
+  // Queued rather than cleared here, and the undo point taken by the upload:
+  // setResolution's canvas element resize only commits on the next render, so
+  // a snapshot taken now would be of the old size (see useCanvasContentUpload).
+  const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
+  setPendingCanvasContent(
+    CanvasColorIndex.createEmptyWithBackgroundColor(size.width, size.height, backgroundColorNumber),
+    { freshDocument: true, keepHistory: true, documentName: '', documentModified: false }
+  );
+  context.actions.canvas.setResolution({
+    width: size.width,
+    height: size.height,
+    recordUndoPoint: false,
+  });
 };
 
 export const setDocumentName = (context: Context, name: string): void => {

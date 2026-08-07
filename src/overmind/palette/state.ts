@@ -68,24 +68,38 @@ export type State = {
   readonly displayBackgroundColor: Color;
 };
 
-export const state: State = {
-  palette: createPalette(32),
-  paletteArray: derived((state: State) => Object.values(state.palette)),
-  foregroundColorId: '2',
-  backgroundColorId: '1',
-  foregroundRgb: null,
-  // Range slots (DPaint's Range 1..4, ours defaults to six), unset slots are
-  // null. The list grows past six when a loaded IFF carries more CRNG
-  // chunks. Range 1 defaults to the grey ramp (the default 32-color
-  // palette's last 12 entries), matching DPaint's own default range.
-  ranges: [
+// The palette and ranges a session starts with, as functions rather than
+// constants so a caller can never hand back the object the state is using.
+// Shared with the new-page gesture (app.newPicture), which restores exactly
+// what startup had — the point being that "default" has one definition.
+export const DEFAULT_PALETTE_SIZE = 32;
+
+export function defaultPaletteColors(): Color[] {
+  return Object.values(createPalette(DEFAULT_PALETTE_SIZE));
+}
+
+// Range slots (DPaint's Range 1..4, ours defaults to six), unset slots are
+// null. The list grows past six when a loaded IFF carries more CRNG chunks.
+// Range 1 defaults to the grey ramp (the default 32-color palette's last 12
+// entries), matching DPaint's own default range.
+export function defaultRanges(): (PaletteRange | null)[] {
+  return [
     { start: '21', end: '32', rate: DEFAULT_CYCLE_RATE, active: true, reverse: false },
     null,
     null,
     null,
     null,
     null,
-  ],
+  ];
+}
+
+export const state: State = {
+  palette: createPalette(DEFAULT_PALETTE_SIZE),
+  paletteArray: derived((state: State) => Object.values(state.palette)),
+  foregroundColorId: '2',
+  backgroundColorId: '1',
+  foregroundRgb: null,
+  ranges: defaultRanges(),
   foregroundColor: derived(
     (state: State) => state.foregroundRgb ?? state.palette[state.foregroundColorId]
   ),
