@@ -81,6 +81,14 @@
   grid-template-columns: auto 1fr;
   gap: 4px 10px;
   margin-top: 9px;
+  /* Line the two columns up by their text, not by their boxes. The default
+     stretch matches the cells' tops, which looks the same right up until one
+     cell holds a keycap: the cap is taller than the 11px text beside it, so it
+     pushes that text down onto a taller line box and the gesture beside it is
+     left riding high. Baseline ignores the cap's height and matches what a
+     reader actually sees. Multi-line values keep working — it is the *first*
+     baseline, so a wrapped value still starts level with its gesture. */
+  align-items: baseline;
 }
 
 /* The row exists to group a pair in the markup; its children are what the
@@ -113,7 +121,7 @@
 
 /* Dimmed, and only ever a gesture on the gadget: top half, bottom half,
    right-click. Canvas behaviour is prose above, never a grey label here — the
-   two were the same colour once and read as one list of interchangeable
+   two were the same color once and read as one list of interchangeable
    things, which they are not. */
 .gadget-hint__gesture {
   color: var(--dim-label);
