@@ -57,7 +57,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   },
   circle: {
     name: 'Circle',
-    use: 'Drag out from the centre.',
+    use: 'Drag out from the center.',
     parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
@@ -66,7 +66,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // sets the rotation angle (EllipseTool.onMouseMove).
   ellipse: {
     name: 'Ellipse',
-    use: 'Drag out from the centre and release to set the size. Then move to reshape it, or drag to rotate; the next release draws it.',
+    use: 'Drag out from the center and release to set the size. Then move to reshape it, or drag to rotate; the next release draws it.',
     parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
@@ -87,13 +87,20 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     use: 'Click where the text should start, then type.',
     parts: shapeHalves,
   },
+  // Aim first, then the view opens: the click arms zoomInitialPointSelectorTool
+  // and the canvas click that follows is what chooses the point
+  // (toolbox.toggleZoomMode).
   zoom: {
     name: 'Magnify',
-    use: 'Opens the zoom view beside the canvas; click the canvas to aim it.',
+    use: 'Click, then click the canvas to choose what to magnify; the zoom view opens beside it. Click again to close.',
   },
+  // A plain on/off toggle (toolbox.toggleSymmetryMode). The center defaults to
+  // the canvas center (symmetry state: `center: null`), and the picker that
+  // moves it is armed from the settings panel — not by clicking here, which
+  // the hint used to claim.
   symmetry: {
     name: 'Symmetry',
-    use: 'Mirrors every stroke about a centre point; click the canvas to place it.',
+    use: 'Mirrors and repeats every stroke around a center point: the canvas center, until you move it in the settings. Click to turn it on or off.',
     rightClick: 'Symmetry settings',
   },
   undo: {
