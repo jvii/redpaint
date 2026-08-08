@@ -89,10 +89,15 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     name: 'Brush Selector',
     use: 'Drag a box to pick that piece of the canvas up as the brush.',
   },
+  // A stub: TextTool takes keystrokes into state, but every renderText call in
+  // it is commented out, so nothing reaches the canvas (docs/TODO.md says the
+  // same). The hint used to describe the tool it will be one day, which is the
+  // worst thing a hint can do — someone who follows it and sees nothing
+  // concludes they are holding it wrong. Its two halves are dropped for the
+  // same reason: Outline and Filled are real toolbox states and neither draws.
   text: {
     name: 'Text',
-    use: 'Click where the text should start, then type.',
-    parts: shapeHalves,
+    use: 'Unfinished: it takes keystrokes but draws nothing yet.',
   },
   // Aim first, then the view opens: the click arms zoomInitialPointSelectorTool
   // and the canvas click that follows is what chooses the point
