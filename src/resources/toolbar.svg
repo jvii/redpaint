@@ -756,8 +756,13 @@
         />
       </marker>
     </defs>
-    <g transform="translate(-3.635 -3.4126)">
-      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="#EFEFF1" />
+    <!-- The glyph is a hole, not ink. Every other toolbox icon paints one
+         #EFEFF1 tile through a mask whose black artwork punches the shape out,
+         so whatever sits behind the button shows through it — black at rest,
+         Workbench blue on hover. This one drew black strokes straight onto an
+         opaque tile: identical at rest, and unable to show a hover at all. -->
+    <mask id="symmetry-mask">
+      <rect x="3.7417" y="3.5192" width="26.245" height="26.245" fill="white" />
       <g fill="#000" stroke="#000">
         <path
           d="m16.87 6.7079v19.719"
@@ -783,6 +788,16 @@
           />
         </g>
       </g>
+    </mask>
+    <g transform="translate(-3.635 -3.4126)">
+      <rect
+        x="3.7417"
+        y="3.5192"
+        width="26.245"
+        height="26.245"
+        fill="#EFEFF1"
+        mask="url(#symmetry-mask)"
+      />
     </g>
   </symbol>
 
