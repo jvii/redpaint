@@ -135,23 +135,28 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
 // Not one of the three button components, so it wires the hint up itself
 // (useGadgetHint).
 //
-// It is also where the app's one universal painting convention is written
-// down, and the only place: right-click paints with the background color, in
-// every one of the ten painting tools — nine through prepareToPaint, Flood
-// Fill through its own onContextMenu. Repeating that in ten panels would be
-// the same sentence ten times, and the first copy to drift would be the one
-// nobody thought to update. It belongs to the background color rather than to
-// any tool, so it lives with the swatch that shows it.
+// Deliberately silent about one thing. Right-click paints with the background
+// color in all ten painting tools — nine through prepareToPaint, Flood Fill
+// through its own onContextMenu — and this panel was briefly where that got
+// said, on the grounds that the rule belongs to the background color rather
+// than to any one tool. It is out again: true and useful is not the same as
+// worth the room, and it made the one panel that should be a plain legend for
+// two swatches into the place the app explains itself.
+//
+// So it is not missing from here by oversight, and it does not belong in the
+// ten tool hints either — that would be the same sentence ten times, with the
+// first copy to drift being the one nobody updates. It is documentation, and
+// it lives outside the UI.
 export const colorIndicatorHint: GadgetHint = {
   name: 'Color Indicator',
-  use: 'The circle is the current foreground color, the rectangle behind it the background. Right-click with any painting tool to draw with the background.',
+  use: 'The circle is the current foreground color, the rectangle behind it the current background color.',
   // Both arm a picker that samples the *canvas* — ColorSelectorTool reads the
   // pixel under the next click (getPaintColorForPoint). The palette is where
   // you choose a color you can already see; this is how you take one you can
   // only point at.
   parts: [
-    { gesture: 'circle', does: 'Pick a foreground color off the canvas' },
-    { gesture: 'rectangle', does: 'Pick a background color off the canvas' },
+    { gesture: 'circle', does: 'Left-click to pick a foreground color off the canvas' },
+    { gesture: 'rectangle', does: 'Left-click to pick a background color off the canvas' },
   ],
   rightClick: 'Palette editor',
 };
