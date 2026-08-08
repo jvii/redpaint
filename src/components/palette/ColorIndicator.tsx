@@ -1,10 +1,13 @@
 import { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../algorithm/color';
+import { useGadgetHint } from '../toolbox/useGadgetHint';
+import { colorIndicatorHint } from '../toolbox/toolboxHints';
 
 export function ColorIndicator(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
+  const { hintRef, showHint, hideHint, hintPanel } = useGadgetHint(colorIndicatorHint);
 
   const background = {
     backgroundColor: colorToRGBString(useAppState().palette.displayBackgroundColor),
@@ -26,7 +29,11 @@ export function ColorIndicator(): JSX.Element {
 
   return (
     <div
+      ref={hintRef}
       className="color-indicator"
+      onMouseOver={showHint}
+      onMouseLeave={hideHint}
+      onMouseDown={hideHint}
       onContextMenu={(event): void => {
         actions.paletteEditor.open();
         event.preventDefault();
@@ -47,6 +54,7 @@ export function ColorIndicator(): JSX.Element {
           }}
         ></div>
       </div>
+      {hintPanel}
     </div>
   );
 }

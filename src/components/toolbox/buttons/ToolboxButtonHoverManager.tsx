@@ -1,24 +1,6 @@
-import React, { JSX, useEffect, useRef, useState } from 'react';
-import { GadgetHint, GadgetHintPanel, HintPlacement } from '../GadgetHint';
-
-// Deliberately long. Reaching for a tool you already know is the overwhelming
-// case, and a panel arriving mid-reach is only in the way; the hint is for
-// someone who has stopped and is wondering, which is a much longer pause than
-// a tooltip's usual half-second assumes.
-const HINT_DELAY_MS = 2000;
-
-// Only one hint is ever open. Each manager owns its own state, so nothing
-// stops two from being shown at once except this: whoever opens closes the
-// last one first.
-//
-// Per-gadget hiding on mouseleave is not enough on its own. It missed once
-// already through a plain ordering slip — the timer id was cleared before the
-// function that used it to cancel the timer, so a pending hint fired after the
-// pointer had left and panels piled up — and mouseleave can be missed for
-// other reasons too: a pointer leaving the window, a gadget unmounting under
-// the cursor as tools change. This makes the invariant structural instead of
-// something every path has to remember.
-let closeOpenHint: (() => void) | null = null;
+import React, { JSX, useState } from 'react';
+import { GadgetHint } from '../GadgetHint';
+import { useGadgetHint } from '../useGadgetHint';
 
 interface Props {
   children: React.ReactNode;
@@ -29,9 +11,7 @@ interface Props {
 export function ToolboxButtonHoverManager(props: Props): JSX.Element {
   const [isHovered, setHovered] = useState(false);
   const [isLowerHalfHovered, setLowerHalfHovered] = useState(false);
-  const [hintAt, setHintAt] = useState<HintPlacement | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const hintTimer = useRef<number | undefined>(undefined);
+  const { hintRef, showHint, hideHint, hintPanel } = useGadgetHint(props.hint);
 
   const handleDualToggleButtonHover = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
@@ -42,61 +22,6 @@ export function ToolboxButtonHoverManager(props: Props): JSX.Element {
       setLowerHalfHovered(false);
     }
   };
-
-  const hideHint = (): void => {
-    // Cancel first, then forget the id — the other order cancels nothing.
-    window.clearTimeout(hintTimer.current);
-    hintTimer.current = undefined;
-    if (closeOpenHint === hideHint) {
-      closeOpenHint = null;
-    }
-    setHintAt(null);
-  };
-
-  const armHint = (): void => {
-    // The id stays set while the panel is up, so this also stops mouseover
-    // firing again inside the same gadget from restarting the wait.
-    if (!props.hint || hintTimer.current !== undefined) {
-      return;
-    }
-    hintTimer.current = window.setTimeout((): void => {
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (!rect) {
-        return;
-      }
-      closeOpenHint?.();
-      closeOpenHint = hideHint;
-      // Anchored by the bottom for a gadget in the lower half of the window,
-      // so a tall panel grows upward instead of off the screen. Cheaper than
-      // measuring the panel and correcting afterwards, and the toolbox column
-      // is the full height of the window, so both cases are ordinary.
-      const belowMiddle = rect.top > window.innerHeight / 2;
-      setHintAt({
-        right: window.innerWidth - rect.left,
-        top: belowMiddle ? undefined : rect.top,
-        bottom: belowMiddle ? window.innerHeight - rect.bottom : undefined,
-        // The panel's anchored edge is level with the gadget's, so the gadget's
-        // middle is half its height in from that edge — measured, not the CSS
-        // 40px, since the chrome scales with the UI Size setting.
-        arrow: belowMiddle
-          ? `calc(100% - ${rect.height / 2}px)`
-          : `${rect.height / 2}px`,
-      });
-    }, HINT_DELAY_MS);
-  };
-
-  // Clearing the timer on unmount, not just on leave: the toolbox re-renders
-  // as tools change, and a pending timer would set state on a gone component.
-  useEffect((): (() => void) => {
-    return (): void => {
-      window.clearTimeout(hintTimer.current);
-      // A gadget can unmount under the pointer as tools change; leaving this
-      // pointing at a dead component's hide would strand the next panel open.
-      if (closeOpenHint === hideHint) {
-        closeOpenHint = null;
-      }
-    };
-  }, []);
 
   const getHoveredStyles = (): string => {
     if (props.isDualToggleButton) {
@@ -114,11 +39,11 @@ export function ToolboxButtonHoverManager(props: Props): JSX.Element {
 
   return (
     <div
-      ref={containerRef}
+      ref={hintRef}
       className="toolbox_button_container"
       onMouseOver={(): void => {
         setHovered(true);
-        armHint();
+        showHint();
       }}
       onMouseLeave={(): void => {
         setHovered(false);
@@ -131,7 +56,7 @@ export function ToolboxButtonHoverManager(props: Props): JSX.Element {
     >
       <div className={className}></div>
       {props.children}
-      {hintAt && props.hint && <GadgetHintPanel hint={props.hint} at={hintAt} />}
+      {hintPanel}
     </div>
   );
 }

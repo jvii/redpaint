@@ -290,7 +290,8 @@ Consistency is judged within each control type, not across them:
   question is answered in the same place on every gadget: the name in Press
   Start 2P at the 16px floor with its shortcuts as stepped-down
   `.wb-gadget__keycap`s, then **what the gadget is for** as a sentence, then
-  **top/bottom half**, then **right-click**, then **the keys for that
+  **its own parts** (a dual gadget's two halves, the colour indicator's two
+  swatches), then **right-click**, then **the keys for that
   right-click**. The order is enforced by the shape of `GadgetHint` — named
   fields, not a free list — so it cannot drift as gadgets are added.
   - The two kinds of instruction look different on purpose. The sentence is
@@ -304,8 +305,9 @@ Consistency is judged within each control type, not across them:
   between its two halves and a right-click, and several gadgets hide an action
   behind a right-click that an icon cannot hint at (redo lived on one for
   months and was reported as broken).
-  - **Every** toolbox gadget gets one, including tools whose icon is already
-    plain. Partial coverage is worse than none: hovering and getting nothing
+  - **Every** toolbox gadget gets one, the colour indicator included — it is
+    not one of the three button components, so it wires `useGadgetHint` up
+    itself. Including tools whose icon is already plain. Partial coverage is worse than none: hovering and getting nothing
     would mean either "no hint written" or "nothing hidden here", and a reader
     cannot tell which.
   - Rows are for gestures that are not the obvious one. A plain click

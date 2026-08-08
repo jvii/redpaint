@@ -14,7 +14,10 @@ import { GadgetHint } from './GadgetHint';
 // gesture on the gadget itself. Keeping that split is what lets the panel show
 // them differently, so write canvas behaviour here and nowhere else.
 const FILL_STYLE = 'Fill Style settings';
-const shapeHalves = { top: 'Outline', bottom: 'Filled' };
+const shapeHalves = [
+  { gesture: 'top half', does: 'Outline' },
+  { gesture: 'bottom half', does: 'Filled' },
+];
 
 export const toolboxHints: { [key: string]: GadgetHint } = {
   dottedFreehand: {
@@ -45,13 +48,13 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   rectangle: {
     name: 'Rectangle',
     use: 'Drag from one corner to the opposite one.',
-    halves: shapeHalves,
+    parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
   circle: {
     name: 'Circle',
     use: 'Drag out from the centre.',
-    halves: shapeHalves,
+    parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
   // Two-stage, unlike Circle and Rectangle: the first release fixes the radii
@@ -60,7 +63,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   ellipse: {
     name: 'Ellipse',
     use: 'Drag out from the centre and release to set the size. Then move to reshape it, or drag to rotate; the next release draws it.',
-    halves: shapeHalves,
+    parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
   // "on the canvas" earns its words here: this is the one panel where
@@ -68,7 +71,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   polygon: {
     name: 'Polygon',
     use: 'Click each corner in turn. Right-click on the canvas, or click the first corner again, to close the shape.',
-    halves: shapeHalves,
+    parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
   brushSelect: {
@@ -78,7 +81,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   text: {
     name: 'Text',
     use: 'Click where the text should start, then type.',
-    halves: shapeHalves,
+    parts: shapeHalves,
   },
   zoom: {
     name: 'Magnify',
@@ -101,4 +104,24 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     use: 'Covers the page with the background colour, leaving its size and palette alone.',
     rightClick: 'New page: fits the window, default palette',
   },
+};
+
+// The foreground/background indicator below the toolbox. Not one of the three
+// button components, so it wires the hint up itself (useGadgetHint).
+//
+// It is also where the app's one universal painting convention is written
+// down, and the only place: right-click paints with the background colour, in
+// every one of the ten painting tools — nine through prepareToPaint, Flood
+// Fill through its own onContextMenu. Repeating that in ten panels would be
+// the same sentence ten times, and the first copy to drift would be the one
+// nobody thought to update. It belongs to the background colour rather than to
+// any tool, so it lives with the swatch that shows it.
+export const colorIndicatorHint: GadgetHint = {
+  name: 'Colours',
+  use: 'The circle is the foreground colour, the bar behind it the background. Right-click with any painting tool to draw with the background instead.',
+  parts: [
+    { gesture: 'circle', does: 'Pick the foreground from the palette' },
+    { gesture: 'bar', does: 'Pick the background' },
+  ],
+  rightClick: 'Palette editor',
 };

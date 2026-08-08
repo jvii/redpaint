@@ -13,7 +13,7 @@ import './GadgetHint.css';
 // them per gadget has to be read properly every time:
 //
 //   1. `use`         — what the gadget is for, as a sentence
-//   2. `halves`      — what its two halves choose between, if it has two
+//   2. `parts`       — what its own parts do, if it is divided into any
 //   3. `rightClick`  — what a right-click on it does
 //   4. `rightClickKeys` — and the keys for that, if it has any
 //
@@ -33,7 +33,11 @@ export type GadgetHint = {
   // the name.
   keys?: string[];
   use?: string;
-  halves?: { top: string; bottom: string };
+  // The gadget's own parts: the two halves of a dual toggle, the swatches of
+  // the colour indicator. Labelled rather than assumed to be a top and a
+  // bottom half, since not every divided gadget is divided that way — but
+  // still one fixed slot, so it cannot move relative to the rest.
+  parts?: { gesture: string; does: string }[];
   rightClick?: string;
   rightClickKeys?: string[];
 };
@@ -96,7 +100,7 @@ export function GadgetHintPanel({
   hint: GadgetHint;
   at: HintPlacement;
 }): JSX.Element {
-  const hasRows = hint.halves !== undefined || hint.rightClick !== undefined;
+  const hasRows = (hint.parts && hint.parts.length > 0) || hint.rightClick !== undefined;
   return (
     <div
       className="wb-callout wb-callout--points-right gadget-hint"
@@ -116,12 +120,9 @@ export function GadgetHintPanel({
       {hint.use && <p className="gadget-hint__use">{hint.use}</p>}
       {hasRows && (
         <div className="gadget-hint__rows">
-          {hint.halves && (
-            <>
-              <GadgetRow gesture="top half" does={hint.halves.top} />
-              <GadgetRow gesture="bottom half" does={hint.halves.bottom} />
-            </>
-          )}
+          {hint.parts?.map((part) => (
+            <GadgetRow key={part.gesture} gesture={part.gesture} does={part.does} />
+          ))}
           {hint.rightClick && (
             <GadgetRow gesture="right-click" does={hint.rightClick} keys={hint.rightClickKeys} />
           )}
