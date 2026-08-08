@@ -38,7 +38,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   },
   floodFill: {
     name: 'Flood Fill',
-    use: 'Click an area to flood it with the foreground colour.',
+    use: 'Click an area to flood it with the foreground color.',
     rightClick: FILL_STYLE,
   },
   airbrush: {
@@ -101,27 +101,34 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   },
   clr: {
     name: 'Clear',
-    use: 'Covers the page with the background colour, leaving its size and palette alone.',
+    use: 'Covers the page with the background color, leaving its size and palette alone.',
     rightClick: 'New page: fits the window, default palette',
   },
 };
 
-// The foreground/background indicator below the toolbox. Not one of the three
-// button components, so it wires the hint up itself (useGadgetHint).
+// The Color Indicator below the toolbox — DPaint's own name for it, and the
+// manual's description too: an inner shape showing the current foreground and
+// an outer one showing the current background (DP2 manual, "A Guided Tour").
+// Not one of the three button components, so it wires the hint up itself
+// (useGadgetHint).
 //
 // It is also where the app's one universal painting convention is written
-// down, and the only place: right-click paints with the background colour, in
+// down, and the only place: right-click paints with the background color, in
 // every one of the ten painting tools — nine through prepareToPaint, Flood
 // Fill through its own onContextMenu. Repeating that in ten panels would be
 // the same sentence ten times, and the first copy to drift would be the one
-// nobody thought to update. It belongs to the background colour rather than to
+// nobody thought to update. It belongs to the background color rather than to
 // any tool, so it lives with the swatch that shows it.
 export const colorIndicatorHint: GadgetHint = {
-  name: 'Colours',
-  use: 'The circle is the foreground colour, the bar behind it the background. Right-click with any painting tool to draw with the background instead.',
+  name: 'Color Indicator',
+  use: 'The circle is the current foreground color, the rectangle behind it the current background color. Right-click with any painting tool to draw with the background instead.',
+  // Both arm a picker that samples the *canvas* — ColorSelectorTool reads the
+  // pixel under the next click (getPaintColorForPoint). The palette is where
+  // you choose a color you can already see; this is how you take one you can
+  // only point at.
   parts: [
-    { gesture: 'circle', does: 'Pick the foreground from the palette' },
-    { gesture: 'bar', does: 'Pick the background' },
+    { gesture: 'circle', does: 'Pick a foreground color off the canvas' },
+    { gesture: 'rectangle', does: 'Pick a background color off the canvas' },
   ],
   rightClick: 'Palette editor',
 };
