@@ -54,15 +54,20 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     halves: shapeHalves,
     rightClick: FILL_STYLE,
   },
+  // Two-stage, unlike Circle and Rectangle: the first release fixes the radii
+  // and puts it into an adjust phase, where a plain move reshapes and a drag
+  // sets the rotation angle (EllipseTool.onMouseMove).
   ellipse: {
     name: 'Ellipse',
-    use: 'Drag out from the centre.',
+    use: 'Drag out from the centre and release to set the size. Then move to reshape it, or drag to rotate; the next release draws it.',
     halves: shapeHalves,
     rightClick: FILL_STYLE,
   },
+  // "on the canvas" earns its words here: this is the one panel where
+  // right-click means two different things, and the other one is a row below.
   polygon: {
     name: 'Polygon',
-    use: 'Click each corner in turn, then click the first one again to close the shape.',
+    use: 'Click each corner in turn. Right-click on the canvas, or click the first corner again, to close the shape.',
     halves: shapeHalves,
     rightClick: FILL_STYLE,
   },
