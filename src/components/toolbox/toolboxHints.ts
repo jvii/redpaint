@@ -36,9 +36,13 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     name: 'Curve',
     use: 'Drag to set the two ends, then move to bend it and click to commit.',
   },
+  // Not "with the foreground color": paintPoints branches three ways, so what
+  // lands is whatever the Fill Style says — a gradient or a pattern owes
+  // nothing to the foreground. Which button was pressed only decides the color
+  // in the solid case, and that rule is the Color Indicator's to state.
   floodFill: {
     name: 'Flood Fill',
-    use: 'Click an area to flood it with the foreground color.',
+    use: 'Click an area of one color to flood it with the current Fill Style: solid, gradient or pattern.',
     rightClick: FILL_STYLE,
   },
   airbrush: {
