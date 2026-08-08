@@ -1,3 +1,4 @@
+import { MOD_KEY, SHIFT_MOD_KEY, isMac } from '../../platform';
 import { GadgetHint } from './GadgetHint';
 
 // What each toolbox gadget says on hover. Kept together rather than inline in
@@ -115,12 +116,17 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     use: 'Mirrors and repeats every stroke around a center point.',
     rightClick: 'Symmetry settings',
   },
+  // One idiom per platform, not the union. Every chord below works on every
+  // platform — Ctrl-Shift-Z redoes on Windows too, Cmd-Z undoes nowhere it
+  // shouldn't — but a Mac user has no use for Ctrl-Y and a Windows user none
+  // for the Command key, and printing both would say half of nothing to each.
+  // U is DPaint's own and belongs to neither.
   undo: {
     name: 'Undo',
-    keys: ['U', 'ctrl/cmd-Z'],
+    keys: ['U', `${MOD_KEY}Z`],
     use: 'Steps back one committed change at a time.',
     rightClick: 'Redo',
-    rightClickKeys: ['ctrl/cmd-shift-Z'],
+    rightClickKeys: [isMac ? `${SHIFT_MOD_KEY}Z` : 'Ctrl+Y'],
   },
   clr: {
     name: 'Clear',

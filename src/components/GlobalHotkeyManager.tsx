@@ -140,7 +140,13 @@ function useCyclingHotkey(): void {
 //    Unshifted letters are this app's native register, as the brush transforms
 //    are, and U was free.
 //  - Ctrl/Cmd-Z, which anyone who has used anything else will try first, with
-//    Shift for redo. Ctrl-Y too, since that is redo on Windows.
+//    Shift for redo. Ctrl-Y as well, Windows's own redo — Ctrl only, since
+//    Cmd-Y means the browser's History there and nothing here.
+//
+// Accepted generously, advertised narrowly: Ctrl-Z works on a Mac and Cmd-Z on
+// Windows because a keystroke tried in good faith should not be swallowed, but
+// the hints print one idiom per platform (src/platform.ts) rather than the
+// union, which would tell every reader half of something they do not need.
 //
 // preventDefault on the chords only: they are the browser's own undo, and
 // leaving them through would have the page act on a keystroke meant for the
@@ -166,7 +172,11 @@ function useUndoHotkeys(): void {
       } else {
         actions.undo.undo();
       }
-    } else if (chord && key === 'y') {
+    } else if (event.ctrlKey && !event.metaKey && key === 'y') {
+      // Ctrl only, deliberately. Ctrl+Y is the Windows redo; Cmd+Y is not a
+      // Mac idiom at all — it is the browser's History window, which `chord`
+      // was quietly taking away from Mac users in exchange for a second way to
+      // do something Cmd+Shift+Z already does.
       event.preventDefault();
       actions.undo.redo();
     } else if (!chord && !event.altKey && event.key === 'u') {

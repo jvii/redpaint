@@ -294,6 +294,11 @@ Consistency is judged within each control type, not across them:
   swatches), then **right-click**, then **the keys for that
   right-click**. The order is enforced by the shape of `GadgetHint` — named
   fields, not a free list — so it cannot drift as gadgets are added.
+  - **Shortcuts are shown in the platform's own idiom**, one per platform, not
+    the union: `⌘Z`/`⇧⌘Z` on macOS, `Ctrl+Z`/`Ctrl+Y` on Windows and Linux
+    (`src/platform.ts`). Bindings stay generous — every chord is accepted
+    everywhere — but a Mac reader has no use for Ctrl+Y and a Windows one none
+    for `⌘`, and printing both tells each of them half of something.
   - **One short sentence** for what the gadget is for. These are glanced at,
     not studied, and a tall panel covers the picture it is explaining. Two
     steps only where the tool genuinely has two (Curve, Ellipse, Polygon).
