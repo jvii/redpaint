@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useActions } from '../overmind';
 import { overmind } from '../index';
 import { MODE_ORDER } from '../overmind/brush/mode';
+import { DrawingToolId } from '../overmind/toolbox/state';
 import { isEdge } from '../browser';
 
 // A non-rendering logic component for managing hotkeys and copy/paste.
@@ -22,6 +23,7 @@ export function GlobalHotKeyManager(): null {
   useMiddleClickMenuToggle();
   useBrushTransformHotkeys();
   useModeHotkeys();
+  useToolHotkeys();
 
   return null;
 }
@@ -78,8 +80,7 @@ function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
     return true;
   }
 
-  const activeToolId = state.toolbox.activeToolId;
-  return activeToolId === 'textFilled' || activeToolId === 'textNoFill';
+  return isTextTool(state.toolbox.activeToolId);
 }
 
 // Spacebar toggles the menu
@@ -252,6 +253,115 @@ function useModeHotkeys(): void {
   }, []);
 }
 
+// DPaint's Toolbox commands (DP2 manual, "Keyboard Commands and Cursors"),
+// which the toolbox had none of until now — every gadget was mouse-only.
+//
+// Case is the whole convention and it is DPaint's, not an invention here: a
+// lowercase letter picks the unfilled shape and the shifted one picks the
+// filled shape, which is why the dual-toggle gadgets get both halves from one
+// letter. The brush transforms above already read `event.key` the same way.
+//
+// Taken verbatim from the manual's table rather than chosen, including the
+// mnemonics that have not aged well — `s` for the *dotted* freehand ("sketch")
+// and `d` for the continuous one ("draw"), which look swapped and are not.
+const SHAPE_KEYS: { [key: string]: DrawingToolId } = {
+  s: 'dottedFreehand',
+  d: 'freeHand',
+  v: 'line',
+  q: 'curve',
+  f: 'floodFill',
+  r: 'rectangleNoFill',
+  R: 'rectangleFilled',
+  c: 'circleNoFill',
+  C: 'circleFilled',
+  e: 'ellipseNoFill',
+  E: 'ellipseFilled',
+  t: 'textNoFill',
+};
+
+// Airbrush and Polygon are absent because DPaint gave them no key — the table
+// runs b, B, c, C, d, D, e, E, f, F, g, G, j, K, m, p, q, r, R, s, t, u, v with
+// no gap either could sit in. Inventing two would be the one part of this that
+// was not the manual's, and the letters left are the ones DPaint spent on
+// things dxpaint may still grow (g/G grid, j spare page, D one-pixel brush).
+function useToolHotkeys(): void {
+  const actions = useActions();
+
+  function handleKey(event: KeyboardEvent): void {
+    // Before the suspension check, because a text tool is one of the things
+    // that suspends: hotkeysSuspended goes true the moment one is active, so
+    // every key below — including the one that would pick another tool — stops
+    // working and the keyboard has no way back out. The manual's own answer,
+    // "Press ESC or click a drawing tool to exit Text mode". Freehand because
+    // it is the tool the app starts on.
+    if (event.key === 'Escape' && isTextTool(overmind.state.toolbox.activeToolId)) {
+      event.preventDefault();
+      actions.toolbox.setSelectedDrawingTool('freeHand');
+      return;
+    }
+    // Modifier chords belong to the browser and to the undo hotkeys; Alt makes
+    // dead keys on several layouts, which arrive as a letter here.
+    if (event.ctrlKey || event.metaKey || event.altKey || hotkeysSuspended(event)) {
+      return;
+    }
+
+    const shapeTool = SHAPE_KEYS[event.key];
+    if (shapeTool) {
+      event.preventDefault();
+      actions.toolbox.setSelectedDrawingTool(shapeTool);
+      refreshBrushPreview();
+      return;
+    }
+
+    switch (event.key) {
+      // Both of these open the Fill Type dialog in DPaint, and both select the
+      // tool first, exactly as right-clicking the gadget does.
+      case 'F':
+        actions.toolbox.setSelectedDrawingTool('floodFill');
+        actions.fillStyle.openSettings();
+        break;
+      case 'b':
+        actions.toolbox.toggleBrushSelectionMode();
+        break;
+      case 'm':
+        actions.toolbox.toggleZoomMode();
+        break;
+      case '/':
+        // Firefox opens quick-find on a bare slash.
+        event.preventDefault();
+        actions.toolbox.toggleSymmetryMode();
+        break;
+      case 'K':
+        actions.app.clearPage();
+        break;
+      case ',':
+        // DPaint's "Select Color cursor": the picker that samples a color off
+        // the canvas, which is the Color Indicator's own click.
+        actions.toolbox.toggleForegroundColorSelectionMode();
+        break;
+      case 'p':
+        // Opens only, where DPaint's toggled. Closing from here would have to
+        // reach past hotkeysSuspended, which holds the keyboard for the editor
+        // while it is up — and the editor has OK and Cancel, which a palette
+        // being edited wants rather than one key that means neither.
+        actions.paletteEditor.open();
+        break;
+      default:
+        return;
+    }
+    refreshBrushPreview();
+  }
+
+  useEffect((): (() => void) => {
+    document.addEventListener('keydown', handleKey);
+    return (): void => document.removeEventListener('keydown', handleKey);
+  }, []);
+}
+
+function isTextTool(toolId: string): boolean {
+  return toolId === 'textFilled' || toolId === 'textNoFill';
+}
+
 // The brush-cursor preview on the overlay canvas only repaints on mouse move,
 // so a transform applied via the keyboard would otherwise stay invisible until
 // the mouse next moves. Re-sending a mousemove at the pointer's last position
@@ -335,9 +445,12 @@ function useBrushTransformHotkeys(): void {
       case 'S':
         actions.toolbox.toggleBrushTransformMode('brushShearTool');
         break;
-      case 'R':
-        actions.toolbox.toggleBrushTransformMode('brushRotateTool');
-        break;
+      // No 'R' here: it is DPaint's Filled Rectangle (useToolHotkeys below).
+      // Rotate Any Angle had it for a while, but DPaint has no free-angle
+      // rotate to have given a key to, and taking the toolbox's own letter for
+      // an invented gadget left the rectangle the one shape whose filled half
+      // could not be reached from the keyboard while circle and ellipse could.
+      // Shear keeps 'S' and Stretch 'Z', neither of which the toolbox wants.
       case 'Escape': {
         // cancel a pending drag transform: nothing to undo, it only previews
         const armed = overmind.state.toolbox.selectedSelectorToolId;

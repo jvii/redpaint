@@ -1,5 +1,6 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
+import { shortcutCap } from '../ui/shortcutCap';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushRecall } from '../../brush/BrushRecall';
 import { isBuiltInBrush } from '../../overmind/brush/state';
@@ -63,12 +64,6 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   // with a tooltip that doesn't say why
   const transformTitle = (enabledTitle: string): string =>
     usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
-
-  // the keycap shown under each transform gadget: Shift-modified keys
-  // (uppercase in GlobalHotkeyManager's handleKey) are rendered as ⇧+letter
-  // so the cap reads as the actual chord you press, not a bare capital.
-  const shortcutCap = (key: string): string =>
-    key.length === 1 && key >= 'A' && key <= 'Z' ? `⇧${key.toLowerCase()}` : key;
 
   const handleBrushSave = (): void => {
     const brush = brushRecall.current;
@@ -200,8 +195,10 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             icon={<RotateAnyIcon />}
             label="Any Angle"
             stacked
-            title={transformTitle('Rotate any angle (drag on canvas) — R')}
-            shortcut={shortcutCap('R')}
+            // No keycap: 'R' is the toolbox's Filled Rectangle, DPaint's own
+            // (GlobalHotkeyManager). DPaint has no free-angle rotate, so this
+            // gadget never had a key of its own to lose.
+            title={transformTitle('Rotate any angle (drag on canvas)')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}
             onClick={armTransform('brushRotateTool')}

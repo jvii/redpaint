@@ -186,6 +186,21 @@ export const markDocumentClean = (context: Context): void => {
   context.state.app.lastCleanTime = Date.now();
 };
 
+// DPaint's CLR: cover the page with the background color, and nothing else.
+// Pixels only, so undo puts back exactly what this took away — it does not drop
+// the document's name or mark it clean, which would make it half a new page
+// (that is `newPicture` below).
+//
+// An action rather than the two lines inline in the gadget, now that the K
+// hotkey wants the same thing. Two copies of "clear, then take an undo point"
+// is exactly the pair that drifts, and the half that gets forgotten is the
+// undo point — which fails silently and only shows up as an undo that skips a
+// step.
+export const clearPage = (context: Context): void => {
+  paintingCanvasController.clear();
+  context.actions.undo.setUndoPoint();
+};
+
 // A fresh page: the canvas fitted to the window again, the startup palette
 // back, and the document no longer standing for any file. Right-click on CLR,
 // where left-click covers the page with the background color and nothing more.

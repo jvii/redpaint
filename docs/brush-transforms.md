@@ -188,8 +188,12 @@ commit; layers 1–3 are UI-agnostic and survive any of it.
 **Keyboard shortcuts** go in `GlobalHotkeyManager.tsx` beside the spacebar
 menu toggle, reusing `hotkeysSuspended()`. DPaint's keys, case-sensitive:
 `x`/`y` flip, `z` rotate 90°, `h` halve, `Shift-H` double, `Shift-X`/`Shift-Y`
-double one axis, `Shift-B` restore. (None collide with existing bindings —
-today only space is taken.)
+double one axis, `Shift-B` restore.
+
+The drag transforms are dxpaint's, so only Stretch has a key from the manual:
+`Shift-Z`. Shear took `Shift-S`, which is free. Rotate Any Angle took
+`Shift-R` and has since given it back — that is DPaint's Filled Rectangle, and
+the toolbox needed it (`docs/keyboard.md`); the gadget stays, keyless.
 
 ### Interactive transforms (Stretch / Rotate Any / Shear)
 

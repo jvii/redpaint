@@ -22,26 +22,40 @@ import { GadgetHint } from './GadgetHint';
 // Polygon) say both plainly; everything else gets one. Detail that only
 // matters once you are using the tool belongs in the docs, not here.
 const FILL_STYLE = 'Fill Style settings';
-const shapeHalves = [
-  { gesture: 'top half', does: 'Outline' },
-  { gesture: 'bottom half', does: 'Filled' },
+
+// DPaint's Fill Type dialog, which every gadget that fills can reach — and it
+// is Shift-F from all of them, not one key per gadget.
+const FILL_STYLE_KEYS = ['F'];
+
+// Both halves of a shape gadget, with DPaint's pair of keys: the plain letter
+// picks the outline and the shifted one the filled shape. Passed the letter
+// rather than repeated four times, since the pattern is the point.
+const shapeHalves = (letter: string): { gesture: string; does: string; keys: string[] }[] => [
+  { gesture: 'top half', does: 'Outline', keys: [letter] },
+  { gesture: 'bottom half', does: 'Filled', keys: [letter.toUpperCase()] },
 ];
 
 export const toolboxHints: { [key: string]: GadgetHint } = {
+  // 's' for sketch and 'd' for draw, DPaint's own mnemonics — which read as
+  // swapped, since 'd' is the one on the *continuous* tool. They are not.
   dottedFreehand: {
     name: 'Dotted Freehand',
+    keys: ['s'],
     use: 'Drag to paint one brush stamp per pointer step.',
   },
   freehand: {
     name: 'Freehand',
+    keys: ['d'],
     use: 'Drag to paint a continuous stroke.',
   },
   line: {
     name: 'Line',
+    keys: ['v'], // vector
     use: 'Drag from one end to the other.',
   },
   curve: {
     name: 'Curve',
+    keys: ['q'], // qurve, and the manual says so in as many words
     use: 'Drag to set the ends, then move to bend it and click.',
   },
   // Not "with the foreground color": paintPoints branches three ways, so what
@@ -50,9 +64,14 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // in the solid case, and that rule is the Color Indicator's to state.
   floodFill: {
     name: 'Flood Fill',
+    keys: ['f'],
     use: 'Click an area to flood it with the current Fill Style.',
     rightClick: FILL_STYLE,
+    rightClickKeys: FILL_STYLE_KEYS,
   },
+  // No key: DPaint gave Airbrush and Polygon none, and the letters left over
+  // are ones it spent elsewhere. Inventing two would be the only part of this
+  // set that was not the manual's.
   airbrush: {
     name: 'Airbrush',
     use: 'Hold to keep spraying.',
@@ -60,14 +79,16 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   rectangle: {
     name: 'Rectangle',
     use: 'Drag from one corner to the opposite one.',
-    parts: shapeHalves,
+    parts: shapeHalves('r'),
     rightClick: FILL_STYLE,
+    rightClickKeys: FILL_STYLE_KEYS,
   },
   circle: {
     name: 'Circle',
     use: 'Drag out from the center.',
-    parts: shapeHalves,
+    parts: shapeHalves('c'),
     rightClick: FILL_STYLE,
+    rightClickKeys: FILL_STYLE_KEYS,
   },
   // Two-stage, unlike Circle and Rectangle: the first release fixes the radii
   // and puts it into an adjust phase, where a plain move reshapes and a drag
@@ -75,19 +96,26 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   ellipse: {
     name: 'Ellipse',
     use: 'Drag out from the center to set the size, then move to reshape or drag to rotate.',
-    parts: shapeHalves,
+    parts: shapeHalves('e'),
     rightClick: FILL_STYLE,
+    rightClickKeys: FILL_STYLE_KEYS,
   },
   // "on the canvas" earns its words here: this is the one panel where
   // right-click means two different things, and the other one is a row below.
   polygon: {
     name: 'Polygon',
     use: 'Click each corner. Right-click on the canvas, or click the first corner, to close.',
-    parts: shapeHalves,
+    // Spelled out rather than shapeHalves(): there is no letter, see Airbrush.
+    parts: [
+      { gesture: 'top half', does: 'Outline' },
+      { gesture: 'bottom half', does: 'Filled' },
+    ],
     rightClick: FILL_STYLE,
+    rightClickKeys: FILL_STYLE_KEYS,
   },
   brushSelect: {
     name: 'Brush Selector',
+    keys: ['b'],
     use: 'Drag a box to pick that piece of the canvas up as the brush.',
   },
   // A stub: TextTool takes keystrokes into state, but every renderText call in
@@ -98,6 +126,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // same reason: Outline and Filled are real toolbox states and neither draws.
   text: {
     name: 'Text',
+    keys: ['t'],
     use: 'Unfinished: it takes keystrokes but draws nothing yet.',
   },
   // Aim first, then the view opens: the click arms zoomInitialPointSelectorTool
@@ -105,6 +134,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // (toolbox.toggleZoomMode).
   zoom: {
     name: 'Magnify',
+    keys: ['m'],
     use: 'Click, then click the canvas to choose what to magnify.',
   },
   // A plain on/off toggle (toolbox.toggleSymmetryMode). The center defaults to
@@ -113,6 +143,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // the hint used to claim.
   symmetry: {
     name: 'Symmetry',
+    keys: ['/'],
     use: 'Mirrors and repeats every stroke around a center point.',
     rightClick: 'Symmetry settings',
   },
@@ -120,16 +151,19 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // platform — Ctrl-Shift-Z redoes on Windows too, Cmd-Z undoes nowhere it
   // shouldn't — but a Mac user has no use for Ctrl-Y and a Windows user none
   // for the Command key, and printing both would say half of nothing to each.
-  // U is DPaint's own and belongs to neither.
+  // 'u' is DPaint's own and belongs to neither.
   undo: {
     name: 'Undo',
-    keys: ['U', `${MOD_KEY}Z`],
+    keys: ['u', `${MOD_KEY}Z`],
     use: 'Steps back one committed change at a time.',
     rightClick: 'Redo',
     rightClickKeys: [isMac ? `${SHIFT_MOD_KEY}Z` : 'Ctrl+Y'],
   },
   clr: {
     name: 'Clear',
+    keys: ['K'],
+    // No key for the right-click: a new page is this app's, not DPaint's,
+    // which had no New at all (its File menu begins at Load Picture).
     use: 'Covers the page with the background color.',
     rightClick: 'New page: fits the window, default palette',
   },
@@ -155,6 +189,9 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
 // it lives outside the UI.
 export const colorIndicatorHint: GadgetHint = {
   name: 'Color Indicator',
+  // DPaint's "Select Color cursor", which arms the foreground picker — the
+  // circle's own click. The background half it reaches only by mouse.
+  keys: [','],
   use: 'The circle is the current foreground color, the rectangle behind it the current background color.',
   // Both arm a picker that samples the *canvas* — ColorSelectorTool reads the
   // pixel under the next click (getPaintColorForPoint). The palette is where
@@ -165,4 +202,5 @@ export const colorIndicatorHint: GadgetHint = {
     { gesture: 'rectangle', does: 'Left-click to pick a background color off the canvas' },
   ],
   rightClick: 'Palette editor',
+  rightClickKeys: ['p'],
 };

@@ -13,21 +13,18 @@ is scheduled. Design details live in the linked docs where they exist.
 - [ ] **Text tool.** Currently a stub (captures `window.onkeydown`, renders
       nothing useful). Needs font selection, sizing, and committing glyphs through
       the brush pipeline like DPaint's text-as-brush.
-- [ ] **More canvas hotkeys.** The `hotkeysSuspended()` guard in
-      `GlobalHotkeyManager` makes these cheap now. Candidates from DPaint: `b`
-      brush selector, `s` symmetry, `,`/`.` FG/BG pick, `+`/`-` brush size,
-      `F10` toggle toolbar. (`u` undo is done, with Ctrl/Cmd-Z, Ctrl/Cmd-Shift-Z
-      and Ctrl-Y alongside it — see `useUndoHotkeys`.)
-- [ ] **Tooltips on the toolbox gadgets**, so the shortcuts are discoverable
-      from the UI rather than from the source. Redo is the case that prompted
-      this: it is a *right-click* on the UNDO gadget, which nobody finds by
-      trying, and it read as "redo doesn't work at all" until the binding was
-      pointed out. The keyboard shortcuts have the same problem — nothing on
-      screen mentions `u` or Ctrl/Cmd-Z. `ToolboxActionButton` and
-      `ToolboxToggleButton` take no `title` today, so it is a small prop plus a
-      decision about wording: the menu gadgets already say things like "Crop the
-      canvas — drag a box, right-click or Enter to apply", which is the register
-      to match.
+- [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
+      keyboard table: `-`/`=` step the brush size down and up, `Shift` with
+      either steps twice as far. Not done with the rest (`docs/keyboard.md`)
+      because it is not just a binding — there is no "resize by one step"
+      action to bind to. Built-in brushes size by an armed drag
+      (`sizeBuiltInBrushTool`) and custom ones only halve and double, so this
+      wants an increment on both first.
+- [x] **Tooltips on the toolbox gadgets** — done. Structured hover panels
+      (`GadgetHint`), sharing the palette editor's callout treatment, carrying
+      the tool's use, its halves, its right-click and its keys. This is what
+      made the shortcuts discoverable from the UI at all; the full set and its
+      reasoning is `docs/keyboard.md`.
 - [ ] **Menu final design.** The pull-down menu got a cleanup pass
       (bottom-aligned, spacebar toggle) but the final look/structure is undecided.
 - [ ] **`Restore…` requester**, for reaching a backup that is not this tab's

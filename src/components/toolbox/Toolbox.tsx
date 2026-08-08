@@ -5,7 +5,6 @@ import { ToolboxActionButton } from './buttons/ToolboxActionButton';
 import { useActions, useAppState } from '../../overmind';
 import './Toolbox.css';
 import { toolboxHints } from './toolboxHints';
-import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 
 export function Toolbox(): JSX.Element {
   const state = useAppState();
@@ -149,16 +148,9 @@ export function Toolbox(): JSX.Element {
       <ToolboxActionButton
         buttonClass="clr"
         hint={toolboxHints.clr}
-        onClick={(): void => {
-          // DPaint's CLR: cover the page with the background color, and nothing
-          // else. It used to also drop the document's name and mark it clean,
-          // which made it half a new-document command and — because a name is
-          // not part of an undo snapshot — left Ctrl+Z returning the picture as
-          // an untitled document. Pixels only, so undo puts back exactly what
-          // this took away. Starting a new page is the right-click below.
-          paintingCanvasController.clear();
-          actions.undo.setUndoPoint();
-        }}
+        // Pixels only — see app.clearPage. Starting a new page is the
+        // right-click below.
+        onClick={(): void => actions.app.clearPage()}
         onRightClick={(): void => actions.app.newPicture()}
       />
     </div>

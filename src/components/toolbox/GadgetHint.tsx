@@ -1,4 +1,5 @@
 import React, { JSX } from 'react';
+import { shortcutCap } from '../ui/shortcutCap';
 import './GadgetHint.css';
 
 // What a toolbox gadget says about itself on hover.
@@ -37,7 +38,11 @@ export type GadgetHint = {
   // the colour indicator. Labelled rather than assumed to be a top and a
   // bottom half, since not every divided gadget is divided that way — but
   // still one fixed slot, so it cannot move relative to the rest.
-  parts?: { gesture: string; does: string }[];
+  // `keys` here rather than only on the head because a divided gadget's halves
+  // have a key each — DPaint gives the shape tools a lowercase letter for the
+  // unfilled half and the shifted one for the filled half, and a single cap
+  // beside the name could not say which half it picked.
+  parts?: { gesture: string; does: string; keys?: string[] }[];
   rightClick?: string;
   rightClickKeys?: string[];
 };
@@ -63,14 +68,18 @@ export type HintPlacement = {
 // from the shortcuts instead of spreading name and every key evenly apart.
 //
 // Joined by "or", because these are alternatives and two caps side by side
-// read as a chord — U ⌘Z looks like something you press together.
+// read as a chord — u ⌘Z looks like something you press together.
+//
+// Written through shortcutCap, so a binding stored the way the code reads it
+// (case-sensitive, DPaint's convention: 'R' is Shift-R) reaches the reader as
+// the chord to press rather than a bare capital.
 function Keys({ keys }: { keys: string[] }): JSX.Element {
   return (
     <span className="gadget-hint__keys">
       {keys.map((key, i) => (
         <span className="gadget-hint__key-alt" key={key}>
           {i > 0 && <span className="gadget-hint__or">or</span>}
-          <kbd className="wb-gadget__keycap gadget-hint__key">{key}</kbd>
+          <kbd className="wb-gadget__keycap gadget-hint__key">{shortcutCap(key)}</kbd>
         </span>
       ))}
     </span>
@@ -125,7 +134,12 @@ export function GadgetHintPanel({
       {hasRows && (
         <div className="gadget-hint__rows">
           {hint.parts?.map((part) => (
-            <GadgetRow key={part.gesture} gesture={part.gesture} does={part.does} />
+            <GadgetRow
+              key={part.gesture}
+              gesture={part.gesture}
+              does={part.does}
+              keys={part.keys}
+            />
           ))}
           {hint.rightClick && (
             <GadgetRow gesture="right-click" does={hint.rightClick} keys={hint.rightClickKeys} />
