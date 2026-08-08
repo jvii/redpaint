@@ -1,9 +1,9 @@
 ---
 name: verify
-description: Drive the running dxpaint app headlessly over CDP to verify changes end-to-end (screenshots, mouse/keyboard input)
+description: Drive the running redpaint app headlessly over CDP to verify changes end-to-end (screenshots, mouse/keyboard input)
 ---
 
-# Verifying dxpaint in a real browser
+# Verifying redpaint in a real browser
 
 ## Launch
 

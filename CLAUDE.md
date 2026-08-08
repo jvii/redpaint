@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-dxpaint is a browser-based pixel-art paint program, a re-imagining of Amiga's Deluxe Paint (freehand,
+redpaint is a browser-based pixel-art paint program, a re-imagining of Amiga's Deluxe Paint (freehand,
 shapes, flood fill, custom brushes, 32-color palette, undo/redo, zoom preview). Built with React 19 +
 TypeScript on Vite, state managed with Overmind, and all drawing done via raw WebGL (no canvas 2D context
 for the actual painting).

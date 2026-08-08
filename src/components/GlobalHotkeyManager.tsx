@@ -283,7 +283,7 @@ const SHAPE_KEYS: { [key: string]: DrawingToolId } = {
 // runs b, B, c, C, d, D, e, E, f, F, g, G, j, K, m, p, q, r, R, s, t, u, v with
 // no gap either could sit in. Inventing two would be the one part of this that
 // was not the manual's, and the letters left are the ones DPaint spent on
-// things dxpaint may still grow (g/G grid, j spare page, D one-pixel brush).
+// things redpaint may still grow (g/G grid, j spare page, D one-pixel brush).
 function useToolHotkeys(): void {
   const actions = useActions();
 
@@ -446,11 +446,13 @@ function useBrushTransformHotkeys(): void {
         actions.toolbox.toggleBrushTransformMode('brushShearTool');
         break;
       // No 'R' here: it is DPaint's Filled Rectangle (useToolHotkeys below).
-      // Rotate Any Angle had it for a while, but DPaint has no free-angle
-      // rotate to have given a key to, and taking the toolbox's own letter for
-      // an invented gadget left the rectangle the one shape whose filled half
-      // could not be reached from the keyboard while circle and ellipse could.
-      // Shear keeps 'S' and Stretch 'Z', neither of which the toolbox wants.
+      // Rotate Any Angle had it for a while, but the letter was never DPaint's
+      // to lend — its Brush menu has ROTATE and gives it no keyboard
+      // equivalent at all, where the Flip, Stretch, Halve and Double entries
+      // around it each list one. So 'R' here was invented, and it left the
+      // rectangle the one shape whose filled half no key could reach while
+      // circle and ellipse both could. Shear keeps 'S' and Stretch 'Z',
+      // neither of which the toolbox wants.
       case 'Escape': {
         // cancel a pending drag transform: nothing to undo, it only previews
         const armed = overmind.state.toolbox.selectedSelectorToolId;

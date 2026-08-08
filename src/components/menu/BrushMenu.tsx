@@ -196,8 +196,9 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Any Angle"
             stacked
             // No keycap: 'R' is the toolbox's Filled Rectangle, DPaint's own
-            // (GlobalHotkeyManager). DPaint has no free-angle rotate, so this
-            // gadget never had a key of its own to lose.
+            // (GlobalHotkeyManager). DPaint has this transform — its ROTATE,
+            // dragged about the brush's corner — but gave it no keyboard
+            // equivalent, so there is none to show.
             title={transformTitle('Rotate any angle (drag on canvas)')}
             disabled={usingBuiltInBrush}
             on={state.toolbox.selectedSelectorToolId === 'brushRotateTool'}

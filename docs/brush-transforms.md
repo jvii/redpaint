@@ -68,7 +68,7 @@ manual text in `docs/reference/dpaint2-manual/`):
 4. All transforms are pure pixel-index reshuffles on the brush bitmap — no
    rendering machinery involved.
 
-## Architecture in dxpaint
+## Architecture in redpaint
 
 ### Layer 1 — pure algorithms (`src/algorithm/brushTransform.ts`)
 
@@ -121,7 +121,7 @@ Rather than mutating in place, `transform(fn)` returns a **new `CustomBrush`**
 pushed via `brushRecall.set(...)` — that keeps `lastChanged`-based texture
 caching trivially correct and gives brush history for free.
 
-**Handle:** dxpaint always stamps center-anchored (`CustomBrush.tsx:178`), so
+**Handle:** redpaint always stamps center-anchored (`CustomBrush.tsx:178`), so
 DPaint's handle bookkeeping (flip/rot90 remapping `xoffs/yoffs`) disappears:
 the center is invariant under flips and rot90, and resized/rotated brushes
 just re-center. A real win from the simpler model.
@@ -190,10 +190,15 @@ menu toggle, reusing `hotkeysSuspended()`. DPaint's keys, case-sensitive:
 `x`/`y` flip, `z` rotate 90°, `h` halve, `Shift-H` double, `Shift-X`/`Shift-Y`
 double one axis, `Shift-B` restore.
 
-The drag transforms are dxpaint's, so only Stretch has a key from the manual:
-`Shift-Z`. Shear took `Shift-S`, which is free. Rotate Any Angle took
-`Shift-R` and has since given it back — that is DPaint's Filled Rectangle, and
-the toolbox needed it (`docs/keyboard.md`); the gadget stays, keyless.
+Of the drag transforms only Stretch has a key from the manual, `Shift-Z`.
+DPaint has the rest of them too — ROTATE, Shear, both Bends — but lists a
+keyboard equivalent for none, where the Flip, Halve and Double entries around
+them each have one. So `Shift-S` for Shear is a binding chosen here, not
+copied; the feature is not.
+
+Rotate Any Angle took `Shift-R` for a while and has given it back: `R` is
+DPaint's Filled Rectangle and the toolbox needed it (`docs/keyboard.md`). The
+gadget stays, keyless — as it is in DPaint.
 
 ### Interactive transforms (Stretch / Rotate Any / Shear)
 
@@ -229,12 +234,12 @@ button calls `SizePen`) drags out a new size for it on canvas (`SizePen`/
 from the other direction — Stretch/Halve/Double never touch a built-in, and
 conversely this resize never touches a custom brush.
 
-Key differences from Stretch, all preserved in dxpaint:
+Key differences from Stretch, all preserved in redpaint:
 
 - **Procedural regeneration, not bitmap resampling.** DPaint's round/square
   pens are redrawn from scratch at the new size (`RoundPen`/`SquarePen`,
   `CURBRUSH.C`) rather than stretched, so they stay crisp at any size — the
-  opposite of Stretch's nearest-neighbor `resize()`. dxpaint mirrors this in
+  opposite of Stretch's nearest-neighbor `resize()`. redpaint mirrors this in
   `src/algorithm/builtInBrushShapes.ts`: `roundBitmap`/`squareBitmap`
   regenerate the shape at the dragged width/height.
 - **The dot/dither pen is special-cased**, not resized at all: DPaint's
@@ -287,7 +292,7 @@ Key differences from Stretch, all preserved in dxpaint:
   commit through `stretchBrushTo`/`shearBrushBy`, reusing the snapshot
   machinery so Restore/`Shift-B` undoes them. Shear is horizontal-only, like
   DPaint's (its `BMShearY` was never finished either). Rotate Any Angle
-  (`R`) is done too, on the same rails, with two deliberate upgrades over
+  is done too, on the same rails, with two deliberate upgrades over
   DPaint: it rotates about the brush center (not the pinned bottom-left
   corner) matching the center-anchored stamps, and it previews the actual
   rotated bitmap live (not an XOR outline), with a live angle readout in the
