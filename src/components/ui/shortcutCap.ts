@@ -8,8 +8,23 @@
 // modifier is involved. Spelling the chord out is the difference between a cap
 // that can be obeyed and one that can be misread.
 //
-// Only single capitals are touched. Chords that already name their modifiers
-// (⌘Z, Ctrl+Shift+Z) and non-letters (/ , >) pass through as written.
+// The letter is always uppercased, shifted or not, because that is what is on
+// the key: no keyboard has a lowercase `r` engraved on it, so a cap reading `r`
+// names a key the reader cannot find. The shift state is carried by the ⇧ and
+// nothing else — `R` and `⇧R` — which is how every OS writes a shortcut, and
+// the only way to be legible without being ambiguous.
+//
+// Chords that already name their modifiers (⌘Z, Ctrl+Shift+Z) and non-letters
+// (/ , >) pass through as written.
 export function shortcutCap(key: string): string {
-  return key.length === 1 && key >= 'A' && key <= 'Z' ? `⇧${key.toLowerCase()}` : key;
+  if (key.length !== 1) {
+    return key;
+  }
+  if (key >= 'A' && key <= 'Z') {
+    return `⇧${key}`;
+  }
+  if (key >= 'a' && key <= 'z') {
+    return key.toUpperCase();
+  }
+  return key;
 }

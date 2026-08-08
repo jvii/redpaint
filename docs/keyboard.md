@@ -17,12 +17,21 @@ capital: `h` halves the brush, `H` doubles it, `r` is the outline rectangle and
 `R` the filled one. The handlers switch on `event.key`, so this is literally
 how the code reads.
 
-**Caps spell the chord.** A lone `H` on a keycap shows a key that exists on the
-keyboard, so it reads as "press H" with no hint that a modifier is involved.
-Every cap in the UI therefore goes through `shortcutCap()`
-(`src/components/ui/shortcutCap.ts`), which renders a single capital as `⇧h`
-and leaves everything else alone. So the docs and the code say `H` and the
-screen says `⇧h`, on purpose.
+**Caps spell the chord.** Case cannot carry the shift state on screen the way
+it does in the code: a lone `H` reads as a key you press unmodified, and `⇧h`
+fixes that but names a key nobody has — no keyboard is engraved with a
+lowercase `r`. So the letter on a cap is always uppercase and the ⇧ carries the
+whole of the shift state, which is how every OS writes a shortcut:
+
+| binding | cap |
+| --- | --- |
+| `r` | `R` |
+| `R` | `⇧R` |
+
+Every cap in the UI goes through `shortcutCap()`
+(`src/components/ui/shortcutCap.ts`). So the code and this file say `R` where
+the screen says `⇧R`, on purpose — the tables below are in the code's
+convention, since that is what you would grep for.
 
 ## Toolbox
 
@@ -51,7 +60,7 @@ screen says `⇧h`, on purpose.
 **Airbrush and Polygon have no key** because DPaint gave them none. Its table
 runs `b B c C d D e E f F g G j K m p q r R s t u v` with no gap either could
 sit in, and inventing two would be the only part of this set that was not the
-manual's. The letters going spare are ones DPaint spent on features dxpaint may
+manual's. The letters going spare are ones DPaint spent on features redpaint may
 still grow: `g`/`G` grid, `j` spare page, `D` freehand with a one-pixel brush.
 
 ## Brush
@@ -70,12 +79,17 @@ still grow: `g`/`G` grid, `j` spare page, `D` freehand with a one-pixel brush.
 | `Escape` | cancel an armed drag transform |
 | `F1`–`F8` | brush mode, in `MODE_ORDER` |
 
-Rotate Any Angle has **no key**. It had `R` for a while, but that is DPaint's
-Filled Rectangle, and free-angle rotate is a dxpaint gadget DPaint has no
-equivalent of — so an invented binding was holding a letter the toolbox needed,
-and leaving the rectangle the one shape whose filled half was unreachable from
-the keyboard while circle and ellipse both were. Shear's `S` and Stretch's `Z`
-stay: `Z` is DPaint's own, and nothing in the toolbox wants either.
+Rotate Any Angle has **no key**, and neither does either Bend. That is
+DPaint's arrangement rather than a gap: it has all of them — ROTATE drags the
+brush about its bottom-left corner — and gives none of them a keyboard
+equivalent, where the Flip, Stretch, Halve and Double entries around them each
+have one. Shear's `S` is the same case: DPaint has the transform, so only the
+binding is redpaint's.
+
+Rotate Any Angle did hold `R` here for a while, and it is the one that had to
+go, because `R` is DPaint's Filled Rectangle. Keeping it left the rectangle the
+one shape whose filled half was unreachable from the keyboard while circle and
+ellipse both were. `S` and `Z` stay — nothing in the toolbox wants either.
 
 ## Global
 
