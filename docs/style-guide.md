@@ -286,9 +286,20 @@ Consistency is judged within each control type, not across them:
   that, every gadget carries a **hover hint panel** instead of a label
   (`GadgetHint.tsx`, content in `toolboxHints.ts`). It is a `.wb-callout`
   (see Chrome above), the same bubble the palette editor's instruction uses.
-  Name in Press Start 2P at the 16px floor, the primary
-  key as a stepped-down `.wb-gadget__keycap`, then one row per gesture in
-  11px monospace — the gesture dimmed (`--dim-label`), what it does in black.
+  Its content follows a fixed template, so the same
+  question is answered in the same place on every gadget: the name in Press
+  Start 2P at the 16px floor with its shortcuts as stepped-down
+  `.wb-gadget__keycap`s, then **what the gadget is for** as a sentence, then
+  **top/bottom half**, then **right-click**, then **the keys for that
+  right-click**. The order is enforced by the shape of `GadgetHint` — named
+  fields, not a free list — so it cannot drift as gadgets are added.
+  - The two kinds of instruction look different on purpose. The sentence is
+    prose in full-strength ink and is about the picture: what a drag does on
+    the canvas, or what an action gadget does. The rows beneath are an 11px
+    monospace table whose dimmed (`--dim-label`) label is *always a gesture on
+    the gadget itself*. Grey therefore means one thing only. It used to carry
+    both, and a canvas drag then read as interchangeable with a right-click on
+    a gadget, which it is not.
   A native `title` could not carry that: a shape gadget has three actions
   between its two halves and a right-click, and several gadgets hide an action
   behind a right-click that an icon cannot hint at (redo lived on one for

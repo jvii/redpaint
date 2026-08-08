@@ -1,7 +1,7 @@
 import { GadgetHint } from './GadgetHint';
 
 // What each toolbox gadget says on hover. Kept together rather than inline in
-// Toolbox.tsx so the wording can be read as a set — the gestures should be
+// Toolbox.tsx so the wording can be read as a set — the same gesture should be
 // named the same way everywhere, and that is only checkable side by side.
 //
 // Every gadget has one, including the plain tools whose icons are already
@@ -9,82 +9,91 @@ import { GadgetHint } from './GadgetHint';
 // nothing would mean either "no hint written" or "nothing hidden here", and a
 // reader cannot tell which.
 //
-// Rows are for gestures that are not the obvious one. A plain click selecting
-// the tool needs no line; a right-click that opens a requester does, and the
-// dual gadgets need one per half because the icon's two triangles do not say
-// which is which.
-const fillStyleRow = { gesture: 'right-click', does: 'Fill Style settings' };
-const shapeRows = [
-  { gesture: 'top half', does: 'Outline' },
-  { gesture: 'bottom half', does: 'Filled' },
-  fillStyleRow,
-];
+// `use` is a sentence about the picture — what happens when you drag on the
+// canvas, or what an action gadget does. Everything below it in the panel is a
+// gesture on the gadget itself. Keeping that split is what lets the panel show
+// them differently, so write canvas behaviour here and nowhere else.
+const FILL_STYLE = 'Fill Style settings';
+const shapeHalves = { top: 'Outline', bottom: 'Filled' };
 
 export const toolboxHints: { [key: string]: GadgetHint } = {
   dottedFreehand: {
     name: 'Dotted Freehand',
-    rows: [{ gesture: 'drag', does: 'Paints one stamp per pointer step' }],
+    use: 'Drag to paint one brush stamp per pointer step, leaving gaps as you move faster.',
   },
-  freehand: { name: 'Freehand', rows: [{ gesture: 'drag', does: 'Paints a continuous stroke' }] },
-  line: { name: 'Line', rows: [{ gesture: 'drag', does: 'From press to release' }] },
+  freehand: {
+    name: 'Freehand',
+    use: 'Drag to paint a continuous stroke.',
+  },
+  line: {
+    name: 'Line',
+    use: 'Drag from one end of the line to the other.',
+  },
   curve: {
     name: 'Curve',
-    rows: [
-      { gesture: 'drag', does: 'Sets the ends' },
-      { gesture: 'then move', does: 'Bends it; click to commit' },
-    ],
+    use: 'Drag to set the two ends, then move to bend it and click to commit.',
   },
-  floodFill: { name: 'Flood Fill', rows: [fillStyleRow] },
-  airbrush: { name: 'Airbrush', rows: [{ gesture: 'hold', does: 'Keeps spraying while held' }] },
-  rectangle: { name: 'Rectangle', rows: shapeRows },
-  circle: { name: 'Circle', rows: shapeRows },
-  ellipse: { name: 'Ellipse', rows: shapeRows },
+  floodFill: {
+    name: 'Flood Fill',
+    use: 'Click an area to flood it with the foreground colour.',
+    rightClick: FILL_STYLE,
+  },
+  airbrush: {
+    name: 'Airbrush',
+    use: 'Hold the button down to keep spraying; the longer you dwell, the denser it gets.',
+  },
+  rectangle: {
+    name: 'Rectangle',
+    use: 'Drag from one corner to the opposite one.',
+    halves: shapeHalves,
+    rightClick: FILL_STYLE,
+  },
+  circle: {
+    name: 'Circle',
+    use: 'Drag out from the centre.',
+    halves: shapeHalves,
+    rightClick: FILL_STYLE,
+  },
+  ellipse: {
+    name: 'Ellipse',
+    use: 'Drag out from the centre.',
+    halves: shapeHalves,
+    rightClick: FILL_STYLE,
+  },
   polygon: {
     name: 'Polygon',
-    rows: [
-      { gesture: 'top half', does: 'Outline' },
-      { gesture: 'bottom half', does: 'Filled' },
-      { gesture: 'click', does: 'Adds a corner; click the first to close' },
-      fillStyleRow,
-    ],
+    use: 'Click each corner in turn, then click the first one again to close the shape.',
+    halves: shapeHalves,
+    rightClick: FILL_STYLE,
   },
   brushSelect: {
     name: 'Brush Selector',
-    rows: [{ gesture: 'drag a box', does: 'Picks up that piece of the canvas as the brush' }],
+    use: 'Drag a box on the canvas to pick that piece up as the brush.',
   },
   text: {
     name: 'Text',
-    rows: [
-      { gesture: 'top half', does: 'Outline' },
-      { gesture: 'bottom half', does: 'Filled' },
-    ],
+    use: 'Click where the text should start, then type.',
+    halves: shapeHalves,
   },
-  zoom: { name: 'Magnify', rows: [{ gesture: 'click', does: 'Opens the zoom view; click to aim' }] },
+  zoom: {
+    name: 'Magnify',
+    use: 'Opens the zoom view beside the canvas; click the canvas to aim it.',
+  },
   symmetry: {
     name: 'Symmetry',
-    rows: [
-      { gesture: 'click', does: 'Arms it; click the canvas to set the centre' },
-      { gesture: 'right-click', does: 'Symmetry settings' },
-    ],
+    use: 'Mirrors every stroke about a centre point; click the canvas to place it.',
+    rightClick: 'Symmetry settings',
   },
   undo: {
     name: 'Undo',
-    key: 'U',
-    // One row per gesture, each saying what that gesture does. The head names
-    // the gadget; repeating "Undo" as the answer to "what does ctrl-z do" is
-    // not redundancy, where a row reading "ctrl/cmd-z → Undo" under a heading
-    // already reading Undo would be.
-    rows: [
-      { gesture: 'ctrl/cmd-z', does: 'Undo' },
-      { gesture: 'right-click', does: 'Redo' },
-      { gesture: 'ctrl/cmd-shift-z', does: 'Redo' },
-    ],
+    keys: ['U', 'ctrl/cmd-Z'],
+    use: 'Steps back through the picture, one committed change at a time.',
+    rightClick: 'Redo',
+    rightClickKeys: ['ctrl/cmd-shift-Z'],
   },
   clr: {
     name: 'Clear',
-    rows: [
-      { gesture: 'click', does: 'Covers the page with the background colour' },
-      { gesture: 'right-click', does: 'New page: fits the window, default palette' },
-    ],
+    use: 'Covers the page with the background colour, leaving its size and palette alone.',
+    rightClick: 'New page: fits the window, default palette',
   },
 };

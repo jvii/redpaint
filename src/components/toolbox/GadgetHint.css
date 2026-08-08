@@ -45,21 +45,43 @@
   padding: 2px 5px;
 }
 
+/* Two shortcuts for one action is normal here — a letter and a chord — so
+   they need room from each other as well as from the name. */
+.gadget-hint__keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .gadget-hint__rows {
+  /* One grid for all the rows, not a grid per row: the gestures share a column
+     so what they do lines up. Per-row grids sized themselves independently and
+     left the second column ragged. */
   display: grid;
-  gap: 4px;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
   margin-top: 9px;
 }
 
+/* The row exists to group a pair in the markup; its children are what the
+   grid above lays out. */
 .gadget-hint__row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 10px;
+  display: contents;
+}
+
+/* What the gadget is for, as prose. Full-strength ink and no label column,
+   because this is about the picture — what a drag does on the canvas, or what
+   an action gadget does — while everything below it is a gesture on the gadget
+   itself. Reading as a paragraph rather than a table row is the difference. */
+.gadget-hint__use {
+  margin: 8px 0 0;
+  max-width: 34ch; /* a comfortable measure; the panel's max-width is the cap */
 }
 
 /* Below 16px means the plain monospace stack, with its own smoothing: the
    bitmap face's `-webkit-font-smoothing: none` is inherited and makes system
    text visibly thinner in Safari (Typography section, and it is emphatic). */
+.gadget-hint__use,
 .gadget-hint__gesture,
 .gadget-hint__does {
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -69,8 +91,10 @@
   line-height: 1.3;
 }
 
-/* The gesture is the index, not the message — dimmed so the eye lands on what
-   the gesture does. */
+/* Dimmed, and only ever a gesture on the gadget: top half, bottom half,
+   right-click. Canvas behaviour is prose above, never a grey label here — the
+   two were the same colour once and read as one list of interchangeable
+   things, which they are not. */
 .gadget-hint__gesture {
   color: var(--dim-label);
   white-space: nowrap;
@@ -78,4 +102,10 @@
 
 .gadget-hint__does {
   color: black;
+}
+
+/* A key belonging to the right-click action sits after it on the same line,
+   so the row reads gesture, what it does, and how else to do it. */
+.gadget-hint__does .gadget-hint__keys {
+  margin-left: 8px;
 }
