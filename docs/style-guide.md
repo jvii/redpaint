@@ -294,6 +294,11 @@ Consistency is judged within each control type, not across them:
   swatches), then **right-click**, then **the keys for that
   right-click**. The order is enforced by the shape of `GadgetHint` — named
   fields, not a free list — so it cannot drift as gadgets are added.
+  - **Alternative shortcuts are joined by "or"** — `U or ⌘Z`, never two caps
+    side by side, which read as a chord to press together. The caps step down
+    to 14px rather than the rows' 11px: `⌘` and `⇧` are dense glyphs that stop
+    resolving into shapes below that, and a cap that has to be squinted at is
+    not carrying its shortcut.
   - **Shortcuts are shown in the platform's own idiom**, one per platform, not
     the union: `⌘Z`/`⇧⌘Z` on macOS, `Ctrl+Z`/`Ctrl+Y` on Windows and Linux
     (`src/platform.ts`). Bindings stay generous — every chord is accepted

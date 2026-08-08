@@ -38,11 +38,31 @@
   white-space: nowrap;
 }
 
-/* The shared keycap base stepped down to the supporting-text size, exactly as
-   the menubar hint does it — one keycap system, two sizes. */
+/* The shared keycap base, stepped down — but only to 14px, not to the 11px the
+   rows use. The chord symbols are why: ⌘ and ⇧ are dense little glyphs, and at
+   11px in a system monospace they stop resolving into shapes. A cap that has to
+   be squinted at is not carrying its shortcut. */
 .gadget-hint .gadget-hint__key {
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+/* Keeps a cap and the "or" before it together when the head wraps. */
+.gadget-hint__key-alt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* Quieter than the caps it separates: it is punctuation between them, not a
+   third thing to read. */
+.gadget-hint__or {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   font-size: 11px;
-  padding: 2px 5px;
+  color: var(--dim-label);
 }
 
 /* Two shortcuts for one action is normal here — a letter and a chord — so

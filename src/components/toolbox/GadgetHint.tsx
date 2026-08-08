@@ -61,13 +61,17 @@ export type HintPlacement = {
 
 // Grouped rather than loose, so the head's space-between separates the name
 // from the shortcuts instead of spreading name and every key evenly apart.
+//
+// Joined by "or", because these are alternatives and two caps side by side
+// read as a chord — U ⌘Z looks like something you press together.
 function Keys({ keys }: { keys: string[] }): JSX.Element {
   return (
     <span className="gadget-hint__keys">
-      {keys.map((key) => (
-        <kbd className="wb-gadget__keycap gadget-hint__key" key={key}>
-          {key}
-        </kbd>
+      {keys.map((key, i) => (
+        <span className="gadget-hint__key-alt" key={key}>
+          {i > 0 && <span className="gadget-hint__or">or</span>}
+          <kbd className="wb-gadget__keycap gadget-hint__key">{key}</kbd>
+        </span>
       ))}
     </span>
   );
