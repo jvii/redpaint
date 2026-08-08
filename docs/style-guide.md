@@ -294,6 +294,9 @@ Consistency is judged within each control type, not across them:
   swatches), then **right-click**, then **the keys for that
   right-click**. The order is enforced by the shape of `GadgetHint` — named
   fields, not a free list — so it cannot drift as gadgets are added.
+  - **One short sentence** for what the gadget is for. These are glanced at,
+    not studied, and a tall panel covers the picture it is explaining. Two
+    steps only where the tool genuinely has two (Curve, Ellipse, Polygon).
   - The two kinds of instruction look different on purpose. The sentence is
     prose in full-strength ink and is about the picture: what a drag does on
     the canvas, or what an action gadget does. The rows beneath are an 11px

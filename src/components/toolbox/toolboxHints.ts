@@ -12,7 +12,14 @@ import { GadgetHint } from './GadgetHint';
 // `use` is a sentence about the picture — what happens when you drag on the
 // canvas, or what an action gadget does. Everything below it in the panel is a
 // gesture on the gadget itself. Keeping that split is what lets the panel show
-// them differently, so write canvas behaviour here and nowhere else.
+// them differently, so write canvas behavior here and nowhere else.
+//
+// **One short sentence.** These are read at a glance by someone who paused
+// over a gadget, not studied — a second clause explaining the finer points
+// costs more attention than it returns, and the panel grows tall enough to
+// cover the picture. Where a tool genuinely has two steps (Curve, Ellipse,
+// Polygon) say both plainly; everything else gets one. Detail that only
+// matters once you are using the tool belongs in the docs, not here.
 const FILL_STYLE = 'Fill Style settings';
 const shapeHalves = [
   { gesture: 'top half', does: 'Outline' },
@@ -22,7 +29,7 @@ const shapeHalves = [
 export const toolboxHints: { [key: string]: GadgetHint } = {
   dottedFreehand: {
     name: 'Dotted Freehand',
-    use: 'Drag to paint one brush stamp per pointer step, leaving gaps as you move faster.',
+    use: 'Drag to paint one brush stamp per pointer step.',
   },
   freehand: {
     name: 'Freehand',
@@ -30,11 +37,11 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   },
   line: {
     name: 'Line',
-    use: 'Drag from one end of the line to the other.',
+    use: 'Drag from one end to the other.',
   },
   curve: {
     name: 'Curve',
-    use: 'Drag to set the two ends, then move to bend it and click to commit.',
+    use: 'Drag to set the ends, then move to bend it and click.',
   },
   // Not "with the foreground color": paintPoints branches three ways, so what
   // lands is whatever the Fill Style says — a gradient or a pattern owes
@@ -42,12 +49,12 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // in the solid case, and that rule is the Color Indicator's to state.
   floodFill: {
     name: 'Flood Fill',
-    use: 'Click an area of one color to flood it with the current Fill Style: solid, gradient or pattern.',
+    use: 'Click an area to flood it with the current Fill Style.',
     rightClick: FILL_STYLE,
   },
   airbrush: {
     name: 'Airbrush',
-    use: 'Hold the button down to keep spraying; the longer you dwell, the denser it gets.',
+    use: 'Hold to keep spraying.',
   },
   rectangle: {
     name: 'Rectangle',
@@ -66,7 +73,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // sets the rotation angle (EllipseTool.onMouseMove).
   ellipse: {
     name: 'Ellipse',
-    use: 'Drag out from the center and release to set the size. Then move to reshape it, or drag to rotate; the next release draws it.',
+    use: 'Drag out from the center to set the size, then move to reshape or drag to rotate.',
     parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
@@ -74,13 +81,13 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // right-click means two different things, and the other one is a row below.
   polygon: {
     name: 'Polygon',
-    use: 'Click each corner in turn. Right-click on the canvas, or click the first corner again, to close the shape.',
+    use: 'Click each corner. Right-click on the canvas, or click the first corner, to close.',
     parts: shapeHalves,
     rightClick: FILL_STYLE,
   },
   brushSelect: {
     name: 'Brush Selector',
-    use: 'Drag a box on the canvas to pick that piece up as the brush.',
+    use: 'Drag a box to pick that piece of the canvas up as the brush.',
   },
   text: {
     name: 'Text',
@@ -92,7 +99,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // (toolbox.toggleZoomMode).
   zoom: {
     name: 'Magnify',
-    use: 'Click, then click the canvas to choose what to magnify; the zoom view opens beside it. Click again to close.',
+    use: 'Click, then click the canvas to choose what to magnify.',
   },
   // A plain on/off toggle (toolbox.toggleSymmetryMode). The center defaults to
   // the canvas center (symmetry state: `center: null`), and the picker that
@@ -100,19 +107,19 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   // the hint used to claim.
   symmetry: {
     name: 'Symmetry',
-    use: 'Mirrors and repeats every stroke around a center point: the canvas center, until you move it in the settings. Click to turn it on or off.',
+    use: 'Mirrors and repeats every stroke around a center point.',
     rightClick: 'Symmetry settings',
   },
   undo: {
     name: 'Undo',
     keys: ['U', 'ctrl/cmd-Z'],
-    use: 'Steps back through the picture, one committed change at a time.',
+    use: 'Steps back one committed change at a time.',
     rightClick: 'Redo',
     rightClickKeys: ['ctrl/cmd-shift-Z'],
   },
   clr: {
     name: 'Clear',
-    use: 'Covers the page with the background color, leaving its size and palette alone.',
+    use: 'Covers the page with the background color.',
     rightClick: 'New page: fits the window, default palette',
   },
 };
@@ -132,7 +139,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
 // any tool, so it lives with the swatch that shows it.
 export const colorIndicatorHint: GadgetHint = {
   name: 'Color Indicator',
-  use: 'The circle is the current foreground color, the rectangle behind it the current background color. Right-click with any painting tool to draw with the background instead.',
+  use: 'The circle is the current foreground color, the rectangle behind it the background. Right-click with any painting tool to draw with the background.',
   // Both arm a picker that samples the *canvas* — ColorSelectorTool reads the
   // pixel under the next click (getPaintColorForPoint). The palette is where
   // you choose a color you can already see; this is how you take one you can
