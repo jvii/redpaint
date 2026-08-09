@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
+import { Color } from '../../src/types';
 import {
+  createNearestMapper,
   extractExactPalette,
   mapToPalette,
   mapToPaletteExact,
@@ -78,10 +80,7 @@ describe('medianCutPalette', () => {
   // a NaN palette entry (0/0 average). See the "Clamped so the right half..."
   // comment in quantize.ts for the fix.
   test('a heavily dominant color does not produce NaN palette entries', () => {
-    const data = pixels([
-      ...new Array(10).fill([0, 0, 0]),
-      ...new Array(90).fill([255, 0, 0]),
-    ]);
+    const data = pixels([...new Array(10).fill([0, 0, 0]), ...new Array(90).fill([255, 0, 0])]);
     const palette = medianCutPalette(data, 2);
 
     expect(palette).toHaveLength(2);
@@ -162,11 +161,7 @@ describe('medianCutPalette on colors packed into few bins', () => {
     const colors: [number, number, number][] = [];
     for (let i = 0; i < steps; i++) {
       const t = i / steps;
-      colors.push([
-        Math.round(20 + t * 60),
-        Math.round(60 + t * 120),
-        Math.round(160 + t * 80),
-      ]);
+      colors.push([Math.round(20 + t * 60), Math.round(60 + t * 120), Math.round(160 + t * 80)]);
     }
     return pixels(colors);
   }
@@ -213,5 +208,94 @@ describe('medianCutPalette on colors packed into few bins', () => {
     }
     const palette = medianCutPalette(pixels(colors), 256);
     expect(distinct(palette)).toBe(256);
+  });
+});
+
+// The nearest lookup is indexed by 15-bit bin but must not *answer* per bin:
+// it caches which palette entries could win anywhere in that bin and then
+// measures each color exactly. These check that the shortcut never changes the
+// answer, because when it did, the result depended on the caller's scan order.
+describe('createNearestMapper', () => {
+  function bruteForce(palette: Color[], r: number, g: number, b: number): number {
+    let best = 0;
+    let bestDist = Infinity;
+    palette.forEach((color, j) => {
+      const dist = (r - color.r) ** 2 + (g - color.g) ** 2 + (b - color.b) ** 2;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = j;
+      }
+    });
+    return best;
+  }
+
+  // A deterministic spread of palettes and colors, including the dark clusters
+  // that made the old per-bin answer visibly wrong.
+  function randoms(seed: number, count: number, max: number): number[] {
+    const out: number[] = [];
+    let s = seed;
+    for (let i = 0; i < count; i++) {
+      s = (s * 1103515245 + 12345) & 0x7fffffff;
+      out.push((s >>> 9) % max);
+    }
+    return out;
+  }
+
+  test.each([
+    ['a palette spread over the whole cube', 256, 256],
+    ['a palette packed into the darks', 256, 24],
+    ['a tiny palette', 4, 256],
+    ['two colors one unit apart', 2, 2],
+  ])('agrees with a brute-force search: %s', (_label, size, spread) => {
+    const channels = randoms(size * 7 + spread, size * 3, spread);
+    const palette: Color[] = [];
+    for (let i = 0; i < size; i++) {
+      palette.push({ r: channels[i * 3], g: channels[i * 3 + 1], b: channels[i * 3 + 2] });
+    }
+    const nearest = createNearestMapper(palette);
+    const probes = randoms(99, 1500, 256);
+    for (let i = 0; i + 2 < probes.length; i += 3) {
+      const [r, g, b] = [probes[i], probes[i + 1], probes[i + 2]];
+      expect(nearest(r, g, b)).toBe(bruteForce(palette, r, g, b));
+    }
+  });
+
+  // The specific failure: two colors in one bin (all channels under 8) whose
+  // nearest entries differ. Querying one first used to decide for the other.
+  test('does not let one color in a bin answer for another', () => {
+    const palette: Color[] = [
+      { r: 1, g: 1, b: 1 },
+      { r: 12, g: 12, b: 11 },
+      { r: 200, g: 200, b: 200 },
+    ];
+    const seededDark = createNearestMapper(palette);
+    expect(seededDark(0, 0, 0)).toBe(0);
+    expect(seededDark(7, 7, 7)).toBe(1);
+
+    // and in the other order, which is what changed between the two paths
+    const seededLight = createNearestMapper(palette);
+    expect(seededLight(7, 7, 7)).toBe(1);
+    expect(seededLight(0, 0, 0)).toBe(0);
+  });
+
+  test('is independent of the order colors are asked about', () => {
+    const palette: Color[] = randoms(4242, 256 * 3, 40).reduce<Color[]>((acc, _v, i, arr) => {
+      if (i % 3 === 0) acc.push({ r: arr[i], g: arr[i + 1], b: arr[i + 2] });
+      return acc;
+    }, []);
+    const probes = randoms(7, 900, 48);
+    const forward = createNearestMapper(palette);
+    const backward = createNearestMapper(palette);
+    const results: number[] = [];
+    for (let i = 0; i + 2 < probes.length; i += 3) {
+      results.push(forward(probes[i], probes[i + 1], probes[i + 2]));
+    }
+    for (
+      let i = probes.length - (probes.length % 3) - 3, k = results.length - 1;
+      i >= 0;
+      i -= 3, k--
+    ) {
+      expect(backward(probes[i], probes[i + 1], probes[i + 2])).toBe(results[k]);
+    }
   });
 });

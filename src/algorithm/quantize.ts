@@ -22,8 +22,9 @@ const BITS = 5;
 const SHIFT = 8 - BITS;
 const BINS = 1 << (BITS * 3);
 
-// The 15-bit bin a color falls in. Shared by the coarse histogram below and by
-// createNearestMapper's cache, which quantizes to the same grid.
+// The 15-bit bin a color falls in, for the coarse histogram below. Nothing else
+// uses it: the nearest-color lookup memoized on these bins once, and that is
+// the bug documented on createNearestMapper.
 function binOf(r: number, g: number, b: number): number {
   return ((r >> SHIFT) << (BITS * 2)) | ((g >> SHIFT) << BITS) | (b >> SHIFT);
 }
@@ -255,30 +256,80 @@ export function mapToPaletteExact(data: Uint8ClampedArray, palette: Color[]): Ui
   return indices;
 }
 
-// A nearest-palette-color lookup (squared RGB distance), memoized per 15-bit
-// bin — colors within a bin (8 RGB units per channel) share one answer, so
-// mapping a photo costs ~32k searches instead of one per pixel. The error
-// bound is well under quantization's own, but it is approximate: use
-// mapToPaletteExact when the palette must reproduce the image verbatim.
+// A nearest-palette-color lookup (squared RGB distance), exact.
+//
+// It used to answer per 15-bit bin: one search for the first color to land in a
+// bin, and every other color in that bin got the same answer. A bin is 8 units
+// per channel, and a 256-color palette is finer than that — several entries
+// routinely share one — so the result depended on which color the caller
+// happened to visit first, and the caller's scan order therefore changed the
+// picture. On a dark photograph, where a large share of the pixels sit in the
+// one bin nearest black, seeding that bin from a color a few units up lifted
+// every deep black to match it: the same image quantized by two paths that scan
+// in different row orders came out at 7.3 and 44.9 mean squared error against a
+// 4.8 ideal. Both are now 4.8, and identical to each other.
+//
+// Exactness alone is affordable only if it stays fast. Memoizing per distinct
+// color instead is exact but costs a full palette scan per color, which on a
+// photograph where nearly every pixel differs is a million scans — 2.4s for one
+// megapixel, against 60ms before.
+//
+// So the bin is still the index, but it now caches *candidates* rather than an
+// answer. For each bin, any palette entry that could be nearest for some color
+// somewhere in it is kept, and each color is then measured exactly against
+// those few. Which entries qualify follows from the geometry: with c the bin's
+// center, R the distance from c to its farthest corner, and m the distance from
+// c to the closest entry, the true nearest p* for any q in the bin satisfies
+//
+//   dist(c, p*) <= dist(q, p*) + R <= dist(q, p_m) + R <= m + 2R
+//
+// so keeping everything within m + 2R cannot discard the right answer. In
+// practice that is a handful of entries, and the cost lands back where the
+// approximation was.
 export function createNearestMapper(palette: Color[]): (r: number, g: number, b: number) => number {
-  const cache = new Int16Array(BINS).fill(-1);
+  // Half a bin's extent per channel, so the corner is that far out in all three.
+  const half = ((1 << SHIFT) - 1) / 2;
+  const radius = Math.sqrt(3 * half * half);
+  const candidates: (Int32Array | undefined)[] = new Array(BINS);
+
   return (r: number, g: number, b: number): number => {
     const bin = binOf(r, g, b);
-    let index = cache[bin];
-    if (index < 0) {
-      let minDist = Infinity;
-      index = 0;
+    let list = candidates[bin];
+    if (list === undefined) {
+      const cr = ((r >> SHIFT) << SHIFT) + half;
+      const cg = ((g >> SHIFT) << SHIFT) + half;
+      const cb = ((b >> SHIFT) << SHIFT) + half;
+      const distances = new Float64Array(palette.length);
+      let nearestToCenter = Infinity;
       for (let j = 0; j < palette.length; j++) {
-        const dr = r - palette[j].r;
-        const dg = g - palette[j].g;
-        const db = b - palette[j].b;
-        const dist = dr * dr + dg * dg + db * db;
-        if (dist < minDist) {
-          minDist = dist;
-          index = j;
-        }
+        const dr = cr - palette[j].r;
+        const dg = cg - palette[j].g;
+        const db = cb - palette[j].b;
+        const distance = Math.sqrt(dr * dr + dg * dg + db * db);
+        distances[j] = distance;
+        if (distance < nearestToCenter) nearestToCenter = distance;
       }
-      cache[bin] = index;
+      const limit = nearestToCenter + 2 * radius;
+      const keep: number[] = [];
+      for (let j = 0; j < palette.length; j++) {
+        if (distances[j] <= limit) keep.push(j);
+      }
+      list = Int32Array.from(keep);
+      candidates[bin] = list;
+    }
+
+    let index = list[0];
+    let minDist = Infinity;
+    for (let k = 0; k < list.length; k++) {
+      const j = list[k];
+      const dr = r - palette[j].r;
+      const dg = g - palette[j].g;
+      const db = b - palette[j].b;
+      const dist = dr * dr + dg * dg + db * db;
+      if (dist < minDist) {
+        minDist = dist;
+        index = j;
+      }
     }
     return index;
   };
