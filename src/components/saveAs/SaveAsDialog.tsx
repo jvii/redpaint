@@ -25,7 +25,7 @@ const TRUE_COLOR_TITLE = 'The picture has True Color pixels, which this format c
 // flattens true-color pixels onto the palette, and nothing else does.
 const TRUE_COLOR_NOTE =
   'Only PNG: this picture has True Color pixels, which an indexed format (IFF and GIF) cannot ' +
-  'store. Turn True Color off in Set Screen Format to convert them to palette colors.';
+  'store. Turn True Color off in Set Screen Format to convert to an indexed palette.';
 
 // The one requester Save As goes through, on every browser.
 //
@@ -99,16 +99,23 @@ function SaveAsDialogOpen(): JSX.Element {
       <div className="save-as__body">
         <div className="save-as__formats">
           <RetroToggle
-            options={SAVE_FORMATS.map((id) => ({
-              value: id,
-              label: saveFormats[id].label,
+            options={SAVE_FORMATS.map((id) => {
               // An indexed format cannot hold true-color pixels. Disabled here
               // rather than refused after the fact: the requester is where the
               // choice is made, so it is where a choice that cannot work should
               // be visibly unavailable.
-              disabled: !indexed && id !== 'png',
-              title: indexed ? undefined : TRUE_COLOR_TITLE,
-            }))}
+              //
+              // The tooltip belongs to the segments that are actually out. Hung
+              // off all three, it told you PNG could not store the picture
+              // while PNG sat there enabled and selected as the one that can.
+              const unavailable = !indexed && id !== 'png';
+              return {
+                value: id,
+                label: saveFormats[id].label,
+                disabled: unavailable,
+                title: unavailable ? TRUE_COLOR_TITLE : undefined,
+              };
+            })}
             value={format}
             onChange={(value): void => setFormat(value as SaveFormat)}
           />

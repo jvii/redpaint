@@ -26,17 +26,17 @@ export type SaveFormatSpec = {
 export const saveFormats: { [format in SaveFormat]: SaveFormatSpec } = {
   png: {
     label: 'PNG',
-    note: 'True color. Read anywhere; the palette is not kept.',
+    note: 'True color. Read anywhere; the indexed palette is not kept.',
     fileType: { description: 'PNG image', mime: 'image/png', extension: '.png' },
   },
   iff: {
     label: 'IFF',
-    note: 'Indexed. Amiga ILBM — keeps the palette and the cycle ranges.',
+    note: 'Indexed. Amiga ILBM — keeps the indexed palette and the cycle ranges.',
     fileType: { description: 'IFF ILBM image', mime: 'image/x-ilbm', extension: '.iff' },
   },
   gif: {
     label: 'GIF',
-    note: 'Indexed. Keeps the palette; read anywhere.',
+    note: 'Indexed. Keeps the indexed palette; read anywhere.',
     fileType: { description: 'GIF image', mime: 'image/gif', extension: '.gif' },
   },
 };
