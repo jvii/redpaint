@@ -22,20 +22,40 @@ const BITS = 5;
 const SHIFT = 8 - BITS;
 const BINS = 1 << (BITS * 3);
 
-type Box = {
-  bins: number[]; // 15-bit bin ids belonging to this box
-  pixels: number; // total pixel count
-};
-
+// The 15-bit bin a color falls in. Shared by the coarse histogram below and by
+// createNearestMapper's cache, which quantizes to the same grid.
 function binOf(r: number, g: number, b: number): number {
   return ((r >> SHIFT) << (BITS * 2)) | ((g >> SHIFT) << BITS) | (b >> SHIFT);
 }
 
-// The palette (exactly n entries) that best covers the image, by median cut.
-// Call only when the image has more distinct colors than n; otherwise use
-// extractExactPalette.
-export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
-  // histogram, plus full-precision channel sums per bin for the final colors
+// One point the cut works on: pixels sharing a color, either exactly or to
+// within the histogram's precision. `r`/`g`/`b` are the coordinates the cut
+// sorts and measures in; the sums are always full 8-bit, so the color a box
+// finally yields is a true average of its pixels rather than of bin centers.
+type Cluster = {
+  r: number;
+  g: number;
+  b: number;
+  count: number;
+  rSum: number;
+  gSum: number;
+  bSum: number;
+};
+
+// Its widest channel and that channel's range are computed once, when the box
+// is made. They used to be recomputed for every box on every iteration, which
+// was affordable only because the point count was capped at 32k — it is not,
+// now that a box can hold every distinct color in the image.
+type Box = {
+  items: Cluster[];
+  pixels: number;
+  ch: number;
+  range: number;
+};
+
+// The coarse histogram: 5 bits per channel, 32k bins, so the cut works on a
+// bounded number of points however large the image.
+function binnedClusters(data: Uint8ClampedArray): Cluster[] {
   const counts = new Uint32Array(BINS);
   const rSum = new Float64Array(BINS);
   const gSum = new Float64Array(BINS);
@@ -48,85 +68,144 @@ export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
     bSum[bin] += data[i + 2];
   }
 
-  const allBins: number[] = [];
-  let allPixels = 0;
+  const mask = (1 << BITS) - 1;
+  const clusters: Cluster[] = [];
   for (let bin = 0; bin < BINS; bin++) {
     if (counts[bin] > 0) {
-      allBins.push(bin);
-      allPixels += counts[bin];
+      clusters.push({
+        r: (bin >> (BITS * 2)) & mask,
+        g: (bin >> BITS) & mask,
+        b: bin & mask,
+        count: counts[bin],
+        rSum: rSum[bin],
+        gSum: gSum[bin],
+        bSum: bSum[bin],
+      });
     }
   }
+  return clusters;
+}
 
-  const channelOf = (bin: number, ch: number): number =>
-    (bin >> (BITS * (2 - ch))) & ((1 << BITS) - 1);
+// The exact histogram: one point per distinct color, no quantization at all.
+//
+// Only reached when the coarse one found fewer occupied bins than the palette
+// has slots, which is what makes it affordable: an image confined to under 256
+// bins holds at most 256 x 512 distinct colors, so this Map is bounded by the
+// very condition that asks for it. A photograph, which would make it large,
+// never gets here.
+function exactClusters(data: Uint8ClampedArray): Cluster[] {
+  const counts = new Map<number, number>();
+  for (let i = 0; i < data.length; i += 4) {
+    const key = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const clusters: Cluster[] = [];
+  for (const [key, count] of counts) {
+    const r = key >> 16;
+    const g = (key >> 8) & 0xff;
+    const b = key & 0xff;
+    clusters.push({ r, g, b, count, rSum: r * count, gSum: g * count, bSum: b * count });
+  }
+  return clusters;
+}
 
-  // the channel with the widest range in the box, and that range
-  const widest = (box: Box): { ch: number; range: number } => {
-    let best = { ch: 0, range: -1 };
-    for (let ch = 0; ch < 3; ch++) {
-      let min = 1 << BITS;
-      let max = -1;
-      for (const bin of box.bins) {
-        const v = channelOf(bin, ch);
-        if (v < min) min = v;
-        if (v > max) max = v;
-      }
-      const range = max - min;
-      if (range > best.range) best = { ch, range };
-    }
-    return best;
-  };
+function makeBox(items: Cluster[]): Box {
+  let pixels = 0;
+  let minR = 256;
+  let maxR = -1;
+  let minG = 256;
+  let maxG = -1;
+  let minB = 256;
+  let maxB = -1;
+  for (const item of items) {
+    pixels += item.count;
+    if (item.r < minR) minR = item.r;
+    if (item.r > maxR) maxR = item.r;
+    if (item.g < minG) minG = item.g;
+    if (item.g > maxG) maxG = item.g;
+    if (item.b < minB) minB = item.b;
+    if (item.b > maxB) maxB = item.b;
+  }
+  let ch = 0;
+  let range = maxR - minR;
+  if (maxG - minG > range) {
+    ch = 1;
+    range = maxG - minG;
+  }
+  if (maxB - minB > range) {
+    ch = 2;
+    range = maxB - minB;
+  }
+  return { items, pixels, ch, range };
+}
 
-  const boxes: Box[] = [{ bins: allBins, pixels: allPixels }];
+function channel(cluster: Cluster, ch: number): number {
+  return ch === 0 ? cluster.r : ch === 1 ? cluster.g : cluster.b;
+}
+
+// The palette (exactly n entries) that best covers the image, by median cut.
+// Call only when the image has more distinct colors than n; otherwise use
+// extractExactPalette.
+export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
+  // The number of occupied bins is a hard ceiling on how many boxes the cut
+  // can ever produce, and 5-bit bins are coarse enough that ordinary pictures
+  // fall below it: a smooth sky gradient of 261 distinct colors occupies 31
+  // bins, so asking for 256 colors returned 35 and padded the rest with black.
+  // Anything painted in True Color tends this way — gradients and soft edges
+  // are many colors within a narrow range, which is exactly the shape that
+  // collapses under quantization.
+  //
+  // So the coarse histogram is a fast path, not the algorithm: when it cannot
+  // supply enough points, the cut runs on the image's exact colors instead.
+  let clusters = binnedClusters(data);
+  if (clusters.length < n) {
+    clusters = exactClusters(data);
+  }
+
+  const boxes: Box[] = [makeBox(clusters)];
   while (boxes.length < n) {
     // split the box with the widest channel range (skip unsplittable ones)
     let candidate = -1;
     let candidateRange = 0;
     for (let i = 0; i < boxes.length; i++) {
-      if (boxes[i].bins.length < 2) continue;
-      const { range } = widest(boxes[i]);
-      if (range > candidateRange) {
-        candidateRange = range;
+      if (boxes[i].items.length > 1 && boxes[i].range > candidateRange) {
+        candidateRange = boxes[i].range;
         candidate = i;
       }
     }
-    if (candidate < 0) break; // every box is a single bin — nothing to split
+    if (candidate < 0) break; // every box is a single color — nothing to split
 
     const box = boxes[candidate];
-    const { ch } = widest(box);
-    box.bins.sort((a, b) => channelOf(a, ch) - channelOf(b, ch));
+    box.items.sort((a, b) => channel(a, box.ch) - channel(b, box.ch));
 
-    // Cut at the median pixel (not the median bin). Clamped so the right half
-    // always keeps at least one bin: when a single bin holds over half the
+    // Cut at the median pixel (not the median point). Clamped so the right half
+    // always keeps at least one point: when a single color holds over half the
     // pixels (a screenshot's uniform background) and sorts last on the chosen
     // channel, the accumulator never reaches half and the loop would otherwise
     // run off the end, splitting into (everything, nothing) — an empty box is
     // a NaN palette entry, and the undiminished left box wins every following
     // split, flooding the palette with them. The clamped cut instead isolates
-    // the dominant bin, which is exactly the split that case wants.
+    // the dominant color, which is exactly the split that case wants.
     const half = box.pixels / 2;
     let acc = 0;
     let cut = 0;
-    for (; cut < box.bins.length - 1; cut++) {
-      acc += counts[box.bins[cut]];
+    for (; cut < box.items.length - 1; cut++) {
+      acc += box.items[cut].count;
       if (acc >= half) break;
     }
-    cut = Math.min(cut, box.bins.length - 2);
-    const leftBins = box.bins.slice(0, cut + 1);
-    const rightBins = box.bins.slice(cut + 1);
-    const leftPixels = leftBins.reduce((s, bin) => s + counts[bin], 0);
-    boxes[candidate] = { bins: leftBins, pixels: leftPixels };
-    boxes.push({ bins: rightBins, pixels: box.pixels - leftPixels });
+    cut = Math.min(cut, box.items.length - 2);
+    boxes[candidate] = makeBox(box.items.slice(0, cut + 1));
+    boxes.push(makeBox(box.items.slice(cut + 1)));
   }
 
   const palette = boxes.map((box): Color => {
     let r = 0;
     let g = 0;
     let b = 0;
-    for (const bin of box.bins) {
-      r += rSum[bin];
-      g += gSum[bin];
-      b += bSum[bin];
+    for (const item of box.items) {
+      r += item.rSum;
+      g += item.gSum;
+      b += item.bSum;
     }
     return {
       r: Math.round(r / box.pixels),
@@ -135,8 +214,9 @@ export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
     };
   });
 
-  // fewer boxes than asked (image simpler than n): pad with black so the
-  // palette is exactly n entries
+  // Fewer boxes than asked, which now means the image genuinely has fewer
+  // distinct colors than n — the caller was supposed to use
+  // extractExactPalette. Padded with black so the palette is exactly n.
   while (palette.length < n) palette.push({ r: 0, g: 0, b: 0 });
   return palette;
 }
