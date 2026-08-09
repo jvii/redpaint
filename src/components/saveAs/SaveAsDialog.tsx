@@ -127,9 +127,15 @@ function SaveAsDialogOpen(): JSX.Element {
           {/* Why two of them are greyed out, and how to un-grey them — beside
               the descriptions rather than in place of them, since what PNG is
               remains worth knowing while you are being told it is your only
-              option. Always rendered, empty when there is nothing to say, so
-              the requester is one size whichever picture it opens over. */}
-          <p className="save-as__true-color-note">{indexed ? '' : TRUE_COLOR_NOTE}</p>
+              option.
+
+              No reserved height, unlike the note above: `indexed` is read once
+              when the requester opens, so this is either present for the whole
+              of its life or absent for the whole of it. The rule it would be
+              serving is that a requester must not resize *while you are looking
+              at it*, and nothing here can make it. Holding four empty lines
+              open on every ordinary save buys nothing. */}
+          {!indexed && <p className="save-as__true-color-note">{TRUE_COLOR_NOTE}</p>}
         </div>
 
         {asksForName && (

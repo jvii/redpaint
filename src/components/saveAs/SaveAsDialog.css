@@ -74,17 +74,12 @@
    that. Full-strength ink, unlike the format note above it: that one describes
    the option you picked, this one is a constraint on the options you cannot.
 
-   Always present, so the height is reserved whether or not there is anything
-   to say. A requester that is one size for an indexed picture and another for
-   a true-color one is the resizing the style guide rules out, just spread
-   across two openings instead of one.
-
-   72px is four lines at this measure, which is what the message wraps to —
-   measured rather than guessed, and it needs re-measuring if the wording
-   changes, since a fifth line would push the buttons down and defeat the
-   point. */
+   Rendered only when there is something to say, and given no reserved height
+   for it: whether the picture has true-color pixels is decided as the requester
+   opens and cannot change while it is up, so this cannot resize anything under
+   the reader. That is what the no-resizing rule is about — the format note
+   above does reserve, because the toggle it describes is live. */
 .save-as__true-color-note {
-  min-height: 72px;
   margin: 0;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
