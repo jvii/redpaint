@@ -2,7 +2,7 @@ import { JSX, useState } from 'react';
 import './SaveAsDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { settleSaveAsPrompt } from '../menu/pendingSaveAs';
-import { SaveFormat, SAVE_FORMATS, saveFormats } from '../menu/saveFormats';
+import { pictureIsIndexed, SaveFormat, SAVE_FORMATS, saveFormats } from '../menu/saveFormats';
 import { sanitizeFileName, withExtension, hasSaveFilePicker } from '../menu/saveAsPng';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
@@ -13,6 +13,10 @@ import { RetroToggle } from '../ui/RetroToggle';
 // cannot outgrow the height reserved for it — and filesystems stop caring well
 // before this anyway.
 const MAX_NAME_LENGTH = 40;
+
+// Shown in place of the format note, and as each disabled segment's tooltip.
+const TRUE_COLOR_TITLE =
+  'Only PNG: the picture has True Color pixels, which an indexed format cannot store.';
 
 // The one requester Save As goes through, on every browser.
 //
@@ -41,9 +45,17 @@ function SaveAsDialogOpen(): JSX.Element {
   const actions = useActions();
   const suggested = state.app.saveAsPrompt as string;
 
+  // Scanned once per prompt rather than per render: it reads the canvas back,
+  // and the answer cannot change while a modal is up.
+  const [indexed] = useState(pictureIsIndexed);
+
   // The last format used, so repeating a save is one click and changing one is
-  // a deliberate act.
-  const [format, setFormat] = useState<SaveFormat>(state.app.saveFormat);
+  // a deliberate act — unless that format cannot hold what is now on the
+  // canvas, in which case the only one that can is already selected rather
+  // than the requester opening on a disabled option.
+  const [format, setFormat] = useState<SaveFormat>(
+    indexed || state.app.saveFormat === 'png' ? state.app.saveFormat : 'png'
+  );
   const [name, setName] = useState(suggested);
 
   // The extension follows the format rather than the name — picking GIF after
@@ -78,15 +90,28 @@ function SaveAsDialogOpen(): JSX.Element {
       <div className="save-as__body">
         <div className="save-as__formats">
           <RetroToggle
-            options={SAVE_FORMATS.map((id) => ({ value: id, label: saveFormats[id].label }))}
+            options={SAVE_FORMATS.map((id) => ({
+              value: id,
+              label: saveFormats[id].label,
+              // An indexed format cannot hold true-color pixels. Disabled here
+              // rather than refused after the fact: the requester is where the
+              // choice is made, so it is where a choice that cannot work should
+              // be visibly unavailable.
+              disabled: !indexed && id !== 'png',
+              title: indexed ? undefined : TRUE_COLOR_TITLE,
+            }))}
             value={format}
             onChange={(value): void => setFormat(value as SaveFormat)}
           />
           {/* What distinguishes them, in one line, because "PNG or GIF" is not
               a question anyone can answer without being told which keeps the
-              palette. Height reserved for the longest of the three so the
-              requester does not resize as the choice changes. */}
-          <p className="save-as__format-note">{saveFormats[format].note}</p>
+              palette. When two of them are greyed out that line gives way to
+              the reason, which is the more useful thing to be reading. Height
+              reserved for the longest so the requester does not resize as the
+              choice changes. */}
+          <p className="save-as__format-note">
+            {indexed ? saveFormats[format].note : TRUE_COLOR_TITLE}
+          </p>
         </div>
 
         {asksForName && (

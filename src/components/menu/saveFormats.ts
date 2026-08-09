@@ -41,9 +41,22 @@ export const saveFormats: { [format in SaveFormat]: SaveFormatSpec } = {
   },
 };
 
-// Why an indexed format cannot write this picture, or null if it can. Hoisted
-// out of the individual encoders because both of them fail the same way and
-// for the same reason, and the message is the user's next action.
+// Whether the indexed formats can hold what is on the canvas. Asked by the
+// requester so IFF and GIF can be greyed out with a reason, rather than
+// accepted and then refused by an alert once the choice has been made.
+//
+// Not the True Color *switch*: that is a mode, and a picture painted entirely
+// in palette colors with the switch on is perfectly indexable. This is a scan
+// of the pixels, memoized on the snapshot and early-exiting on the first
+// true-color pixel, so the common answer is cheap.
+export function pictureIsIndexed(): boolean {
+  return paintingCanvasController.getCanvasColorIndex()?.hasTrueColorPixels() === false;
+}
+
+// Why an indexed format cannot write this picture. Still checked at save time
+// even though the requester now disables those options: the two gadgets are
+// not the only way in (a remembered format meets a picture that has changed
+// since), and a wrong answer here writes a corrupt file rather than nagging.
 const TRUE_COLOR_REFUSAL =
   'The picture has True Color pixels, and this format stores palette-indexed ' +
   'pixels only. Save as PNG, or turn True Color off in Screen Format first.';
