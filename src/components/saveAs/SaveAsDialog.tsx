@@ -14,9 +14,18 @@ import { RetroToggle } from '../ui/RetroToggle';
 // before this anyway.
 const MAX_NAME_LENGTH = 40;
 
-// Shown in place of the format note, and as each disabled segment's tooltip.
-const TRUE_COLOR_TITLE =
-  'Only PNG: the picture has True Color pixels, which an indexed format cannot store.';
+// Each disabled segment's tooltip: the short form, since a tooltip is read
+// while already pointing at the format it is about.
+const TRUE_COLOR_TITLE = 'The picture has True Color pixels, which this format cannot store.';
+
+// The body's version, which also says what to do about it. "Set Screen Format"
+// is that requester's own header and "True Color" the switch's own label, so
+// this can be followed by looking for those exact words. Naming the one action
+// that helps matters more than naming the problem: applyScreenFormat is what
+// flattens true-color pixels onto the palette, and nothing else does.
+const TRUE_COLOR_NOTE =
+  'Only PNG: this picture has True Color pixels, which an indexed format (IFF and GIF) cannot ' +
+  'store. Turn True Color off in Set Screen Format to convert them to palette colors.';
 
 // The one requester Save As goes through, on every browser.
 //
@@ -105,13 +114,15 @@ function SaveAsDialogOpen(): JSX.Element {
           />
           {/* What distinguishes them, in one line, because "PNG or GIF" is not
               a question anyone can answer without being told which keeps the
-              palette. When two of them are greyed out that line gives way to
-              the reason, which is the more useful thing to be reading. Height
-              reserved for the longest so the requester does not resize as the
-              choice changes. */}
-          <p className="save-as__format-note">
-            {indexed ? saveFormats[format].note : TRUE_COLOR_TITLE}
-          </p>
+              palette. Height reserved for the longest of the three so the
+              requester does not resize as the choice changes. */}
+          <p className="save-as__format-note">{saveFormats[format].note}</p>
+          {/* Why two of them are greyed out, and how to un-grey them — beside
+              the descriptions rather than in place of them, since what PNG is
+              remains worth knowing while you are being told it is your only
+              option. Always rendered, empty when there is nothing to say, so
+              the requester is one size whichever picture it opens over. */}
+          <p className="save-as__true-color-note">{indexed ? '' : TRUE_COLOR_NOTE}</p>
         </div>
 
         {asksForName && (
