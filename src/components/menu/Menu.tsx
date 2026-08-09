@@ -11,13 +11,19 @@ import { BrushMenu } from './BrushMenu';
 import { PictureMenu } from './PictureMenu';
 import { PreferencesMenu } from './PreferencesMenu';
 import { isIlbmHeader } from '../../fileformat/ilbm';
+import { isGifHeader } from '../../fileformat/gif';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import './Menu.css';
 
-// IFF is recognized by content, not extension — extensions in the wild vary
-// (.iff, .lbm, .ilbm) and lie; isIlbmHeader knows what content qualifies.
-async function isIffFile(file: File): Promise<boolean> {
-  return isIlbmHeader(new Uint8Array(await file.slice(0, 12).arrayBuffer()));
+// Both are recognized by content, not extension — extensions in the wild vary
+// (.iff, .lbm, .ilbm) and lie, and a GIF dragged off a web page often has no
+// extension at all. Twelve bytes is enough for either signature.
+async function sniffFormat(file: File): Promise<'iff' | 'gif' | null> {
+  const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  if (isIlbmHeader(head)) {
+    return 'iff';
+  }
+  return isGifHeader(head) ? 'gif' : null;
 }
 
 // The drop-down menu panel under the menubar: the screen status strip and
@@ -53,8 +59,13 @@ export function Menu(): JSX.Element {
     // modal) hides it once it appears
     actions.app.closeMenu();
     void (async (): Promise<void> => {
-      if (await isIffFile(file)) {
+      // The two indexed formats carry their own palette, so they skip the
+      // color-treatment requester entirely — there is nothing to decide.
+      const format = await sniffFormat(file);
+      if (format === 'iff') {
         actions.app.beginIlbmLoad(file);
+      } else if (format === 'gif') {
+        actions.app.beginGifLoad(file);
       } else {
         // decodes, then opens the load requester (color treatment)
         actions.app.beginImageLoad({ url: URL.createObjectURL(file), fileName: file.name });

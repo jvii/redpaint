@@ -181,6 +181,310 @@ function writeColorTable(out: ByteWriter, palette: Color[], size: number): void 
   }
 }
 
+// What a load gets back: the first frame, flattened onto the logical screen.
+export interface DecodedGif {
+  width: number;
+  height: number;
+  palette: Color[];
+  pixels: Uint8Array;
+  transparentIndex?: number;
+  // How many frames the file actually held. Decoding stops after the first —
+  // this is a paint program, not a player — but the caller may want to say so.
+  frameCount: number;
+}
+
+// Content-sniffs a GIF from its first six bytes, the same job isIlbmHeader
+// does for IFF: an extension is a guess and a GIF may not have one at all
+// (a drag from a web page often doesn't).
+export function isGifHeader(head: Uint8Array): boolean {
+  if (head.length < 6) {
+    return false;
+  }
+  const signature = String.fromCharCode(...head.subarray(0, 6));
+  return signature === 'GIF89a' || signature === 'GIF87a';
+}
+
+// Rows of an interlaced GIF arrive in four passes rather than top to bottom.
+// Nothing this app writes is interlaced, but plenty of GIFs in the wild are,
+// and reading one as progressive gives a picture that is shuffled rather than
+// obviously broken — the worst kind of wrong.
+const INTERLACE_PASSES = [
+  { start: 0, step: 8 },
+  { start: 4, step: 8 },
+  { start: 2, step: 4 },
+  { start: 1, step: 2 },
+];
+
+class GifReader {
+  private at = 0;
+
+  constructor(private readonly bytes: Uint8Array) {}
+
+  get offset(): number {
+    return this.at;
+  }
+
+  get exhausted(): boolean {
+    return this.at >= this.bytes.length;
+  }
+
+  byte(): number {
+    if (this.at >= this.bytes.length) {
+      throw new GifError('GIF ends in the middle of a block');
+    }
+    return this.bytes[this.at++];
+  }
+
+  uint16(): number {
+    return this.byte() | (this.byte() << 8);
+  }
+
+  colorTable(size: number): Color[] {
+    const table: Color[] = [];
+    for (let i = 0; i < size; i++) {
+      table.push({ r: this.byte(), g: this.byte(), b: this.byte() });
+    }
+    return table;
+  }
+
+  // A run of length-prefixed blocks, closed by a zero length. Both extensions
+  // and image data use them, so skipping an extension is just reading and
+  // discarding.
+  //
+  // Runs out rather than throwing when the file is short. A truncated GIF is a
+  // damaged file, but the part that did arrive is still a picture, and every
+  // browser shows it — refusing the whole thing would be this app being
+  // stricter than the format's own audience for no gain. The LZW below stops
+  // the same way, so a partial image comes back partial rather than jagged.
+  subBlocks(): Uint8Array {
+    const parts: Uint8Array[] = [];
+    let total = 0;
+    while (!this.exhausted) {
+      const size = this.byte();
+      if (size === 0) {
+        break;
+      }
+      const end = Math.min(this.at + size, this.bytes.length);
+      parts.push(this.bytes.subarray(this.at, end));
+      total += end - this.at;
+      this.at = end;
+    }
+    const joined = new Uint8Array(total);
+    let offset = 0;
+    for (const part of parts) {
+      joined.set(part, offset);
+      offset += part.length;
+    }
+    return joined;
+  }
+}
+
+// The mirror of lzwCompress. The table is held as prefix/suffix pairs rather
+// than as arrays of bytes: an entry can be thousands of pixels long by the end
+// of a large image, and copying those around per code is what makes a naive
+// decoder slow enough to notice on a full-canvas load.
+function lzwDecompress(data: Uint8Array, minCodeSize: number, pixelCount: number): Uint8Array {
+  if (minCodeSize < 2 || minCodeSize > 8) {
+    throw new GifError(`Bad LZW minimum code size ${minCodeSize}`);
+  }
+  const clearCode = 1 << minCodeSize;
+  const endCode = clearCode + 1;
+
+  const prefixes = new Int32Array(4096);
+  const suffixes = new Uint8Array(4096);
+  const firsts = new Uint8Array(4096);
+  for (let i = 0; i < clearCode; i++) {
+    prefixes[i] = -1;
+    suffixes[i] = i;
+    firsts[i] = i;
+  }
+
+  const out = new Uint8Array(pixelCount);
+  let written = 0;
+  const stack = new Uint8Array(4096);
+
+  let codeSize = minCodeSize + 1;
+  let nextCode = endCode + 1;
+  let previous = -1;
+
+  let bitBuffer = 0;
+  let bitCount = 0;
+  let at = 0;
+
+  while (written < pixelCount) {
+    while (bitCount < codeSize) {
+      if (at >= data.length) {
+        // Truncated, but what has been decoded so far is still a picture —
+        // better to show it than to refuse the file outright.
+        return out;
+      }
+      bitBuffer |= data[at++] << bitCount;
+      bitCount += 8;
+    }
+    const code = bitBuffer & ((1 << codeSize) - 1);
+    bitBuffer >>= codeSize;
+    bitCount -= codeSize;
+
+    if (code === endCode) {
+      break;
+    }
+    if (code === clearCode) {
+      codeSize = minCodeSize + 1;
+      nextCode = endCode + 1;
+      previous = -1;
+      continue;
+    }
+
+    let current = code;
+    let depth = 0;
+    if (code >= nextCode) {
+      if (previous < 0) {
+        throw new GifError('GIF image data starts with an undefined code');
+      }
+      // The one self-referential case: a code defined by the very sequence it
+      // is about to stand for, so its last symbol is its own first.
+      stack[depth++] = firsts[previous];
+      current = previous;
+    }
+    while (current >= clearCode) {
+      stack[depth++] = suffixes[current];
+      current = prefixes[current];
+    }
+    stack[depth++] = current & 0xff;
+
+    for (let i = depth - 1; i >= 0 && written < pixelCount; i--) {
+      out[written++] = stack[i];
+    }
+
+    if (previous >= 0 && nextCode < 4096) {
+      prefixes[nextCode] = previous;
+      suffixes[nextCode] = current & 0xff;
+      firsts[nextCode] = firsts[previous];
+      nextCode++;
+      if (nextCode >= 1 << codeSize && codeSize < 12) {
+        codeSize++;
+      }
+    }
+    // Always the code just read, including the self-referential case: the
+    // entry it stood for has been defined by now, so it is no longer forward.
+    previous = code;
+  }
+
+  return out;
+}
+
+// Reads a GIF's first frame. Always indexed — there is no other kind — so
+// unlike a PNG this hands back the file's own palette and indices rather than
+// RGBA for the palette to be guessed back out of.
+export function decodeGif(bytes: Uint8Array): DecodedGif {
+  if (!isGifHeader(bytes)) {
+    throw new GifError('Not a GIF file');
+  }
+  const reader = new GifReader(bytes);
+  for (let i = 0; i < 6; i++) {
+    reader.byte(); // signature, already checked
+  }
+
+  const screenWidth = reader.uint16();
+  const screenHeight = reader.uint16();
+  const packed = reader.byte();
+  const backgroundIndex = reader.byte();
+  reader.byte(); // pixel aspect ratio
+
+  let palette: Color[] = packed & 0x80 ? reader.colorTable(1 << ((packed & 0x07) + 1)) : [];
+
+  if (screenWidth === 0 || screenHeight === 0) {
+    throw new GifError(`GIF has an empty logical screen (${screenWidth}x${screenHeight})`);
+  }
+
+  let transparentIndex: number | undefined;
+  let pendingTransparent: number | undefined;
+  let pixels: Uint8Array | undefined;
+  let frameCount = 0;
+
+  while (!reader.exhausted) {
+    const block = reader.byte();
+    if (block === 0x3b) {
+      break; // trailer
+    }
+    if (block === 0x21) {
+      const label = reader.byte();
+      if (label === 0xf9) {
+        const size = reader.byte();
+        const flags = reader.byte();
+        reader.uint16(); // delay — a still load has no use for it
+        const index = reader.byte();
+        pendingTransparent = flags & 0x01 ? index : undefined;
+        // Skip anything a future spec put after the four bytes we know.
+        for (let i = 4; i < size; i++) {
+          reader.byte();
+        }
+        reader.byte(); // block terminator
+      } else {
+        reader.subBlocks(); // comment, application (incl. the loop block), text
+      }
+      continue;
+    }
+    if (block !== 0x2c) {
+      throw new GifError(`Unknown GIF block 0x${block.toString(16)}`);
+    }
+
+    frameCount++;
+    const left = reader.uint16();
+    const top = reader.uint16();
+    const frameWidth = reader.uint16();
+    const frameHeight = reader.uint16();
+    const framePacked = reader.byte();
+    const localTable =
+      framePacked & 0x80 ? reader.colorTable(1 << ((framePacked & 0x07) + 1)) : null;
+    const interlaced = (framePacked & 0x40) !== 0;
+
+    const minCodeSize = reader.byte();
+    const data = reader.subBlocks();
+
+    if (pixels) {
+      continue; // a later frame: counted, not decoded
+    }
+    if (frameWidth === 0 || frameHeight === 0) {
+      throw new GifError(`GIF frame is empty (${frameWidth}x${frameHeight})`);
+    }
+    if (localTable) {
+      palette = localTable;
+    }
+    transparentIndex = pendingTransparent;
+
+    const frame = lzwDecompress(data, minCodeSize, frameWidth * frameHeight);
+
+    // A frame need not cover the logical screen. What it leaves uncovered is
+    // the background index, which is what a decoder showing this file would
+    // put there — so the picture that loads is the picture you were looking at.
+    pixels = new Uint8Array(screenWidth * screenHeight).fill(backgroundIndex);
+    let source = 0;
+    for (const pass of interlaced ? INTERLACE_PASSES : [{ start: 0, step: 1 }]) {
+      for (let y = pass.start; y < frameHeight; y += pass.step) {
+        const target = (top + y) * screenWidth + left;
+        for (let x = 0; x < frameWidth; x++, source++) {
+          if (top + y < screenHeight && left + x < screenWidth) {
+            pixels[target + x] = frame[source];
+          }
+        }
+      }
+    }
+  }
+
+  if (!pixels) {
+    throw new GifError('GIF contains no image');
+  }
+  return {
+    width: screenWidth,
+    height: screenHeight,
+    palette,
+    pixels,
+    transparentIndex,
+    frameCount,
+  };
+}
+
 export function encodeGif(image: GifImage): Uint8Array {
   const { width, height, palette, pixels, transparentIndex } = image;
 

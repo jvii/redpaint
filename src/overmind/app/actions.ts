@@ -3,6 +3,7 @@ import { countDistinctColors, distinctOpaqueColorsByFrequency } from '../../algo
 import { setPendingImage } from '../../canvas/pendingImage';
 import { setPendingBrush } from '../../canvas/pendingBrush';
 import { decodeIlbm, IlbmError } from '../../fileformat/ilbm';
+import { decodeGif, GifError } from '../../fileformat/gif';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
@@ -128,6 +129,57 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
       error instanceof IlbmError
         ? `Failed to open IFF file: ${error.message}`
         : 'Failed to open file!'
+    );
+  } finally {
+    context.actions.app.setLoading(false);
+  }
+};
+
+// Opens a GIF. Like an ILBM and unlike a PNG, it goes nowhere near the color
+// treatment requester: a GIF is always indexed — the format has no other kind —
+// so it arrives with the palette it was written with, and the indices are
+// already what the canvas stores.
+//
+// That is the whole reason for decoding it ourselves rather than letting
+// drawImage do it. The browser hands back RGBA, which would send a picture that
+// is *already* palette-indexed through countDistinctColors and quantize to have
+// its palette guessed back out of the pixels — losing slot order and every slot
+// the picture happens not to use.
+//
+// An animation loads as its first frame. This is a paint program, and one frame
+// is the only answer that produces a picture; decodeGif counts the rest.
+export const beginGifLoad = async (context: Context, file: File): Promise<void> => {
+  context.actions.app.setLoading(true);
+  try {
+    const image = decodeGif(new Uint8Array(await file.arrayBuffer()));
+
+    context.actions.canvas.setTrueColorEnabled(false);
+    context.actions.palette.replacePalette(image.palette);
+    // the GL palette textures don't watch Overmind — push the new palette
+    paintingCanvasController.updatePalette();
+    overlayCanvasController.updatePalette();
+
+    const colorIndex = CanvasColorIndex.fromIndexedPixels(image.width, image.height, image.pixels);
+    setPendingCanvasContent(colorIndex, {
+      freshDocument: true,
+      documentName: documentNameFrom(file.name),
+    });
+    context.actions.canvas.setResolution({
+      width: image.width,
+      height: image.height,
+      recordUndoPoint: false,
+    });
+
+    // Same cosmetic screen-format match as an ILBM load: an image that happens
+    // to be a standard Amiga size selects that format, anything else Native.
+    const match = findMatchingScreenFormat(image.width, image.height);
+    context.actions.canvas.setScreenFormat({ formatId: match?.id ?? null });
+    if (match) {
+      context.actions.canvas.setVideoStandard(match.standard);
+    }
+  } catch (error) {
+    alert(
+      error instanceof GifError ? `Failed to open GIF: ${error.message}` : 'Failed to open file!'
     );
   } finally {
     context.actions.app.setLoading(false);

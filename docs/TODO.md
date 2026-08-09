@@ -103,14 +103,18 @@ Effects design and status: docs/effects.md — the full DPaint II Mode set
       considered and rejected; hybrid true color covers the rest.
 - [ ] **Animated GIF export**, as the way to get a color-cycling animation out
       of the app — the one cycling produces that no still format can carry.
-      Needs an encoder of our own: `canvas.toBlob` will not write GIF at any
-      quality setting, and asking it for a type it cannot encode silently
-      returns PNG bytes rather than failing. Less work than it sounds — the
-      frames are the cycled palettes applied to one unchanged raster, which is
-      exactly what `cycledPalette` already computes and what a GIF's per-frame
-      local color table is for, and `toIndexedPixels()` hands over the indices
-      unchanged. `src/fileformat/ilbm.ts` is the precedent for writing a format
-      by hand.
+      The still encoder is done (`src/fileformat/gif.ts`), and it is most of
+      this: what remains is a NETSCAPE2.0 loop block, a Graphic Control
+      Extension per frame (the writer already emits one for transparency), and
+      the frame loop. The frames are the cycled palettes applied to one
+      unchanged raster — exactly what `cycledPalette` computes and what a GIF's
+      per-frame local color table is for — so the raster compresses **once**
+      and every frame reuses those bytes with its own table.
+
+      Two things to settle when it happens: GIF delays are whole centiseconds
+      and browsers clamp anything under 2cs, so the fastest cycling rates
+      cannot be represented faithfully; and a True Color picture has to be
+      quantized or refused, since GIF has no truecolor form at all.
 
 Still PNG for the plain Save, deliberately: it is lossless and indexed-friendly,
 where JPEG smears exactly the hard edges this program exists to make. WebP would
