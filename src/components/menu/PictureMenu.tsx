@@ -81,6 +81,25 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     })();
   };
 
+  // What Save promises, which depends on whether there is anything to repeat.
+  //
+  // It used to say "Save as PNG, to the same file where the browser allows it"
+  // — and once the format became a choice, that was wrong twice over for a
+  // picture nobody has saved yet. There is no file to go back to, and the
+  // format is not PNG but whatever the requester is about to ask for, since
+  // that is the branch `save` falls through to. Naming a format the gadget will
+  // not necessarily use is the exact confusion the requester was added to end.
+  const saveTitle = (): string => {
+    const format = saveFormats[state.app.saveFormat];
+    if (!state.app.documentName) {
+      return 'Save the picture — asks for a format and a name the first time, like Save As';
+    }
+    // Named, so it repeats: to the same file where the browser gave us a handle
+    // for it, and otherwise to a download under the name already chosen. Either
+    // way nothing is asked, which is the part worth promising.
+    return `Save the picture as ${format.label} to ${baseName}${format.fileType.extension}, without asking again`;
+  };
+
   // Plain Save: same format as last time, back to the same file with no dialog
   // where the browser allows it, and otherwise straight to a download under the
   // name already chosen. It only asks when there is nothing to repeat — a
@@ -138,7 +157,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
-            title={`Save as ${saveFormats[state.app.saveFormat].label}, to the same file where the browser allows it`}
+            title={saveTitle()}
             onClick={save}
           />
           <Gadget
