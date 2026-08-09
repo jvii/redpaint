@@ -14,14 +14,17 @@
    app writes values in, so the part that changes as you type is the part that
    stands out. */
 .save-as__note {
-  /* Reserved at the tallest this can reach — five lines at 56ch, which is the
-     longest name the field accepts (MAX_NAME_LENGTH). Requesters do not resize
+  /* Reserved at the tallest this can reach — six lines at 56ch, which is the
+     longest name the field accepts (MAX_NAME_LENGTH). Measured, not counted,
+     and it needs re-measuring whenever the sentence changes: the conditional
+     rewording took it from five lines to six, and left at five the requester
+     would have grown as soon as anyone typed a long name. Requesters do not resize
      as their own content changes (docs/style-guide.md), and this rewrites on
      every keystroke. Centred so the shorter states sit in the middle of the
      box rather than under a growing gap. The text is wrapped in a span so the
      flex container has one item: left bare, the filename's own <b> became a
      second item and the sentence stopped wrapping as one paragraph. */
-  min-height: 90px;
+  min-height: 108px;
   display: flex;
   align-items: center;
   margin: 0;

@@ -148,12 +148,21 @@ function SaveAsDialogOpen(): JSX.Element {
           />
         )}
 
-        {/* Only true on the branch that has no picker: with no
-            showSaveFilePicker the page cannot choose where the file goes or
-            overwrite one, and the browser numbers what it already has. The
+        {/* Only on the branch that has no picker: without showSaveFilePicker
+            the page cannot choose where the file goes or overwrite one. The
             setting named is the one thing that changes that, and it belongs to
-            the reader, not to us — so it is said once, here, where it is
-            relevant.
+            the reader, not to us — so it is said once, here, where it applies.
+
+            Conditional, because whether that setting is already on is not
+            something we can find out. No API exposes it, and the download path
+            reports nothing back — no completion event, no final name, no sign
+            of whether a dialog appeared. (The one side-channel, watching for
+            the window to blur, is a race with no defined timing that a
+            macOS sheet may not trigger at all.) This used to say "Saved to your
+            downloads folder ... saving again adds a numbered copy", which is
+            flatly wrong for anyone who has the setting on: they get a dialog
+            and no numbered copy. Phrased as a condition it is true either way,
+            and the reader knows which side they are on even though we cannot.
 
             Deliberately not naming a browser or a menu path: Firefox calls it
             "Always ask you where to save files" and Safari "Ask for each
@@ -162,10 +171,10 @@ function SaveAsDialogOpen(): JSX.Element {
         {asksForName && (
           <p className="save-as__note">
             <span>
-              Saved to your downloads folder as{' '}
-              <b>{withExtension(valid ? cleaned : suggested, extension)}</b>, and saving again adds
-              a numbered copy. To pick the folder and overwrite instead, turn on your
-              browser&rsquo;s &ldquo;ask where to save each file&rdquo; setting.
+              Saved as <b>{withExtension(valid ? cleaned : suggested, extension)}</b>. If your
+              browser saves straight to the downloads folder, saving again adds a numbered copy —
+              turn on its &ldquo;ask where to save each file&rdquo; setting to choose the folder and
+              overwrite instead.
             </span>
           </p>
         )}
