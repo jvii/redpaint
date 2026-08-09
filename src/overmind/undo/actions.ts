@@ -17,7 +17,16 @@ export const setUndoPoint = (context: Context): void => {
     console.warn('setUndoPoint: no canvas color index available');
     return;
   }
-  const entry = createUndoEntry(colorIndex, plainPalette(context.state.palette.paletteArray));
+  // Object.values over the raw map, not the paletteArray derived: deriveds are
+  // not reliable inside an action, and this one runs immediately after actions
+  // that replace the palette. Snapshotting the previous palette here is not
+  // visible until you redo — which then brought the picture back with the
+  // palette it had *before* the change, so a True Color to 256 conversion
+  // redone returned with 32 colors and every index pointing somewhere else.
+  const entry = createUndoEntry(
+    colorIndex,
+    plainPalette(Object.values(context.state.palette.palette))
+  );
   // push owns both the array and the resulting index: it discards the redo
   // future and evicts old entries to stay inside the memory budget, either of
   // which shifts where the new entry lands (see UndoBuffer).
@@ -79,7 +88,7 @@ export const redo = (context: Context): void => {
 function restoreEntryState(context: Context): void {
   const entry = undoBuffer.getItem(context.state.undo.currentIndex);
   context.state.canvas.hasTrueColorPixels = entry ? !entry.packed : false;
-  if (entry && !paletteEquals(entry.palette, context.state.palette.paletteArray)) {
+  if (entry && !paletteEquals(entry.palette, Object.values(context.state.palette.palette))) {
     context.actions.palette.replacePalette(entry.palette);
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();

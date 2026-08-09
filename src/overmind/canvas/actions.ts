@@ -5,6 +5,7 @@ import {
   hasPendingCanvasContent,
   setPendingCanvasContent,
 } from '../../canvas/pendingCanvasContent';
+import { plainPalette } from '../../algorithm/imageColors';
 import {
   createNearestMapper,
   extractExactPalette,
@@ -157,10 +158,7 @@ export const setViewportSize = (
 // once there is more history than the single baseline. Nothing calls this after
 // startup — from then on the size changes only through the Canvas Size
 // requester or a crop.
-export const setStartupResolution = (
-  context: Context,
-  { width, height }: Resolution
-): void => {
+export const setStartupResolution = (context: Context, { width, height }: Resolution): void => {
   const current = context.state.canvas.resolution;
   if (width <= 0 || height <= 0 || (width === current.width && height === current.height)) {
     return;
@@ -221,11 +219,12 @@ export const applyScreenFormat = (
   context: Context,
   { formatId, videoStandard, colors, trueColorEnabled, paletteSource }: ApplyScreenFormatParams
 ): boolean => {
-  const oldPalette = context.state.palette.paletteArray.map((c) => ({
-    r: c.r,
-    g: c.g,
-    b: c.b,
-  }));
+  // Read from the raw map, never from the paletteArray derived. Overmind
+  // deriveds are not reliable inside an action — paletteTexture.ts composes
+  // from raw state for the same reason — and this action *mutates the palette
+  // and then needs to read it back*, which is exactly where a stale derived
+  // does its damage. See the newPalette comment below for what that cost.
+  const oldPalette = plainPalette(Object.values(context.state.palette.palette));
   const flatten = !trueColorEnabled && context.state.canvas.hasTrueColorPixels;
   const depthShrunk = colors < oldPalette.length;
   const needsConform = depthShrunk || flatten;
@@ -263,11 +262,14 @@ export const applyScreenFormat = (
   if (needsConform) {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
-      const newPalette = context.state.palette.paletteArray.map((c) => ({
-        r: c.r,
-        g: c.g,
-        b: c.b,
-      }));
+      // `rebuilt` when there is one, because it *is* the palette just
+      // installed, and reading it back through the derived returned the
+      // palette from before replacePalette: a picture converted from True
+      // Color to 256 colors got its pixels mapped against the old 32-color
+      // palette while the screen showed the new 256, so every index pointed at
+      // an unrelated color — white text came out purple. It went unnoticed
+      // whenever the old palette happened to already be the new one.
+      const newPalette = rebuilt ?? plainPalette(Object.values(context.state.palette.palette));
       const conformed = current.conformedTo(
         oldPalette,
         newPalette,
