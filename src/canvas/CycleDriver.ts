@@ -45,15 +45,18 @@ class CycleDriver {
   // paths that capture the drawing buffer, which would otherwise bake a
   // mid-cycle frame into the file. Cycling resumes from where it paused;
   // the paused wall-clock time is not counted as elapsed.
-  async withBaseColors(fn: () => Promise<void> | void): Promise<void> {
+  // Generic in the callback's result so a caller can hold the base colors
+  // *around the thing that produces a value* — the PNG save captures the
+  // drawing buffer and needs the blob back out, and a wrapper that swallowed it
+  // would force the capture to happen outside the hold.
+  async withBaseColors<T>(fn: () => Promise<T> | T): Promise<T> {
     if (this.rafId === null) {
-      await fn();
-      return;
+      return await fn();
     }
     this.paused = true;
     this.applyOffsets(overmind.state.palette.ranges.map(() => 0));
     try {
-      await fn();
+      return await fn();
     } finally {
       this.paused = false;
       this.lastTime = null;

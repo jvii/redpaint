@@ -1,4 +1,4 @@
-interface SaveFileType {
+export interface SaveFileType {
   description: string;
   mime: string;
   extension: string;
@@ -70,17 +70,30 @@ export function withExtension(name: string, extension: string): string {
 // The name has to come back from here because only this function knows it: on
 // the picker branch the user typed it into an OS dialog, and the returned handle
 // is the only place it appears.
+// Whether this browser has a save picker of its own. The dialog asks so it can
+// leave the name to the picker rather than asking twice; saveFileAs asks so it
+// knows which branch it is taking. One definition, so the two cannot disagree
+// about it and leave a save with nobody having asked for a name.
+type SaveFilePicker = (options?: {
+  suggestedName?: string;
+  types?: { description: string; accept: Record<string, string[]> }[];
+}) => Promise<SaveFileHandle>;
+
+function saveFilePicker(): SaveFilePicker | undefined {
+  return (window as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
+}
+
+export function hasSaveFilePicker(): boolean {
+  return saveFilePicker() !== undefined;
+}
+
 export async function saveFileAs(
   makeBlob: () => Promise<Blob | null>,
   suggestedName: string,
   fileType: SaveFileType,
   promptForName?: PromptForName
 ): Promise<SaveTarget | null> {
-  type SaveFilePicker = (options?: {
-    suggestedName?: string;
-    types?: { description: string; accept: Record<string, string[]> }[];
-  }) => Promise<SaveFileHandle>;
-  const showSaveFilePicker = (window as { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker;
+  const showSaveFilePicker = saveFilePicker();
 
   let fileHandle: SaveFileHandle | null = null;
   let downloadName = suggestedName;

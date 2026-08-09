@@ -15,7 +15,7 @@ import { PaletteEditor } from './paletteEditor/PaletteEditor';
 import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
 import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
 import { CanvasSizeDialog } from './canvasSize/CanvasSizeDialog';
-import { SaveNameDialog } from './saveName/SaveNameDialog';
+import { SaveAsDialog } from './saveAs/SaveAsDialog';
 import { useDocumentTitle } from './useDocumentTitle';
 import { useDocumentAutosave } from './useDocumentAutosave';
 import { BrushLoadDialog } from './imageLoad/BrushLoadDialog';
@@ -64,7 +64,7 @@ function App(): JSX.Element {
       <ScreenFormatDialog></ScreenFormatDialog>
       <ImageLoadDialog></ImageLoadDialog>
       <CanvasSizeDialog></CanvasSizeDialog>
-      <SaveNameDialog></SaveNameDialog>
+      <SaveAsDialog></SaveAsDialog>
       <BrushLoadDialog></BrushLoadDialog>
       <SymmetrySettings></SymmetrySettings>
       <FillStyleSettings></FillStyleSettings>

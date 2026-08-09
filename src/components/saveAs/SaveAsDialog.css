@@ -1,0 +1,71 @@
+/* Two questions at most (format always, name where nobody else asks), stacked
+   in one column with no group headings — the requester's own header carries
+   the purpose and the fields label themselves. */
+.save-as__body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 30px 28px 30px;
+  text-align: left;
+}
+
+/* What the file will actually be called, in the quiet supporting register the
+   other requesters use for a consequence. The name itself takes the blue this
+   app writes values in, so the part that changes as you type is the part that
+   stands out. */
+.save-as__note {
+  /* Reserved at the tallest this can reach — five lines at 56ch, which is the
+     longest name the field accepts (MAX_NAME_LENGTH). Requesters do not resize
+     as their own content changes (docs/style-guide.md), and this rewrites on
+     every keystroke. Centred so the shorter states sit in the middle of the
+     box rather than under a growing gap. The text is wrapped in a span so the
+     flex container has one item: left bare, the filename's own <b> became a
+     second item and the sentence stopped wrapping as one paragraph. */
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+  max-width: 56ch;
+}
+
+.save-as__note b {
+  color: var(--wb-blue);
+  font-weight: normal;
+}
+
+/* The format toggle and the line explaining it, as one unit: the note belongs
+   to the choice above it, not to the name field below.
+
+   align-items keeps the toggle its own width. It is inline-flex so it hugs its
+   segments, but a flex column stretches its children by default, which pulled
+   the group's border and shadow the full width of the requester with only three
+   segments' worth of content in it. */
+.save-as__formats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* Reserved at two lines, the tallest of the three notes, because requesters do
+   not resize as their own content changes (docs/style-guide.md) — and this one
+   rewrites every time the format changes, which is a click away. */
+.save-as__format-note {
+  min-height: 36px;
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+  max-width: 56ch;
+}

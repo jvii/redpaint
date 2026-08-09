@@ -1,6 +1,7 @@
 import { derived } from 'overmind';
 import { OvermindState } from '..';
 import { loadUiScale } from '../../uiScale';
+import { SaveFormat } from '../../components/menu/saveFormats';
 
 // What a document with no name of its own is called — in the tab title, and as
 // the name a save offers. One spelling, so the title and the save requester
@@ -33,7 +34,14 @@ export type State = {
   // it is closed. The extension is not stored alongside it: it is a function of
   // this string, and a second field could only ever disagree with it. The typed
   // answer goes back through pendingSaveName, not through here.
-  saveNamePrompt: string | null;
+  // The format Save As last wrote in, which plain Save repeats. Chosen once and
+  // remembered, so the choice is a property of how you are working rather than
+  // something to re-answer every save.
+  saveFormat: SaveFormat;
+  // The suggested base name while the Save As requester is up, or null. It
+  // asks for the format always and for the name only where the browser has no
+  // picker of its own — see SaveAsDialog.
+  saveAsPrompt: string | null;
   // When the document last matched something outside the app: a fresh canvas,
   // a just-loaded image, or a just-written file. Anything later in the undo
   // timestamps means there are changes no file has — which is what the tab
@@ -75,7 +83,8 @@ export const state: State = {
   isLoading: false,
   documentName: '',
   displayName: derived((state: State) => state.documentName || UNTITLED_DOCUMENT),
-  saveNamePrompt: null,
+  saveFormat: 'png',
+  saveAsPrompt: null,
   lastCleanTime: 0,
   documentModified: derived(
     (state: State, rootState: OvermindState) =>

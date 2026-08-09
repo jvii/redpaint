@@ -23,6 +23,7 @@ import {
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
 import { Drawer } from './state';
+import { SaveFormat } from '../../components/menu/saveFormats';
 
 export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
   context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
@@ -328,18 +329,23 @@ export const newPicture = (context: Context): void => {
   });
 };
 
+// Remembered from Save As, repeated by Save.
+export const setSaveFormat = (context: Context, format: SaveFormat): void => {
+  context.state.app.saveFormat = format;
+};
+
 export const setDocumentName = (context: Context, name: string): void => {
   context.state.app.documentName = name;
 };
 
 // The name to offer, extension included — the requester splits it, since which
 // part is the extension follows from the string itself.
-export const openSaveNamePrompt = (context: Context, suggested: string): void => {
-  context.state.app.saveNamePrompt = suggested;
+export const openSaveAsPrompt = (context: Context, suggested: string): void => {
+  context.state.app.saveAsPrompt = suggested;
 };
 
-export const closeSaveNamePrompt = (context: Context): void => {
-  context.state.app.saveNamePrompt = null;
+export const closeSaveAsPrompt = (context: Context): void => {
+  context.state.app.saveAsPrompt = null;
 };
 
 export const setLoading = (context: Context, isLoading: boolean): void => {

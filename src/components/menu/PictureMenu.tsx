@@ -1,22 +1,23 @@
 import React, { JSX } from 'react';
-import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
-import { cycleDriver } from '../../canvas/CycleDriver';
-import { encodeIlbm } from '../../fileformat/ilbm';
-import { plainPalette } from '../../algorithm/imageColors';
 import { useActions, useAppState } from '../../overmind';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import { CropIcon } from './transformIcons';
-import { canvasPngBlob, PNG_FILE_TYPE, saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
-import { fileHandleFor, rememberFileHandle, SaveFormat } from './savedFileHandle';
-import { beginSaveNamePrompt } from './pendingSaveName';
+import { saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
+import { blobMakerFor, SaveFormat, saveFormats } from './saveFormats';
+import { fileHandleFor, rememberFileHandle } from './savedFileHandle';
+import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
 
-// The picture drawer: whole-image disk I/O (load/save PNG, save IFF ILBM) —
-// DPaint's term for the canvas-as-a-whole, as opposed to a brush. Mutually
-// exclusive with the Brush drawer (Menu.tsx's app.openDrawer radio group);
-// unlike BrushMenu there's nothing to transform here, so it's a single File
-// row.
+// The picture drawer: whole-image disk I/O — DPaint's term for the canvas as a
+// whole, as opposed to a brush. Mutually exclusive with the Brush drawer
+// (Menu.tsx's app.openDrawer radio group); unlike BrushMenu there's nothing to
+// transform here, so it's a single File row.
+//
+// Two save gadgets, not one per format. Which format to write is a question the
+// requester asks (SaveAsDialog) and the document then remembers, so adding GIF
+// cost no gadget — where a third "Save GIF" button would have made the row a
+// list of formats and still left "Save" silently meaning PNG.
 export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const state = useAppState();
   const actions = useActions();
@@ -24,11 +25,9 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   // What a save offers as the name: whatever the document is already called,
   // or the same word the tab title uses for one that is not called anything —
   // the one derived, so the two cannot drift apart. Held without an extension,
-  // so saving a PNG and then an IFF offers "mypic.png" and "mypic.iff" rather
-  // than "mypic.png.iff".
+  // since the format the requester picks is what decides that.
   const baseName = state.app.displayName;
-  // Only reached on the browsers with no showSaveFilePicker; saveFile decides,
-  // since it is the one that knows which route it is taking.
+
   // A written file is now what the document is: it takes that name, there is
   // nothing left unsaved, and — where the browser gave us one — the handle is
   // kept so the next plain Save can go straight back to that file.
@@ -37,106 +36,81 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
       return; // cancelled, or nothing written
     }
     rememberFileHandle(format, target.handle);
+    actions.app.setSaveFormat(format);
     actions.app.setDocumentName(target.name);
     actions.app.markDocumentClean();
   };
 
-  const promptForName = (suggested: string): Promise<string | null> => {
+  // Save As: ask what format (and, where nothing else will, what name), then
+  // write it. The requester goes up before anything reads the canvas — a
+  // cancelled save should cost nothing, and the PNG path holds the cycling
+  // palette still while it captures.
+  const saveAs = (): void => {
     // The menu is still open — a save is clicked from inside it — and its panel
     // is translucent and above the requesters, so leaving it up would tint this
     // one blue and swallow its clicks. Every other route into a requester
     // closes the menu the same way (ScreenStatus, crop.begin).
     actions.app.closeMenu();
-    actions.app.openSaveNamePrompt(suggested);
-    return beginSaveNamePrompt();
+    actions.app.openSaveAsPrompt(baseName);
+    void (async (): Promise<void> => {
+      const choice = await beginSaveAsPrompt();
+      if (!choice) {
+        return; // cancelled
+      }
+      const makeBlob = blobMakerFor(
+        choice.format,
+        Object.values(state.palette.palette),
+        state.palette.ranges
+      );
+      if (!makeBlob) {
+        return; // the format cannot hold this picture; blobMakerFor said so
+      }
+      const { fileType } = saveFormats[choice.format];
+      remember(
+        choice.format,
+        await saveFileAs(
+          makeBlob,
+          `${baseName}${fileType.extension}`,
+          fileType,
+          // Already answered, on the branch that had to ask. The picker branch
+          // passes it too and never calls it, which is why this is not a
+          // condition: saveFileAs is the one that knows which route it took.
+          choice.name === null ? undefined : async (): Promise<string> => choice.name as string
+        )
+      );
+    })();
   };
 
-  // The PNG is read straight off the drawing buffer, which would bake a
-  // mid-cycle palette rotation into the file — hold the base colors until the
-  // capture (which happens after the async save picker) completes.
-  const withPngBlob = (use: (makeBlob: () => Promise<Blob | null>) => Promise<void>): void => {
-    void cycleDriver.withBaseColors(async (): Promise<void> => {
-      // preserveDrawingBuffer is on, but render once to be sure it is current
-      paintingCanvasController.render();
-      await use(canvasPngBlob(paintingCanvasController.mainCanvas));
-    });
-  };
-
-  const savePngAs = (): void => {
-    withPngBlob(async (makeBlob): Promise<void> => {
-      remember('png', await saveFileAs(makeBlob, `${baseName}.png`, PNG_FILE_TYPE, promptForName));
-    });
-  };
-
-  // Plain Save: back to the same file with no dialog where the browser allows
-  // it, and otherwise straight to a download under the name already chosen. It
-  // only asks when there is nothing to repeat — a document nobody has named
-  // yet, or a handle that has gone stale.
-  const savePng = (): void => {
-    withPngBlob(async (makeBlob): Promise<void> => {
-      const handle = fileHandleFor('png');
+  // Plain Save: same format as last time, back to the same file with no dialog
+  // where the browser allows it, and otherwise straight to a download under the
+  // name already chosen. It only asks when there is nothing to repeat — a
+  // document nobody has named yet, or a handle that has gone stale.
+  const save = (): void => {
+    const format = state.app.saveFormat;
+    const makeBlob = blobMakerFor(
+      format,
+      Object.values(state.palette.palette),
+      state.palette.ranges
+    );
+    if (!makeBlob) {
+      return;
+    }
+    void (async (): Promise<void> => {
+      const handle = fileHandleFor(format);
       if (handle && (await writeToHandle(handle, makeBlob))) {
         actions.app.markDocumentClean();
         return;
       }
+      const { fileType } = saveFormats[format];
       if (state.app.documentName && !handle) {
         // the download branch: no handle to write to, but a name to reuse, so
         // this saves without asking again
-        remember('png', await saveFileAs(makeBlob, `${baseName}.png`, PNG_FILE_TYPE));
+        remember(format, await saveFileAs(makeBlob, `${baseName}${fileType.extension}`, fileType));
         return;
       }
-      remember('png', await saveFileAs(makeBlob, `${baseName}.png`, PNG_FILE_TYPE, promptForName));
-    });
-  };
-
-  const handleImageSaveIlbm = (): void => {
-    const colorIndex = paintingCanvasController.getCanvasColorIndex();
-    const pixels = colorIndex?.toIndexedPixels();
-    if (!colorIndex || !pixels) {
-      alert(
-        'The picture has True Color pixels — IFF ILBM stores palette-indexed pixels only. ' +
-          'Turn True Color off in Screen Format first.'
-      );
-      return;
-    }
-    const colors = plainPalette(Object.values(state.palette.palette));
-    const cycleRanges = state.palette.ranges.flatMap((range) =>
-      range
-        ? [
-            {
-              low: Number(range.start) - 1,
-              high: Number(range.end) - 1,
-              rate: range.rate,
-              active: range.active,
-              reverse: range.reverse,
-            },
-          ]
-        : []
-    );
-    const bytes = encodeIlbm({
-      width: colorIndex.width,
-      height: colorIndex.height,
-      palette: colors,
-      pixels,
-      cycleRanges,
-    });
-    const makeBlob = async (): Promise<Blob> => new Blob([bytes], { type: 'image/x-ilbm' });
-    const fileType = { description: 'IFF ILBM image', mime: 'image/x-ilbm', extension: '.iff' };
-    void (async (): Promise<void> => {
-      const handle = fileHandleFor('iff');
-      if (handle && (await writeToHandle(handle, makeBlob))) {
-        actions.app.markDocumentClean();
-        return;
-      }
-      remember(
-        'iff',
-        await saveFileAs(
-          makeBlob,
-          `${baseName}.iff`,
-          fileType,
-          state.app.documentName && !handle ? undefined : promptForName
-        )
-      );
+      // Nothing to repeat, so this is a Save As after all — including the
+      // format, which an unnamed document has never actually been asked about.
+      saveAs();
     })();
   };
 
@@ -164,20 +138,14 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
-            title="Save the picture as PNG, to the same file where the browser allows it"
-            onClick={savePng}
+            title={`Save as ${saveFormats[state.app.saveFormat].label}, to the same file where the browser allows it`}
+            onClick={save}
           />
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save As"
-            title="Save the picture as PNG under a new name..."
-            onClick={savePngAs}
-          />
-          <Gadget
-            icon={<PixelIcon map={icons.diskSave} scale={2} />}
-            label="Save IFF"
-            title="Save the picture as IFF ILBM..."
-            onClick={handleImageSaveIlbm}
+            title="Save the picture under a new name, in a format of your choosing..."
+            onClick={saveAs}
           />
         </GadgetGroup>
       </div>
