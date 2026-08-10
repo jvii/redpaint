@@ -67,18 +67,47 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const [formatId, setFormatId] = useState<FormatChoice>(state.canvas.screenFormatId ?? NATIVE);
   const isNative = formatId === NATIVE;
   const [videoStandard, setVideoStandard] = useState<VideoStandard>(state.canvas.videoStandard);
-  const [colors, setColors] = useState(
-    COLOR_OPTIONS.some((option) => Number(option.value) === state.palette.paletteArray.length)
-      ? state.palette.paletteArray.length
-      : 32
-  );
+  // Sizes are always a power of two between 2 and 256 (every path that builds a
+  // palette produces one), so this is a real option on the row below — the
+  // fallback is for a document that somehow arrived with a size that is not.
+  const currentPaletteSize = COLOR_OPTIONS.some(
+    (option) => Number(option.value) === state.palette.paletteArray.length
+  )
+    ? state.palette.paletteArray.length
+    : 32;
+  const [colors, setColors] = useState(currentPaletteSize);
   // Whether the document allows true-color pixels. Switching it off (with OK)
   // conforms the canvas to the palette — the explicit color-reducing move.
   const [trueColorEnabled, setTrueColorEnabled] = useState(state.canvas.trueColorEnabled);
   // Where a reduction takes its palette from (see PaletteSource). Only
   // meaningful when the draft actually reduces colors, so the toggle below is
   // disabled otherwise.
-  const [paletteSource, setPaletteSource] = useState<PaletteSource>('current');
+  //
+  // From the image by default. "Current Palette" means the palette exactly as
+  // it stands, which is only a thing you can remap to at its own size — at any
+  // other size it was neither: growing filled the new slots from the default
+  // ramp, so picking 256 against a 32-color document produced 32 colors of
+  // yours and 224 nobody had chosen, and the picture then mapped onto those
+  // too. An option named Current Palette must not be able to invent colors.
+  const [paletteSource, setPaletteSource] = useState<PaletteSource>('image');
+
+  // The two controls keep each other honest instead of one greying the other
+  // out: choosing a size that is not the palette's moves the remap to the image
+  // (the only source that can supply that size), and choosing Current Palette
+  // moves the size back to the palette's own. Either way the pair stays a
+  // combination that means something, and neither control ever goes dead.
+  const chooseColors = (count: number): void => {
+    setColors(count);
+    if (count !== currentPaletteSize) {
+      setPaletteSource('image');
+    }
+  };
+  const choosePaletteSource = (source: PaletteSource): void => {
+    setPaletteSource(source);
+    if (source === 'current') {
+      setColors(currentPaletteSize);
+    }
+  };
   const reducesColors =
     colors < state.palette.paletteArray.length ||
     (!trueColorEnabled && state.canvas.hasTrueColorPixels);
@@ -176,7 +205,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
               columns={4}
               options={COLOR_OPTIONS}
               value={String(colors)}
-              onChange={(value): void => setColors(Number(value))}
+              onChange={(value): void => chooseColors(Number(value))}
             />
           </RetroFieldset>
           <RetroFieldset legend="True Color" className="screen-format__truecolor">
@@ -195,15 +224,18 @@ function ScreenFormatDialogOpen(): JSX.Element {
           </RetroFieldset>
           <RetroFieldset legend="Remap To" className="screen-format__remap">
             {/* only a reduction remaps: fewer colors, or True Color going off.
-                The count is the target size — both options produce it */}
+                Current Palette carries a size because its size is not the one
+                selected above — it is the one option whose size is not a
+                choice. The other option needs no number: it produces whatever
+                Indexed Palette Size says, which is on screen directly above. */}
             <RetroToggle
               variant="column"
               options={[
-                { value: 'current', label: `Current Palette (${colors})` },
+                { value: 'current', label: `Current Palette (${currentPaletteSize})` },
                 { value: 'image', label: 'New Palette From Image' },
               ]}
               value={paletteSource}
-              onChange={(value): void => setPaletteSource(value as PaletteSource)}
+              onChange={(value): void => choosePaletteSource(value as PaletteSource)}
               disabled={!reducesColors}
             />
           </RetroFieldset>
