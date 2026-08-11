@@ -157,6 +157,27 @@
   color: var(--dim-label);
 }
 
+/* The shared cap, stepped down for an 11px line. Not as far as the toolbox
+   hints' 14px floor: that exists for ⌘ and ⇧, which stop resolving into shapes
+   when small, and TAB is three plain letters with no such trouble. It takes the
+   dimmed ink from the sentence around it (the base rule's `color: inherit`, and
+   a border of currentColor), so it stays supporting text rather than becoming
+   the loudest thing in the panel. */
+.palette-editor__range-cycling-key {
+  font-size: 12px;
+  padding: 2px 5px;
+  /* Centred on the text rather than sitting on its baseline, where the cap's
+     lower padding would hang it visibly high.
+
+     The sentence around it stays ordinary inline text. Wrapping it in an
+     inline-flex to space the cap looked equivalent and was not: a flex box
+     reports its own baseline, the title row aligns to that, and the whole line
+     rose 3px above the title it annotates. Measured with a zero-height
+     inline-block probe — comparing the two text boxes says 2px either way,
+     since Press Start 2P and the monospace stack have different descents. */
+  vertical-align: middle;
+}
+
 /* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
    label reads as a pair with it */
 .palette-editor__range-cycling-label {
