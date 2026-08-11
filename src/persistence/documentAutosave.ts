@@ -11,27 +11,12 @@ function ownKey(): string {
   return KEY_PREFIX + tabId();
 }
 
-// A restore that killed the tab must not be retried forever. The marker goes
-// down before the record is touched and comes up once it is safely applied, so
-// a start that finds its own marker already set knows the last attempt did not
-// survive, and drops that record rather than reopening the same trap.
-//
-// One marker per tab, keyed by the same id as the record. That is the whole
-// design: a shared key could not tell our own dead attempt from another tab's
-// live one, which is why the previous form needed a timestamp, a fifteen-second
-// staleness window, and reasoning about which case a marker described — and why
-// getting that wrong once had a second tab delete the first one's picture.
-// Nobody writes our key but us, so finding it set has exactly one meaning.
-//
-// It holds the record key being applied rather than a bare flag: today that is
-// always our own, but a Restore requester that adopts another tab's record
-// would need to drop the one that actually stopped us.
-//
-// In IndexedDB beside the records, not localStorage. The old comment argued
-// only a synchronous write guarantees the marker lands before the crash; an
-// awaited put gives the same ordering, since the transaction has committed
-// before the risky work begins. The only crash it can miss is one during the
-// await itself, where nothing dangerous is running.
+// A restore that killed the tab must not be retried. The marker goes down
+// before the record is applied and comes up once it is, so finding our own
+// marker at startup means the last attempt died — and that record is dropped
+// rather than reopened. One per tab, keyed like the record, so finding it set
+// has exactly one meaning (docs/gotchas.md, "Autosave"). It holds the record
+// key rather than a flag, for a requester that applies another tab's record.
 const GUARD_PREFIX = 'guard:';
 
 function ownGuardKey(): string {
@@ -47,32 +32,21 @@ const MAX_RECORDS = 4;
 // off".
 const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
-// Bumped whenever the shape below changes in a way an older record cannot
-// satisfy. A record from another version is discarded rather than migrated:
-// this is a convenience copy of something the user can also save to a file, so
-// the cost of throwing one away is a session, not a picture.
+// Bumped when the shape below changes. Older records are discarded rather than
+// migrated — this is a convenience copy, so the cost is a session, not a
+// picture.
 const VERSION = 1;
 
-// What comes back after a reload. Everything the picture needs to be itself,
-// and nothing that is merely how the app was left — no selected tool, no
-// symmetry, no menu state (docs/local/undo-memory.md, part 4 "Scope").
-//
-// The undo history is deliberately absent. It is session state: an invisible
-// stack whose value decays the moment you stop remembering what you did, and
-// it costs megabytes an entry. What is restored is the picture, not the way you
-// arrived at it.
+// What comes back after a reload: everything the picture needs to be itself,
+// and nothing that is merely how the app was left. No undo history — session
+// state, and megabytes an entry (docs/local/undo-memory.md, part 4 "Scope").
 export type DocumentRecord = {
   version: number;
   width: number;
   height: number;
-  // The raster. One byte per pixel when the picture is fully indexed, which is
-  // nearly always: the texture keeps 4 bytes each because it is an RGBA
-  // texture, but only R carries anything unless there are true-colour pixels,
-  // and then the other three are a constant. A quarter of the bytes to write,
-  // every write, for a canvas that is written every second or two.
-  //
-  // `packed` says which form this is, because a picture can gain true-colour
-  // pixels mid-session and the record must be read back as it was written.
+  // The raster, one byte per pixel when the picture is fully indexed (only R
+  // carries anything then) and four when it is not. `packed` says which, since
+  // a picture can gain true-colour pixels mid-session.
   pixels: Uint8Array;
   packed: boolean;
   palette: Color[];
@@ -84,20 +58,16 @@ export type DocumentRecord = {
   videoStandard: string;
   trueColorEnabled: boolean;
   documentName: string;
-  // Whether the picture had changes no file carried, at the moment it was
-  // written. Restoring is not saving — the record is browser storage, which a
-  // cleared site or another machine does not have — so a picture that came back
-  // unsaved must still say so.
+  // Whether the picture had changes no file carried. Restoring is not saving,
+  // so one that came back unsaved must still say so.
   modified: boolean;
-  // When it was written, which is what decides pruning (the oldest go). Absent
-  // on records from before per-tab keys, which sort as oldest and so are the
-  // first to go.
+  // When it was written; decides pruning. Absent on pre-per-tab records, which
+  // therefore sort as oldest.
   savedAt: number;
 };
 
-// savedAt is stamped here rather than passed in: the caller has no business
-// deciding when its own write happened, and a record without one sorts as
-// ancient, which would quietly make it first to be pruned.
+// savedAt is stamped here, not passed in: a record without one sorts as ancient
+// and would be pruned first.
 export async function saveDocument(record: Omit<DocumentRecord, 'savedAt'>): Promise<boolean> {
   return idbSet(ownKey(), { ...record, savedAt: Date.now() });
 }
@@ -106,9 +76,8 @@ export async function clearDocument(): Promise<void> {
   await idbDelete(ownKey());
 }
 
-// The single key everything shared before records were per tab. Nothing looks
-// for it any more, so it would sit there forever taking up quota; a build that
-// old is also the one whose records this build cannot vouch for.
+// The single key used before records were per tab. Nothing reads it now, so it
+// would sit there taking up quota.
 const LEGACY_KEY = 'document';
 
 // What is actually in storage, for working out why a restore did or did not
@@ -140,24 +109,15 @@ export async function autosaveState(): Promise<unknown> {
   };
 }
 
-// Drops the records nobody is coming back for: anything past its week, and
-// anything beyond the newest few. This tab's own is never a candidate, however
-// long it has been idle — it is the one record we know has an owner.
-//
-// Called once at startup, not after each write. Reading `savedAt` means reading
-// the whole record, raster included, so pruning on the write path deserialised
-// every neighbouring record — tens of megabytes — on every autosave, and threw
-// the lot away. Records only accumulate when tabs come and go, never when one
-// tab saves repeatedly, so a startup is exactly as often as this needs to run.
+// Drops the records nobody is coming back for: past their week, or beyond the
+// newest few. Never this tab's own. At startup rather than after each write —
+// reading savedAt deserialises the whole raster (docs/gotchas.md, "Autosave").
 async function prune(): Promise<void> {
   await idbDelete(LEGACY_KEY);
   const mine = ownKey();
   const keys = await idbKeys();
-  // Records only. Taking every key would treat a guard marker as a record,
-  // and since a marker has no savedAt it would date as ancient and be swept
-  // immediately — including this tab's own, written moments later by the
-  // restore this very call runs alongside, quietly disabling the crash
-  // detection it exists for.
+  // Records only: a marker has no savedAt, so treating one as a record dates it
+  // as ancient and sweeps it — including the live one (docs/gotchas.md).
   const records = keys.filter((key) => key.startsWith(KEY_PREFIX) && key !== mine);
   const dated = await Promise.all(
     records.map(async (key) => ({ key, at: (await idbGet<DocumentRecord>(key))?.savedAt ?? 0 }))
@@ -168,21 +128,16 @@ async function prune(): Promise<void> {
     .sort((a, b) => b.at - a.at)
     .slice(0, MAX_RECORDS - 1)
     .map((entry) => entry.key);
-  // A marker belongs to the tab whose record shares its id, so it goes when
-  // that record does — and so does one that never had a record to begin with,
-  // left by a tab that died before its first write. Never this tab's own.
-  const kept = new Set(
-    [mine, ...survivors].map((key) => key.slice(KEY_PREFIX.length))
-  );
+  // A marker goes when the record sharing its id goes, as does one that never
+  // had a record. Never this tab's own.
+  const kept = new Set([mine, ...survivors].map((key) => key.slice(KEY_PREFIX.length)));
   const staleGuards = keys.filter(
     (key) =>
       key.startsWith(GUARD_PREFIX) &&
       key !== ownGuardKey() &&
       !kept.has(key.slice(GUARD_PREFIX.length))
   );
-  const doomed = dated
-    .filter((entry) => !survivors.includes(entry.key))
-    .map((entry) => entry.key);
+  const doomed = dated.filter((entry) => !survivors.includes(entry.key)).map((entry) => entry.key);
   await Promise.all([...doomed, ...staleGuards].map((key) => idbDelete(key)));
 }
 
@@ -199,9 +154,7 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
     width > 0 &&
     height > 0 &&
     pixels instanceof Uint8Array &&
-    // the one check that catches a truncated write, which is otherwise a
-    // plausible-looking record that paints garbage — against whichever form
-    // the record says it is in
+    // catches a truncated write, which otherwise paints garbage
     pixels.length === width * height * (record.packed ? 1 : 4) &&
     Array.isArray(palette) &&
     palette.length > 0
@@ -209,17 +162,14 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
 }
 
 // The saved document, or null if there is nothing to restore, it cannot be
-// trusted, or the last attempt to apply it did not survive. Any of those three
-// leaves the app on a blank canvas, which is the state it would have had
-// anyway — a restore is a convenience, and failing it silently is the right
-// kind of failure.
+// trusted, or the last attempt died. All three leave a blank canvas, which is
+// what the app would have had anyway.
 export async function loadDocument(): Promise<DocumentRecord | null> {
   await ensureTabId();
   // Not awaited: nothing here depends on it having finished, and a restore
   // should not wait on housekeeping for records it will not read.
   void prune();
-  // Our own marker, so finding it set means our own last attempt died — there
-  // is no other reading of it, and nothing to date or time out.
+  // Our own marker, so finding it set has one meaning: our last attempt died.
   const interrupted = await idbGet<string>(ownGuardKey());
   if (interrupted) {
     // the previous attempt never finished: assume the record it was applying is
@@ -237,15 +187,9 @@ export async function loadDocument(): Promise<DocumentRecord | null> {
   if (own) {
     await clearDocument(); // ours, and unusable
   }
-  // Nothing of our own, so nothing to restore. A tab gets its own picture back
-  // and no one else's: a new tab opens on a blank canvas, however many records
-  // are sitting in storage.
-  //
-  // It used to adopt the most recent one, which read as the tabs being synced —
-  // open a second tab and it showed the first tab's picture; clear one and the
-  // other came back empty. Reaching a backup that is not this tab's own is a
-  // deliberate act, and belongs to a Restore requester you ask for rather than
-  // to something that happens by itself at startup.
+  // A tab gets its own picture back and no one else's, however many records are
+  // in storage; reaching another tab's is a deliberate act for a Restore
+  // requester (docs/gotchas.md, "Autosave").
   return null;
 }
 

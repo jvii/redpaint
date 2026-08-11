@@ -7,24 +7,10 @@ import { Point } from '../../types';
 import { restoreSettled } from '../../persistence/restoreSettled';
 import './Canvas.css';
 
-// The drawing pane measured in physical pixels, for a canvas that must fit
-// inside it. Two decisions, both of which were once the other way and both of
-// which produced scrollbars in Safari:
-//
-// getBoundingClientRect and floor, not offsetWidth and round. offsetWidth is an
-// integer, so a pane 1417.6 CSS pixels wide reports 1418, and a canvas built to
-// that is wider than the pane it lives in. Flooring means the canvas can fall
-// up to a physical pixel short and never a pixel over — a hairline of
-// pasteboard nobody sees, against a scrollbar everybody does.
-//
-// The border box, not the border box minus any scrollbar currently showing.
-// Subtracting the gutter reads as the more careful measurement and is worse:
-// it is only smaller while a scrollbar happens to be up, so a measurement taken
-// during a transient gets recorded and the next fit comes out a gutter short —
-// the "first CLR is slightly small, the second is right" bug. The border box is
-// what the pane has for content whenever it is not scrolling, which is the
-// state the fit is aiming at. Scrollbars are handled where they actually go
-// wrong, in the un-latching effect below.
+// The pane in physical pixels, for a canvas that has to fit inside it. Floored
+// fractional rect rather than rounded offsetWidth, and the border box rather
+// than the box minus a scrollbar currently showing — both of the other ways
+// produce scrollbars (docs/gotchas.md, "Fitting the canvas to its pane").
 function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
   const rect = pane.getBoundingClientRect();
   return {
@@ -40,31 +26,18 @@ export function MainCanvas(): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const dpr = useDevicePixelRatio();
 
-  // The screen-format display scale: CSS pixels per buffer pixel, per axis.
-  // A format fills the window on both axes independently (pixels need not stay
-  // square). The scale mode decides the trade-off:
-  //  - 'stretch' uses the exact fractional scale, filling the window with no
-  //    margin but non-uniform pixel blocks (the cursor's pixel drifts a little
-  //    as you move); its floor is one CSS pixel per screen pixel (= aspect).
-  //  - 'integer' floors to whole CSS pixels per buffer pixel, so every pixel
-  //    is a uniform block (no cursor drift) at the cost of black margin on the
-  //    right/bottom until the window is enlarged; its floor is 1.
-  // While no format is active (the startup behavior), the canvas should show
-  // artwork pixels at their true physical size — one artwork pixel per screen
-  // pixel, like a native image viewer's 100% view — rather than at whatever
-  // size the host's OS display scaling happens to stretch a CSS pixel to, so
-  // this divides by devicePixelRatio instead of using a flat {1,1}.
-  // Window resizes recompute the scale; the page and painting are untouched.
+  // CSS pixels per buffer pixel, per axis — a format fills the window on both
+  // axes independently, so pixels need not stay square. 'stretch' takes the
+  // fractional scale (no margin, the cursor's pixel drifts slightly); 'integer'
+  // floors to whole pixels (uniform blocks, black margin until the window
+  // grows). At Native it is 1/dpr, so an artwork pixel is one physical pixel
+  // rather than one CSS pixel.
   const formatId = state.canvas.screenFormatId;
   const scaleMode = state.canvas.scaleMode;
   const videoStandard = state.canvas.videoStandard;
   const [displayScale, setLocalDisplayScale] = useState<Point>({ x: 1, y: 1 });
-  // Also mirrored into Overmind (state.canvas.displayScale) so other UI —
-  // the Fill Style dialog's live preview, sizing itself to show "an equally
-  // sized window into the canvas" — can read the canvas's actual current
-  // on-screen pixel density without duplicating this window-size-dependent
-  // computation. Local state stays the source of truth for this component's
-  // own render (no round-trip through Overmind needed for that).
+  // Mirrored into Overmind for readers outside this component (the Fill Style
+  // preview needs the on-screen pixel density); local state drives this render.
   const updateDisplayScale = (scale: Point): void => {
     setLocalDisplayScale(scale);
     actions.canvas.setDisplayScale(scale);
@@ -75,21 +48,12 @@ export function MainCanvas(): JSX.Element {
       return;
     }
     const format = resolveScreenFormat(formatId, videoStandard);
-    // The whole canvas area, not this pane: the format fills the space the
-    // artwork has on screen, and opening the zoom view or dragging its
-    // divider must not change how big a pixel is — that would rescale the
-    // picture under the user mid-edit, where Native (a fixed scale) instead
-    // just shows less of it and scrolls. The main pane simply overflows and
-    // scrolls once the zoom view takes its half.
+    // The whole canvas area, not this pane: opening the zoom view or dragging
+    // its divider must not rescale the picture mid-edit.
     const area = canvasDivRef.current.parentElement ?? canvasDivRef.current;
     const compute = (): void => {
-      // offsetWidth/Height (border box), not clientWidth/Height (content box):
-      // while shrinking the window the still-oversized canvas briefly overflows
-      // and the div shows a scrollbar, which eats into the content box. Reading
-      // clientWidth then would size the canvas ~a scrollbar short; the canvas
-      // shrinks, the scrollbar vanishes, and that short size is left as a stale
-      // margin with no further resize event to correct it. The border box is
-      // unaffected by the transient scrollbar, so the canvas fills exactly.
+      // Border box: a transient scrollbar shrinks the content box, and reading
+      // that would leave the canvas permanently short (docs/gotchas.md).
       const fillX = area.offsetWidth / format.width;
       const fillY = area.offsetHeight / format.height;
       if (scaleMode === 'integer') {
@@ -105,21 +69,16 @@ export function MainCanvas(): JSX.Element {
       }
     };
     compute();
-    // A ResizeObserver on the canvas area rather than a window resize
-    // listener: the area also changes when the chrome around it does (the
-    // UI Size setting rescales the toolbox column), and it deliberately does
-    // not change when the zoom divider moves, so the split never re-fits the
-    // canvas.
+    // The area, not the window: it also changes with the UI Size setting, and
+    // deliberately does not when the zoom divider moves.
     const observer = new ResizeObserver(compute);
     observer.observe(area);
     return (): void => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formatId, scaleMode, videoStandard, dpr]);
 
-  // The drawing pane's own size in artwork pixels, tracked whatever the
-  // screen format is — the effect above returns early at Native, and this is
-  // exactly the case that needs it. Feeds the Canvas Size requester's fit
-  // option; the same measurement the startup sizing below performs once.
+  // The pane's own size, tracked at every format including Native (the effect
+  // above returns early there). Feeds the Canvas Size requester and the fit.
   useEffect((): (() => void) => {
     const pane = canvasDivRef.current;
     const measure = (): void => actions.canvas.setViewportSize(paneSize(pane, dpr));
@@ -130,21 +89,10 @@ export function MainCanvas(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dpr]);
 
-  // Scrollbars latch, and nothing here can stop them appearing in the first
-  // place. Changing screen format replaces the resolution and the display scale
-  // in separate updates, so for a frame the canvas can be the new size at the
-  // old scale — Lo-Res to Native is the bad one, a 320x256 page becoming 2010
-  // wide while still drawn at the Lo-Res magnification. That overflows, the
-  // pane scrolls, and then it is stuck: these scrollbars take 15px
-  // (.retro-scrollbar), so a canvas sized to the pane is exactly a gutter too
-  // wide for what is left, and the browser will not revisit the decision —
-  // undoing it needs the canvas to fit, and the canvas only fits if it is
-  // undone.
-  //
-  // So once the change has settled, if the pane is scrolling, hide the overflow
-  // for one layout and restore it. The decision is made again from scratch with
-  // no scrollbars in the way, and a canvas that fits keeps them off. A canvas
-  // that genuinely is bigger gets them straight back, which is correct.
+  // Scrollbars latch: once one is up, a canvas sized to the pane is exactly a
+  // gutter too wide for what is left and the browser never revisits it. Hiding
+  // the overflow for one layout makes it decide again from scratch, and a canvas
+  // that fits keeps them off (docs/gotchas.md).
   useEffect((): (() => void) => {
     const pane = canvasDivRef.current;
     const unlatch = (): void => {
@@ -159,10 +107,8 @@ export function MainCanvas(): JSX.Element {
       pane.scrollLeft = scrollLeft;
       pane.scrollTop = scrollTop;
     };
-    // Twice: the resolution and the display scale arrive in separate updates,
-    // so the frame after this effect can still be mid-change. The later pass is
-    // the one that catches Lo-Res to Native; the first keeps the common case
-    // from flickering a scrollbar for a few frames.
+    // Twice: resolution and display scale arrive in separate updates, so the
+    // next frame can still be mid-change. The later pass catches Lo-Res→Native.
     const frame = requestAnimationFrame(unlatch);
     const settled = window.setTimeout(unlatch, 250);
     return (): void => {
@@ -179,30 +125,14 @@ export function MainCanvas(): JSX.Element {
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);
   useCanvasContentUpload();
 
-  // Set initial canvas size according to initial window size — in physical
-  // pixels (offsetWidth/Height times dpr), not CSS pixels, so the freshly
-  // initialized canvas has one artwork pixel per physical screen pixel here
-  // too (see the displayScale comment above).
+  // The startup size: fit the pane until the first click or keypress, after
+  // which the size belongs to the document and only Canvas Size or a crop
+  // changes it. Tracked rather than measured once at mount, because the chrome
+  // around the pane keeps settling and no event marks the moment the number is
+  // final — measured too early it is wrong for the whole session.
   //
-  // Tracked while the canvas is still blank rather than measured once at mount:
-  // React mounts after `load` and before the chrome around the pane has
-  // settled, so no page event marks the moment this number is final — only the
-  // pane itself does. A size measured too early is wrong for the whole session.
-  //
-  // It stops at the first click or keypress. From then on the size is the
-  // document's and changes only through the Canvas Size requester or a crop —
-  // at Native the canvas is the paper, not a view of it, so following the
-  // window would crop or pad the picture. setStartupResolution refuses in every
-  // other case where the canvas has stopped being a blank startup one.
-  //
-  // And it does not start until the restore has answered, because a saved
-  // record carries its own size and there is nothing to fit when one is coming
-  // back. The two used to run concurrently and be refereed inside
-  // setStartupResolution, where the fit could win and re-init the canvas out
-  // from under a restore in progress. Sequencing them means the question of who
-  // decides the startup size has one answer rather than a race with a guard on
-  // it (docs/autosave-simplification.md §4). It costs a read that measured
-  // 10-25ms for a 4.6MB record.
+  // Waits on restoreSettled: a restored record brings its own size, so the two
+  // never both decide it (docs/autosave-simplification.md §4).
   useEffect((): (() => void) => {
     const pane = canvasDivRef.current;
     const fitToPane = (): void =>
