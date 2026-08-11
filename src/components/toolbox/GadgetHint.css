@@ -124,7 +124,7 @@
    two were the same color once and read as one list of interchangeable
    things, which they are not. */
 .gadget-hint__gesture {
-  color: var(--dim-label);
+  color: var(--wb-blue);
   white-space: nowrap;
 }
 
