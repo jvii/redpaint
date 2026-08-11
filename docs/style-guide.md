@@ -194,6 +194,15 @@ laptop screens. Consequences for new UI:
   Nothing between: 13px existed once, in one rule, and was drift. The
   remaining size below the floor is a **stepped-down keycap**, 14px where
   `⌘` and `⇧` have to stay legible, otherwise the size of its own line.
+- **Press Start 2P needs a line-height set wherever it can wrap.** At
+  `normal` the face renders at exactly 1.0em, so two rows of a wrapped label
+  touch with no air between them at all. 1.5 gives them room and stays on a
+  whole pixel at every size the face is allowed (16 → 24, 24 → 36, 32 → 48),
+  which a bitmap font cares about. Give the space back out of the element's
+  vertical padding so a one-line control keeps the height it had — the
+  complaint is that wrapped rows are too close, not that every gadget should
+  be taller. `RetroToggle`'s segment does this; an override that restates
+  that padding has to restate the reduced number too.
 - **`-webkit-font-smoothing: none` is inherited — every monospace-stack
   element needs its own `-webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;`, even if no ancestor sets `none`

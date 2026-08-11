@@ -26,7 +26,17 @@
   background-color: transparent;
   border: 2px solid black;
   border-radius: 0;
-  padding: 12px 18px;
+  /* Press Start 2P renders at line-height: normal as exactly 1.0em, so two
+     rows of a wrapped label touch with no air between them at all. 1.5 gives
+     them 8px, and lands on a whole pixel at every size the face is allowed
+     (16 -> 24, 24 -> 36, 32 -> 48), which matters for a bitmap font.
+
+     The vertical padding gives back exactly what the line box gains, so a
+     one-line segment is the same 44px it always was and only a wrapped one
+     grows. Changing the height of every toggle in the app is not what "the
+     rows are too close together" asks for. */
+  line-height: 1.5;
+  padding: 8px 18px;
   display: flex;
   align-items: center;
   justify-content: center;

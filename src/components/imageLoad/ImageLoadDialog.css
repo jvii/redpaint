@@ -7,7 +7,10 @@
 }
 
 .image-load__count .retro-toggle__segment {
-  padding: 12px 0;
+  /* 8px, not 12: the shared segment gives its vertical padding to the line
+     box (RetroToggle.css), and an override that restates the padding has to
+     restate the new number or the group grows by 8px. */
+  padding: 8px 0;
   text-align: center;
   min-width: 88px;
 }
