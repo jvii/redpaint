@@ -136,10 +136,13 @@
    PaletteEditor.tsx), not a subtitle repeated in here too. */
 .palette-editor__range-cycling-title-row {
   margin: 6px 0;
-  /* baseline, so the 11px hint sits on the same line as the 16px bitmap title
-     rather than being centred against it */
+  /* Centred rather than baseline-aligned. A shared baseline is right when two
+     runs of text read as one sentence, but this is a label and an aside beside
+     it at very different sizes — and the keycap makes the aside a block with a
+     height of its own, which a baseline leaves hanging low against the 16px
+     bitmap title. Centring lines the cap up with the title's own middle. */
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
