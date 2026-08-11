@@ -183,6 +183,14 @@ laptop screens. Consequences for new UI:
   uppercase, letter-spaced), slider value readouts, and similar fine print.
   Small monospace beside the bitmap face is itself a period pairing
   (system console text next to chunky title text).
+- **Two small sizes, and the split is what the text *is*, not where it
+  sits**: **11px for a label or caption** (status captions, the zoom
+  readout, slot overlays, a gadget hint's rows) and **12px for a sentence
+  you read** (the notes under a control in Load Picture, Canvas Size, Fill
+  Style, Save As). Nothing else — 13px existed once, in one rule, and was
+  simply drift. The only other size below the floor is a **stepped-down
+  keycap at 14px**, which exists because `⌘` and `⇧` stop resolving into
+  shapes any smaller.
 - **`-webkit-font-smoothing: none` is inherited — every monospace-stack
   element needs its own `-webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;`, even if no ancestor sets `none`
