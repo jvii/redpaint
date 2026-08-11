@@ -24,25 +24,11 @@ import './Canvas.css';
 // gains that width back, the observer fires, and the canvas grows into a
 // scrollbar again. Not producing the scrollbar in the first place is what stops
 // that, and flooring is what does it.
-//
-// The 2px it holds back is the canvas's own 1px outline (Canvas.css), one on
-// each side. WebKit counts an element's outline as part of the scrollable
-// overflow area and Blink does not, so a canvas sized to exactly fill the pane
-// fits in Chrome and scrolls in Safari — which is the shape of the report: the
-// scrollbars appear on the gesture that fits the canvas to the window, and the
-// Canvas Size requester is quite right that the canvas matches the window. It
-// is the outline around it that does not.
-//
-// Held back here rather than pulled inside with outline-offset: -1px, which
-// would also fix it and would draw the outline over the outermost row and
-// column of the picture. In a pixel-art program those pixels are the work.
-const CANVAS_OUTLINE = 1;
-
 function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
   const rect = pane.getBoundingClientRect();
   return {
-    width: Math.floor((rect.width - 2 * CANVAS_OUTLINE) * dpr),
-    height: Math.floor((rect.height - 2 * CANVAS_OUTLINE) * dpr),
+    width: Math.floor(rect.width * dpr),
+    height: Math.floor(rect.height * dpr),
   };
 }
 
