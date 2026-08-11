@@ -7,6 +7,31 @@ import { Point } from '../../types';
 import { restoreSettled } from '../../persistence/restoreSettled';
 import './Canvas.css';
 
+// The drawing pane measured in physical pixels, for a canvas that must fit
+// inside it.
+//
+// getBoundingClientRect and floor, not offsetWidth and round. offsetWidth is an
+// integer, so a pane 1417.6 CSS pixels wide reports 1418 — and a canvas built
+// to that is wider than the pane it lives in, which is a scrollbar. Safari lands
+// on fractional pane widths where Chrome does not, so it was Safari that showed
+// it, intermittently, depending on the window. Flooring the product means the
+// canvas can fall up to a physical pixel short of the pane and never a pixel
+// over: a hairline of pasteboard nobody sees, against a scrollbar everybody does.
+//
+// Deliberately not subtracting a visible scrollbar's width (offsetWidth minus
+// clientWidth). It would be the more complete measurement and it oscillates:
+// take the scrollbar's width off, the canvas fits, the scrollbar goes, the pane
+// gains that width back, the observer fires, and the canvas grows into a
+// scrollbar again. Not producing the scrollbar in the first place is what stops
+// that, and flooring is what does it.
+function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
+  const rect = pane.getBoundingClientRect();
+  return {
+    width: Math.floor(rect.width * dpr),
+    height: Math.floor(rect.height * dpr),
+  };
+}
+
 export function MainCanvas(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
@@ -96,11 +121,7 @@ export function MainCanvas(): JSX.Element {
   // option; the same measurement the startup sizing below performs once.
   useEffect((): (() => void) => {
     const pane = canvasDivRef.current;
-    const measure = (): void =>
-      actions.canvas.setViewportSize({
-        width: Math.round(pane.offsetWidth * dpr),
-        height: Math.round(pane.offsetHeight * dpr),
-      });
+    const measure = (): void => actions.canvas.setViewportSize(paneSize(pane, dpr));
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(pane);
@@ -139,8 +160,7 @@ export function MainCanvas(): JSX.Element {
     const pane = canvasDivRef.current;
     const fitToPane = (): void =>
       actions.canvas.setStartupResolution({
-        width: Math.round(pane.offsetWidth * dpr),
-        height: Math.round(pane.offsetHeight * dpr),
+        ...paneSize(pane, dpr),
       });
 
     let observer: ResizeObserver | null = null;
