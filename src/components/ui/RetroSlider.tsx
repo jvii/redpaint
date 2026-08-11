@@ -1,5 +1,6 @@
 import React, { JSX } from 'react';
 import './RetroSlider.css';
+import { currentUiScale } from '../../uiScale';
 
 type Props = {
   value: number;
@@ -56,8 +57,14 @@ export function RetroSlider({
     }
     const rect = event.currentTarget.getBoundingClientRect();
     const trackLength = vertical ? rect.height : rect.width;
-    const thumbStart = (trackLength - THUMB_LENGTH) * (vertical ? 1 - fill : fill);
-    const thumbEnd = thumbStart + THUMB_LENGTH;
+    // THUMB_LENGTH is a CSS length and the track is measured in real screen
+    // pixels, so the two only agree at 100%. The CSS draws the thumb 20px long
+    // *inside the zoomed chrome* — 16 real pixels at 80%, 13 at 67% — and
+    // comparing a click against a flat 20 put the grab zone up to 7px out of
+    // place on a 13px thumb, which is enough to page when you meant to drag.
+    const thumbLength = THUMB_LENGTH * currentUiScale();
+    const thumbStart = (trackLength - thumbLength) * (vertical ? 1 - fill : fill);
+    const thumbEnd = thumbStart + thumbLength;
     const clickPos = vertical ? event.clientY - rect.top : event.clientX - rect.left;
 
     let next: number | null = null;

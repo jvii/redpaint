@@ -1,5 +1,6 @@
 import { JSX, RefObject, useEffect, useRef, useState } from 'react';
 import { GadgetHint, GadgetHintPanel, HintPlacement } from './GadgetHint';
+import { currentUiScale } from '../../uiScale';
 
 // Deliberately long. Reaching for a gadget you already know is the overwhelming
 // case, and a panel arriving mid-reach is only in the way; the hint is for
@@ -66,14 +67,22 @@ export function useGadgetHint(hint?: GadgetHint): Hinted {
       // measuring the panel and correcting afterwards, and the toolbox column
       // is the full height of the window, so both cases are ordinary.
       const belowMiddle = rect.top > window.innerHeight / 2;
+      // Every offset below is measured in real screen pixels and then handed to
+      // an element inside the zoomed chrome, where CSS multiplies it by the UI
+      // Size factor again — so it has to be divided out first or the panel
+      // lands at scale x the offset it was given. At 80% that put it 18px above
+      // the gadget and 3px *over* the toolbox instead of 12px clear of it.
+      const scale = currentUiScale();
       setHintAt({
-        right: window.innerWidth - rect.left,
-        top: belowMiddle ? undefined : rect.top,
-        bottom: belowMiddle ? window.innerHeight - rect.bottom : undefined,
+        right: (window.innerWidth - rect.left) / scale,
+        top: belowMiddle ? undefined : rect.top / scale,
+        bottom: belowMiddle ? (window.innerHeight - rect.bottom) / scale : undefined,
         // The panel's anchored edge is level with the gadget's, so the gadget's
         // middle is half its height in from that edge — measured, not a CSS
         // constant, since the chrome scales with the UI Size setting.
-        arrow: belowMiddle ? `calc(100% - ${rect.height / 2}px)` : `${rect.height / 2}px`,
+        arrow: belowMiddle
+          ? `calc(100% - ${rect.height / 2 / scale}px)`
+          : `${rect.height / 2 / scale}px`,
       });
     }, HINT_DELAY_MS);
   };

@@ -66,3 +66,18 @@ export function storeUiScale(scale: number): void {
 export function applyUiScale(scale: number): void {
   document.documentElement.style.setProperty('--ui-scale', String(scale));
 }
+
+// The scale CSS is applying right now.
+//
+// For the other half of the zoom problem, and the mirror of the vh note above:
+// a length *measured* with getBoundingClientRect comes back in real screen
+// pixels, but a length *handed to* an element inside a zoomed box is multiplied
+// by the zoom on the way in. So anything measured and then applied has to be
+// divided by this first, or it lands at scale x the offset it was given.
+//
+// Read from the custom property rather than from Overmind, so it is whatever
+// CSS is actually doing — the two cannot drift, and callers need no store.
+export function currentUiScale(): number {
+  const value = Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
+  return value > 0 ? value : 1;
+}
