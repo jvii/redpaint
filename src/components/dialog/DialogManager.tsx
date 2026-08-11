@@ -40,6 +40,10 @@ export function DialogManager(): JSX.Element | null {
         colors: pending.colors,
         trueColorEnabled: pending.trueColorEnabled,
         paletteSource: pending.paletteSource,
+        // Only a retained picture ever gets this far: the shrink question is
+        // about pixels that would be cropped, and a discarded picture has none
+        // to lose, so ScreenFormatDialog applies that case directly.
+        retainPicture: true,
       });
       if (canvasChange === 'scale') {
         actions.canvas.resizeCanvasScalingContent(pending.target);

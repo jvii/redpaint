@@ -91,6 +91,13 @@ function ScreenFormatDialogOpen(): JSX.Element {
   // too. An option named Current Palette must not be able to invent colors.
   const [paletteSource, setPaletteSource] = useState<PaletteSource>('image');
 
+  // Whether the picture survives the change, DPaint-style: choosing a screen
+  // was a way of starting a picture, not of converting the one you had. No by
+  // default for that reason — and because conforming a picture to a screen it
+  // was not drawn for is the more deliberate of the two acts, so it is the one
+  // worth asking for. Either way it is a single undo away.
+  const [retainPicture, setRetainPicture] = useState(false);
+
   // The two controls keep each other honest instead of one greying the other
   // out: choosing a size that is not the palette's moves the remap to the image
   // (the only source that can supply that size), and choosing Current Palette
@@ -111,9 +118,36 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const reducesColors =
     colors < state.palette.paletteArray.length ||
     (!trueColorEnabled && state.canvas.hasTrueColorPixels);
+  // Where a palette comes from is only a question while there is a picture to
+  // keep: a discarded one has no pixels to remap and, for "From Image", no
+  // image to take a palette from either.
+  const canRemap = retainPicture && reducesColors;
 
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
+    // Native has no page size of its own, so it keeps the canvas it has.
+    const target = isNative
+      ? state.canvas.resolution
+      : resolveScreenFormat(formatId as ScreenFormatId, videoStandard);
+
+    // Not keeping the picture: apply the format, then put a blank canvas at
+    // the new size. No conform (applyScreenFormat skips it) and no shrink
+    // question either — that question exists to protect pixels from being
+    // cropped away, and these are going regardless. One undo entry, recorded
+    // by the upload, covers the format change and the blank canvas together.
+    if (!retainPicture) {
+      actions.canvas.applyScreenFormat({
+        formatId: resolvedFormatId,
+        videoStandard,
+        colors,
+        trueColorEnabled,
+        paletteSource,
+        retainPicture: false,
+      });
+      actions.canvas.resizeCanvasClearingContent(target);
+      actions.dialog.close();
+      return;
+    }
 
     // Native has no page size, so it keeps the current canvas as-is (shown 1:1).
     if (isNative) {
@@ -123,6 +157,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
         colors,
         trueColorEnabled,
         paletteSource,
+        retainPicture: true,
       });
       if (conformed) {
         actions.undo.setUndoPoint();
@@ -136,7 +171,6 @@ function ScreenFormatDialogOpen(): JSX.Element {
     // commit straight away. Shrinking in either dimension would crop, so hold
     // the *whole* change unapplied and ask; that way Cancel undoes nothing
     // (reverting a narrowed palette would lose the dropped colors for good).
-    const target = resolveScreenFormat(formatId as ScreenFormatId, videoStandard);
     const current = state.canvas.resolution;
     const sameSize = target.width === current.width && target.height === current.height;
     const wouldShrink = target.width < current.width || target.height < current.height;
@@ -160,6 +194,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
       colors,
       trueColorEnabled,
       paletteSource,
+      retainPicture: true,
     });
     if (!sameSize) {
       // one history entry for the whole change, via the resize upload — which
@@ -172,7 +207,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Set Screen Format" width={840}>
+    <Modal header="Set Screen Format" width={1020}>
       <div className="screen-format__body">
         <div className="screen-format__left">
           <RetroFieldset legend="Resolution" className="screen-format__formats">
@@ -222,6 +257,23 @@ function ScreenFormatDialogOpen(): JSX.Element {
               onChange={(value): void => setTrueColorEnabled(value === 'on')}
             />
           </RetroFieldset>
+        </div>
+        {/* The picture's own fate, and the setting that only matters when it
+            has one — so Remap To sits under Retain Picture rather than under
+            the palette controls it used to follow. */}
+        <div className="screen-format__picture">
+          <RetroFieldset legend="Retain Picture" className="screen-format__retain">
+            <RetroToggle
+              variant="grid"
+              columns={2}
+              options={[
+                { value: 'yes', label: 'Yes' },
+                { value: 'no', label: 'No' },
+              ]}
+              value={retainPicture ? 'yes' : 'no'}
+              onChange={(value): void => setRetainPicture(value === 'yes')}
+            />
+          </RetroFieldset>
           <RetroFieldset legend="Remap To" className="screen-format__remap">
             {/* only a reduction remaps: fewer colors, or True Color going off.
                 Current Palette carries a size because its size is not the one
@@ -236,7 +288,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
               ]}
               value={paletteSource}
               onChange={(value): void => choosePaletteSource(value as PaletteSource)}
-              disabled={!reducesColors}
+              disabled={!canRemap}
             />
           </RetroFieldset>
         </div>

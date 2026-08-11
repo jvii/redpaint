@@ -23,6 +23,17 @@
   gap: 24px;
 }
 
+/* The third column: what happens to the picture, and the remap that only
+   applies when it is kept. Its own column rather than a fourth group under the
+   palette controls — those describe the screen being moved to, this describes
+   what is carried across to it, which is a different question. */
+.screen-format__picture {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 24px;
+}
+
 /* untitled, unlike its RetroFieldset siblings — sits right under the
    Resolution list it governs, so no legend is needed to explain it */
 .screen-format__standard .retro-toggle__segment {

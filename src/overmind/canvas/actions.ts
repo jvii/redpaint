@@ -16,6 +16,7 @@ import { CropRect } from '../crop/state';
 import { Color } from '../../types';
 import { Point } from '../../types';
 import { PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
+import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 
 type Resolution = { width: number; height: number };
 
@@ -74,6 +75,26 @@ export const resizeCanvasPlacingContent = (
     const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
     setPendingCanvasContent(current.placedInto(width, height, backgroundColorNumber));
   }
+  context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
+};
+
+// Resizes to the given size with a blank canvas, the counterpart to
+// resizeCanvasPlacingContent for a screen-format change that is not keeping
+// the picture. Queued rather than cleared on the spot for the same reason
+// app.newPicture queues: setResolution's element resize only commits on the
+// next render, so a snapshot taken now would be of the old size — and the
+// upload is what records the single undo entry covering the whole change.
+//
+// Called with the current size too, for a format that does not resize; the
+// blank content is the point, not the dimensions.
+export const resizeCanvasClearingContent = (
+  context: Context,
+  { width, height }: Resolution
+): void => {
+  const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
+  setPendingCanvasContent(
+    CanvasColorIndex.createEmptyWithBackgroundColor(width, height, backgroundColorNumber)
+  );
   context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
 
@@ -206,6 +227,10 @@ export interface ApplyScreenFormatParams extends SetScreenFormatParams {
   colors: number;
   trueColorEnabled: boolean;
   paletteSource: PaletteSource;
+  // Whether the picture survives the change. False means the caller is about
+  // to replace it with a blank canvas, so there is nothing to conform and
+  // nothing for a palette to be extracted *from* — see below.
+  retainPicture: boolean;
 }
 
 // Commits a screen format choice: the palette depth, the simulated screen and
@@ -217,7 +242,14 @@ export interface ApplyScreenFormatParams extends SetScreenFormatParams {
 // through here, so a deferred change applies exactly like an immediate one.
 export const applyScreenFormat = (
   context: Context,
-  { formatId, videoStandard, colors, trueColorEnabled, paletteSource }: ApplyScreenFormatParams
+  {
+    formatId,
+    videoStandard,
+    colors,
+    trueColorEnabled,
+    paletteSource,
+    retainPicture,
+  }: ApplyScreenFormatParams
 ): boolean => {
   // Read from the raw map, never from the paletteArray derived. Overmind
   // deriveds are not reliable inside an action — paletteTexture.ts composes
@@ -227,7 +259,10 @@ export const applyScreenFormat = (
   const oldPalette = plainPalette(Object.values(context.state.palette.palette));
   const flatten = !trueColorEnabled && context.state.canvas.hasTrueColorPixels;
   const depthShrunk = colors < oldPalette.length;
-  const needsConform = depthShrunk || flatten;
+  // Nothing to conform when the picture is not being kept: the caller replaces
+  // it with a blank canvas straight after, so remapping the pixels first would
+  // be work whose only result is thrown away.
+  const needsConform = retainPicture && (depthShrunk || flatten);
 
   // A rebuilt palette comes from the image as displayed: resolve the canvas
   // to RGB, then take its own colors outright when they fit the depth
