@@ -63,7 +63,11 @@ export function PaletteEditor(): JSX.Element | null {
   // Every cycling control below edits the selected slot and no-ops when
   // there isn't one — the controls are all disabled in that state anyway,
   // so this guard is belt-and-braces rather than reachable.
-  function updateActiveRange(settings: { active?: boolean; reverse?: boolean; rate?: number }): void {
+  function updateActiveRange(settings: {
+    active?: boolean;
+    reverse?: boolean;
+    rate?: number;
+  }): void {
     if (activeRangeIndex === null) {
       return;
     }
@@ -199,6 +203,11 @@ export function PaletteEditor(): JSX.Element | null {
         <div className="palette-editor__range-cycling">
           <div className="palette-editor__range-cycling-title-row">
             <span className="palette-editor__range-cycling-label">Color Cycling</span>
+            {/* True from in here specifically: the Tab hotkey is the one
+                deliberately left outside hotkeysSuspended (GlobalHotkeyManager),
+                so that cycling can be started and stopped while a range is being
+                tuned — which is exactly when you want to see it run. */}
+            <span className="palette-editor__range-cycling-hint">Press TAB to start or stop</span>
           </div>
           <div className="palette-editor__range-cycling-row">
             <RetroToggle

@@ -136,6 +136,25 @@
    PaletteEditor.tsx), not a subtitle repeated in here too. */
 .palette-editor__range-cycling-title-row {
   margin: 6px 0;
+  /* baseline, so the 11px hint sits on the same line as the 16px bitmap title
+     rather than being centred against it */
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* The supporting register the rest of the app uses below 16px: the plain
+   monospace stack with its own smoothing, because the bitmap face's
+   `-webkit-font-smoothing: none` is inherited from the title beside it and
+   makes system text visibly thinner in Safari (docs/style-guide.md). */
+.palette-editor__range-cycling-hint {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--dim-label);
 }
 
 /* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
