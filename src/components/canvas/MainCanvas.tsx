@@ -8,30 +8,23 @@ import { restoreSettled } from '../../persistence/restoreSettled';
 import './Canvas.css';
 
 // The drawing pane measured in physical pixels, for a canvas that must fit
-// inside it.
+// inside it. Two decisions, both of which were once the other way and both of
+// which produced scrollbars in Safari:
 //
 // getBoundingClientRect and floor, not offsetWidth and round. offsetWidth is an
-// integer, so a pane 1417.6 CSS pixels wide reports 1418 — and a canvas built
-// to that is wider than the pane it lives in, which is a scrollbar. Safari lands
-// on fractional pane widths where Chrome does not, so it was Safari that showed
-// it, intermittently, depending on the window. Flooring the product means the
-// canvas can fall up to a physical pixel short of the pane and never a pixel
-// over: a hairline of pasteboard nobody sees, against a scrollbar everybody does.
+// integer, so a pane 1417.6 CSS pixels wide reports 1418, and a canvas built to
+// that is wider than the pane it lives in. Flooring means the canvas can fall
+// up to a physical pixel short and never a pixel over — a hairline of
+// pasteboard nobody sees, against a scrollbar everybody does.
 //
-// Deliberately not subtracting a visible scrollbar's width (offsetWidth minus
-// clientWidth). It would be the more complete measurement and it oscillates:
-// take the scrollbar's width off, the canvas fits, the scrollbar goes, the pane
-// gains that width back, the observer fires, and the canvas grows into a
-// scrollbar again. Not producing the scrollbar in the first place is what stops
-// that, and flooring is what does it.
-//
-// The border box, which is the space the pane has for content whenever it is
-// not scrolling — and it is never scrolling once the canvas fits, which is the
-// whole point of the fit. Deliberately not "minus the current scrollbar
-// gutter": that reads as more careful and is worse, because it is only smaller
-// while a scrollbar happens to be up, so a measurement taken during a transient
-// gets recorded and the next fit comes out a gutter short. The scrollbars are
-// dealt with where they actually go wrong, in the effect that un-latches them.
+// The border box, not the border box minus any scrollbar currently showing.
+// Subtracting the gutter reads as the more careful measurement and is worse:
+// it is only smaller while a scrollbar happens to be up, so a measurement taken
+// during a transient gets recorded and the next fit comes out a gutter short —
+// the "first CLR is slightly small, the second is right" bug. The border box is
+// what the pane has for content whenever it is not scrolling, which is the
+// state the fit is aiming at. Scrollbars are handled where they actually go
+// wrong, in the un-latching effect below.
 function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
   const rect = pane.getBoundingClientRect();
   return {
