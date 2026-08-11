@@ -25,26 +25,18 @@ import './Canvas.css';
 // scrollbar again. Not producing the scrollbar in the first place is what stops
 // that, and flooring is what does it.
 //
-// The scrollbar gutter comes off, because these are 15px space-taking
-// scrollbars (.retro-scrollbar in index.css), and getBoundingClientRect is the
-// border box — which includes the gutter. Sizing the canvas to that while a
-// scrollbar is up gets stuck: the canvas is exactly a gutter too wide for the
-// content box, which keeps the scrollbar, which keeps it too wide. Measured in
-// Safari mid-symptom: pane border box 2010, content box 1995, canvas 2010,
-// overflow 15 in both directions and no other element past the edge.
-//
-// Not a loop, though it reads like one. Subtracting the gutter fits the canvas
-// inside the scrollbar, the scrollbar goes, the pane gains that width back, the
-// observer fires, and the canvas is then exactly the pane — which needs no
-// scrollbar, so it stops there. The gutter is 0 in the ordinary case, so the
-// fit is unaffected by any of this until a scrollbar is actually up.
+// The border box, which is the space the pane has for content whenever it is
+// not scrolling — and it is never scrolling once the canvas fits, which is the
+// whole point of the fit. Deliberately not "minus the current scrollbar
+// gutter": that reads as more careful and is worse, because it is only smaller
+// while a scrollbar happens to be up, so a measurement taken during a transient
+// gets recorded and the next fit comes out a gutter short. The scrollbars are
+// dealt with where they actually go wrong, in the effect that un-latches them.
 function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
   const rect = pane.getBoundingClientRect();
-  const gutterX = pane.offsetWidth - pane.clientWidth;
-  const gutterY = pane.offsetHeight - pane.clientHeight;
   return {
-    width: Math.floor((rect.width - gutterX) * dpr),
-    height: Math.floor((rect.height - gutterY) * dpr),
+    width: Math.floor(rect.width * dpr),
+    height: Math.floor(rect.height * dpr),
   };
 }
 
@@ -142,14 +134,54 @@ export function MainCanvas(): JSX.Element {
     const observer = new ResizeObserver(measure);
     observer.observe(pane);
     return (): void => observer.disconnect();
-    // Re-measured on every resolution change as well as on resize, because a
-    // scrollbar appearing is the case that matters here and the observer does
-    // not report it: it watches the pane's own box, and a canvas outgrowing the
-    // pane changes what is *inside* it. Verified — oversize the canvas and the
-    // gutter goes to 15 while the stored measurement stays at its no-scrollbar
-    // value, which is the stale number a later fit would then use.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dpr, state.canvas.resolution.width, state.canvas.resolution.height]);
+  }, [dpr]);
+
+  // Scrollbars latch, and nothing here can stop them appearing in the first
+  // place. Changing screen format replaces the resolution and the display scale
+  // in separate updates, so for a frame the canvas can be the new size at the
+  // old scale — Lo-Res to Native is the bad one, a 320x256 page becoming 2010
+  // wide while still drawn at the Lo-Res magnification. That overflows, the
+  // pane scrolls, and then it is stuck: these scrollbars take 15px
+  // (.retro-scrollbar), so a canvas sized to the pane is exactly a gutter too
+  // wide for what is left, and the browser will not revisit the decision —
+  // undoing it needs the canvas to fit, and the canvas only fits if it is
+  // undone.
+  //
+  // So once the change has settled, if the pane is scrolling, hide the overflow
+  // for one layout and restore it. The decision is made again from scratch with
+  // no scrollbars in the way, and a canvas that fits keeps them off. A canvas
+  // that genuinely is bigger gets them straight back, which is correct.
+  useEffect((): (() => void) => {
+    const pane = canvasDivRef.current;
+    const unlatch = (): void => {
+      if (pane.offsetWidth === pane.clientWidth && pane.offsetHeight === pane.clientHeight) {
+        return; // not scrolling; nothing to reconsider
+      }
+      const { scrollLeft, scrollTop } = pane;
+      const overflow = pane.style.overflow;
+      pane.style.overflow = 'hidden';
+      void pane.offsetWidth; // force the scrollbar-free layout to happen
+      pane.style.overflow = overflow;
+      pane.scrollLeft = scrollLeft;
+      pane.scrollTop = scrollTop;
+    };
+    // Twice: the resolution and the display scale arrive in separate updates,
+    // so the frame after this effect can still be mid-change. The later pass is
+    // the one that catches Lo-Res to Native; the first keeps the common case
+    // from flickering a scrollbar for a few frames.
+    const frame = requestAnimationFrame(unlatch);
+    const settled = window.setTimeout(unlatch, 250);
+    return (): void => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(settled);
+    };
+  }, [
+    state.canvas.resolution.width,
+    state.canvas.resolution.height,
+    displayScale.x,
+    displayScale.y,
+  ]);
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);
   useCanvasContentUpload();
