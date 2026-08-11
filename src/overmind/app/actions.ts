@@ -13,6 +13,7 @@ import {
   DEFAULT_TRUE_COLOR_ENABLED,
   DEFAULT_VIDEO_STANDARD,
   findMatchingScreenFormat,
+  nativeCanvasSize,
 } from '../canvas/state';
 import {
   DEFAULT_BACKGROUND_COLOR_ID,
@@ -310,9 +311,7 @@ export const newPicture = (context: Context): void => {
 
   // The drawing pane's size, which is what the canvas is fitted to at startup;
   // its own resolution if the pane has somehow never been measured.
-  const viewport = context.state.canvas.viewportSize;
-  const size =
-    viewport.width > 0 && viewport.height > 0 ? viewport : context.state.canvas.resolution;
+  const size = nativeCanvasSize(context.state.canvas);
 
   // Queued rather than cleared here, and the undo point taken by the upload:
   // setResolution's canvas element resize only commits on the next render, so

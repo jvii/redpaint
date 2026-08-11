@@ -4,6 +4,7 @@ import { useActions, useAppState } from '../../overmind';
 import {
   ScreenFormatId,
   VideoStandard,
+  nativeCanvasSize,
   resolveScreenFormat,
   screenFormats,
 } from '../../overmind/canvas/state';
@@ -125,9 +126,15 @@ function ScreenFormatDialogOpen(): JSX.Element {
 
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
-    // Native has no page size of its own, so it keeps the canvas it has.
+    // Native has no page size of its own. Keeping the picture, that means the
+    // canvas it has — there is a picture on it and no size to prefer over its
+    // own. Discarding it, there is nothing to preserve and no size on offer but
+    // the window's, so a fresh Native page fits the pane, exactly as the
+    // new-page half of CLR does (app.newPicture, same helper). Arriving from
+    // 320x256 and keeping 320x256 would be neither screen's size.
+    const nativeTarget = retainPicture ? state.canvas.resolution : nativeCanvasSize(state.canvas);
     const target = isNative
-      ? state.canvas.resolution
+      ? nativeTarget
       : resolveScreenFormat(formatId as ScreenFormatId, videoStandard);
 
     // Not keeping the picture: apply the format, then put a blank canvas at

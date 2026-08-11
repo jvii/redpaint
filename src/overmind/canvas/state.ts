@@ -162,6 +162,23 @@ export type PendingScreenFormat = {
   target: { width: number; height: number };
 };
 
+// The size a canvas takes when its screen has no page size of its own — the
+// drawing pane it is shown in, or its own current size if that pane has never
+// been measured (viewportSize is {0,0} until the canvas mounts once).
+//
+// Shared because two gestures both mean "a fresh page at Native": the new-page
+// half of CLR (app.newPicture) and switching to Native without keeping the
+// picture. Arriving at Native from a 320x256 screen and keeping 320x256 would
+// be neither the old screen's size nor the new one's, since Native has no size
+// to offer but the window's.
+export function nativeCanvasSize(canvas: {
+  viewportSize: { width: number; height: number };
+  resolution: { width: number; height: number };
+}): { width: number; height: number } {
+  const { viewportSize, resolution } = canvas;
+  return viewportSize.width > 0 && viewportSize.height > 0 ? viewportSize : resolution;
+}
+
 // What the display side of a document starts as. Named because the new-page
 // gesture (app.newPicture) restores exactly these, and "default" should have
 // one definition rather than a literal here and a guess there.
