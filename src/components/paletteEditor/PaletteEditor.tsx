@@ -208,8 +208,8 @@ export function PaletteEditor(): JSX.Element | null {
                 so that cycling can be started and stopped while a range is being
                 tuned — which is exactly when you want to see it run. */}
             <span className="palette-editor__range-cycling-hint">
-              Press <kbd className="wb-gadget__keycap palette-editor__range-cycling-key">TAB</kbd>{' '}
-              to start or stop
+              <kbd className="wb-gadget__keycap palette-editor__range-cycling-key">TAB</kbd> to
+              start or stop
             </span>
           </div>
           <div className="palette-editor__range-cycling-row">
