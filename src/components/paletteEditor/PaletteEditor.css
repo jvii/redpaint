@@ -155,7 +155,7 @@
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.04em;
   /* Black at reduced alpha, the register every other requester's supporting
      prose uses (Load Picture, Canvas Size, Save As). Not --dim-label: that is
@@ -165,12 +165,12 @@
   color: rgba(0, 0, 0, 0.65);
 }
 
-/* The shared cap, stepped down for an 11px line. Not as far as the toolbox
-   hints' 14px floor: that exists for ⌘ and ⇧, which stop resolving into shapes
-   when small, and TAB is three plain letters with no such trouble. It takes the
-   dimmed ink from the sentence around it (the base rule's `color: inherit`, and
-   a border of currentColor), so it stays supporting text rather than becoming
-   the loudest thing in the panel. */
+/* The shared 16px cap, stepped down to the size of the line it sits in. Not as
+   far as the toolbox hints' 14px floor: that exists for ⌘ and ⇧, which stop
+   resolving into shapes when small, and TAB is three plain letters with no such
+   trouble. It takes its ink from the sentence around it (the base rule's
+   `color: inherit`, and a border of currentColor), so it stays supporting text
+   rather than becoming the loudest thing in the panel. */
 .palette-editor__range-cycling-key {
   font-size: 12px;
   padding: 2px 5px;

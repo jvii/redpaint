@@ -183,14 +183,17 @@ laptop screens. Consequences for new UI:
   uppercase, letter-spaced), slider value readouts, and similar fine print.
   Small monospace beside the bitmap face is itself a period pairing
   (system console text next to chunky title text).
-- **Two small sizes, and the split is what the text *is*, not where it
-  sits**: **11px for a label or caption** (status captions, the zoom
-  readout, slot overlays, a gadget hint's rows) and **12px for a sentence
-  you read** (the notes under a control in Load Picture, Canvas Size, Fill
-  Style, Save As). Nothing else — 13px existed once, in one rule, and was
-  simply drift. The only other size below the floor is a **stepped-down
-  keycap at 14px**, which exists because `⌘` and `⇧` stop resolving into
-  shapes any smaller.
+- **12px is the small size; 11px is for where 12 does not fit.** The
+  difference is space, not meaning — the same kinds of text sit at both, so
+  do not look for a rule in the content. 11px is what the toolbox hint
+  panels use (they must not grow tall enough to cover the picture), what the
+  status captions, brush/range slot overlays and the zoom readout use (a
+  strip or an overlay with no room), and nothing else. Everything with room
+  — every requester note, the crop hint, the menubar hint — is 12px, so
+  start there and step down only when the space genuinely refuses it.
+  Nothing between: 13px existed once, in one rule, and was drift. The
+  remaining size below the floor is a **stepped-down keycap**, 14px where
+  `⌘` and `⇧` have to stay legible, otherwise the size of its own line.
 - **`-webkit-font-smoothing: none` is inherited — every monospace-stack
   element needs its own `-webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;`, even if no ancestor sets `none`
