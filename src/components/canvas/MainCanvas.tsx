@@ -24,11 +24,27 @@ import './Canvas.css';
 // gains that width back, the observer fires, and the canvas grows into a
 // scrollbar again. Not producing the scrollbar in the first place is what stops
 // that, and flooring is what does it.
+//
+// The scrollbar gutter comes off, because these are 15px space-taking
+// scrollbars (.retro-scrollbar in index.css), and getBoundingClientRect is the
+// border box — which includes the gutter. Sizing the canvas to that while a
+// scrollbar is up gets stuck: the canvas is exactly a gutter too wide for the
+// content box, which keeps the scrollbar, which keeps it too wide. Measured in
+// Safari mid-symptom: pane border box 2010, content box 1995, canvas 2010,
+// overflow 15 in both directions and no other element past the edge.
+//
+// Not a loop, though it reads like one. Subtracting the gutter fits the canvas
+// inside the scrollbar, the scrollbar goes, the pane gains that width back, the
+// observer fires, and the canvas is then exactly the pane — which needs no
+// scrollbar, so it stops there. The gutter is 0 in the ordinary case, so the
+// fit is unaffected by any of this until a scrollbar is actually up.
 function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
   const rect = pane.getBoundingClientRect();
+  const gutterX = pane.offsetWidth - pane.clientWidth;
+  const gutterY = pane.offsetHeight - pane.clientHeight;
   return {
-    width: Math.floor(rect.width * dpr),
-    height: Math.floor(rect.height * dpr),
+    width: Math.floor((rect.width - gutterX) * dpr),
+    height: Math.floor((rect.height - gutterY) * dpr),
   };
 }
 
@@ -126,8 +142,14 @@ export function MainCanvas(): JSX.Element {
     const observer = new ResizeObserver(measure);
     observer.observe(pane);
     return (): void => observer.disconnect();
+    // Re-measured on every resolution change as well as on resize, because a
+    // scrollbar appearing is the case that matters here and the observer does
+    // not report it: it watches the pane's own box, and a canvas outgrowing the
+    // pane changes what is *inside* it. Verified — oversize the canvas and the
+    // gutter goes to 15 while the stored measurement stays at its no-scrollbar
+    // value, which is the stale number a later fit would then use.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dpr]);
+  }, [dpr, state.canvas.resolution.width, state.canvas.resolution.height]);
 
   useScrollToFocusPoint(canvasDivRef.current, state.canvas.scrollFocusPoint, displayScale);
   useCanvasContentUpload();
