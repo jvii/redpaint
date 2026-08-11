@@ -3,7 +3,11 @@
   /* resolution list hugs the left, the toggle groups hug the right so their
      right edge lines up with the OK button below */
   justify-content: space-between;
-  gap: 30px;
+  /* Wide, because three columns of gadgets read as one field of buttons at the
+     spacing that separated two. The requester's width is set to fit the columns
+     at their natural size (see the legend rule below), so this gap is space the
+     layout has rather than space taken from the controls. */
+  gap: 56px;
   /* generous bottom padding sets the groups apart from the footer buttons
      (the requester has no divider between them) */
   padding: 24px 30px 28px 30px;
@@ -69,4 +73,34 @@
   padding: 12px 0;
   text-align: center;
   min-width: 88px;
+}
+
+/* No legend wraps. Press Start 2P is exactly 16px per character, so a legend's
+   width is a fact about its wording — "Indexed Palette Size" is 320px and its
+   column of controls is 175px, which used to put it on two lines and made the
+   column look like it belonged to whatever was underneath. Held to one line, a
+   legend sets its column's minimum width instead, and the requester is sized to
+   fit the result: the longest legend and the widest control, per column.
+
+   Option labels are free to wrap — "New Palette From Image" on two lines is a
+   label doing its job, where a heading on two lines is a heading that has
+   stopped looking like one. */
+.screen-format__body .retro-fieldset__legend {
+  white-space: nowrap;
+}
+
+/* ...and the group grows to hold it, rather than letting it hang out over the
+   next column. nowrap alone only stops the break; without this the legend
+   overflowed its own box by the 145px "Indexed Palette Size" is wider than the
+   color grid under it. */
+.screen-format__body .retro-fieldset {
+  min-width: max-content;
+}
+
+/* Except this one, whose *content* is the long thing rather than its legend:
+   max-content there would put "New Palette From Image" on one line too and buy
+   352px of requester to do it. A label on two lines is a label doing its job;
+   the rule above is about headings. */
+.screen-format__body .screen-format__remap {
+  min-width: 0;
 }

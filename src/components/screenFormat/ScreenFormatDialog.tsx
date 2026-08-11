@@ -207,7 +207,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Set Screen Format" width={1020}>
+    <Modal header="Set Screen Format" width={1140}>
       <div className="screen-format__body">
         <div className="screen-format__left">
           <RetroFieldset legend="Resolution" className="screen-format__formats">
