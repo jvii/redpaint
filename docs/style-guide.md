@@ -231,6 +231,12 @@ deliberate, not oversights:
 - **Sentence case** for hint/prose text that reads as a sentence, not a
   title — the small supporting text under a slider, tooltips, error/warning
   copy.
+- **Supporting prose is black at reduced alpha** — `rgba(0, 0, 0, 0.65)`, as
+  in the Load Picture, Canvas Size and Save As requesters. Reach for
+  `--dim-label` only for what it is named after: a *disabled* label, and the
+  quiet gesture column in a gadget hint. A sentence in that grey reads as
+  switched off rather than as an aside, which is how the palette editor's
+  cycling hint first shipped.
 
 ## Icons: two registers
 

@@ -157,7 +157,12 @@
   -moz-osx-font-smoothing: grayscale;
   font-size: 11px;
   letter-spacing: 0.04em;
-  color: var(--dim-label);
+  /* Black at reduced alpha, the register every other requester's supporting
+     prose uses (Load Picture, Canvas Size, Save As). Not --dim-label: that is
+     documented as the disabled-label color and is what a dead control looks
+     like, so prose wearing it reads as switched off rather than as an aside.
+     The keycap inherits this, ink and border both. */
+  color: rgba(0, 0, 0, 0.65);
 }
 
 /* The shared cap, stepped down for an 11px line. Not as far as the toolbox
