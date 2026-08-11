@@ -210,7 +210,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
     <Modal header="Set Screen Format" width={1140}>
       <div className="screen-format__body">
         <div className="screen-format__left">
-          <RetroFieldset legend="Resolution" className="screen-format__formats">
+          <RetroFieldset legend="Resolution" className="screen-format__formats" as="div">
             <RetroToggle
               variant="column"
               options={formatOptions(videoStandard)}
@@ -233,8 +233,17 @@ function ScreenFormatDialogOpen(): JSX.Element {
             />
           </div>
         </div>
+        {/* as="div" on every group here, not a real <fieldset>. A <legend> is
+            laid out specially rather than as an ordinary child, so a group's
+            intrinsic width does not reliably include it — which is exactly
+            what the min-width: max-content rule in the stylesheet asks for,
+            and Chrome happened to grant. Safari did not: enabling or disabling
+            the Remap To toggle re-measured the fieldset and moved the column
+            and the requester with it. FillStyleSettings switched to divs for
+            its own Safari fieldset bug; nothing here wants native fieldset
+            disabling either, since every control takes an explicit prop. */}
         <div className="screen-format__right">
-          <RetroFieldset legend="Indexed Palette Size" className="screen-format__colors">
+          <RetroFieldset legend="Indexed Palette Size" className="screen-format__colors" as="div">
             <RetroToggle
               variant="grid"
               columns={4}
@@ -243,7 +252,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
               onChange={(value): void => chooseColors(Number(value))}
             />
           </RetroFieldset>
-          <RetroFieldset legend="True Color" className="screen-format__truecolor">
+          <RetroFieldset legend="True Color" className="screen-format__truecolor" as="div">
             {/* off conforms the canvas to the palette on OK (flattening any
                 true-color pixels); loading an image as True Color re-enables */}
             <RetroToggle
@@ -262,7 +271,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
             has one — so Remap To sits under Retain Picture rather than under
             the palette controls it used to follow. */}
         <div className="screen-format__picture">
-          <RetroFieldset legend="Retain Picture" className="screen-format__retain">
+          <RetroFieldset legend="Retain Picture" className="screen-format__retain" as="div">
             <RetroToggle
               variant="grid"
               columns={2}
@@ -274,7 +283,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
               onChange={(value): void => setRetainPicture(value === 'yes')}
             />
           </RetroFieldset>
-          <RetroFieldset legend="Remap To" className="screen-format__remap">
+          <RetroFieldset legend="Remap To" className="screen-format__remap" as="div">
             {/* only a reduction remaps: fewer colors, or True Color going off.
                 Current Palette carries a size because its size is not the one
                 selected above — it is the one option whose size is not a
