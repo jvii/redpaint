@@ -52,11 +52,9 @@ export type State = {
   // palette/ranges above never change. cycleOffsets tracks ranges by index
   // (all zeros while cycling is off) and is written only by CycleDriver.
   //
-  // cyclingOn is currently written and read only by toggleCycling, which
-  // makes it redundant with CycleDriver's own rafId — kept deliberately, not
-  // an oversight: it's the state a cycling indicator would bind to, and Tab
-  // is an undiscoverable hotkey without one. Drop it only along with that
-  // idea, not as dead-code cleanup.
+  // cyclingOn is written and read only by toggleCycling, so it looks redundant
+  // with CycleDriver's rafId. Kept on purpose: it is what a cycling indicator
+  // would bind to. Drop it with that idea, not as dead-code cleanup.
   cyclingOn: boolean;
   cycleOffsets: number[];
   // What the UI shows for each slot: the base palette with each cycling

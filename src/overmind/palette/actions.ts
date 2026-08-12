@@ -8,13 +8,11 @@ import { rgbToHsv, hsvToRgb } from '../../algorithm/color';
 import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
 import { cycleDriver, refreshCyclePalettes } from '../../canvas/CycleDriver';
 
-// Resizes the palette to exactly `colors` entries (the screen format's
-// Number of Colors). Existing colors are kept up to the new count; growing
-// fills the tail from the default palette for that depth. Everything that
-// references a color id is clamped into the new bounds. No remapping of
-// pixels already painted with dropped indices (yet) — they keep their
-// stored index and will show whatever that slot holds if the palette grows
-// back over them.
+// Resizes the palette to exactly `colors` entries (the screen format's Number
+// of Colors). Existing colors are kept up to the new count; growing fills the
+// tail from the default palette for that depth, and every color id is clamped
+// into the new bounds. Pixels painted with a dropped index are not remapped:
+// they keep it, and show whatever the slot holds if the palette grows back.
 export const setNumberOfColors = (context: Context, colors: number): void => {
   const oldPalette = context.state.palette.palette;
   const defaults = createPalette(colors);

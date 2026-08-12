@@ -17,12 +17,10 @@ export const setUndoPoint = (context: Context): void => {
     console.warn('setUndoPoint: no canvas color index available');
     return;
   }
-  // Object.values over the raw map, not the paletteArray derived: deriveds are
-  // not reliable inside an action, and this one runs immediately after actions
-  // that replace the palette. Snapshotting the previous palette here is not
-  // visible until you redo — which then brought the picture back with the
-  // palette it had *before* the change, so a True Color to 256 conversion
-  // redone returned with 32 colors and every index pointing somewhere else.
+  // The raw map, not the paletteArray derived: this runs immediately after
+  // actions that replace the palette, and a stale one here is invisible until a
+  // redo brings the picture back with the palette it had before the change
+  // (docs/gotchas.md, "Overmind").
   const entry = createUndoEntry(
     colorIndex,
     plainPalette(Object.values(context.state.palette.palette))
@@ -39,12 +37,10 @@ export const setUndoPoint = (context: Context): void => {
 };
 
 // Empties the history. Loading an image starts a new document, so undoing back
-// into the previous picture isn't wanted — and note that's a policy call, not a
-// technical one: history does survive a canvas resize (useUndo restores each
-// snapshot's own resolution before repainting). The reason is cost and sense:
-// the buffer holds whole-canvas snapshots worth megabytes each, and the two
-// pictures' histories have nothing to do with each other. The caller follows up
-// with setUndoPoint for the fresh content, making it the single history entry.
+// into the previous picture is not wanted — a policy call, not a technical one:
+// history does survive a canvas resize (useUndo restores each snapshot's own
+// resolution). Snapshots cost megabytes and the two pictures are unrelated. The
+// caller follows with setUndoPoint, making the fresh content the one entry.
 export const reset = (context: Context): void => {
   undoBuffer.clear();
   context.state.undo.currentIndex = null;
@@ -79,12 +75,11 @@ export const redo = (context: Context): void => {
   restoreEntryState(context);
 };
 
-// Moving through history changes the committed document, so the state that
-// rides on the entry follows: the true-color flag (read off how the snapshot
-// is held — an entry packs exactly when it has no true-color pixels, so no
-// rescan and no raster to rebuild) and the palette the pixels index into.
-// Without the palette, undoing a depth reduction or a rebuilt palette would
-// restore indices that point at missing or different colors.
+// Moving through history changes the committed document, so the state riding on
+// the entry follows: the true-color flag (read off how the snapshot is held — an
+// entry packs exactly when it has none, so no rescan) and the palette the pixels
+// index into. Without the palette, undoing a depth reduction would restore
+// indices pointing at missing or different colors.
 function restoreEntryState(context: Context): void {
   const entry = undoBuffer.getItem(context.state.undo.currentIndex);
   context.state.canvas.hasTrueColorPixels = entry ? !entry.packed : false;

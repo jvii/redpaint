@@ -50,17 +50,12 @@ export type State = {
   // that touches the picture.
   lastCleanTime: number;
   // Whether the picture has changes no file carries — the tab title's asterisk,
-  // and what the autosave record records about itself. Derived rather than
-  // recomputed at each site: both compare the same two timestamps, and a copy
-  // of that comparison in two files is one edit away from the title and the
-  // record disagreeing about whether the picture is saved.
+  // and what the autosave records about itself. Derived so the two cannot
+  // disagree. Both undo timestamps, because either kind of history move leaves
+  // the canvas differing from the file.
   //
-  // Both undo timestamps, because either kind of history move leaves the canvas
-  // differing from the file: a stroke appends an entry, and an undo or redo
-  // steps to a different one without appending anything.
-  //
-  // NOTE: deriveds read as undefined from inside actions with the bundled
-  // Overmind build (see palette/state.ts) — this is for components only.
+  // Components only: deriveds are unreliable inside actions
+  // (docs/gotchas.md, "Overmind").
   documentModified: boolean;
   menuOpen: boolean;
   // Which of the menu's drawers (Picture: image disk I/O; Brush: transforms

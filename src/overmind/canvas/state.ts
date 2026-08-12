@@ -2,17 +2,14 @@ import { derived } from 'overmind';
 import { Point } from '../../types';
 
 // The Amiga screen formats of DPaint's Choose Screen Format requester. A real
-// Amiga only ever ran one broadcast standard at a time, so DPaint itself
-// never showed both sets of numbers together — here the video standard is a
-// switch (see VideoStandard/videoStandard below) rather than doubling the
-// format list to 8 entries: same 4 named formats, PAL or NTSC picks which
-// actual pixel dimensions they mean.
+// Amiga ran one broadcast standard at a time, so the standard is a switch here
+// rather than 8 format entries: the same 4 formats, with PAL or NTSC deciding
+// which pixel dimensions they mean.
+//
 // aspectX/aspectY describe the pixel's display shape relative to a square
-// Lo-Res pixel: Med-Res doubles the horizontal resolution on the same
-// physical screen (half-wide pixels), Interlace doubles the vertical
-// (half-tall), Hi-Res both. This holds within either standard's own frame —
-// a format's pixel is always half as wide/tall as that *same standard's*
-// Lo-Res pixel — so, unlike width/height, it needs no PAL/NTSC split.
+// Lo-Res pixel: Med-Res is half-wide, Interlace half-tall, Hi-Res both. That
+// holds within either standard's own frame, so unlike width/height it needs no
+// PAL/NTSC split.
 export type ScreenFormatId = 'loRes' | 'medRes' | 'interlace' | 'hiRes';
 
 export type VideoStandard = 'PAL' | 'NTSC';
@@ -69,11 +66,9 @@ export function resolveScreenFormat(
   return { ...format, ...format.dimensions[standard] };
 }
 
-// Finds the standard format (if any) whose exact pixel dimensions match —
-// used to auto-select a screen format when an image's own size happens to be
-// a standard Amiga one (see beginIlbmLoad). Checks both standards: an
-// NTSC-sized image should select NTSC, not silently import as a same-count
-// but wrong-standard PAL format.
+// Finds the standard format whose exact pixel dimensions match, to auto-select
+// one for an image that happens to be a standard Amiga size (beginIlbmLoad).
+// Checks both standards, so an NTSC-sized image selects NTSC.
 export function findMatchingScreenFormat(
   width: number,
   height: number
@@ -116,35 +111,23 @@ export type State = {
   pixelAspect: { x: number; y: number };
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
-  // Mirror of MainCanvas's own displayScale (CSS px per buffer px, per
-  // axis) — that value is computed there from the live canvas div's actual
-  // size (window-dependent, see MainCanvas.tsx's own comment) and kept as
-  // local component state for its render loop, but other UI that wants to
-  // know the canvas's *current* on-screen pixel density — e.g. the Fill
-  // Style dialog's live preview, sizing itself to show "an equally sized
-  // window into the canvas" — has no other way to see it. Updated every
-  // time MainCanvas recomputes its own copy; {1,1} until the canvas has
-  // mounted once.
+  // Mirror of MainCanvas's displayScale (CSS px per buffer px, per axis),
+  // computed there from the live pane size and kept locally for its own render.
+  // Mirrored so other UI — the Fill Style preview — can see the canvas's
+  // current pixel density. {1,1} until the canvas has mounted once.
   displayScale: Point;
-  // The main drawing pane's size in artwork pixels (its CSS box times the
-  // device pixel ratio) — what "fit to window" means at Native, where one
-  // artwork pixel is one physical screen pixel and the app already sizes the
-  // canvas this way at startup. Mirrored from MainCanvas for the same reason
-  // displayScale is: it depends on the live window and the chrome around it,
-  // and the Canvas Size requester has no way to measure that pane itself.
-  // {0,0} until the canvas has mounted once.
+  // The main drawing pane's size in artwork pixels (CSS box times device pixel
+  // ratio) — what "fit to window" means at Native. Mirrored from MainCanvas for
+  // the same reason displayScale is: the Canvas Size requester cannot measure
+  // that pane itself. {0,0} until the canvas has mounted once.
   viewportSize: { width: number; height: number };
-  // Whether the committed canvas holds any true-color pixels (hybrid rather
-  // than fully indexed). Maintained by the undo actions: every committed
-  // content change passes through setUndoPoint, and undo/redo restore the
-  // answer memoized on the snapshot they move to — so this stays exact
-  // through strokes, loads, clears, undo and redo.
+  // Whether the committed canvas holds any true-color pixels. Maintained by the
+  // undo actions: every committed change passes through setUndoPoint, and
+  // undo/redo restore the answer memoized on the snapshot they move to.
   hasTrueColorPixels: boolean;
-  // Whether the document allows true-color pixels (the True Color switch in
-  // the Screen Format requester). Switching it off conforms the canvas to the
-  // palette; loading an image as True Color switches it back on. Writers that
-  // can produce rgb pixels will consult this as they grow (strict indexed
-  // mode, per docs/true-color-mode.md).
+  // Whether the document allows true-color pixels (the True Color switch in the
+  // Screen Format requester). Switching it off conforms the canvas to the
+  // palette; loading an image as True Color switches it back on.
   trueColorEnabled: boolean;
   // A screen format change that would shrink the canvas (and so lose pixels) is
   // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up —
@@ -162,15 +145,10 @@ export type PendingScreenFormat = {
   target: { width: number; height: number };
 };
 
-// The size a canvas takes when its screen has no page size of its own — the
-// drawing pane it is shown in, or its own current size if that pane has never
-// been measured (viewportSize is {0,0} until the canvas mounts once).
-//
-// Shared because two gestures both mean "a fresh page at Native": the new-page
-// half of CLR (app.newPicture) and switching to Native without keeping the
-// picture. Arriving at Native from a 320x256 screen and keeping 320x256 would
-// be neither the old screen's size nor the new one's, since Native has no size
-// to offer but the window's.
+// The size a canvas takes when its screen has no page size of its own: the
+// drawing pane, or its own current size if the pane has never been measured.
+// Shared by the two gestures that mean "a fresh page at Native" — the new-page
+// half of CLR, and switching to Native without keeping the picture.
 export function nativeCanvasSize(canvas: {
   viewportSize: { width: number; height: number };
   resolution: { width: number; height: number };
@@ -179,14 +157,10 @@ export function nativeCanvasSize(canvas: {
   return viewportSize.width > 0 && viewportSize.height > 0 ? viewportSize : resolution;
 }
 
-// What the display side of a document starts as. Named because the new-page
-// gesture (app.newPicture) restores exactly these, and "default" should have
-// one definition rather than a literal here and a guess there.
-//
-// scaleMode is deliberately not among them: it is how the simulated screen
-// fills the window, a preference owned by a menu toggle and meaningless at
-// Native, and the autosave record does not carry it either. These three it
-// does carry — they belong to the picture.
+// What the display side of a document starts as; the new-page gesture
+// (app.newPicture) restores exactly these. scaleMode is not among them: it is a
+// view preference owned by a menu toggle, and the autosave record does not
+// carry it either. These three it does — they belong to the picture.
 export const DEFAULT_SCREEN_FORMAT_ID: ScreenFormatId | null = null;
 export const DEFAULT_VIDEO_STANDARD: VideoStandard = 'PAL';
 export const DEFAULT_TRUE_COLOR_ENABLED = true;

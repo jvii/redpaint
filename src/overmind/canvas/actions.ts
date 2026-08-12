@@ -35,11 +35,9 @@ export const setResolution = (
 ): void => {
   const current = context.state.canvas.resolution;
   if (current.width !== width || current.height !== height) {
-    // The zoom view was aimed at a point on a canvas that no longer exists,
-    // and every path through here (a screen format, a resize, an image load)
-    // rebuilds the picture's geometry — so rather than leave the view parked
-    // on whatever pixel that coordinate now happens to be, close it and let
-    // the user re-aim at the new canvas.
+    // The zoom view was aimed at a point on a canvas that no longer exists.
+    // Close it rather than leave it parked on whatever pixel that coordinate
+    // now happens to be.
     context.state.toolbox.zoomModeOn = false;
     context.state.canvas.zoomFocusPoint = null;
   }
@@ -78,15 +76,12 @@ export const resizeCanvasPlacingContent = (
   context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
 
-// Resizes to the given size with a blank canvas, the counterpart to
-// resizeCanvasPlacingContent for a screen-format change that is not keeping
-// the picture. Queued rather than cleared on the spot for the same reason
-// app.newPicture queues: setResolution's element resize only commits on the
-// next render, so a snapshot taken now would be of the old size — and the
-// upload is what records the single undo entry covering the whole change.
-//
-// Called with the current size too, for a format that does not resize; the
-// blank content is the point, not the dimensions.
+// Resizes to the given size with a blank canvas — the counterpart to
+// resizeCanvasPlacingContent when a screen-format change is not keeping the
+// picture. Queued, not cleared on the spot: the element resize only commits on
+// the next render, so a snapshot taken now would be of the old size, and the
+// upload is what records the single undo entry. Called with the current size
+// too, for a format that does not resize.
 export const resizeCanvasClearingContent = (
   context: Context,
   { width, height }: Resolution
@@ -98,10 +93,9 @@ export const resizeCanvasClearingContent = (
   context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
 
-// Keeps just the given canvas-coordinate rectangle. The crop counterpart of
-// resizeCanvasPlacingContent: same pending-content path, so it lands as one
-// undo entry and undo restores the pre-crop size along with the pixels — a
-// crop box can sit anywhere, which no anchor can express.
+// Keeps just the given canvas-coordinate rectangle: the crop counterpart of
+// resizeCanvasPlacingContent, on the same pending-content path, so it lands as
+// one undo entry that restores the pre-crop size along with the pixels.
 export const cropCanvas = (context: Context, rect: CropRect): void => {
   const current = paintingCanvasController.getCanvasColorIndex();
   if (current && current.width > 0 && current.height > 0) {
@@ -128,27 +122,24 @@ export interface SetScreenFormatParams {
   formatId: ScreenFormatId | null;
 }
 
-// Applies only which screen is simulated. How that screen is scaled into the
-// window is an independent view preference (see toggleScaleMode), and resizing the
-// canvas to the screen is a separate, conditional step (see the Screen Format
-// requester): grow/crop/scale only when it matters.
+// Applies only which screen is simulated. Scaling it into the window is an
+// independent view preference (toggleScaleMode), and resizing the canvas to the
+// screen is a separate, conditional step (the Screen Format requester).
 export const setScreenFormat = (context: Context, { formatId }: SetScreenFormatParams): void => {
   context.state.canvas.screenFormatId = formatId;
 };
 
 // Which broadcast standard the 4 named formats' dimensions resolve to. Set
-// directly (not through applyScreenFormat) by an ILBM load auto-matching a
-// standard Amiga size — that's cosmetic-only, the canvas is already that
-// exact size. The Screen Format requester instead commits it as part of the
-// same choice as the format itself (see applyScreenFormat's videoStandard).
+// directly by an ILBM load auto-matching a standard Amiga size, which is
+// cosmetic — the canvas is already that size. The requester instead commits it
+// through applyScreenFormat, as part of one choice.
 export const setVideoStandard = (context: Context, standard: VideoStandard): void => {
   context.state.canvas.videoStandard = standard;
 };
 
-// How the simulated screen fills the window. Independent of the format, and
-// meaningless for Native (which is always 1:1), so it lives outside the
-// Screen Format requester — a menu toggle owns it (ScreenStatus.tsx), which
-// is why this is a toggle and not a setter.
+// How the simulated screen fills the window. Independent of the format and
+// meaningless for Native, so it lives outside the Screen Format requester: a
+// menu toggle owns it (ScreenStatus.tsx).
 export const toggleScaleMode = (context: Context): void => {
   context.state.canvas.scaleMode =
     context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
@@ -167,18 +158,13 @@ export const setViewportSize = (
   context.state.canvas.viewportSize = size;
 };
 
-// The one automatic sizing, at startup, fitting a Native canvas to the drawing
-// pane. MainCanvas may call it more than once while the chrome around the pane
-// finishes laying out (see the settle window there), so it resets the history
-// rather than appending to it — otherwise a second call would leave two
-// baseline entries, which reads as "this canvas has been painted on" to
-// everything downstream, the autosave included.
+// The one automatic sizing: a Native canvas fitted to the drawing pane at
+// startup. MainCanvas may call it more than once while the chrome settles, so
+// it resets the history rather than appending — two baseline entries read as
+// "painted on" to everything downstream, the autosave included.
 //
-// Refuses in every case where the size is no longer this action's to decide:
-// once a screen format is driving it, once anything has named the document, and
-// once there is more history than the single baseline. Nothing calls this after
-// startup — from then on the size changes only through the Canvas Size
-// requester or a crop.
+// Refuses once the size is no longer its to decide: a screen format driving it,
+// anything having named the document, or more history than the baseline.
 export const setStartupResolution = (context: Context, { width, height }: Resolution): void => {
   const current = context.state.canvas.resolution;
   if (width <= 0 || height <= 0 || (width === current.width && height === current.height)) {
@@ -188,11 +174,9 @@ export const setStartupResolution = (context: Context, { width, height }: Resolu
     return; // a format owns the size; this is the Native path only
   }
   // Content queued but not yet uploaded — a restored autosave or a load, whose
-  // setResolution has just fired and whose resize is what woke the observer
-  // that called this. The state below still describes the blank startup canvas
-  // for another tick, so without this the fit would win the race and re-init
-  // the canvas out from under the upload: picture gone, and the queued content
-  // dropped into a buffer that no longer matches it.
+  // resize is what woke the observer that called this. The state below still
+  // describes the blank startup canvas for another tick, so the fit would
+  // otherwise re-init the canvas out from under the upload.
   if (hasPendingCanvasContent()) {
     return;
   }
@@ -203,9 +187,8 @@ export const setStartupResolution = (context: Context, { width, height }: Resolu
   }
   context.actions.undo.reset();
   context.actions.canvas.setResolution({ width, height });
-  // An empty canvas nobody has painted on is not unsaved work — after the
-  // baseline snapshot setResolution just took, not before it, or the marker
-  // would be showing before the first stroke.
+  // An empty canvas nobody has painted on is not unsaved work. After the
+  // baseline snapshot setResolution just took, not before it.
   context.actions.app.markDocumentClean();
 };
 
@@ -227,19 +210,18 @@ export interface ApplyScreenFormatParams extends SetScreenFormatParams {
   colors: number;
   trueColorEnabled: boolean;
   paletteSource: PaletteSource;
-  // Whether the picture survives the change. False means the caller is about
-  // to replace it with a blank canvas, so there is nothing to conform and
-  // nothing for a palette to be extracted *from* — see below.
+  // Whether the picture survives. False means the caller is about to replace
+  // it with a blank canvas, so there is nothing to conform and nothing to
+  // extract a palette from.
   retainPicture: boolean;
 }
 
-// Commits a screen format choice: the palette depth, the simulated screen and
-// the True Color mode, then pushes the resulting palette into the GL textures
-// (which don't watch Overmind), and conforms the canvas pixels to it — the
-// DPaint-spirited automatic reduction. Switching True Color off flattens the
-// true-color pixels too. The canvas resize, if any, is the caller's separate
-// step. Both the Screen Format requester and the shrink question commit
-// through here, so a deferred change applies exactly like an immediate one.
+// Commits a screen format choice: palette depth, simulated screen and True
+// Color mode, then pushes the palette into the GL textures (which don't watch
+// Overmind) and conforms the canvas pixels to it. Switching True Color off
+// flattens true-color pixels. The canvas resize, if any, is the caller's
+// separate step. Both the requester and the shrink question commit through
+// here, so a deferred change applies exactly like an immediate one.
 export const applyScreenFormat = (
   context: Context,
   {
@@ -251,11 +233,9 @@ export const applyScreenFormat = (
     retainPicture,
   }: ApplyScreenFormatParams
 ): boolean => {
-  // Read from the raw map, never from the paletteArray derived. Overmind
-  // deriveds are not reliable inside an action — paletteTexture.ts composes
-  // from raw state for the same reason — and this action *mutates the palette
-  // and then needs to read it back*, which is exactly where a stale derived
-  // does its damage. See the newPalette comment below for what that cost.
+  // The raw map, never the paletteArray derived: this action mutates the
+  // palette and reads it back, which is exactly where a stale derived does its
+  // damage (docs/gotchas.md, "Overmind").
   const oldPalette = plainPalette(Object.values(context.state.palette.palette));
   const flatten = !trueColorEnabled && context.state.canvas.hasTrueColorPixels;
   const depthShrunk = colors < oldPalette.length;
@@ -297,13 +277,7 @@ export const applyScreenFormat = (
   if (needsConform) {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
-      // `rebuilt` when there is one, because it *is* the palette just
-      // installed, and reading it back through the derived returned the
-      // palette from before replacePalette: a picture converted from True
-      // Color to 256 colors got its pixels mapped against the old 32-color
-      // palette while the screen showed the new 256, so every index pointed at
-      // an unrelated color — white text came out purple. It went unnoticed
-      // whenever the old palette happened to already be the new one.
+      // `rebuilt` when there is one: it is the palette just installed.
       const newPalette = rebuilt ?? plainPalette(Object.values(context.state.palette.palette));
       const conformed = current.conformedTo(
         oldPalette,

@@ -2,17 +2,13 @@ import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { Color } from '../../types';
 
 // One committed state of the document: the pixels and the palette they index
-// into. The palette rides along (a few hundred bytes next to the megabyte
-// pixel snapshot) because restoring pixels without the palette they were
-// painted against renders them wrong — a depth reduction or a rebuilt palette
-// would leave old indices pointing at missing or different colors.
+// into. The palette rides along — a few hundred bytes beside a megabyte
+// snapshot — because a depth reduction or a rebuilt palette would leave old
+// indices pointing at missing or different colors.
 //
-// The raster is held as bytes rather than as a CanvasColorIndex, so it can be
-// held packed: one byte per pixel instead of the texture's four, whenever the
-// picture is fully indexed. The texture needs four because it is an RGBA
-// texture, but only R carries anything unless there are true-colour pixels —
-// and then the other three are a constant. Four times the history for the same
-// memory, on every picture that is not true colour.
+// Bytes rather than a CanvasColorIndex so the raster can be held packed: one
+// byte per pixel instead of the texture's four whenever the picture is fully
+// indexed, which is four times the history for the same memory.
 export type UndoEntry = {
   palette: Color[];
   width: number;
@@ -35,30 +31,21 @@ export function createUndoEntry(colorIndex: CanvasColorIndex, palette: Color[]):
     : { palette, width, height, packed: false, pixels: colorIndex.indexArray };
 }
 
-// Rebuilds the raster the canvas can take. Costs an allocation and a pass when
-// packed, which is the right way round: this happens on an undo, and the
-// packing it pays for happens on every stroke. Unpacked entries only need the
-// wrapper — the constructor takes a view of the bytes rather than copying them.
-//
-// A free function rather than a method on the entry, so UndoEntry stays a plain
-// data shape: one that can be structure-cloned, and built in a test without
-// having to supply behaviour along with the bytes.
+// Rebuilds the raster the canvas can take. The allocation and pass this costs
+// when packed happens on an undo; the packing it pays for happens on every
+// stroke. A free function, not a method, so UndoEntry stays plain data that can
+// be structure-cloned and built in a test.
 export function toCanvasColorIndex(entry: UndoEntry): CanvasColorIndex {
   return entry.packed
     ? CanvasColorIndex.fromIndexedPixels(entry.width, entry.height, entry.pixels)
     : new CanvasColorIndex(entry.width, entry.height, entry.pixels);
 }
 
-// History is bounded by bytes first and entries second. An entry count alone is
-// the wrong knob: a snapshot is 4 bytes per pixel, so one costs 256 KB at
-// Lo-Res 320x200 and 24 MB on a 3000x2000 canvas loaded in Native mode — a
-// ~100x spread that no single entry count survives. Any count generous enough
-// to be useful at Lo-Res will exhaust the tab on a large Native canvas, which
-// is reachable in a couple of minutes of ordinary painting.
-//
-// So MAX_UNDO_BYTES is the real limit and MAX_UNDO_ENTRIES is a ceiling on top
-// of it (past ~100 levels the marginal value is nil, and there's no reason to
-// hold 400 Lo-Res snapshots just because they fit).
+// Bounded by bytes first, entries second. An entry count alone cannot work: a
+// snapshot costs 256KB at Lo-Res 320x200 and 24MB on a 3000x2000 Native canvas,
+// and no single count survives a 100x spread — one generous enough for Lo-Res
+// exhausts the tab on a large canvas within minutes. MAX_UNDO_BYTES is the real
+// limit; MAX_UNDO_ENTRIES is a ceiling on top of it.
 export const MAX_UNDO_ENTRIES = 100;
 export const MAX_UNDO_BYTES = 256 * 1024 * 1024;
 
@@ -110,16 +97,11 @@ class UndoBuffer {
     return this.totalBytes;
   }
 
-  // Appends an entry after currentIndex — discarding any redo future beyond it,
-  // exactly as a new stroke should — then evicts from the oldest end until the
-  // limits are met, and returns the index the new entry ended up at.
-  //
-  // That return value is why the caller passes its index in rather than
-  // maintaining one itself: eviction shifts every surviving entry down, and
-  // having one place own both the array and the index is what keeps them from
-  // disagreeing. The answer is always "the last slot" — eviction only ever
-  // removes entries older than the one just pushed — but going through this
-  // method means the caller never has to know that.
+  // Appends after currentIndex, discarding any redo future beyond it, then
+  // evicts from the oldest end until the limits are met, and returns the index
+  // the entry ended up at. The caller passes its index in and takes the new one
+  // back because eviction shifts every survivor down — one place owns both the
+  // array and the index, so they cannot disagree.
   push(entry: UndoEntry, currentIndex: number | null): number {
     const keep = currentIndex === null ? 0 : currentIndex + 1;
     for (let i = keep; i < this.undoBuffer.length; i++) {

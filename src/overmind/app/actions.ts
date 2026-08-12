@@ -137,19 +137,13 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
   }
 };
 
-// Opens a GIF. Like an ILBM and unlike a PNG, it goes nowhere near the color
-// treatment requester: a GIF is always indexed — the format has no other kind —
-// so it arrives with the palette it was written with, and the indices are
-// already what the canvas stores.
+// Opens a GIF, skipping the color-treatment requester as an ILBM does: a GIF is
+// always indexed, so it arrives with its own palette and the indices the canvas
+// stores. Decoded here rather than through drawImage, which hands back RGBA and
+// would send an already-indexed picture through quantize to have its palette
+// guessed back out of the pixels, losing slot order and unused slots.
 //
-// That is the whole reason for decoding it ourselves rather than letting
-// drawImage do it. The browser hands back RGBA, which would send a picture that
-// is *already* palette-indexed through countDistinctColors and quantize to have
-// its palette guessed back out of the pixels — losing slot order and every slot
-// the picture happens not to use.
-//
-// An animation loads as its first frame. This is a paint program, and one frame
-// is the only answer that produces a picture; decodeGif counts the rest.
+// An animation loads as its first frame; decodeGif counts the rest.
 export const beginGifLoad = async (context: Context, file: File): Promise<void> => {
   context.actions.app.setLoading(true);
   try {
@@ -240,55 +234,30 @@ export const markDocumentClean = (context: Context): void => {
   context.state.app.lastCleanTime = Date.now();
 };
 
-// DPaint's CLR: cover the page with the background color, and nothing else.
-// Pixels only, so undo puts back exactly what this took away — it does not drop
-// the document's name or mark it clean, which would make it half a new page
-// (that is `newPicture` below).
-//
-// An action rather than the two lines inline in the gadget, now that the K
-// hotkey wants the same thing. Two copies of "clear, then take an undo point"
-// is exactly the pair that drifts, and the half that gets forgotten is the
-// undo point — which fails silently and only shows up as an undo that skips a
-// step.
+// DPaint's CLR: cover the page with the background color and nothing else.
+// Pixels only, so undo puts back exactly what it took — it does not drop the
+// document's name or mark it clean, which would make it half a new page (that
+// is `newPicture` below).
 export const clearPage = (context: Context): void => {
   paintingCanvasController.clear();
   context.actions.undo.setUndoPoint();
 };
 
-// A fresh page: the canvas fitted to the window again, the startup palette
-// back, and the document no longer standing for any file. Right-click on CLR,
-// where left-click covers the page with the background color and nothing more.
+// A fresh page: the canvas fitted to the window, the startup palette back, and
+// the document no longer standing for any file. Right-click on CLR.
 //
-// It exists because the autosave took a gesture away. Reloading used to give a
-// clean slate — not by design, but because nothing was kept — and now that the
-// picture comes back, there was no way to start over at all. DPaint had no New
-// either (its File menu begins at Load Picture); CLR was how you started again,
-// with page size and palette carried over as properties of the session. So this
-// is that gesture made deliberate rather than a menu item DPaint never had.
-//
-// Undoable, unlike a load, which drops history. An undo entry already carries
-// the palette and the dimensions as well as the pixels, so one step puts all
-// three back — and a right-click that lands here by accident (the gadget above
-// is UNDO, whose right-click is redo) costs nothing.
-//
-// Precisely: undo restores the picture — pixels, canvas size and palette, all
-// three of which a snapshot carries. It does not restore the document's name,
-// nor the screen format, video standard and True Color switch, none of which
-// are in one. So undoing a new page gives the painting back on a Native canvas
-// of its old size, untitled.
-//
-// That is a deliberate line rather than an oversight: a snapshot is what the
-// picture looked like, and making undo move the tab title or flip the simulated
-// screen underneath someone would be its own surprise. If it ever needs to be
-// exact, the fix is to widen UndoEntry, not to special-case this action.
+// Undoable, unlike a load. A snapshot carries pixels, canvas size and palette,
+// so one step puts all three back — but not the document's name, nor the screen
+// format, video standard and True Color switch, which are not in one. Undoing a
+// new page therefore gives the painting back on a Native canvas of its old
+// size, untitled. Making that exact means widening UndoEntry, not
+// special-casing here.
 export const newPicture = (context: Context): void => {
-  // The simulated screen goes first, and back to none. Fitting the canvas to
-  // the window is only meaningful at Native: leaving a format selected would
-  // set a Lo-Res document to a window-sized canvas, which is a state no route
-  // through the Screen Format requester can produce. The video standard and
-  // the True Color switch travel with it — the autosave record carries all
-  // three together, which is the app's own statement that they belong to the
-  // picture rather than to the session.
+  // The simulated screen goes first, and back to none: fitting the canvas to
+  // the window only means anything at Native, and leaving a format selected
+  // would give a Lo-Res document a window-sized canvas, which no route through
+  // the Screen Format requester can produce. The video standard and True Color
+  // switch travel with it, as they do in the autosave record.
   context.actions.canvas.setScreenFormat({ formatId: DEFAULT_SCREEN_FORMAT_ID });
   context.actions.canvas.setVideoStandard(DEFAULT_VIDEO_STANDARD);
   context.actions.canvas.setTrueColorEnabled(DEFAULT_TRUE_COLOR_ENABLED);
@@ -297,13 +266,10 @@ export const newPicture = (context: Context): void => {
   // records whichever palette is current.
   context.actions.palette.replacePalette(defaultPaletteColors());
   context.actions.palette.replaceRanges(defaultRanges());
-  // And the slots selected in it. Without this the ids survive the palette
-  // swap — replacePalette only clamps them into the new depth — so a page
-  // would be filled with the default palette's color at whatever slot the old
-  // background happened to sit in: coherent only by accident, and arbitrary to
-  // anyone who had chosen a background. Back on color 1, black in every DPaint
-  // default palette, which is the page a fresh start begins with.
-  // setForegroundColor also drops any literal RGB foreground.
+  // And the slots selected in it: replacePalette only clamps the ids into the
+  // new depth, so without this the page would be filled with whatever color now
+  // sits in the old background's slot. Back on color 1, black in every DPaint
+  // default palette. setForegroundColor also drops any literal RGB foreground.
   context.actions.palette.setForegroundColor(DEFAULT_FOREGROUND_COLOR_ID);
   context.actions.palette.setBackgroundColor(DEFAULT_BACKGROUND_COLOR_ID);
   paintingCanvasController.updatePalette();

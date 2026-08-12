@@ -15,14 +15,11 @@ export type FillMode = 'solid' | 'gradient' | 'brush';
 // this is not 'solid' (§4.25, "absent if fill mode is set to normal").
 export type EffectiveFillMode = 'solid' | 'gradient' | 'pattern';
 
-// Snapshot/restore shape for the settings panel's Cancel — every field a
-// requester control can change, including a capture made via "From Brush"
-// during this dialog session. The pattern bitmap itself never enters this
-// object, or Overmind state at all — see PatternFill.ts's takeSnapshot/
-// restoreSnapshot: Overmind deep-proxies anything assigned into state for
-// reactivity tracking, which corrupts a CustomBrush's underlying Uint8Array
-// (WebGL's texImage2D then rejects it as not an ArrayBufferView). Only the
-// boolean/number mirror fields travel through here.
+// Snapshot/restore shape for the settings panel's Cancel: every field a
+// requester control can change. The pattern bitmap never enters this object, or
+// Overmind state at all (see PatternFill.ts) — Overmind deep-proxies anything
+// assigned into state, which corrupts a CustomBrush's Uint8Array and makes
+// texImage2D reject it. Only the boolean/number mirrors travel through here.
 type Snapshot = {
   mode: FillMode;
   axis: GradientAxis;
@@ -36,34 +33,28 @@ export type State = {
   mode: FillMode;
   axis: GradientAxis;
   dither: number; // 0..20, 0 = off (PyDPainter's Random dither scale)
-  // Experimental: how far dither can push a pixel, as a percentage of a
-  // band's own width (see gradientFill.ts) — exposed here so it can be
-  // tuned/compared against DPaint further instead of staying a fixed
-  // constant only reachable by editing code.
+  // How far dither can push a pixel, as a percentage of a band's own width (see
+  // gradientFill.ts). Exposed rather than a constant so it can still be tuned
+  // against DPaint.
   jitter: number;
   settingsOpen: boolean;
   settingsSnapshot: Snapshot | null;
-  // Reactive mirror of patternFillStore (PatternFill.ts) — the bitmap
-  // itself is non-serializable and stays out of Overmind, same split as
-  // brushRecall/state.brush. hasPattern gates every "is Pattern usable"
-  // check; patternVersion mirrors patternFillStore.version purely so a
-  // recapture (which doesn't flip hasPattern, already true) still gives
-  // the live preview's effect a changed dependency to react to.
+  // Reactive mirror of patternFillStore (PatternFill.ts), whose bitmap stays
+  // out of Overmind — the same split as brushRecall/state.brush. hasPattern
+  // gates every "is Pattern usable" check; patternVersion exists so a recapture,
+  // which does not flip an already-true hasPattern, still gives the live
+  // preview's effect a changed dependency.
   hasPattern: boolean;
   patternVersion: number;
-  // The effective gradient to paint with: null in solid mode, or in
-  // gradient mode when the FG color isn't in any range (falls back to a
-  // plain solid fill, same as DPaint — there's no "whole palette" gradient
-  // to fall back to). DPaint's rule, not a picker in this dialog: the range
-  // is whichever palette range slot contains the current FG color
-  // (activeRangeIndices, the same lookup the Cycle/Shade/Blend paint
-  // effects use) — so changing the range means changing the FG color, from
-  // the toolbox palette, without needing this dialog open.
+  // The effective gradient to paint with: null in solid mode, or in gradient
+  // mode when the FG color is in no range (a solid fill then, as DPaint).
+  // Which range is DPaint's rule rather than a picker: whichever range slot
+  // contains the FG color (activeRangeIndices, the lookup Cycle/Shade/Blend
+  // use), so changing the range means changing the FG color.
   readonly effectiveFillStyle: GradientFillStyle | null;
-  // The one place that decides which of the three fill paths a fill takes —
-  // read by drawStyledFilledShape (the real fill) and by the menubar's Color
-  // Fill Box (its preview), so the swatch can't claim a gradient the fill
-  // would decline to paint.
+  // The one place deciding which of the three fill paths a fill takes — read by
+  // drawStyledFilledShape and by the menubar's Color Fill Box, so the swatch
+  // cannot claim a gradient the fill would decline to paint.
   readonly effectiveMode: EffectiveFillMode;
 };
 

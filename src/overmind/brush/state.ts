@@ -23,10 +23,8 @@ export const builtInBrushes = {
 
 // Built-in brushes are CustomBrush instances too (except the pixel brush),
 // tagged with the family they were built from (BuiltInBrushFactory). A
-// right-click resize (docs/brush-transforms.md) regenerates that family at a
-// new size into a *new* instance — not one of the registry singletons above,
-// so this checks the tag rather than identity, and a resized built-in keeps
-// reading as built-in (no Matte/Repl, never banked to Previous).
+// right-click resize regenerates that family into a new instance, so this checks
+// the tag rather than identity and a resized built-in still reads as built-in.
 export function isBuiltInBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && brush.builtInFamily !== undefined;
 }
@@ -43,12 +41,10 @@ export type BrushSlotState = {
 };
 
 export type State = {
-  // null when a custom (captured or loaded) brush is active, or when a
-  // built-in has been right-click resized (docs/brush-transforms.md "Sizing
-  // a built-in brush") — a resized instance matches none of the toolbar
-  // presets, so this only tracks "which icon, if any, highlights", not
-  // "is the current brush built-in". Use usingBuiltInBrush for that; it's a
-  // deliberately separate flag precisely so the two can disagree.
+  // null for a custom brush, and for a right-click-resized built-in, which
+  // matches no toolbar preset. So this tracks "which icon, if any, highlights",
+  // not "is the current brush built-in" — usingBuiltInBrush is that, kept
+  // separate precisely so the two can disagree.
   selectedBuiltInBrushId: BuiltInBrushId | null;
   // reactive mirror of isBuiltInBrush(brushRecall.current) — drives Matte/
   // Repl and the brush-transform menu items' disabled state. Stays true
