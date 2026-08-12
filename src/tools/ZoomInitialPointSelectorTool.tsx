@@ -42,14 +42,9 @@ export class ZoomInitialPointSelectorTool implements Tool {
 const FALLBACK_HALF_SIZE = 30;
 
 // Half the artwork area the zoom view is about to show, since the box is drawn
-// around the pointer. Nothing new is tracked for this: the zoom canvas element
-// already carries its own CSS size inline, and CSS size over resolution is
-// precisely the magnification it is at.
-//
-// Deliberately rough. This box is an aiming aid, not a promise. The zoom pane
-// is display:none while its initial point is being picked, so its width can't
-// be measured; the share of the canvas area it takes by default stands in,
-// which also means a divider the user has dragged is not accounted for.
+// around the pointer. Deliberately rough: the zoom pane is display:none while
+// its initial point is being picked, so its width cannot be measured and the
+// default share of the canvas area stands in, ignoring any divider drag.
 function getZoomViewHalfSize(): Point {
   const zoomCanvas = document.querySelector<HTMLCanvasElement>('.zoom-canvas-div .canvas');
   const container = document.querySelector<HTMLElement>('.canvas-container');

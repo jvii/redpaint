@@ -5,14 +5,11 @@ import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasCo
 import { rotate } from '../algorithm/brushTransform';
 import { Point } from '../types';
 
-// DPaint's Rotate Any Angle (docs/brush-transforms.md, ROTATE.C), on the same
-// rails as Stretch/Shear but with two deliberate upgrades: the brush rotates
-// about its center (DPaint pinned the bottom-left corner, center matches this
-// app's center-anchored stamps), and the drag previews the actual rotated
-// bitmap instead of DPaint's XOR outline. Press fixes the center; the pointer's
-// swing around it sets the angle (Shift snaps to 15°); release commits. Same
-// no-mutation contract: previews are temporary brushes, cancel needs no
-// restore.
+// DPaint's Rotate Any Angle (docs/brush-transforms.md, ROTATE.C), on the shared
+// BrushTransformTool rails. Press fixes the center, the pointer's swing around
+// it sets the angle, Shift snaps to 15°. Rotates about the brush's center where
+// DPaint pinned the bottom-left corner, matching this app's center-anchored
+// stamps.
 export class RotateBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushRotateStart(null);

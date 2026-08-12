@@ -20,13 +20,11 @@ import { ALPHA_INDEXED } from '../domain/CanvasColorIndex';
 import { usesEffectDraw } from '../overmind/brush/mode';
 import { PaintColor } from '../types';
 
-// A single opaque indexed pixel: the PixelBrush's shape in effect modes.
-// Built lazily (not at module scope): PixelBrush sits in an import cycle with
-// CustomBrush's own dependency chain (CustomBrush -> PaintingCanvasController
-// -> overmind config -> tools -> PixelBrush), so constructing a CustomBrush
-// eagerly at PixelBrush's module-load time can run into the CustomBrush class
-// binding's temporal dead zone depending on which module in the cycle loads
-// first.
+// A single opaque indexed pixel: the PixelBrush's shape in effect modes. Built
+// lazily, not at module scope: PixelBrush sits in an import cycle with
+// CustomBrush (CustomBrush -> PaintingCanvasController -> overmind config ->
+// tools -> PixelBrush), so constructing one eagerly here can hit the CustomBrush
+// class binding's temporal dead zone, depending on load order.
 let pixelShapeInstance: CustomBrush | null = null;
 function pixelShape(): CustomBrush {
   if (!pixelShapeInstance) {

@@ -21,21 +21,16 @@ class PatternFillStore {
   private snapshotPattern: CustomBrush | null = null;
   private snapshotVersion = 0;
 
-  // Snapshots the given brush's CURRENTLY DISPLAYED bitmap (brushColorIndex;
-  // whatever a stamp would paint right now: FG-colorized for a built-in or a
-  // Color/Cycle-mode custom brush, matte for Matte/Repl mode, the brush's own
-  // captured colors for anything lifted straight off the canvas) into an
-  // independent pattern, not the pristine matte (CustomBrush.transform's job,
-  // used for actual brush transforms): a built-in's matte is always color index
-  // 0 with no inherent color at all (colorized only at stamp time), so
+  // Snapshots the brush's currently displayed bitmap (brushColorIndex: what a
+  // stamp would paint right now), not the pristine matte transform() works
+  // from. A built-in's matte is color index 0 with no inherent color, so
   // capturing that would tile as a flat, meaningless color rather than what the
-  // user actually sees. brushColorIndex is never mutated in place. Recoloring
-  // always allocates a new BrushColorIndex (CustomBrush.setFGColor et al), so
-  // wrapping the current reference in a new CustomBrush is a safe, decoupled
-  // snapshot, same guarantee transform()'s identity clone gives. Brushes with
-  // no bitmap of their own (PixelBrush; the primitive brush before anything has
-  // ever been captured/selected) have nothing to capture; returns false and
-  // leaves any existing pattern untouched.
+  // user sees.
+  //
+  // brushColorIndex is never mutated in place, since recoloring allocates a new
+  // BrushColorIndex, so wrapping the current reference in a new CustomBrush is
+  // a decoupled snapshot. A brush with no bitmap of its own (PixelBrush) has
+  // nothing to capture: returns false, leaving any existing pattern alone.
   captureFrom(brush: BrushInterface): boolean {
     if (!(brush instanceof CustomBrush)) {
       return false;

@@ -13,13 +13,9 @@ import {
 import { Point } from '../types';
 
 // DPaint's Bend Horiz/Vert (docs/brush-transforms.md, BEND.C), on the shared
-// interactive-transform rails: press plants the brush; the pointer's region
-// then steers one control of a quadratic bend curve. Beyond the near end it
-// bends that end, beyond the far end the other, in between it drags the middle
-// bulge (and where along the edge the pointer sits places the bulge). The
-// preview is the actual bent bitmap plus its curved outline (DPaint showed only
-// the XOR outline). Release commits; same no-mutation contract as the other
-// drag transforms.
+// BrushTransformTool rails. The pointer's region steers one control of a
+// quadratic bend curve: beyond the near end it bends that end, beyond the far
+// end the other, in between it drags the middle bulge.
 export class BendBrushTool extends BrushTransformTool {
   private horizontal: boolean;
 
@@ -76,11 +72,9 @@ export class BendBrushTool extends BrushTransformTool {
     overlayCanvasController.selectionPolygon(this.bentOutline(origin, brush, controls));
   }
 
-  // The planted brush's top-left corner (the press point held the bending
-  // edge's middle).
-  // Bend's grip is the middle of the edge that will bend (DPaint's handle),
-  // not the brush's center as in the other three transforms, so that both
-  // bend-the-end regions stay reachable once the button goes down.
+  // The planted brush's top-left corner. Bend's grip is the middle of the edge
+  // that will bend (DPaint's handle), not the brush's center as in the other
+  // three transforms, so both bend-the-end regions stay reachable.
   protected drawIdlePreview(mousePos: Point, brush: CustomBrush): void {
     const center = this.horizontal
       ? { x: mousePos.x - brush.width / 2, y: mousePos.y }

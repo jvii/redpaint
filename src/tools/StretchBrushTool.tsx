@@ -7,13 +7,9 @@ import { CustomBrush } from '../brush/CustomBrush';
 import { resize } from '../algorithm/brushTransform';
 import { Point } from '../types';
 
-// DPaint's interactive Stretch (docs/brush-transforms.md, STRETCH.C): a modal
-// drag that resizes the current custom brush. Press anchors the brush's
-// top-left so its size at that moment equals the drag extent; drag reshapes a
-// live preview; release commits. Nothing touches the real brush until release,
-// each preview frame re-derives from the brush as it was on entry, so there is
-// no compounding resampling error and cancelling (Esc, picking another tool)
-// needs no restore.
+// DPaint's interactive Stretch (docs/brush-transforms.md, STRETCH.C), on the
+// shared BrushTransformTool rails: press anchors the brush's top-left, so its
+// size at that moment equals the drag extent.
 export class StretchBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushStretchStart(null);
@@ -56,11 +52,8 @@ export class StretchBrushTool extends BrushTransformTool {
     const anchor = overmind.state.tool.brushStretchTool.anchor;
     overlayCanvasController.clear();
     if (!anchor) {
-      // not dragging yet: the brush rides with its bottom-right corner at the
-      // pointer. The same grip the drag will use, so pressing the button
-      // doesn't jump the brush. Boxed so the armed mode is visible even where
-      // the brush bitmap is sparse or transparent. (No symmetry: the stretch
-      // targets the brush itself, not the canvas.)
+      // Not dragging yet: the brush rides with its bottom-right corner at the
+      // pointer, the grip the drag will use.
       this.drawIdlePreview(mousePos, brush);
       return;
     }

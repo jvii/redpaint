@@ -280,16 +280,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.lastChanged = Date.now();
   }
 
-  // Resolves the brush's original (matte) bitmap into displayable pixels for
-  // saving: indexed pixels through the palette, true-color pixels directly,
-  // transparent pixels as alpha 0. Texture rows are bottom-up, ImageData rows
-  // top-down, so rows are flipped back here. The stamp as currently displayed:
-  // the active mode variant (matte, or the FG/BG-colorized bitmap in Color mode
-  // and friends), resolved through the *display* palette so a hover preview
-  // animates under Tab-cycling exactly like stamped pixels would (they sample
-  // the same rotated palette texture). Contrast toImageData below, which
-  // deliberately reads the pristine matte bitmap through the base palette: that
-  // one is for saving.
+  // The stamp as currently displayed: the active mode variant, resolved through
+  // the *display* palette so a hover preview animates under Tab-cycling exactly
+  // as stamped pixels do. Texture rows are bottom-up and ImageData rows
+  // top-down, so rows are flipped back here. Contrast toImageData below, which
+  // reads the pristine matte bitmap through the base palette, for saving.
   public toDisplayImageData(): ImageData {
     const source = this.brushColorIndex.indexArray;
     const palette = overmind.state.palette.displayPalette;

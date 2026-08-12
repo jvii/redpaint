@@ -7,12 +7,9 @@ import { CustomBrush } from '../brush/CustomBrush';
 import { shearHorizontal } from '../algorithm/brushTransform';
 import { Point } from '../types';
 
-// DPaint's interactive Shear (docs/brush-transforms.md, SHEAR.C): a modal
-// horizontal drag. The brush's top stays anchored; dragging the pointer
-// left/right of the bottom-right corner slants the bottom that far. Same
-// no-mutation contract as StretchBrushTool: every frame previews a temporary
-// brush re-derived from the brush as it was on entry, release commits,
-// cancel needs no restore.
+// DPaint's interactive Shear (docs/brush-transforms.md, SHEAR.C), on the shared
+// BrushTransformTool rails: the brush's top stays anchored, and dragging the
+// pointer left or right of the bottom-right corner slants the bottom that far.
 export class ShearBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushShearStart(null);

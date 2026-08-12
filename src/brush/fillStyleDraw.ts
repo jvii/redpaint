@@ -42,19 +42,17 @@ export function newGradientSeed(): void {
   gradientSeed = Math.random() * 8;
 }
 
-// The one entry point every filled-shape method goes through. The whole Fill
-// Style decision, in mode priority order: Pattern (if Pattern mode has a
+// The one entry point every filled-shape method goes through: the whole Fill
+// Style decision, in mode priority order. Pattern (if Pattern mode has a
 // captured pattern), then Gradient (if Gradient mode resolves to a usable
 // multi-color range), then the caller's own CPU rasterization painted flat.
 // Modes are mutually exclusive, so at most one GPU path can claim a shape.
 //
 // `rasterize` is a callback, not a pre-computed LineH[]: the CPU rasterization
 // is pure waste whenever a GPU path claims the shape, and for a large filled
-// ellipse it's the expensive part. Callers hand over the shape description and
-// a way to rasterize it, and never see which path ran. A rect needs no
-// callback. Its fallback is a single quad(), no rasterization at all, and the
-// overloads below make that the type signature rather than a convention: rect
-// takes no third argument, every other shape requires one.
+// ellipse it is the expensive part. A rect needs none, its fallback being a
+// single quad(), and the overloads below make that the type signature rather
+// than a convention.
 export function drawStyledFilledShape(
   shape: Extract<FillShape, { kind: 'rect' }>,
   canvas: DrawTarget

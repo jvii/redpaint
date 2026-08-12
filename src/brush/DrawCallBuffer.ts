@@ -19,17 +19,14 @@ import { BrushColorIndex } from '../domain/BrushColorIndex';
 // per color, rather than once per copy.
 //
 // Batched *by color*, not collapsed to one: most strokes are one color across
-// every copy (the common case, one real call), but a gradient fill paints
-// several colors within what SymmetryBrush treats as a single stroke, each
-// copy's own gradient buckets, across every copy, still need to survive the
-// buffer and reach the canvas as their own color.
+// every copy, but a gradient fill paints several colors within what
+// SymmetryBrush treats as a single stroke, and each copy's own buckets have to
+// reach the canvas as their own color.
 //
-// Effect draws (Cycle/Smear/Shade/Blend/Smooth) can't merge by color at all,
-// each copy's stepped color depends on its own per-copy counter (Cycle's
-// cycleStep), so they stay one effectDraw call per copy. What they *can* share
-// is the render: effectDraw only indexes, so replayTo issues every copy's call
-// before triggering one flushEffectDraw, rather than paying a full canvas
-// re-render per copy.
+// Effect draws (Cycle/Smear/Shade/Blend/Smooth) cannot merge by color at all,
+// since each copy's stepped color depends on its own per-copy counter, so they
+// stay one effectDraw call per copy. They do share the render: effectDraw only
+// indexes, so replayTo issues every copy's call before one flushEffectDraw.
 export class DrawCallBuffer implements DrawTarget {
   private pointBatches = new Map<number, { color: PaintColor; points: Point[] }>();
   private lineBatches = new Map<number, { color: PaintColor; lines: (LineH | LineV)[] }>();

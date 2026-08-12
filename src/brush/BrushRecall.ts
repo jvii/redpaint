@@ -21,15 +21,12 @@ class BrushRecall {
   // while a built-in brush is active (BrushMenu.tsx), so this is never read in
   // that state. No need to track it across a built-in detour.
   originalBrush: BrushInterface | null;
-  // Whatever custom brush was active before the current one took over. The
-  // Previous slot (docs/brush-slots.md): banked the moment a different one
-  // (capture, load, slot recall, built-in selection) takes over, so switching
-  // away from a custom brush never silently loses it. Restore goes through the
-  // separate restore() method instead, since reverting to a brush you already
-  // had isn't a "switch". The *incoming* brush being a built-in is fine to bank
-  // away from (bankCurrentAsPrevious): it's the built-in itself that's excluded
-  // from ever becoming previousBrush, since it's one click away in the built-in
-  // row already.
+  // Whatever custom brush was active before the current one took over: the
+  // Previous slot (docs/brush-slots.md), banked the moment a different one
+  // takes over. A built-in is excluded from ever becoming previousBrush, being
+  // one click away in the built-in row already, but banking *away* from one is
+  // fine (bankCurrentAsPrevious). Restore goes through restore() instead, since
+  // reverting to a brush you already had is not a switch.
   previousBrush: CustomBrush | null;
 
   // The brush a switch is about to leave behind survives in previousBrush, as
@@ -68,10 +65,8 @@ class BrushRecall {
   }
 
   // Restore / Shift-B reverting a transformed custom brush to its pre-transform
-  // original: unlike setCustom, this doesn't bank the transformed brush into
-  // previousBrush. It's not a switch to a different brush. It's undoing back to
-  // one you already had, so surfacing it in Previous would be surprising rather
-  // than useful.
+  // original. Unlike setCustom it does not bank into previousBrush: undoing a
+  // transform is not a switch to a different brush.
   restore(original: BrushInterface): void {
     this.current = original;
     this.originalBrush = null;

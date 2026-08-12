@@ -64,13 +64,11 @@ export class FloodFillTool implements Tool {
     );
   }
 
-  // Solid mode (the default) merges every seed's points into a single call with
-  // solidColor, as before (the color is uniform, so merging first costs
-  // nothing). Gradient mode ignores solidColor (a gradient isn't a single color
-  // to swap for FG/BG: left- and right-click apply the same gradient) and
-  // buckets each seed's points *independently*, so every symmetry copy gets its
-  // own gradient normalized to its own extent, rather than one gradient
-  // stretched across the combined bounding box of every copy.
+  // Solid mode merges every seed's points into one call: the color is uniform,
+  // so merging costs nothing. Gradient mode ignores solidColor (left- and
+  // right-click apply the same gradient) and buckets each seed's points
+  // *independently*, so every symmetry copy gets its own gradient normalized to
+  // its own extent rather than one stretched across their combined box.
   private paintPoints(pointGroups: Point[][], solidColor: PaintColor): void {
     if (overmind.state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
       const pattern = patternFillStore.pattern.brushColorIndex;
