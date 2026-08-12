@@ -1,18 +1,12 @@
 import { Color } from '../../types';
 
 // Draws a pending image into a preview canvas as the chosen treatment would
-// load it — the part the Load Image and Load Brush requesters do identically.
-// They differ only in how a source pixel resolves to a color (median cut or
-// exact indexing for an image, DPaint's greedy remap for a brush), which is
-// the callback; everything around it — sizing the canvas to the image, the
-// 2D context, the verbatim True Color path, and the per-pixel write loop —
-// was the same thirty lines in both.
+// load it — what the Load Image and Load Brush requesters do identically. They
+// differ only in how a source pixel resolves to a color, which is the callback.
 //
 // `colorAt` returns the color a pixel becomes, or null to leave it fully
-// transparent (a brush's transparent pixels stay transparent in every mode,
-// so the checkerboard shows through). Passing no callback at all draws the
-// image verbatim — the True Color treatment, which is a load with nothing
-// resolved.
+// transparent (a brush's transparent pixels stay so in every mode). No callback
+// at all draws the image verbatim: the True Color treatment.
 export function drawLoadPreview(
   canvas: HTMLCanvasElement | null,
   image: ImageData | null,

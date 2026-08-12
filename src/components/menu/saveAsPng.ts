@@ -25,17 +25,14 @@ export type SaveFileHandle = {
 // next time if the browser gave us one.
 export type SaveTarget = { name: string; handle: SaveFileHandle | null };
 
-// Everything a file name may not contain, plus leading dots (a name starting
-// with one is hidden on every unix, and "..." is nothing at all). Browsers
-// sanitize the download attribute themselves, but silently and differently, so
-// the name shown in the requester would stop matching the name on disk.
+// Everything a file name may not contain, plus leading dots. Browsers sanitize
+// the download attribute themselves, silently and differently, so the name in
+// the requester would stop matching the name on disk.
 //
-// Order matters, and it has to be idempotent: the requester sanitizes to build
-// its preview and saveFile sanitizes again on the way out, so a function whose
-// second pass differs from its first makes the preview a lie. Stripping the
-// dots before removing the slashes did exactly that — "../bad:name?" came out
-// as "..badname" once (the dots were not leading yet, the spaces were) and
-// "badname" twice. Trim, then remove, then strip, and both passes agree.
+// Must be idempotent — the requester sanitizes to preview and saveFile again on
+// the way out, so a differing second pass makes the preview a lie. Trim, then
+// remove, then strip: stripping dots before slashes fails, as "../bad:name?"
+// gives "..badname" once and "badname" twice.
 export function sanitizeFileName(name: string): string {
   return name
     .trim()
@@ -52,24 +49,16 @@ export function withExtension(name: string, extension: string): string {
 
 // Saves a blob to a file, by whichever route the browser offers.
 //
-// Chromium has showSaveFilePicker, which asks for the location and the name at
-// once; it is called before makeBlob so the user gesture is still fresh
-// (transient activation can expire across async work). Everywhere else the file
-// goes to the downloads folder under a name we have to supply ourselves — so
-// promptForName is asked for one, and only on that branch. Without it, every
-// save on Firefox and Safari lands under the same default name.
+// Chromium has showSaveFilePicker, which asks for location and name at once; it
+// is called before makeBlob so the user gesture is still fresh, since transient
+// activation can expire across async work. Everywhere else the file goes to the
+// downloads folder under a name we supply, so promptForName is asked on that
+// branch only — and its OK click is itself a fresh gesture for the download.
 //
-// The activation concern inverts on that branch, in our favour: the requester's
-// own OK click is a fresh gesture, so the download that follows has newer
-// activation than the picker path does.
-//
-// Returns the base name it wrote, without the extension, or null if nothing was
-// written — every early return here is a cancel or a failure, and neither should
-// clear the tab title's unsaved marker or rename the document.
-//
-// The name has to come back from here because only this function knows it: on
-// the picker branch the user typed it into an OS dialog, and the returned handle
-// is the only place it appears.
+// Returns the base name written, without the extension, or null if nothing was:
+// every early return is a cancel or a failure, and neither should clear the
+// unsaved marker or rename the document. It has to come back from here because
+// on the picker branch the returned handle is the only place it appears.
 // Whether this browser has a save picker of its own. The dialog asks so it can
 // leave the name to the picker rather than asking twice; saveFileAs asks so it
 // knows which branch it is taking. One definition, so the two cannot disagree

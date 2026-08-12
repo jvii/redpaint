@@ -1,26 +1,20 @@
 import { MOD_KEY, SHIFT_MOD_KEY, isMac } from '../../platform';
 import { GadgetHint } from './GadgetHint';
 
-// What each toolbox gadget says on hover. Kept together rather than inline in
-// Toolbox.tsx so the wording can be read as a set — the same gesture should be
-// named the same way everywhere, and that is only checkable side by side.
+// What each toolbox gadget says on hover. Together rather than inline in
+// Toolbox.tsx so the wording can be read as a set: the same gesture should be
+// named the same way everywhere, which is only checkable side by side.
 //
-// Every gadget has one, including the plain tools whose icons are already
-// clear. Partial coverage would be worse than none: hovering and getting
-// nothing would mean either "no hint written" or "nothing hidden here", and a
-// reader cannot tell which.
+// Every gadget has one, including the tools whose icons are already clear —
+// hovering and getting nothing cannot be told from no hint being written.
 //
-// `use` is a sentence about the picture — what happens when you drag on the
-// canvas, or what an action gadget does. Everything below it in the panel is a
-// gesture on the gadget itself. Keeping that split is what lets the panel show
-// them differently, so write canvas behavior here and nowhere else.
+// `use` is a sentence about the picture; everything below it in the panel is a
+// gesture on the gadget itself. That split is what lets the panel show them
+// differently, so write canvas behavior here and nowhere else.
 //
-// **One short sentence.** These are read at a glance by someone who paused
-// over a gadget, not studied — a second clause explaining the finer points
-// costs more attention than it returns, and the panel grows tall enough to
-// cover the picture. Where a tool genuinely has two steps (Curve, Ellipse,
-// Polygon) say both plainly; everything else gets one. Detail that only
-// matters once you are using the tool belongs in the docs, not here.
+// **One short sentence**, read at a glance. Where a tool genuinely has two
+// steps (Curve, Ellipse, Polygon) say both plainly; anything that only matters
+// once you are using the tool belongs in the docs.
 const FILL_STYLE = 'Fill Style settings';
 
 // DPaint's Fill Type dialog, which every gadget that fills can reach — and it
@@ -70,8 +64,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     rightClickKeys: FILL_STYLE_KEYS,
   },
   // No key: DPaint gave Airbrush and Polygon none, and the letters left over
-  // are ones it spent elsewhere. Inventing two would be the only part of this
-  // set that was not the manual's.
+  // are ones it spent elsewhere.
   airbrush: {
     name: 'Airbrush',
     use: 'Hold to keep spraying.',
@@ -118,12 +111,10 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     keys: ['b'],
     use: 'Drag a box to pick that piece of the canvas up as the brush.',
   },
-  // A stub: TextTool takes keystrokes into state, but every renderText call in
-  // it is commented out, so nothing reaches the canvas (docs/TODO.md says the
-  // same). The hint used to describe the tool it will be one day, which is the
-  // worst thing a hint can do — someone who follows it and sees nothing
-  // concludes they are holding it wrong. Its two halves are dropped for the
-  // same reason: Outline and Filled are real toolbox states and neither draws.
+  // A stub: TextTool takes keystrokes into state, but every renderText call is
+  // commented out, so nothing reaches the canvas. The hint says so rather than
+  // describing the tool it will be one day — and its two halves are dropped for
+  // the same reason: Outline and Filled are real states and neither draws.
   text: {
     name: 'Text',
     keys: ['t'],
@@ -147,11 +138,9 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     use: 'Mirrors and repeats every stroke around a center point.',
     rightClick: 'Symmetry settings',
   },
-  // One idiom per platform, not the union. Every chord below works on every
-  // platform — Ctrl-Shift-Z redoes on Windows too, Cmd-Z undoes nowhere it
-  // shouldn't — but a Mac user has no use for Ctrl-Y and a Windows user none
-  // for the Command key, and printing both would say half of nothing to each.
-  // 'u' is DPaint's own and belongs to neither.
+  // One idiom per platform, not the union: every chord works everywhere, but a
+  // Mac user has no use for Ctrl-Y nor a Windows user for the Command key. 'u'
+  // is DPaint's own and belongs to neither.
   undo: {
     name: 'Undo',
     keys: ['u', `${MOD_KEY}Z`],
@@ -175,18 +164,10 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
 // Not one of the three button components, so it wires the hint up itself
 // (useGadgetHint).
 //
-// Deliberately silent about one thing. Right-click paints with the background
-// color in all ten painting tools — nine through prepareToPaint, Flood Fill
-// through its own onContextMenu — and this panel was briefly where that got
-// said, on the grounds that the rule belongs to the background color rather
-// than to any one tool. It is out again: true and useful is not the same as
-// worth the room, and it made the one panel that should be a plain legend for
-// two swatches into the place the app explains itself.
-//
-// So it is not missing from here by oversight, and it does not belong in the
-// ten tool hints either — that would be the same sentence ten times, with the
-// first copy to drift being the one nobody updates. It is documentation, and
-// it lives outside the UI.
+// Deliberately silent about right-click painting with the background color,
+// which every painting tool does. Saying it here turns a plain legend for two
+// swatches into the place the app explains itself, and saying it in the ten
+// tool hints is the same sentence ten times. It is documentation.
 export const colorIndicatorHint: GadgetHint = {
   name: 'Color Indicator',
   // DPaint's "Select Color cursor", which arms the foreground picker — the

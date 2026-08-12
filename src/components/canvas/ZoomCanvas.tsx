@@ -37,15 +37,12 @@ export function ZoomCanvas(): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const [zoomFactor, setZoomFactor] = useState(6);
 
-  // page-pixel to CSS-pixel scale, per axis: the magnification times the main
-  // view's own scale, so "6x" means six times the size the artwork is
-  // already being shown at, whatever that is. Relative rather than absolute
-  // because a screen format sizes the main view to fill the window — Amiga
-  // Lo-Res on a big window is already ~4 CSS px per artwork pixel, where an
-  // absolute "2x" (2 physical px) would be a zoom *out*. At Native the main
-  // scale is 1/devicePixelRatio, which is what this used to divide by
-  // directly, so nothing changes there. The main view's scale also already
-  // carries the format's pixel aspect, per axis.
+  // Page-pixel to CSS-pixel scale, per axis: the magnification times the main
+  // view's own scale, so "6x" means six times the size the artwork is already
+  // shown at. Relative rather than absolute because a screen format sizes the
+  // main view to fill the window — Lo-Res on a big window is already ~4 CSS px
+  // per artwork pixel, where an absolute "2x" would be a zoom *out*. The main
+  // scale also carries the format's pixel aspect, per axis.
   const displayScale = state.canvas.displayScale;
   const scale: Point = {
     x: zoomFactor * displayScale.x,
@@ -97,17 +94,14 @@ export function ZoomCanvas(): JSX.Element {
   const [zoomWidth, setZoomWidth] = useState<number | null>(null);
   const separatorRef = useRef<HTMLDivElement>(null);
 
-  // Alt+wheel over the zoom pane or its divider zooms — Ctrl+wheel, the
-  // other convention, is the browser's own page zoom on every platform and
-  // can't be taken over. A native listener with passive: false, because
-  // React registers its own onWheel at the root as passive, where
+  // Alt+wheel over the zoom pane or its divider zooms; Ctrl+wheel is the
+  // browser's page zoom and cannot be taken over. A native listener with
+  // passive: false, because React's own onWheel at the root is passive, where
   // preventDefault is a no-op and the pane would scroll as well as zoom.
   //
-  // Every event steps, throttled by time rather than by accumulated delta:
-  // how much travel one notch reports varies wildly (macOS applies wheel
-  // acceleration, and a trackpad sends streams of single-digit deltas), so
-  // any distance threshold either eats a slow notch or lets a flick run away.
-  // Only the sign of deltaY is read, which no input device disagrees about.
+  // Every event steps, throttled by time rather than accumulated delta: how
+  // much travel one notch reports varies wildly, so a distance threshold either
+  // eats a slow notch or lets a flick run away. Only deltaY's sign is read.
   const lastWheelStepTime = useRef(0);
   useEffect((): (() => void) => {
     const onWheel = (event: WheelEvent): void => {
@@ -134,11 +128,10 @@ export function ZoomCanvas(): JSX.Element {
   });
 
   // Dragging the divider resizes the zoom pane against the main one. The
-  // move/up listeners go on the window, not the grip, so the drag survives
-  // the pointer crossing onto either canvas (which take mouse events for
-  // painting) or leaving the window entirely. One setState per pointermove
-  // only re-lays-out two flex items — neither canvas's drawing buffer
-  // depends on the split, so nothing is re-rendered on the GL side.
+  // move/up listeners go on the window, not the grip, so the drag survives the
+  // pointer crossing onto either canvas or leaving the window. One setState per
+  // pointermove only re-lays-out two flex items; no canvas drawing buffer
+  // depends on the split.
   const onGripPointerDown = (event: React.PointerEvent<HTMLDivElement>): void => {
     const separator = separatorRef.current;
     const container = separator?.parentElement;
@@ -165,13 +158,10 @@ export function ZoomCanvas(): JSX.Element {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
-      // The app-drawn cursors are shown and hidden by the canvas's own mouse
-      // handlers (Canvas.tsx), which the drag has been suppressing — so one
-      // is left flagged visible at wherever the pointer last crossed a
-      // canvas, and uncovering it now would put a stale crosshair on the
-      // canvas while the real pointer sits on the divider: two cursors. Hide
-      // them with the class, not after it; the next real move over a canvas
-      // brings the right one back.
+      // The drag has been suppressing the canvas mouse handlers that show and
+      // hide the app-drawn cursors, so one is left flagged visible wherever the
+      // pointer last crossed a canvas. Hide them with the class, not after it,
+      // or a stale crosshair shows while the pointer sits on the divider.
       hideAppDrawnCursors();
       document.body.classList.remove('zoom-divider-dragging');
       // the pane is a different width, so a different artwork pixel sits at

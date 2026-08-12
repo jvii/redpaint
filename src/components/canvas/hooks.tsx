@@ -80,15 +80,11 @@ export function useInitTool(isZoomCanvas: boolean): void {
 
 // Repaints the canvas when undo or redo steps to a different entry.
 //
-// The main canvas only, like useInitTool: `Canvas` is mounted twice, and this
-// restoring history once per instance was a real bug. The first instance queued
-// the snapshot and asked for its resolution; the second then re-ran, found the
-// resolution *already* matching the entry, and took the direct branch below —
-// painting into a drawing buffer that had not been resized yet, which the
-// resize then cleared. The queued content was left stranded, so undoing a
-// canvas size change showed nothing at all until some later render happened to
-// flush it. The zoom view needs none of this: it mirrors the painting canvas's
-// texture rather than holding its own.
+// The main canvas only, like useInitTool. `Canvas` is mounted twice, and
+// restoring once per instance meant the second run found the resolution already
+// matching the entry and painted into a buffer the resize then cleared,
+// stranding the queued content. The zoom view mirrors the painting canvas's
+// texture rather than holding its own, so it needs none of this.
 export function useUndo(isZoomCanvas: boolean): void {
   const state = useAppState();
   const actions = useActions();
@@ -110,11 +106,9 @@ export function useUndo(isZoomCanvas: boolean): void {
     if (colorIndex.width !== resolution.width || colorIndex.height !== resolution.height) {
       setPendingCanvasContent(colorIndex, { recordUndoPoint: false });
       // Out of the commit phase before mutating: a resolution change made
-      // synchronously inside an effect did not re-render the canvas at all, so
-      // the element kept its old size, the queued snapshot was never uploaded,
-      // and the picture only appeared once something unrelated — a click —
-      // forced a render. Off a microtask it behaves exactly like the same
-      // change made from an event handler.
+      // synchronously inside an effect does not re-render the canvas, so the
+      // element keeps its old size and the queued snapshot is never uploaded.
+      // Off a microtask it behaves like the same change from an event handler.
       queueMicrotask((): void => {
         actions.canvas.setResolution({
           width: colorIndex.width,
@@ -141,12 +135,10 @@ export function useCanvasContentUpload(): void {
   useEffect((): void => {
     const pending = takePendingCanvasContent();
     if (!pending) {
-      // No queued content, but the resize still happened: setResolution's
-      // init() rebuilds the textures and leaves the drawing buffer cleared
-      // without ever presenting it, so a canvas nobody is uploading to would
-      // otherwise never be drawn at all. Chromium composites the cleared buffer
-      // regardless; Safari waits for a draw, and showed nothing until some
-      // later event forced one — a click.
+      // No queued content, but the resize still happened: init() leaves the
+      // drawing buffer cleared without ever presenting it. Chromium composites
+      // it regardless; Safari waits for a draw and shows nothing until some
+      // later event forces one.
       paintingCanvasController.render();
       return;
     }
@@ -162,9 +154,8 @@ export function useCanvasContentUpload(): void {
     }
     if (pending.freshDocument) {
       // A picture just loaded from a file already matches one, so it starts
-      // clean — the same reading an editor gives a file it has just opened. It
-      // takes that file's name, or none at all when the pixels came from
-      // somewhere unnamed; either way the previous document's name is gone.
+      // clean, under that file's name — or none, when the pixels came from
+      // somewhere unnamed. Either way the previous document's name is gone.
       actions.app.setDocumentName(pending.documentName);
       forgetFileHandles();
       if (pending.documentModified) {
@@ -211,15 +202,12 @@ export function useRefreshZoomCanvas(zoomModeOn: boolean): void {
   }, [zoomModeOn]);
 }
 
-// window.devicePixelRatio folds together OS display scaling (Windows' 125%/
-// 150% presets) and browser zoom into one CSS-pixels-per-physical-pixel
-// ratio. The painting canvas divides its CSS size by this so that "no zoom"
-// always means one artwork pixel per physical screen pixel, the same way a
-// native image viewer's 100% view is unaffected by OS scaling — instead of
-// ballooning by whatever the host happens to be scaled to. A matchMedia query
-// at the current ratio fires exactly once, the next time the ratio changes
-// (screen change, OS scaling change, browser zoom); each firing re-subscribes
-// at the new ratio, since the old query is now stale.
+// window.devicePixelRatio folds OS display scaling and browser zoom into one
+// CSS-pixels-per-physical-pixel ratio. The painting canvas divides its CSS size
+// by it, so "no zoom" always means one artwork pixel per physical screen pixel,
+// as a native image viewer's 100% view does. A matchMedia query at the current
+// ratio fires exactly once, the next time the ratio changes; each firing
+// re-subscribes at the new ratio.
 export function useDevicePixelRatio(): number {
   const [dpr, setDpr] = useState(window.devicePixelRatio);
 

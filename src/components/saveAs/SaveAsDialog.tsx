@@ -29,17 +29,11 @@ const TRUE_COLOR_NOTE =
 
 // The one requester Save As goes through, on every browser.
 //
-// It used to appear only where there was no native save picker, and only to ask
-// for a name. The format is the reason it is always up now: the three formats
-// differ in the thing this program is about — PNG flattens the palette, IFF and
-// GIF keep it — and that was previously answered by which of three gadgets you
-// clicked, which put the most consequential choice in the least visible place.
-//
-// So it asks the format always, and the name only where nobody else will. On
-// Chromium the OS picker asks for the name a moment later, and a field here
-// would be the same question twice; everywhere else the file goes to the
-// downloads folder under whatever name we supply, so this is the only chance to
-// supply one. Either way it is one requester, not two.
+// It asks the format always — the three differ in the thing this program is
+// about, since PNG flattens the palette where IFF and GIF keep it — and the
+// name only where nobody else will. On Chromium the OS picker asks for the name
+// a moment later, so a field here would be the same question twice; everywhere
+// else the file goes to the downloads folder under a name we supply.
 export function SaveAsDialog(): JSX.Element | null {
   const state = useAppState();
   if (state.app.saveAsPrompt === null) {
@@ -101,13 +95,9 @@ function SaveAsDialogOpen(): JSX.Element {
           <RetroToggle
             options={SAVE_FORMATS.map((id) => {
               // An indexed format cannot hold true-color pixels. Disabled here
-              // rather than refused after the fact: the requester is where the
-              // choice is made, so it is where a choice that cannot work should
-              // be visibly unavailable.
-              //
-              // The tooltip belongs to the segments that are actually out. Hung
-              // off all three, it told you PNG could not store the picture
-              // while PNG sat there enabled and selected as the one that can.
+              // rather than refused after the fact, and the tooltip goes on the
+              // segments that are actually out — hung off all three, it told you
+              // PNG could not store the picture while PNG sat there enabled.
               const unavailable = !indexed && id !== 'png';
               return {
                 value: id,

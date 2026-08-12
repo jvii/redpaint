@@ -12,13 +12,10 @@ const HINT_DELAY_MS = 2000;
 // two from being shown at once except this: whoever opens closes the last one
 // first.
 //
-// Per-gadget hiding on mouseleave is not enough on its own. It missed once
-// already through a plain ordering slip — the timer id was cleared before the
-// function that used it to cancel the timer, so a pending hint fired after the
-// pointer had left and panels piled up — and mouseleave can be missed for
-// other reasons too: a pointer leaving the window, a gadget unmounting under
-// the cursor as tools change. This makes the invariant structural instead of
-// something every path has to remember.
+// Per-gadget hiding on mouseleave is not enough: mouseleave can be missed when
+// the pointer leaves the window or a gadget unmounts under the cursor as tools
+// change, and panels then pile up. This makes the invariant structural rather
+// than something every path has to remember.
 let closeOpenHint: (() => void) | null = null;
 
 type Hinted = {

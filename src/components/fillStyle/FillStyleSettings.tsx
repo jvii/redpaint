@@ -51,21 +51,14 @@ function FillStyleSettingsOpen(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
 
-  // The swatch's raw pixel count, sized so it shows an equally-sized window
-  // into the real canvas — the display box's fixed physical size
-  // (PREVIEW_DISPLAY_SIZE CSS px) divided by MainCanvas's actual current
-  // displayScale (CSS px per raw canvas px, mirrored into Overmind — see
-  // overmind/canvas/state.ts). That value already folds in devicePixelRatio
-  // (Native mode), the screen format's pixel aspect, AND the live window
-  // size (a Lo-Res canvas shown zoomed into a large window has far fewer
-  // raw pixels in this swatch than the same canvas at 1:1 would). Unlike the
-  // display box, this raw buffer is free to end up a very different shape
-  // per axis (displayScale.x and .y aren't generally equal) — the ellipse
-  // useFillStylePreview draws compensates for that per axis, rather than the
-  // box shrinking on one axis to chase the buffer's own aspect (which wasted
-  // the dialog's available width whenever that aspect got narrow). Computed
-  // here, not inside the hook, so the hook and the render-time JSX canvas
-  // attributes agree on the same numbers.
+  // The swatch's raw pixel count, sized to show an equally-sized window into
+  // the real canvas: the display box's fixed CSS size divided by MainCanvas's
+  // live displayScale, which already folds in devicePixelRatio, the screen
+  // format's pixel aspect and the window size. Unlike the box, the raw buffer
+  // can come out a very different shape per axis — the ellipse
+  // useFillStylePreview draws compensates per axis rather than the box chasing
+  // the buffer's aspect and wasting the dialog's width. Computed here, not in
+  // the hook, so the hook and the JSX canvas attributes agree.
   const displayScale = state.canvas.displayScale;
   const previewWidth = Math.round(PREVIEW_DISPLAY_SIZE / displayScale.x);
   const previewHeight = Math.round(PREVIEW_DISPLAY_SIZE / displayScale.y);

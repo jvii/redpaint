@@ -7,17 +7,15 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroInputField } from '../ui/RetroInputField';
 
-// DPaint calls this the page size, on its own Pict menu item, deliberately
-// separate from the screen format: the format is the display being simulated,
-// the page is the paper you paint on, and a page larger than the screen is a
-// normal working style (it scrolls). This app's own word for the paper is the
-// canvas, which is what the status strip says, so that's the name here.
+// DPaint calls this the page size, separate from the screen format: the format
+// is the display being simulated, the page is the paper, and a page larger than
+// the screen is a normal working style. This app's word for the paper is the
+// canvas, which is what the status strip says.
 //
-// The canvas is never rescaled by this requester — only grown or cropped, with
-// the pixels staying 1:1. Stretching a pixel-art painting is a destructive
-// reinterpretation of it, not a side effect anyone should get from setting how
-// big the paper is. (The Screen Format requester does offer to scale, because
-// fitting artwork to a newly chosen screen is a real want; this isn't that.)
+// Never rescales — only grows or crops, pixels staying 1:1. Stretching a
+// pixel-art painting is a destructive reinterpretation, not a side effect of
+// setting how big the paper is. (The Screen Format requester does offer to
+// scale, because fitting artwork to a newly chosen screen is a real want.)
 const MIN_SIDE = 1;
 // GL_MAX_TEXTURE_SIZE on anything we run on — past this the canvas would not
 // render at all, whatever the memory says.

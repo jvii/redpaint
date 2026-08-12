@@ -2,46 +2,33 @@ import React, { JSX } from 'react';
 import { shortcutCap } from '../ui/shortcutCap';
 import './GadgetHint.css';
 
-// What a toolbox gadget says about itself on hover.
+// What a toolbox gadget says about itself on hover. The toolbox is icon-only by
+// design (docs/style-guide.md, "Text on controls"), and several gadgets carry a
+// right-click action no icon can hint at.
 //
-// The toolbox is icon-only by design (docs/style-guide.md, "Text on
-// controls"), which leaves no room for a label — and several gadgets carry a
-// right-click action that an icon cannot hint at. Redo lived on a right-click
-// for months and was reported as "doesn't work at all".
-//
-// The shape is a template, in this order, because a hint that answers the same
-// questions in the same places can be read at a glance and one that rearranges
-// them per gadget has to be read properly every time:
+// A fixed template rather than a free-form list, so the same questions are
+// always answered in the same places and the order cannot drift:
 //
 //   1. `use`         — what the gadget is for, as a sentence
 //   2. `parts`       — what its own parts do, if it is divided into any
 //   3. `rightClick`  — what a right-click on it does
 //   4. `rightClickKeys` — and the keys for that, if it has any
 //
-// Fields rather than a free-form list so the order cannot drift: there is no
-// way to express "right-click first, then the halves".
-//
-// The two kinds of instruction are deliberately not alike. `use` is prose in
-// full-strength ink, because it is about the picture — what happens on the
-// canvas when you drag, or what the gadget does. The rows below it are a table
-// with a dimmed label, and the label is always a gesture *on this gadget*.
-// Grey therefore means exactly one thing — "do this to the gadget" — where
-// before it covered both that and "drag on the canvas", which are not the same
-// kind of instruction and should not have looked the same.
+// The two kinds of instruction look different on purpose. `use` is prose in
+// full-strength ink, about the picture. The rows below are a table with a dimmed
+// label, and that label is always a gesture on this gadget — so grey means
+// exactly one thing.
 export type GadgetHint = {
   name: string;
   // Keyboard shortcuts for the gadget's own action, shown as keycaps beside
   // the name.
   keys?: string[];
   use?: string;
-  // The gadget's own parts: the two halves of a dual toggle, the swatches of
-  // the colour indicator. Labelled rather than assumed to be a top and a
-  // bottom half, since not every divided gadget is divided that way — but
-  // still one fixed slot, so it cannot move relative to the rest.
-  // `keys` here rather than only on the head because a divided gadget's halves
-  // have a key each — DPaint gives the shape tools a lowercase letter for the
-  // unfilled half and the shifted one for the filled half, and a single cap
-  // beside the name could not say which half it picked.
+  // The gadget's own parts: the halves of a dual toggle, the swatches of the
+  // colour indicator. Labelled rather than assumed to be a top and a bottom
+  // half, since not every divided gadget is divided that way. `keys` here as
+  // well as on the head because a divided gadget's halves have a key each —
+  // DPaint's lowercase for the unfilled shape, shifted for the filled.
   parts?: { gesture: string; does: string; keys?: string[] }[];
   rightClick?: string;
   rightClickKeys?: string[];

@@ -11,16 +11,13 @@ import { beginPreviewFrame, useFillPreviewGL } from './fillPreviewGL';
 // Horizontal Line axis's per-row contour-hugging "3-D" look, which is
 // otherwise easy to misjudge from the axis name alone.
 //
-// Renders through the exact same WebGL renderer classes the overlay canvas
-// uses for its live drag preview (OverlayGeometricRenderer for solid,
-// OverlayGradientRenderer / OverlayPatternRenderer for the other two) rather
-// than a separate CPU/2D reimplementation, so this swatch can never drift out
-// of sync with what actually gets painted (it did once: this preview used to
-// dither via bucketPointsByGradient's Math.random(), a different algorithm
-// from the GPU shader's deterministic hash that ships the real gradient fill).
+// Renders through the same WebGL renderer classes the overlay canvas uses for
+// its live drag preview, not a separate 2D reimplementation, so the swatch
+// cannot drift from what actually gets painted — it did once, dithering via
+// Math.random() where the shader uses a deterministic hash.
 //
-// Split out of FillStyleSettings.tsx, which is otherwise plain layout — this
-// is the only part of that dialog that owns a GL context and a lifecycle.
+// Split out of FillStyleSettings.tsx, which is otherwise plain layout: this is
+// the only part of that dialog owning a GL context and a lifecycle.
 export function useFillStylePreview(
   canvasRef: RefObject<HTMLCanvasElement>,
   previewWidth: number,
@@ -33,47 +30,37 @@ export function useFillStylePreview(
   const glRef = useFillPreviewGL(canvasRef);
   const seedRef = useRef(Math.random() * 8);
 
-  // An ellipse, not a circle: previewWidth/previewHeight aren't generally
-  // equal (see FillStyleSettings's own comment on them), so a shape drawn on
-  // an on-screen radius R needs per-axis raw radii that pre-compensate for
-  // the CSS stretch each axis gets when this non-square buffer is displayed
-  // in the fixed square box — otherwise it'd render as a circle in
-  // raw-buffer space but a stretched ellipse once the browser scales it up.
+  // An ellipse, not a circle: previewWidth/previewHeight are not generally
+  // equal, so the raw radii pre-compensate per axis for the CSS stretch each
+  // gets in the fixed square box.
   //
-  // Clamped to at least 2 raw pixels of margin on each axis: at low raw
-  // resolution (a low-density screen format zoomed into a large window) the
-  // 2 CSS px margin shrinks to a fraction of a single raw pixel once divided
-  // by displayScale, so without this the ellipse's edge could land past the
-  // buffer's actual bounds — WebGL then just clips it (a flat edge on the
-  // last row/column) rather than drawing a slightly-too-big curve.
+  // Clamped to at least 2 raw pixels of margin per axis: at low raw resolution
+  // the 2 CSS px margin shrinks below a raw pixel once divided by displayScale,
+  // and the ellipse's edge would land past the buffer's bounds, where WebGL
+  // clips it into a flat last row rather than a slightly-too-big curve.
   const onScreenRadius = displaySize / 2 - 2;
   const radiusX = Math.min(onScreenRadius / displayScale.x, previewWidth / 2 - 2);
   const radiusY = Math.min(onScreenRadius / displayScale.y, previewHeight / 2 - 2);
 
-  // Rounded to whole pixels, not left at previewWidth/2: the row-span table
-  // Gradient/Pattern look up is center-relative, and the shader reconstructs
-  // each fragment's local coords as `pix - u_center` — a translation that
-  // only preserves the shape for an integer center (see
-  // symmetricFilledEllipse's own note). At a half-integer center (any odd raw
-  // buffer dimension, a coin flip at the small sizes lo-res produces) the
-  // three fill modes would disagree on shape by a row and a couple of
-  // columns. Every real fill already passes an integer center (a mouse
-  // pixel); this costs at most half a pixel of centering in the display box.
+  // Rounded to whole pixels: the row-span table Gradient/Pattern look up is
+  // center-relative and the shader reconstructs local coords as `pix -
+  // u_center`, a translation that only preserves the shape for an integer
+  // center. At a half-integer one — any odd raw dimension — the three fill
+  // modes disagree by a row and a couple of columns. Every real fill passes an
+  // integer center anyway; this costs half a pixel of centering.
   const center = useMemo(
     () => ({ x: Math.round(previewWidth / 2), y: Math.round(previewHeight / 2) }),
     [previewWidth, previewHeight]
   );
 
-  // Built from the same symmetricFilledEllipse the Solid branch draws with
-  // (center-relative: the row-span table format is always local to the
-  // shape's own center, see rowSpans.ts) and handed to Gradient/Pattern as an
-  // override, so all three fill modes in this swatch share one shape instead
-  // of Solid looking visibly different from Gradient/Pattern's real
-  // filledEllipse-derived footprint at this preview's low raw resolution.
+  // Built from the same symmetricFilledEllipse the Solid branch draws with and
+  // handed to Gradient/Pattern as an override, so all three fill modes share one
+  // shape — at this preview's low raw resolution they otherwise look visibly
+  // different.
   //
-  // Memoized on the radii, not rebuilt per render: RowSpanTexture caches the
-  // override by table identity, so a stable table is what keeps a dialog left
-  // open during color cycling from re-uploading it every animation frame.
+  // Memoized on the radii: RowSpanTexture caches the override by table identity,
+  // so a stable table keeps a dialog left open during color cycling from
+  // re-uploading it every frame.
   const rowSpanOverride = useMemo(
     () => rowSpansFromLines(symmetricFilledEllipse({ x: 0, y: 0 }, radiusX, radiusY)),
     [radiusX, radiusY]

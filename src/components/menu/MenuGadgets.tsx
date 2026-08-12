@@ -85,20 +85,16 @@ export type FileOpener = {
   input: JSX.Element;
 };
 
-// A hidden file input decoupled from its trigger button's own mount
-// lifetime. The button lives inside the menu's collapsible content (unmounted
-// while the menu is closed, by design — see Menu.tsx's own comment on that),
-// but opening the OS file picker moves the mouse cursor off-page into a
-// separate native window, which fires a real mouseleave on .menu and closes
-// it (and unmounts the collapsible content) *while the OS dialog is still
-// open*. If the <input> lived in that content, React would tear it down
-// mid-flight, and the 'change' event the OS dialog fires on file selection
-// would have nowhere to land — file picked, nothing happens, no error either
-// (confirmed via CDP: this never reproduces under automation, since nothing
-// simulates the cursor actually leaving the page for a native window).
-// The caller renders `input` somewhere that survives that close — e.g.
-// directly under the top-level .menu div, a sibling of the collapsible
-// content rather than inside it — and wires a plain button's onClick to `open`.
+// A hidden file input decoupled from its trigger button's mount lifetime. The
+// button lives in the menu's collapsible content, which unmounts when the menu
+// closes — and opening the OS file picker moves the cursor off-page, firing a
+// real mouseleave on .menu while the dialog is still open. An <input> in that
+// content would be torn down mid-flight and the 'change' event would have
+// nowhere to land: file picked, nothing happens, no error. (Never reproduces
+// under CDP, which cannot move the cursor into a native window.)
+//
+// The caller renders `input` somewhere that survives the close — a sibling of
+// the collapsible content — and wires a plain button's onClick to `open`.
 export function useFileOpener(
   handleFile: (input: HTMLInputElement) => void,
   accept = 'image/*'

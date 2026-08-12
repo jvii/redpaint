@@ -46,17 +46,15 @@ const ROTATE_CURSOR = ((): string => {
 })();
 
 // Diagonal double-headed arrow for the Stretch / SizeBuiltInBrushTool resize
-// indicator — a plain smooth vector glyph (the conventional OS resize-cursor
-// look), not the pixel-art style of ROTATE_CURSOR above, drawn as a
-// positioned element (.canvas-resize-cursor) rather than a native `cursor`
-// value since it needs to render offset from the pointer (see
-// RESIZE_CURSOR_OFFSET) instead of centered on it.
+// indicator: a smooth vector glyph in the conventional OS resize-cursor look,
+// not the pixel-art style of ROTATE_CURSOR. A positioned element
+// (.canvas-resize-cursor) rather than a native `cursor`, since it renders offset
+// from the pointer (RESIZE_CURSOR_OFFSET) instead of centered on it.
 const RESIZE_CURSOR_SIZE = 24;
 const RESIZE_CURSOR_ICON = ((): string => {
-  // One arrow shape, drawn pointing up-down and rotated 45 degrees about the
-  // icon's center — simpler to get symmetric than authoring the diagonal
-  // directly, and rotation keeps that symmetry exact regardless of the
-  // underlying point coordinates.
+  // One arrow shape, drawn up-down and rotated 45 degrees about the icon's
+  // center: the rotation keeps it exactly symmetric, which authoring the
+  // diagonal directly would not.
   const arrow = 'M0,-9 4,-4 1.5,-4 1.5,4 4,4 0,9 -4,4 -1.5,4 -1.5,-4 -4,-4 Z';
   // scale(-1,1) mirrors the rotated diagonal horizontally about the icon's
   // own center (applied after rotate, since SVG transforms compose
@@ -65,11 +63,9 @@ const RESIZE_CURSOR_ICON = ((): string => {
   return `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='${RESIZE_CURSOR_SIZE}' height='${RESIZE_CURSOR_SIZE}' viewBox='0 0 ${RESIZE_CURSOR_SIZE} ${RESIZE_CURSOR_SIZE}'%3e${path}%3c/svg%3e")`;
 })();
 
-// How far past the pointer (down-right, CSS px) the resize indicator draws —
-// the brush preview's bounding box always has the pointer sitting exactly on
-// its own bottom-right corner (both while just hovering, armed, and mid-drag:
-// the box is anchored at its opposite corner), and the box/brush content
-// always sits up-left of that corner, so any positive offset here clears it.
+// How far past the pointer (down-right, CSS px) the resize indicator draws. The
+// brush preview's box is anchored so the pointer sits on its bottom-right
+// corner and its content up-left of that, so any positive offset clears it.
 const RESIZE_CURSOR_OFFSET = 16;
 
 export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): JSX.Element | null {
@@ -130,25 +126,18 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
   // visible jump every time the mouse crosses into the next (hugely
   // magnified) buffer pixel, so there it just tracks the raw pointer.
   //
-  // A captured/loaded (non-built-in) brush is usually large enough that
-  // exact hotspot alignment barely matters, so there it's skipped entirely —
-  // no per-mousemove work at all, and the native pointer shows instead — to
-  // keep dragging a big brush around (e.g. drawing a line with it) cheap.
-  // Suppressed while SizeBuiltInBrushTool is armed: selectedBuiltInBrushId
-  // stays set through that drag (it only clears on commit), but the resize
-  // cursor is the one that should show then, not the precise crosshair on
-  // top of it.
+  // Skipped entirely for a captured or loaded brush, which is usually large
+  // enough that exact hotspot alignment barely matters: no per-mousemove work,
+  // and the native pointer shows instead. Suppressed while
+  // SizeBuiltInBrushTool is armed too — selectedBuiltInBrushId stays set
+  // through that drag, but the resize cursor is what should show.
   const usePreciseCursor =
     state.brush.selectedBuiltInBrushId !== null &&
     state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool';
-  // Positioned by directly mutating the DOM through this ref, not React
-  // state: the native cursor moves via the OS/browser compositor with zero
-  // JS involved, and a setState here would mean a full Canvas re-render (two
-  // <canvas> elements included) on every single mousemove, plus left/top
-  // triggers layout — both add latency a native cursor never pays, which
-  // reads as jerkiness at typical mousemove rates. transform + visibility
-  // are compositor-only, no layout/re-render, keeping this as close to the
-  // native cursor's smoothness as an app-drawn element can get.
+  // Positioned by mutating the DOM through this ref, not React state: a
+  // setState would re-render the whole Canvas on every mousemove, and left/top
+  // trigger layout. Both add latency a native cursor never pays, and it reads
+  // as jerkiness. transform + visibility are compositor-only.
   const cursorRef = useRef<HTMLDivElement>(null);
   const updateCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
     if (!usePreciseCursor || !cursorRef.current) {
@@ -267,12 +256,10 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           getEventHandler(tool, 'onMouseUp')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseUpOverlay')(event);
-          // Every tool's overlay preview is drawn from onMouseMoveOverlay,
-          // which drawing tools skip while a button is held (the real canvas
-          // shows the live stroke instead) — so mouse-up leaves the overlay
-          // exactly as the drag left it (cleared) until the pointer next
-          // actually moves. Replaying one, same fix as the menu-close/
-          // hotkey cases above, makes the brush cursor reappear immediately.
+          // Drawing tools skip onMouseMoveOverlay while a button is held (the
+          // real canvas shows the live stroke), so mouse-up leaves the overlay
+          // cleared until the pointer next moves. Replay one so the brush
+          // cursor comes back immediately.
           setTimeout(refreshBrushPreview, 0);
         }}
         onMouseEnter={(event): void => {

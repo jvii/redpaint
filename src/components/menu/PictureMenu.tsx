@@ -82,13 +82,9 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   };
 
   // What Save promises, which depends on whether there is anything to repeat.
-  //
-  // It used to say "Save as PNG, to the same file where the browser allows it"
-  // — and once the format became a choice, that was wrong twice over for a
-  // picture nobody has saved yet. There is no file to go back to, and the
-  // format is not PNG but whatever the requester is about to ask for, since
-  // that is the branch `save` falls through to. Naming a format the gadget will
-  // not necessarily use is the exact confusion the requester was added to end.
+  // For a picture nobody has saved yet there is no file to go back to and no
+  // format yet either — `save` falls through to the requester — so the tooltip
+  // must not name one.
   const saveTitle = (): string => {
     const format = saveFormats[state.app.saveFormat];
     if (!state.app.documentName) {

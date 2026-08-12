@@ -30,16 +30,11 @@ async function sniffFormat(file: File): Promise<'iff' | 'gif' | null> {
 // gadget rail, the always-visible mode row, and the Picture/Brush/Prefs
 // drawer (a radio group — only one open at a time, see app.openDrawer).
 //
-// The panel collapses via the CSS grid-template-rows 0fr/1fr trick
-// (Menu.css) instead of a JS-measured pixel height, which means the content
-// below can unmount entirely while closed rather than staying permanently
-// mounted (at height: 0) just to keep a scrollHeight measurement warm. A
-// permanently-mounted menu was quietly re-rendering — and, in one
-// discovered case, redoing expensive brush-thumbnail work — on every state
-// change any of its subscribed descendants cared about, even while fully
-// hidden. The grid trick sizes to intrinsic content height with no JS
-// measurement at all, so there's no longer a reason to keep anything
-// mounted just for that.
+// The panel collapses via the CSS grid-template-rows 0fr/1fr trick (Menu.css)
+// rather than a JS-measured height, so the content can unmount while closed
+// instead of staying mounted at height: 0 to keep a scrollHeight measurement
+// warm. A permanently mounted menu re-rendered — in one case redoing expensive
+// brush-thumbnail work — on every state change its descendants cared about.
 export function Menu(): JSX.Element {
   const actions = useActions();
   const state = useAppState();

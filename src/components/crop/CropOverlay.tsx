@@ -125,15 +125,14 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
   }
 
   // Canvas coordinates are what the crop is expressed in; CSS pixels are what
-  // it's drawn in. displayScale is per axis, since a screen format's pixels
+  // it is drawn in. displayScale is per axis, since a screen format's pixels
   // need not be square.
   const toCss = (value: number, axis: 'x' | 'y'): number => value * scale[axis];
   //
-  // Rounded, where the painting tools' getMousePos floors. Deliberate, and the
-  // difference is what each is picking: a tool picks the pixel the pointer is
-  // over, so it truncates to that pixel's own coordinate; a crop grip picks the
-  // *edge* between two pixels, and the nearest edge is the one the pointer is
-  // closest to. Flooring here would bias every edge half a pixel up and left.
+  // Rounded, where the painting tools' getMousePos floors: a tool picks the
+  // pixel the pointer is over, a crop grip the *edge* between two pixels, and
+  // the nearest edge is the one the pointer is closest to. Flooring would bias
+  // every edge half a pixel up and left.
   const pointerToCanvas = (event: React.PointerEvent): Point => {
     const bounds = hostRef.current?.getBoundingClientRect();
     if (!bounds) {
@@ -182,11 +181,9 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
       return;
     }
     // A move with no button held cannot be a drag, so a drag still recorded
-    // here is a stale one whose pointerup went missing — the overlay's DOM can
-    // vanish mid-gesture when a right-click commits, taking the captured
-    // element and its pointerup with it. Drop it rather than acting on it:
-    // otherwise the box follows the pointer around with nothing pressed, and
-    // its first move snaps to a rect measured in a previous crop.
+    // here is stale — the overlay's DOM can vanish mid-gesture when a
+    // right-click commits, taking the captured element and its pointerup. Drop
+    // it, or the box follows the pointer with nothing pressed.
     if (event.buttons === 0) {
       dragRef.current = null;
       return;
