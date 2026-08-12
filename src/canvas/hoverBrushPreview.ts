@@ -147,14 +147,11 @@ class HoverBrushPreviewController {
 
 export const hoverBrushPreview = new HoverBrushPreviewController();
 
-// The resting-state hover stamp, shared by the tools whose only buttons-up
-// overlay draw is "the brush at the pointer" (freehand, dotted freehand, and
-// line/curve/polygon before their interaction starts). DOM path when it can
-// be; today's overlay draw when it can't: with symmetry on the preview is
-// N kaleidoscope copies, which stays on the canvas (documented tradeoff).
-// Tools whose hover draws more than the stamp (shape tools' edge-to-edge
-// aiming crosshair, mid-interaction curve/polygon previews) don't come
-// through here at all.
+// The resting-state hover stamp, for the tools whose only buttons-up overlay
+// draw is "the brush at the pointer". The DOM path where it can be, the overlay
+// draw where it can't: with symmetry on the preview is N kaleidoscope copies,
+// which stays on the canvas. Tools whose hover draws more than the stamp (the
+// shape tools' aiming crosshair) do not come through here.
 export function drawHoverBrushStamp(mousePos: Point): void {
   if (overmind.state.toolbox.symmetryModeOn) {
     hoverBrushPreview.hide();

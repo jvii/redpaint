@@ -20,9 +20,8 @@ export class PatternTexture {
   // changed: the same cache-by-version pattern DrawImageIndexer uses for
   // CustomBrush.lastChanged.
   //
-  // The bind happens on every call, not just on upload (cheap. 2 calls): it
-  // keeps the renderer correct regardless of what else might touch this texture
-  // unit between draw calls, without relying on nothing else ever doing so.
+  // The bind happens on every call, not just on upload: two cheap calls, and
+  // nothing has to rely on no one else touching this texture unit.
   public use(pattern: BrushColorIndex, version: number): void {
     const gl = this.gl;
     if (this.currentVersion !== version) {

@@ -7,12 +7,10 @@
 //
 // Declares every uniform that describes the shape itself: u_canvasHeight,
 // u_shapeKind, u_center, and the polygon arrays (u_vertices/u_nextVertices/
-// u_vertexCount). Consumers' own GLSL must NOT redeclare these (a duplicate
-// `uniform` declaration is a GLSL compile error); each declares only the
-// uniforms specific to its own fill mode (gradient bands, pattern size).
-// SHAPE_FILL_UNIFORM_NAMES + applyShapeUniforms below are the JS side of the
-// same split: the one place that looks up and sets exactly this set, so neither
-// fill mode carries its own copy of the polygon packing.
+// u_vertexCount). Consumers must NOT redeclare these, a duplicate `uniform`
+// being a GLSL compile error, and declare only their own fill mode's.
+// SHAPE_FILL_UNIFORM_NAMES and applyShapeUniforms are the JS side of the same
+// split.
 
 import { Point } from '../../types';
 import { MAX_FILL_POLYGON_VERTICES, ShapeGeometry } from '../../algorithm/fillShape';

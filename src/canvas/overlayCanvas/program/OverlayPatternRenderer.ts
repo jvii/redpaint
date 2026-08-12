@@ -13,13 +13,10 @@ import { PatternTexture } from '../../util/patternTexture';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 import { RowSpanTable } from '../../../algorithm/rowSpans';
 
-// The pattern/row-span textures' own dedicated units. This renderer lives in
-// the overlay canvas's own separate GL context, so these don't collide with
-// PatternGeometricIndexer's identically-numbered units in the painting canvas's
-// context (the two are independent GPU resource namespaces); using the same
-// numbers for both is just the established convention (mirrors
-// DrawImageIndexer/OverlayDrawImageRenderer both using unit 2 for the
-// brush-stamp texture, each in its own context).
+// The pattern/row-span textures' own dedicated units. The overlay canvas has
+// its own GL context, so these do not collide with PatternGeometricIndexer's
+// identically-numbered units in the painting canvas's; matching numbers across
+// the two contexts is the convention here.
 const PATTERN_TEXTURE_UNIT = 7;
 const ROW_SPAN_TEXTURE_UNIT = 9;
 

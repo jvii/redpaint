@@ -31,14 +31,12 @@ export interface DrawTarget {
   // pass 0 and DrawCallBuffer assigns real ids on replay. endEffectStroke
   // resets the chains (previous-stamp state) at stroke end.
   //
-  // Unlike every other DrawTarget method, effectDraw does NOT render on its
-  // own. It only writes into the color-index texture. Under N-way symmetry each
-  // copy needs its own effectDraw call (DrawCallBuffer can't merge them: each
-  // copy's stepped color, e.g. Cycle's per-copy counter, genuinely differs), so
-  // rendering per call would mean N full-canvas re-renders per stroke segment
-  // instead of 1. Callers must call flushEffectDraw() once after they're done
-  // issuing effectDraw calls for a segment (a single direct call, or a whole
-  // batch of symmetry copies) to trigger the one render they share.
+  // Unlike every other DrawTarget method, effectDraw does not render: it only
+  // writes into the color-index texture. Each symmetry copy needs its own call
+  // (their stepped colors differ, so DrawCallBuffer cannot merge them), and
+  // rendering per call would mean N full-canvas re-renders per stroke segment.
+  // Callers must call flushEffectDraw() once per segment for the one render
+  // they share.
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void;
   flushEffectDraw(): void;
   endEffectStroke(): void;

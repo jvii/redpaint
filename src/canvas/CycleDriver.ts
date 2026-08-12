@@ -42,13 +42,11 @@ class CycleDriver {
   }
 
   // Renders the base (un-rotated) palette for the duration of fn, for save
-  // paths that capture the drawing buffer, which would otherwise bake a
-  // mid-cycle frame into the file. Cycling resumes from where it paused; the
-  // paused wall-clock time is not counted as elapsed. Generic in the callback's
-  // result so a caller can hold the base colors *around the thing that produces
-  // a value*. The PNG save captures the drawing buffer and needs the blob back
-  // out, and a wrapper that swallowed it would force the capture to happen
-  // outside the hold.
+  // paths that capture the drawing buffer and would otherwise bake a mid-cycle
+  // frame into the file. Cycling resumes from where it paused, with the paused
+  // time not counted as elapsed. Generic in the callback's result so the PNG
+  // save can hold the base colors *around* the capture and still get its blob
+  // back out.
   async withBaseColors<T>(fn: () => Promise<T> | T): Promise<T> {
     if (this.rafId === null) {
       return await fn();
@@ -89,12 +87,9 @@ class CycleDriver {
 }
 
 // Pushes state.palette.cycleOffsets to the screen: re-upload both GL palette
-// textures, then replay the overlay. Free function, not a CycleDriver method,
-// because toggleCycling needs it too. That action zeroes the offsets itself (an
-// action can't dispatch setCycleOffsets through the overmind singleton from
-// inside another action) and then needs exactly this same refresh, so "what has
-// to happen when the offsets change" lives in one place instead of being
-// spelled out on both sides.
+// textures, then replay the overlay. A free function rather than a CycleDriver
+// method because toggleCycling needs it too, zeroing the offsets itself (an
+// action cannot dispatch setCycleOffsets from inside another action).
 export function refreshCyclePalettes(): void {
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();

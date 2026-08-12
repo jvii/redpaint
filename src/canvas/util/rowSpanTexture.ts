@@ -92,11 +92,9 @@ export class RowSpanTexture {
   // changed. Returns false for shapes with no table (rect/polygon): callers
   // should skip the row-span branch rather than bind an empty texture.
   //
-  // `overrideTable` is uploaded instead of the one derived from `shape`: the
-  // Fill Style preview swatch uses its own ellipse rasterization so its three
-  // fill modes agree with each other rather than with the real (visibly
-  // asymmetric at that size) shape. Cached by table identity, since the caller
-  // owns it: otherwise a dialog left open re-uploads every cycling frame.
+  // `overrideTable` is uploaded instead of the one derived from `shape`, for
+  // the Fill Style preview swatch's own ellipse rasterization. Cached by table
+  // identity, or a dialog left open re-uploads every cycling frame.
   public use(shape: FillShape, overrideTable?: RowSpanTable): boolean {
     if (overrideTable) {
       if (overrideTable !== this.lastTable) {
