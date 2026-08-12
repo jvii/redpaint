@@ -87,23 +87,16 @@ export const SHAPE_FILL_LIB = `
     uniform vec2 u_nextVertices[${MAX_FILL_POLYGON_VERTICES}]; // u_vertices[(i+1) % count], precomputed on the CPU
     uniform float u_vertexCount;  // polygon only, <= ${MAX_FILL_POLYGON_VERTICES}.0
 
-    // Circle/ellipse membership + per-row bounds: a texture lookup against
-    // the exact row-span table filledCircle/filledEllipse produce
-    // (src/algorithm/rowSpans.ts, packed by rowSpanTexture.ts), rather than
-    // a continuous ellipse-equation test — this is what makes both the
-    // Gradient and Pattern GPU fills match the CPU-rasterized solid fill
-    // pixel-for-pixel instead of rounding differently at the boundary. One
-    // texel per local row; u_rowSpanYMin is the table's first row's LOCAL
-    // (center-relative) y. Each texel packs that row's min/max local x as
-    // unsigned 16-bit values (R/G = min high/low byte, B/A = max high/low
-    // byte) biased by ROW_SPAN_OFFSET so negative offsets stay
-    // representable — see rowSpanTexture.ts. Reconstructing a 16-bit value
-    // from two bytes needs highp: mediump's guaranteed-exact integer range
-    // (roughly +/-1024) is well below the values this reaches for anything
-    // but a small shape, so every consumer of this function must set its
-    // own default precision to highp when GL_FRAGMENT_PRECISION_HIGH is
-    // defined (falls back to mediump, and this specific lookup, on the rare
-    // hardware without highp fragment support).
+    // Circle/ellipse membership and per-row bounds: a lookup against the exact
+    // row-span table filledCircle/filledEllipse produce (algorithm/rowSpans.ts,
+    // packed by rowSpanTexture.ts), which is what makes the GPU fills match the
+    // CPU-rasterized solid fill pixel-for-pixel at the boundary. One texel per
+    // local row; each packs that row's min/max local x as unsigned 16-bit
+    // (R/G = min hi/lo, B/A = max hi/lo) biased by ROW_SPAN_OFFSET.
+    //
+    // Rebuilding a 16-bit value from two bytes needs highp — mediump's exact
+    // integer range (~±1024) is below what this reaches for all but small
+    // shapes — so every consumer must declare highp where available.
     uniform sampler2D u_rowSpans;
     uniform float u_rowSpanYMin;
     uniform float u_rowSpanRowCount;
@@ -120,25 +113,16 @@ export const SHAPE_FILL_LIB = `
       return local.x >= xMin && local.x <= xMax;
     }
 
-    // Even-odd point-in-polygon test (the same rule and edge-crossing math
-    // as shape.ts's filledPolygon, ported to a fixed-size loop — WebGL1
-    // requires a compile-time loop bound, so this runs the full
-    // MAX_VERTICES range and breaks once i reaches u_vertexCount). Also
-    // returns this fragment's own row *run* bounds (runMin/runMax): a
-    // concave polygon's row can have more than one disjoint run, so a
-    // horizontalLine gradient needs the specific pair of crossings
-    // bracketing its own x, not the row's overall extent — found in the
-    // same loop by tracking the nearest crossing on each side of pix.x, no
-    // sorting needed. Callers that don't need them (Pattern) just ignore
-    // the out-params.
+    // Even-odd point-in-polygon test, the same rule and edge-crossing math as
+    // shape.ts's filledPolygon, over a fixed-size loop (WebGL1 needs a
+    // compile-time bound) that breaks at u_vertexCount. Also returns this
+    // fragment's own row *run* bounds: a concave row can have several disjoint
+    // runs, and a horizontalLine gradient needs the pair bracketing its own x.
     //
-    // Every edge is read as (u_vertices[i], u_nextVertices[i]) — both
-    // indexed by the bare loop variable i, never a derived index — because
-    // WebGL1 fragment shaders only accept the loop-control variable itself
-    // as a dynamic array index (ANGLE rejects anything derived from it,
-    // e.g. a "previous vertex" index computed from i, with "Index
-    // expression can only contain const or loop symbols"); u_nextVertices
-    // exists purely to sidestep that restriction (see applyGradientUniforms).
+    // Every edge is read as (u_vertices[i], u_nextVertices[i]), both indexed by
+    // the bare loop variable — WebGL1 fragment shaders accept nothing derived
+    // from it as a dynamic index ("Index expression can only contain const or
+    // loop symbols"), which is the only reason u_nextVertices exists.
     bool polygonRow(vec2 pix, out float runMin, out float runMax) {
       bool inside = false;
       runMin = -1.0e6;

@@ -6,23 +6,16 @@ import { brushRecall } from '../brush/BrushRecall';
 import { symmetryBrush } from '../brush/SymmetryBrush';
 import { overlayCanvasController } from './overlayCanvas/OverlayCanvasController';
 
-// The hover brush preview as DOM instead of overlay-canvas draws
+// The hover brush preview as DOM rather than overlay-canvas draws
 // (docs/dom-hover-preview.md): on the affected Windows machine every WebGL
-// commit issued per mousemove presents a frame-plus late — in every browser,
-// at every canvas size, for every build back to the app-drawn pointer's
-// first evening — while a transform on a composited DOM element tracks like
-// the native cursor. So while merely hovering, the brush stamp is a small
-// <canvas> element per view (main and zoom register one each) holding the
-// brush bitmap, moved by style.transform; the overlay canvas is not touched
-// at all. Painting and dragging keep the overlay pipeline unchanged.
+// commit per mousemove presents a frame late, while a transform on a composited
+// DOM element tracks like the native cursor. So while merely hovering, the
+// stamp is a small <canvas> per view moved by style.transform and the overlay
+// is not touched; painting and dragging keep the overlay pipeline.
 //
-// The bitmap re-renders only when its cache key says something it shows
-// changed, never per mousemove: a move costs one rect read and one transform
-// write per view, the exact work the crosshair div already does smoothly.
-// The key is built from primitives (timestamps, offsets, resolved colors) —
-// object identity across Overmind proxy reads is not dependable, which is
-// why every cache in this codebase keys on primitives (e.g. the selection
-// indicator's lastUndoPointTime).
+// The bitmap re-renders only when its cache key changes, never per mousemove.
+// The key is built from primitives — object identity across Overmind proxy
+// reads is not dependable, which is why every cache here keys on primitives.
 type PreviewView = {
   host: HTMLCanvasElement; // the painting canvas whose buffer coords position the preview
   element: HTMLCanvasElement; // the DOM element showing the brush bitmap

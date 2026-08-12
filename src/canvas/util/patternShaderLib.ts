@@ -1,35 +1,20 @@
-// Shared GLSL for the GPU Pattern fill — the DPaint "Pattern"/"From Brush"
-// fill mode, sitting alongside Gradient (gradientShaderLib.ts) and reusing
-// its shape inside-tests (shapeFillShaderLib.ts) rather than a second copy
-// of the polygon/row-span math. Both the commit path (PatternGeometricIndexer)
-// and preview path (OverlayPatternRenderer) embed PATTERN_LIB and differ
-// only in what they do with the fetched texel — see GRADIENT_LIB's own
-// header comment for the shared-lib convention this mirrors.
+// Shared GLSL for the GPU Pattern fill, reusing the shape inside-tests in
+// shapeFillShaderLib.ts. Both the commit path (PatternGeometricIndexer) and the
+// preview path (OverlayPatternRenderer) embed PATTERN_LIB.
 //
 // The returned texel is still tagged (patternTexel discards only transparent
-// tiles), so each consumer decides what an indexed and a true-color tile
-// mean for it: the commit path writes each straight back as its own kind of
-// pixel, the preview path resolves an index through the palette and shows a
-// true-color tile's RGB as-is.
+// tiles), so each consumer decides what an indexed and a true-color tile mean
+// for it.
 //
-// Tiling: mod(pix, u_patternSize) anchors the tile to the fixed canvas
-// origin (0, 0) — DPaint's own hardware-blitter tiling anchored the same
-// way, so multiple separately-filled shapes show one continuous, aligned
-// pattern (see src/algorithm/patternFill.ts's patternColorAt, the CPU
-// twin this must stay pixel-identical with). u_pattern is always sampled
-// with NEAREST filtering (no blending across the alpha-tag boundary) and
-// wrap mode is irrelevant here — mod() keeps the sampled uv inside [0, 1)
-// itself, deliberately not relying on gl.REPEAT (see the design note this
-// followed: sharing a texture's hardware wrap mode with the unrelated
-// brush-stamp code in DrawImageIndexer.ts would couple the two features).
+// Tiling anchors to the canvas origin via mod(pix, u_patternSize), so
+// separately-filled shapes show one continuous pattern — and must stay
+// pixel-identical with patternColorAt (algorithm/patternFill.ts). NEAREST
+// filtering, and mod() rather than gl.REPEAT so the texture's wrap mode is not
+// shared with the unrelated brush-stamp code.
 
 import { PatternUniforms } from '../../algorithm/patternFill';
 import { ALPHA_TAG_LIB } from './alphaTagShaderLib';
-import {
-  applyShapeUniforms,
-  SHAPE_FILL_LIB,
-  SHAPE_FILL_UNIFORM_NAMES,
-} from './shapeFillShaderLib';
+import { applyShapeUniforms, SHAPE_FILL_LIB, SHAPE_FILL_UNIFORM_NAMES } from './shapeFillShaderLib';
 
 // Shared by both PatternGeometricIndexer and OverlayPatternRenderer: every
 // uniform PATTERN_LIB declares (the shape-describing ones via

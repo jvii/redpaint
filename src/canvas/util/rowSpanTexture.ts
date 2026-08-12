@@ -88,24 +88,15 @@ export class RowSpanTexture {
     this.textureUnit = textureUnit;
   }
 
-  // Binds this shape's row-span texture to this instance's texture unit,
-  // re-uploading only when the shape's geometry actually changed since the
-  // last call (the same cache-by-key pattern PatternGeometricIndexer uses
-  // for its pattern bitmap). Returns false for shapes with no row-span
-  // table (rect/polygon) — callers should skip the row-span branch entirely
-  // rather than bind a stale or empty texture.
+  // Binds this shape's row-span texture, re-uploading only when the geometry
+  // changed. Returns false for shapes with no table (rect/polygon) — callers
+  // should skip the row-span branch rather than bind an empty texture.
   //
-  // `overrideTable`, if given, is uploaded instead of the table derived
-  // from `shape` — the Fill Style preview swatch's escape hatch for using
-  // its own ellipse rasterization (symmetricFilledEllipse) instead of the
-  // real filledCircle/filledEllipse, so all three of that swatch's fill
-  // modes agree with each other rather than the real (but, at that small
-  // preview resolution, visibly asymmetric) shape. Cached by table
-  // identity, not by a geometry key: the caller owns the table, so it's the
-  // caller that decides when the shape changed (the preview memoizes its
-  // table on the radii). Without this, a dialog left open while color
-  // cycling runs re-encodes and re-uploads an unchanged table every
-  // animation frame.
+  // `overrideTable` is uploaded instead of the one derived from `shape`: the
+  // Fill Style preview swatch uses its own ellipse rasterization so its three
+  // fill modes agree with each other rather than with the real (visibly
+  // asymmetric at that size) shape. Cached by table identity, since the caller
+  // owns it — otherwise a dialog left open re-uploads every cycling frame.
   public use(shape: FillShape, overrideTable?: RowSpanTable): boolean {
     if (overrideTable) {
       if (overrideTable !== this.lastTable) {

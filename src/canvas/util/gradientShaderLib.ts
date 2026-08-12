@@ -1,48 +1,23 @@
-// Shared GLSL for the GPU gradient fill (design:
-// docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md). Both the commit
-// path (GradientGeometricIndexer) and the preview path
-// (OverlayGradientRenderer) embed GRADIENT_LIB and differ only in what they
-// do with the returned palette index. Mirrors the effectShaderLib.ts
-// pattern.
+// Shared GLSL for the GPU gradient fill. Both the commit path
+// (GradientGeometricIndexer) and the preview path (OverlayGradientRenderer)
+// embed GRADIENT_LIB and differ only in what they do with the returned index.
 //
-// Conventions, documented once here:
-//  * gradientHash returns 0..1; its input is a LOCAL (shape-relative)
-//    position plus the per-stroke seed. Local coords are bounded by the
-//    shape size, not the canvas — every symmetry copy of a stroke shares
-//    local coords and seed, so all copies get identical (translated)
-//    speckle. The hash itself applies fract() before any large
-//    multiplication (see gradientHash) rather than the classic
-//    fract(sin(dot(p, BIG))*BIG) trick, which amplifies p into a huge
-//    sin() argument that mediump can't represent precisely — visible as
-//    diagonal banding for large shapes on GPUs that actually truncate
-//    mediump to ~16 bits.
-//  * The band math is a direct port of colorIdForPosition
-//    (src/algorithm/gradientFill.ts): floor-divided bands over an extent
-//    span (max - min), signed uniform jitter of half-width
-//    u_ditherJitter * pointsPerColor, clamped to [0, u_bandCount].
-//  * span <= 0.0 (a one-pixel row/column) resolves to band 0 = u_rangeLowIndex,
-//    matching the CPU path's `span <= 0` guard.
-//  * All uniforms are floats/vec2 except the shape/axis mode selectors (int).
-//  * Polygon (shapeKind 3) is the one shape whose vertices are already in
-//    ABSOLUTE canvas coordinates (SymmetryBrush resolves rotation/mirroring
-//    per copy on the CPU before this ever runs — see MAX_VERTICES below),
-//    so its point-in-polygon test compares against pix directly, not
-//    against the center-relative `local` the other shapes use. The dither
-//    hash still reads `local` for polygon too, keeping its input bounded by
-//    the shape's own size regardless of where on the canvas it's drawn.
-//  * Circle/ellipse (shapeKind 1/2) membership and per-row bounds come from
-//    a row-span texture (rowSpanTexture.ts), not a continuous ellipse-
-//    equation test: see rowSpanInside's own comment for why. Both shape
-//    kinds share one code path — the row-span table already has any
-//    rotation baked in, so there's nothing left that distinguishes them at
-//    this point.
+//  * gradientHash takes a LOCAL (shape-relative) position plus the per-stroke
+//    seed, so every symmetry copy gets identical, translated speckle. It
+//    applies fract() *before* the large multiplication rather than the classic
+//    fract(sin(dot(p, BIG))*BIG): that amplifies p into a sin() argument
+//    mediump cannot hold, showing as diagonal banding on large shapes.
+//  * The band math is a port of colorIdForPosition (algorithm/gradientFill.ts)
+//    and must stay pixel-identical to it. span <= 0.0 resolves to band 0.
+//  * Polygon (shapeKind 3) vertices are already in ABSOLUTE canvas
+//    coordinates, so its inside-test compares against pix, not the
+//    center-relative `local` the other shapes use. The dither hash still reads
+//    `local`, keeping its input bounded by the shape's own size.
+//  * Circle/ellipse membership comes from a row-span texture, not an ellipse
+//    equation — see rowSpanInside.
 
 import { GradientUniforms } from '../../algorithm/gradientFill';
-import {
-  applyShapeUniforms,
-  SHAPE_FILL_LIB,
-  SHAPE_FILL_UNIFORM_NAMES,
-} from './shapeFillShaderLib';
+import { applyShapeUniforms, SHAPE_FILL_LIB, SHAPE_FILL_UNIFORM_NAMES } from './shapeFillShaderLib';
 
 // Shared by both GradientGeometricIndexer and OverlayGradientRenderer:
 // every uniform GRADIENT_LIB declares (the shape-describing ones via

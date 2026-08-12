@@ -15,11 +15,9 @@ type GLBuffers = {
   textureCoordBuffer: WebGLBuffer;
 };
 
-// gl.getUniformLocation/getAttribLocation are synchronous driver round-trips
-// (see GeometricIndexer's own u_pixel caching) — every pass method used to
-// call them fresh on every single stamped point, for every symmetry copy.
-// Each program's locations are looked up once here instead and referenced
-// by name after.
+// gl.getUniformLocation/getAttribLocation are synchronous driver round-trips,
+// so each program's locations are looked up once here rather than per stamped
+// point, per symmetry copy.
 type Locations = { [name: string]: WebGLUniformLocation | null };
 
 function cacheUniforms(
@@ -44,9 +42,6 @@ function cacheAttribs(gl: WebGLRenderingContext, program: WebGLProgram): Attribs
 }
 
 // One compiled pass: its program plus the locations looked up once for it.
-// The three used to be three parallel fields per pass (six passes, eighteen
-// fields), which meant every pass method reached for three of them by name
-// and dispose repeated the same null-check six times.
 type EffectProgram = {
   program: WebGLProgram | null;
   locations: Locations;
@@ -382,16 +377,11 @@ export class EffectIndexer {
     this.drawStampQuad(attribs, rect);
   }
 
-  // Cycle's whole uniform state (u_shape, u_pixel, the scratch/brush size
-  // pair) is the same for every point in one effectDraw call: the color
-  // only advances once per segment (state.cycleStep++ happens after the
-  // point loop, not inside it), and shape/brush size don't vary mid-stroke.
-  // Set it up once per call instead of once per point - only the stamp's
-  // position (drawStampQuad's rect) actually varies point to point. Fewer
-  // redundant gl.uniform*/getUniformLocation calls matters more on browsers
-  // whose WebGL implementation has higher per-call overhead (Safari's,
-  // notably): a segment with several points, times several symmetry
-  // copies, used to repeat this whole setup for every single point.
+  // Cycle's uniform state is the same for every point in one effectDraw call —
+  // the color advances once per segment, and shape and brush size do not vary
+  // mid-stroke — so it is set up once per call rather than once per point,
+  // where only the stamp's position varies. Per-call GL overhead is higher on
+  // some implementations (Safari's notably).
   private cycleSetup(state: CopyState): void {
     const gl = this.gl;
     const { locations: loc } = this.passes.cycle;

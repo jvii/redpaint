@@ -24,7 +24,15 @@ class OverlayCanvasController implements CanvasController {
     textureCoordBuffer: null,
   };
 
-  // The overlay is WebGL with preserveDrawingBuffer: false, so it isn't
+  // The overlay has preserveDrawingBuffer: false, so any draw made outside the
+  // original mouse event's synchronous run (CycleDriver's rAF tick) composites
+  // as a fresh frame and anything not re-issued is genuinely absent, not stale.
+  // So every overlay draw since the last beginFrame() is remembered — not just
+  // the color-bearing ones — and CycleDriver replays the whole frame: replaying
+  // only the color-dependent calls would erase whatever was drawn alongside
+  // them, and a symmetry preview issues one call per copy plus the cursor and
+  // indicator dots. Canvas.tsx calls beginFrame() before each overlay handler,
+  // so one event's calls accumulate and the next event starts a fresh list.
   // actually persistent: any draw call made outside the original mouse
   // event's synchronous run (e.g. from CycleDriver's rAF tick) composites as
   // its own fresh frame, and anything not re-issued as part of *that* call

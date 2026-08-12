@@ -11,11 +11,10 @@ export class OverlaySelectionIndicatorRenderer {
   private program: WebGLProgram;
   private canvasTexture: WebGLTexture | null = null;
   private lastCanvasUpdate = 1;
-  // attribute/uniform locations are looked up once here: getUniformLocation /
-  // getAttribLocation are driver round-trips, too slow for per-draw-call use.
-  // (This renderer used to query gl.getParameter(CURRENT_PROGRAM) per draw,
-  // which returns null after a WebGL context loss — Safari's strict bindings
-  // then throw a TypeError on the getUniformLocation call.)
+  // Locations looked up once: getUniformLocation/getAttribLocation are driver
+  // round-trips. Do not reach for gl.getParameter(CURRENT_PROGRAM) per draw
+  // instead — it returns null after a context loss, and Safari's strict
+  // bindings then throw on the getUniformLocation call.
   private a_position: number;
 
   public constructor(gl: WebGLRenderingContext) {
