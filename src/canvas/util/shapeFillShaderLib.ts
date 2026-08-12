@@ -1,18 +1,18 @@
-// Shape inside-tests shared by the GPU fill shaders that need "is this
-// fragment inside the shape, and where is it" — Gradient (gradientShaderLib.ts,
-// which layers axis/band math on top) and Pattern (patternShaderLib.ts,
-// which just tiles from here). Single source of truth for the bounded-loop
-// polygon math and the circle/ellipse row-span lookup, so a fix to either
-// doesn't need to be repeated in two places.
+// Shape inside-tests shared by the GPU fill shaders that need "is this fragment
+// inside the shape, and where is it": Gradient (gradientShaderLib.ts, which
+// layers axis/band math on top) and Pattern (patternShaderLib.ts, which just
+// tiles from here). Single source of truth for the bounded-loop polygon math
+// and the circle/ellipse row-span lookup, so a fix to either doesn't need to be
+// repeated in two places.
 //
-// Declares every uniform that describes the shape itself — u_canvasHeight,
+// Declares every uniform that describes the shape itself: u_canvasHeight,
 // u_shapeKind, u_center, and the polygon arrays (u_vertices/u_nextVertices/
 // u_vertexCount). Consumers' own GLSL must NOT redeclare these (a duplicate
 // `uniform` declaration is a GLSL compile error); each declares only the
 // uniforms specific to its own fill mode (gradient bands, pattern size).
 // SHAPE_FILL_UNIFORM_NAMES + applyShapeUniforms below are the JS side of the
-// same split: the one place that looks up and sets exactly this set, so
-// neither fill mode carries its own copy of the polygon packing.
+// same split: the one place that looks up and sets exactly this set, so neither
+// fill mode carries its own copy of the polygon packing.
 
 import { Point } from '../../types';
 import { MAX_FILL_POLYGON_VERTICES, ShapeGeometry } from '../../algorithm/fillShape';
@@ -30,18 +30,18 @@ export const SHAPE_FILL_UNIFORM_NAMES = [
   'u_vertexCount',
 ];
 
-// Sets every SHAPE_FILL_LIB uniform from one ShapeGeometry — the part of the
+// Sets every SHAPE_FILL_LIB uniform from one ShapeGeometry: the part of the
 // per-draw uniform setup that's identical between Gradient and Pattern, and
 // between each one's commit and preview path.
 //
-// u_nextVertices[i] duplicates u_vertices[(i+1) % count], computed here on
-// the CPU rather than in the shader: WebGL1 fragment shaders only allow the
-// bare loop-control variable as a dynamic array index (ANGLE rejects
-// anything derived from it, e.g. a `j = i==0 ? count-1 : i-1`
-// previous-vertex index, with "Index expression can only contain const or
-// loop symbols"), so the shader can't compute "the next vertex" itself —
-// every edge is looked up as (u_vertices[i], u_nextVertices[i]) with the
-// same bare `i` instead, at the cost of this second array.
+// u_nextVertices[i] duplicates u_vertices[(i+1) % count], computed here on the
+// CPU rather than in the shader: WebGL1 fragment shaders only allow the bare
+// loop-control variable as a dynamic array index (ANGLE rejects anything
+// derived from it, e.g. a `j = i==0 ? count-1 : i-1` previous-vertex index,
+// with "Index expression can only contain const or loop symbols"), so the
+// shader can't compute "the next vertex" itself. Every edge is looked up as
+// (u_vertices[i], u_nextVertices[i]) with the same bare `i` instead, at the
+// cost of this second array.
 export function applyShapeUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
@@ -67,10 +67,10 @@ export function applyShapeUniforms(
   gl.uniform1f(locations['u_vertexCount'], count);
 }
 
-// Every fill program draws the same thing: one bounding quad in clip space,
-// the fragment shader discarding whatever falls outside the shape. So all
-// four of them (Gradient/Pattern x commit/preview) share this vertex shader
-// — see drawShapeQuad (shapeFillDraw.ts), which feeds it.
+// Every fill program draws the same thing: one bounding quad in clip space, the
+// fragment shader discarding whatever falls outside the shape. So all four of
+// them (Gradient/Pattern x commit/preview) share this vertex shader: see
+// drawShapeQuad (shapeFillDraw.ts), which feeds it.
 export const FILL_VERTEX_SHADER = `
     attribute vec4 a_position;
 
@@ -91,12 +91,12 @@ export const SHAPE_FILL_LIB = `
     // row-span table filledCircle/filledEllipse produce (algorithm/rowSpans.ts,
     // packed by rowSpanTexture.ts), which is what makes the GPU fills match the
     // CPU-rasterized solid fill pixel-for-pixel at the boundary. One texel per
-    // local row; each packs that row's min/max local x as unsigned 16-bit
-    // (R/G = min hi/lo, B/A = max hi/lo) biased by ROW_SPAN_OFFSET.
+    // local row; each packs that row's min/max local x as unsigned 16-bit (R/G
+    // = min hi/lo, B/A = max hi/lo) biased by ROW_SPAN_OFFSET.
     //
-    // Rebuilding a 16-bit value from two bytes needs highp — mediump's exact
+    // Rebuilding a 16-bit value from two bytes needs highp. Mediump's exact
     // integer range (~±1024) is below what this reaches for all but small
-    // shapes — so every consumer must declare highp where available.
+    // shapes, so every consumer must declare highp where available.
     uniform sampler2D u_rowSpans;
     uniform float u_rowSpanYMin;
     uniform float u_rowSpanRowCount;
@@ -120,7 +120,7 @@ export const SHAPE_FILL_LIB = `
     // runs, and a horizontalLine gradient needs the pair bracketing its own x.
     //
     // Every edge is read as (u_vertices[i], u_nextVertices[i]), both indexed by
-    // the bare loop variable — WebGL1 fragment shaders accept nothing derived
+    // the bare loop variable. WebGL1 fragment shaders accept nothing derived
     // from it as a dynamic index ("Index expression can only contain const or
     // loop symbols"), which is the only reason u_nextVertices exists.
     bool polygonRow(vec2 pix, out float runMin, out float runMax) {

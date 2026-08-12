@@ -2,9 +2,8 @@
 // requester is up. Mirrors pendingImage.ts: decoding happens before the
 // requester so it can describe the brush (size, distinct colors); the
 // requester's OK consumes this to build the BrushColorIndex, Cancel discards
-// it. Kept outside Overmind — a multi-megabyte ImageData has no business
-// inside a proxied state tree; the requester renders from app.brushLoadInfo
-// instead.
+// it. Kept outside Overmind. A multi-megabyte ImageData has no business inside
+// a proxied state tree; the requester renders from app.brushLoadInfo instead.
 let pending: ImageData | null = null;
 
 export function setPendingBrush(image: ImageData): void {

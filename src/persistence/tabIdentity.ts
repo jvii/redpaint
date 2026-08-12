@@ -47,7 +47,7 @@ export async function ensureTabId(): Promise<string> {
   try {
     inherited = window.sessionStorage.getItem(TAB_KEY);
   } catch {
-    // storage blocked: behaves as a new tab each load — saves, never restores
+    // storage blocked: behaves as a new tab each load, saves, never restores
   }
   let id = inherited ?? newId();
   if (!(await claim(id))) {
@@ -65,8 +65,8 @@ export async function ensureTabId(): Promise<string> {
   return id;
 }
 
-// The settled id, or the inherited one if a save somehow beat the restore —
-// the same answer except in a duplicated tab.
+// The settled id, or the inherited one if a save somehow beat the restore: the
+// same answer except in a duplicated tab.
 export function tabId(): string {
   if (claimed) {
     return claimed;

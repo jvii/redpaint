@@ -13,8 +13,8 @@ export class OverlaySelectionIndicatorRenderer {
   private lastCanvasUpdate = 1;
   // Locations looked up once: getUniformLocation/getAttribLocation are driver
   // round-trips. Do not reach for gl.getParameter(CURRENT_PROGRAM) per draw
-  // instead — it returns null after a context loss, and Safari's strict
-  // bindings then throw on the getUniformLocation call.
+  // instead: it returns null after a context loss, and Safari's strict bindings
+  // then throw on the getUniformLocation call.
   private a_position: number;
 
   public constructor(gl: WebGLRenderingContext) {
@@ -72,10 +72,10 @@ export class OverlaySelectionIndicatorRenderer {
     this.gl.drawArrays(gl.LINES, 0, 2 * boxLines.length);
   }
 
-  // A closed outline through arbitrary (not axis-aligned) corner points, in
-  // the same color-inverting style — the rotating box of the brush-rotate
-  // drag. Plain +0.5 pixel centering; the axis-aligned endpoint stretching
-  // shiftLine does would warp slanted lines.
+  // A closed outline through arbitrary (not axis-aligned) corner points, in the
+  // same color-inverting style: the rotating box of the brush-rotate drag.
+  // Plain +0.5 pixel centering; the axis-aligned endpoint stretching shiftLine
+  // does would warp slanted lines.
   public renderSelectionPolygon(points: Point[]): void {
     const gl = this.gl;
 
@@ -130,11 +130,11 @@ export class OverlaySelectionIndicatorRenderer {
     this.gl.drawArrays(gl.LINES, 0, 2 * crosshairLines.length);
   }
 
-  // re-upload the main canvas into the texture if it changed. Committing a
-  // new stroke bumps lastUndoPointTime; undo/redo instead bump
-  // lastUndoRedoTime (see overmind/undo/actions.ts) — watching only the
-  // former left this texture stale after undo/redo, showing "ghost" colors
-  // from before the undo until the next stroke committed.
+  // re-upload the main canvas into the texture if it changed. Committing a new
+  // stroke bumps lastUndoPointTime; undo/redo instead bump lastUndoRedoTime
+  // (see overmind/undo/actions.ts): watching only the former left this texture
+  // stale after undo/redo, showing "ghost" colors from before the undo until
+  // the next stroke committed.
   private updateCanvasTexture(): void {
     const latestCanvasChange = Math.max(
       overmind.state.undo.lastUndoPointTime,
@@ -188,9 +188,9 @@ export class OverlaySelectionIndicatorRenderer {
 
     gl.activeTexture(gl.TEXTURE3);
 
-    // one texture, created once and re-uploaded into — creating a new
-    // texture per update without deleting the old one leaks a full
-    // canvas-sized texture per undo point
+    // one texture, created once and re-uploaded into: creating a new texture
+    // per update without deleting the old one leaks a full canvas-sized texture
+    // per undo point
     if (!this.canvasTexture) {
       this.canvasTexture = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, this.canvasTexture);

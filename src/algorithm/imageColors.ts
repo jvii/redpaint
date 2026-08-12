@@ -5,10 +5,9 @@ import { Color } from '../types';
 // that fit a palette outright (distinct colors <= palette size), where
 // indexing is exact and no quantization is needed.
 
-// Counts the distinct 24-bit RGB colors (alpha ignored) in RGBA pixel data.
-// One pass over the pixels marking a 2MB transient bitset — exact for any
-// image, with no per-color allocation even for photos with millions of
-// colors.
+// Counts the distinct 24-bit RGB colors (alpha ignored) in RGBA pixel data. One
+// pass over the pixels marking a 2MB transient bitset: exact for any image,
+// with no per-color allocation even for photos with millions of colors.
 export function countDistinctColors(data: Uint8ClampedArray): number {
   const seen = new Uint8Array(1 << 21); // 2^24 colors / 8 bits per byte
   let count = 0;
@@ -25,12 +24,12 @@ export function countDistinctColors(data: Uint8ClampedArray): number {
 }
 
 // The distinct opaque colors of a decoded image (pixels at or above
-// alphaThreshold — matching the cutoff BrushColorIndex.fromImageData uses to
-// decide brush transparency), each with its pixel count, most frequent
-// first. Used by brush loading: a brush's transparent pixels must never
-// compete for a palette slot or inflate its "N colors" description, and the
-// greedy remap (remapColorsGreedy) needs frequency order to assign
-// high-frequency colors their own palette slot first.
+// alphaThreshold: matching the cutoff BrushColorIndex.fromImageData uses to
+// decide brush transparency), each with its pixel count, most frequent first.
+// Used by brush loading: a brush's transparent pixels must never compete for a
+// palette slot or inflate its "N colors" description, and the greedy remap
+// (remapColorsGreedy) needs frequency order to assign high-frequency colors
+// their own palette slot first.
 export function distinctOpaqueColorsByFrequency(
   data: Uint8ClampedArray,
   alphaThreshold = 128
@@ -54,8 +53,8 @@ export function distinctOpaqueColorsByFrequency(
 // A plain, unproxied copy of a palette.
 //
 // Overmind deep-proxies everything in state for reactivity tracking, and the
-// color-mapping loops here and in quantize.ts read r/g/b once per histogram
-// bin times palette length — a proxy get-trap on every one of those is the
+// color-mapping loops here and in quantize.ts read r/g/b once per histogram bin
+// times palette length. A proxy get-trap on every one of those is the
 // difference between a snappy load and a visible stall. Copying the ~32..256
 // entries once up front costs nothing by comparison. Every caller handing
 // state.palette.paletteArray to a mapping function goes through this, so the

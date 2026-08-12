@@ -2,9 +2,9 @@ import { Context } from '../../overmind';
 import { Color } from '../../types';
 import { PaletteRange } from '../palette/state';
 
-// proxy-state-tree rejects inserting an object reference that's already
-// tracked at another path, so snapshotting/restoring always needs fresh
-// copies — never the exact objects already living elsewhere in the tree.
+// proxy-state-tree rejects inserting an object reference that's already tracked
+// at another path, so snapshotting/restoring always needs fresh copies. Never
+// the exact objects already living elsewhere in the tree.
 function copyPalette(palette: { [id: string]: Color }): { [id: string]: Color } {
   const copy: { [id: string]: Color } = {};
   for (const id in palette) {
@@ -27,8 +27,8 @@ export const open = (context: Context): void => {
 };
 
 // Keep the live edits and close. A session that changed the palette commits one
-// undo point, so the main UNDO reverts the whole editing session — the job
-// DPaint gave the requester's own Undo button — and no palette change sits
+// undo point, so the main UNDO reverts the whole editing session (the job
+// DPaint gave the requester's own Undo button), and no palette change sits
 // outside history where the next unrelated undo would silently revert it.
 // Range-only changes record nothing; ranges are not in history. Cancel restores
 // the snapshot before coming through here, so it never records.
@@ -103,8 +103,8 @@ export const selectEditedColor = (context: Context, colorId: string): void => {
   context.state.paletteEditor.editedColorId = colorId;
 };
 
-// Arms a two-color action (or disarms it when it's already armed — the
-// button doubles as its own cancel). Arming one action replaces the other.
+// Arms a two-color action (or disarms it when it's already armed: the button
+// doubles as its own cancel). Arming one action replaces the other.
 export const armAction = (context: Context, action: 'copy' | 'swap' | 'spread' | 'range'): void => {
   context.state.paletteEditor.armedAction =
     context.state.paletteEditor.armedAction === action ? null : action;
@@ -119,9 +119,9 @@ export const selectRange = (context: Context, rangeIndex: number): void => {
 };
 
 // Clearing steps the selection back to the previous slot (DPaint's own
-// stack-like feel for building/tearing down ranges left-to-right), or
-// deselects entirely — falling back to the "Ranges" title — when there's
-// no previous slot to land on.
+// stack-like feel for building/tearing down ranges left-to-right), or deselects
+// entirely (falling back to the "Ranges" title) when there's no previous slot
+// to land on.
 export const clearRange = (context: Context, rangeIndex: number): void => {
   context.actions.palette.clearRange(rangeIndex);
   context.state.paletteEditor.activeRangeIndex = rangeIndex > 0 ? rangeIndex - 1 : null;

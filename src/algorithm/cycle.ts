@@ -19,8 +19,8 @@ export function stepsPerSecondToRate(steps: number): number {
   return Math.round((steps / MAX_STEPS_PER_SECOND) * CRNG_FULL_RATE);
 }
 
-// Fractional cycling progress, advanced by wall-clock time: one accumulator
-// per range slot. Null/inactive/rate-0 slots hold still. Pure — the caller
+// Fractional cycling progress, advanced by wall-clock time: one accumulator per
+// range slot. Null/inactive/rate-0 slots hold still. Pure. The caller
 // (CycleDriver) owns the clock.
 export function advanceCycleSteps(
   accumulators: number[],
@@ -44,12 +44,12 @@ function spanOf(range: CycleRange): { lo: number; span: number } {
 
 // Integer rotation offset per slot, in cycledPalette's terms (i.e. already
 // translated from steps taken to the "which base color does slot i show"
-// offset — see docs/color-cycling.md#direction-convention). A forward cycle
+// offset: see docs/color-cycling.md#direction-convention). A forward cycle
 // physically shifts each register from start toward end, so a fixed slot
-// displays the color that was `steps` positions *behind* it: offset =
-// (span - steps mod span) mod span. Reverse shifts registers the other way,
-// so its offset is simply `steps mod span`. Verified against the
-// canvascycle reference implementation's CRNG-derived rotation.
+// displays the color that was `steps` positions *behind* it: offset = (span -
+// steps mod span) mod span. Reverse shifts registers the other way, so its
+// offset is simply `steps mod span`. Verified against the canvascycle reference
+// implementation's CRNG-derived rotation.
 export function cycleOffsetsOf(accumulators: number[], ranges: (CycleRange | null)[]): number[] {
   return ranges.map((range, i) => {
     if (!range || !range.active) {
@@ -64,11 +64,11 @@ export function cycleOffsetsOf(accumulators: number[], ranges: (CycleRange | nul
   });
 }
 
-// The palette as displayed: each active range's slots rotated by its offset
-// (an already-directional value from cycleOffsetsOf — this function is
-// direction-agnostic). Slot i shows the base color of
-// s + ((i - s + offset) mod span) — every range reads from the *base*
-// palette, and slots apply in order, so on overlap the later range wins.
+// The palette as displayed: each active range's slots rotated by its offset (an
+// already-directional value from cycleOffsetsOf; this function is
+// direction-agnostic). Slot i shows the base color of s + ((i - s + offset) mod
+// span). Every range reads from the *base* palette, and slots apply in order,
+// so on overlap the later range wins.
 export function cycledPalette(
   palette: { [id: string]: Color },
   ranges: (CycleRange | null)[],
@@ -94,10 +94,10 @@ export function cycledPalette(
   return display;
 }
 
-// The 256x1 RGBA palette texture, cycled — shared by both canvas
-// controllers' texture uploads so rotation can't drift between them.
-// Integer-like keys iterate in ascending numeric order, so Object.values
-// yields the colors in id order (same assumption as paletteArray).
+// The 256x1 RGBA palette texture, cycled. Shared by both canvas controllers'
+// texture uploads so rotation can't drift between them. Integer-like keys
+// iterate in ascending numeric order, so Object.values yields the colors in id
+// order (same assumption as paletteArray).
 export function paletteTextureData(
   palette: { [id: string]: Color },
   ranges: (CycleRange | null)[],

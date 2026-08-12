@@ -1,10 +1,10 @@
 import { JSX } from 'react';
 
 // The empty brush-slot's glyph: a standard download-into-tray arrow, in the
-// same line-drawing language as transformIcons.tsx (24x24, currentColor
-// stroke, square caps/miter joins, no fill) — this is an action glyph
-// (store), not an identity icon, so it stays a line drawing rather than
-// pixel art per docs/style-guide.md.
+// same line-drawing language as transformIcons.tsx (24x24, currentColor stroke,
+// square caps/miter joins, no fill). This is an action glyph (store), not an
+// identity icon, so it stays a line drawing rather than pixel art per
+// docs/style-guide.md.
 export function StoreIcon({ className }: { className?: string }): JSX.Element {
   return (
     <svg

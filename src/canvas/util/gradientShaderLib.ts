@@ -14,16 +14,16 @@
 //    center-relative `local` the other shapes use. The dither hash still reads
 //    `local`, keeping its input bounded by the shape's own size.
 //  * Circle/ellipse membership comes from a row-span texture, not an ellipse
-//    equation — see rowSpanInside.
+//    equation (see rowSpanInside).
 
 import { GradientUniforms } from '../../algorithm/gradientFill';
 import { applyShapeUniforms, SHAPE_FILL_LIB, SHAPE_FILL_UNIFORM_NAMES } from './shapeFillShaderLib';
 
-// Shared by both GradientGeometricIndexer and OverlayGradientRenderer:
-// every uniform GRADIENT_LIB declares (the shape-describing ones via
-// SHAPE_FILL_UNIFORM_NAMES) except u_palette (the overlay-only
-// sampler) and u_rowSpans (a texture unit number each caller binds once at
-// program-construction time, like PATTERN_LIB's u_pattern — its location is
+// Shared by both GradientGeometricIndexer and OverlayGradientRenderer: every
+// uniform GRADIENT_LIB declares (the shape-describing ones via
+// SHAPE_FILL_UNIFORM_NAMES) except u_palette (the overlay-only sampler) and
+// u_rowSpans (a texture unit number each caller binds once at
+// program-construction time, like PATTERN_LIB's u_pattern; Its location is
 // still looked up here since applyGradientUniforms doesn't set it).
 export const GRADIENT_UNIFORM_NAMES = [
   ...SHAPE_FILL_UNIFORM_NAMES,
@@ -43,8 +43,8 @@ export const GRADIENT_UNIFORM_NAMES = [
 // shape-describing ones via applyShapeUniforms, then Gradient's own band/
 // dither parameters. Not set here: u_rowSpans (a texture unit number each
 // caller binds once at program-construction time) and u_rowSpanYMin/
-// u_rowSpanRowCount (bound alongside the texture itself by
-// RowSpanTexture.use + applyRowSpanUniforms, right before this runs).
+// u_rowSpanRowCount (bound alongside the texture itself by RowSpanTexture.use +
+// applyRowSpanUniforms, right before this runs).
 export function applyGradientUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
@@ -77,13 +77,13 @@ export const GRADIENT_LIB = `
     uniform float u_ditherJitter; // dither * jitterPercent / 100; 0.0 = off
     uniform float u_seed;         // per-stroke dither seed
 
-    // Small-coefficient, fract-early hash (the "hash21" pattern used widely
-    // in shader code): every intermediate value stays near [0, 1) instead
-    // of blowing up in magnitude before the final fract(), which is what
-    // made the classic fract(sin(dot(...))*43758.5453) trick unsafe here —
-    // p can be a few hundred pixels from the shape center, and the seed
-    // adds more on top, easily pushing that trick's sin() argument into the
-    // tens of thousands where mediump has no precision left.
+    // Small-coefficient, fract-early hash (the "hash21" pattern used widely in
+    // shader code): every intermediate value stays near [0, 1) instead of
+    // blowing up in magnitude before the final fract(), which is what made the
+    // classic fract(sin(dot(...))*43758.5453) trick unsafe here. P can be a few
+    // hundred pixels from the shape center, and the seed adds more on top,
+    // easily pushing that trick's sin() argument into the tens of thousands
+    // where mediump has no precision left.
     float gradientHash(vec2 p) {
       vec3 p3 = fract(vec3(p.xyx + u_seed) * 0.1031);
       p3 += dot(p3, p3.yzx + 33.33);
@@ -145,17 +145,17 @@ export const GRADIENT_LIB = `
         } else if (u_axisMode == 1) {
           pos = pix.x; minPos = u_axisMin; span = u_axisSpan;
         } else {
-          // horizontalLine: this row's own exact span from the table
-          // itself, not a closed-form chord — exact for rotated ellipses
-          // too, since rotation is already baked into the table.
+          // horizontalLine: this row's own exact span from the table itself,
+          // not a closed-form chord. Exact for rotated ellipses too, since
+          // rotation is already baked into the table.
           pos = pix.x; minPos = u_center.x + rowXMin; span = rowXMax - rowXMin;
         }
         return u_rangeLowIndex + gradientBand(pos, minPos, span, local);
       }
 
-      // u_shapeKind == 0 (rect): the quad IS the shape, no inside test
-      // needed. horizontalLine on a rect: every row spans the full width,
-      // same as the other two axis modes.
+      // u_shapeKind == 0 (rect): the quad IS the shape, no inside test needed.
+      // horizontalLine on a rect: every row spans the full width, same as the
+      // other two axis modes.
       if (u_axisMode == 0) {
         pos = pix.y; minPos = u_axisMin; span = u_axisSpan;
       } else {

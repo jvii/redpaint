@@ -100,7 +100,7 @@ export function useUndo(isZoomCanvas: boolean): void {
     // History can cross canvas sizes (a snapshot from before a resize). A
     // repaint into a different-size GL buffer would show the snapshot cropped
     // or stretched, so restore the snapshot's own resolution first and let the
-    // resolution effect upload it after the resize commits — without touching
+    // resolution effect upload it after the resize commits, without touching
     // the history being navigated.
     const resolution = state.canvas.resolution;
     if (colorIndex.width !== resolution.width || colorIndex.height !== resolution.height) {
@@ -123,11 +123,11 @@ export function useUndo(isZoomCanvas: boolean): void {
   }, [state.undo.lastUndoRedoTime]);
 }
 
-// Uploads content queued for after a resolution change — a loaded image, a
+// Uploads content queued for after a resolution change (a loaded image, a
 // content-preserving canvas resize, or an undo/redo restore across a canvas
-// size change — once React has committed the canvas element resize (which
-// re-inits the GL drawing buffer). Image decode itself happens up front,
-// before the load requester (app.beginImageLoad).
+// size change) once React has committed the canvas element resize (which
+// re-inits the GL drawing buffer). Image decode itself happens up front, before
+// the load requester (app.beginImageLoad).
 export function useCanvasContentUpload(): void {
   const state = useAppState();
   const actions = useActions();
@@ -154,7 +154,7 @@ export function useCanvasContentUpload(): void {
     }
     if (pending.freshDocument) {
       // A picture just loaded from a file already matches one, so it starts
-      // clean, under that file's name — or none, when the pixels came from
+      // clean, under that file's name, or none, when the pixels came from
       // somewhere unnamed. Either way the previous document's name is gone.
       actions.app.setDocumentName(pending.documentName);
       forgetFileHandles();
@@ -168,8 +168,8 @@ export function useCanvasContentUpload(): void {
   }, [state.canvas.resolution]);
 }
 
-// scale converts page pixels to CSS pixels — per axis, because a screen
-// format's pixel aspect can stretch the two axes differently.
+// scale converts page pixels to CSS pixels. Per axis, because a screen format's
+// pixel aspect can stretch the two axes differently.
 export function useScrollToFocusPoint(
   canvasDiv: HTMLDivElement,
   focusPoint: Point | null,
@@ -185,11 +185,11 @@ export function useScrollToFocusPoint(
     };
     canvasDiv.scrollTo(scrollOptions);
     // Re-runs on a scale change as well as a focus point change: what a given
-    // scroll offset centers on depends on both. With a screen format active
-    // the two move together — opening the zoom view shrinks the main pane,
-    // which re-fits the main canvas, which changes the zoom view's own scale
-    // (a multiple of it) — so a scroll computed at the old scale would be
-    // left pointing somewhere else entirely.
+    // scroll offset centers on depends on both. With a screen format active the
+    // two move together. Opening the zoom view shrinks the main pane, which
+    // re-fits the main canvas, which changes the zoom view's own scale (a
+    // multiple of it), so a scroll computed at the old scale would be left
+    // pointing somewhere else entirely.
   }, [focusPoint, scale.x, scale.y]);
 }
 

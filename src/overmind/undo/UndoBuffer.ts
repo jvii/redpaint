@@ -2,8 +2,8 @@ import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { Color } from '../../types';
 
 // One committed state of the document: the pixels and the palette they index
-// into. The palette rides along — a few hundred bytes beside a megabyte
-// snapshot — because a depth reduction or a rebuilt palette would leave old
+// into. The palette rides along (a few hundred bytes beside a megabyte
+// snapshot) because a depth reduction or a rebuilt palette would leave old
 // indices pointing at missing or different colors.
 //
 // Bytes rather than a CanvasColorIndex so the raster can be held packed: one
@@ -14,7 +14,7 @@ export type UndoEntry = {
   width: number;
   height: number;
   // One byte per pixel (indices) when true, the raw RGBA texture bytes when
-  // not — and so also the answer to "does this entry hold true-colour pixels?",
+  // not, and so also the answer to "does this entry hold true-colour pixels?",
   // since packing succeeds exactly when nothing is true colour. One field
   // rather than two that could never legitimately disagree.
   packed: boolean;
@@ -43,14 +43,14 @@ export function toCanvasColorIndex(entry: UndoEntry): CanvasColorIndex {
 
 // Bounded by bytes first, entries second. An entry count alone cannot work: a
 // snapshot costs 256KB at Lo-Res 320x200 and 24MB on a 3000x2000 Native canvas,
-// and no single count survives a 100x spread — one generous enough for Lo-Res
+// and no single count survives a 100x spread: one generous enough for Lo-Res
 // exhausts the tab on a large canvas within minutes. MAX_UNDO_BYTES is the real
 // limit; MAX_UNDO_ENTRIES is a ceiling on top of it.
 export const MAX_UNDO_ENTRIES = 100;
 export const MAX_UNDO_BYTES = 256 * 1024 * 1024;
 
 // ...except that a budget yielding two levels of undo on a huge canvas is its
-// own kind of broken — undo is a core promise, and degrading it silently is
+// own kind of broken. Undo is a core promise, and degrading it silently is
 // worse than the memory it saves. This floor is honored even when it exceeds
 // the byte budget; keeping a canvas so large that it does is the load path's
 // problem to prevent, not this buffer's.
@@ -62,7 +62,7 @@ function entryBytes(entry: UndoEntry): number {
 }
 
 // How many levels of history a canvas of this size will actually get, once the
-// budget and both bounds are applied — the same arithmetic push() performs,
+// budget and both bounds are applied: the same arithmetic push() performs,
 // answered ahead of time. The image-load requester uses it to say what a large
 // image is about to cost; 4 bytes per pixel, matching CanvasColorIndex.
 export function undoLevelsForCanvas(width: number, height: number): number {
@@ -79,7 +79,7 @@ class UndoBuffer {
     this.totalBytes = 0;
   }
   undoBuffer: UndoEntry[];
-  // maintained incrementally rather than summed on demand — this is read on
+  // maintained incrementally rather than summed on demand. This is read on
   // every committed stroke to decide eviction
   totalBytes: number;
 
@@ -100,7 +100,7 @@ class UndoBuffer {
   // Appends after currentIndex, discarding any redo future beyond it, then
   // evicts from the oldest end until the limits are met, and returns the index
   // the entry ended up at. The caller passes its index in and takes the new one
-  // back because eviction shifts every survivor down — one place owns both the
+  // back because eviction shifts every survivor down. One place owns both the
   // array and the index, so they cannot disagree.
   push(entry: UndoEntry, currentIndex: number | null): number {
     const keep = currentIndex === null ? 0 : currentIndex + 1;

@@ -44,7 +44,7 @@ export class BrushSelector implements Tool {
     overmind.actions.toolbox.setSelectedDrawingTool('dottedFreehand');
     // the tool switch above only takes effect once Canvas.tsx re-renders and
     // rebinds its onMouseMove closure to the new tool, so a refresh called
-    // synchronously here would still hit the outgoing tool's stale handler —
+    // synchronously here would still hit the outgoing tool's stale handler,
     // same reasoning as the keyboard hotkey path in GlobalHotkeyManager.tsx
     setTimeout(refreshBrushPreview, 0);
   }

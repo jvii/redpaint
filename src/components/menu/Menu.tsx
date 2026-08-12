@@ -15,7 +15,7 @@ import { isGifHeader } from '../../fileformat/gif';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import './Menu.css';
 
-// Both are recognized by content, not extension — extensions in the wild vary
+// Both are recognized by content, not extension. Extensions in the wild vary
 // (.iff, .lbm, .ilbm) and lie, and a GIF dragged off a web page often has no
 // extension at all. Twelve bytes is enough for either signature.
 async function sniffFormat(file: File): Promise<'iff' | 'gif' | null> {
@@ -27,14 +27,14 @@ async function sniffFormat(file: File): Promise<'iff' | 'gif' | null> {
 }
 
 // The drop-down menu panel under the menubar: the screen status strip and
-// gadget rail, the always-visible mode row, and the Picture/Brush/Prefs
-// drawer (a radio group — only one open at a time, see app.openDrawer).
+// gadget rail, the always-visible mode row, and the Picture/Brush/Prefs drawer
+// (a radio group, only one open at a time, see app.openDrawer).
 //
 // The panel collapses via the CSS grid-template-rows 0fr/1fr trick (Menu.css)
 // rather than a JS-measured height, so the content can unmount while closed
 // instead of staying mounted at height: 0 to keep a scrollHeight measurement
-// warm. A permanently mounted menu re-rendered — in one case redoing expensive
-// brush-thumbnail work — on every state change its descendants cared about.
+// warm. A permanently mounted menu re-rendered (in one case redoing expensive
+// brush-thumbnail work) on every state change its descendants cared about.
 export function Menu(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
@@ -49,13 +49,13 @@ export function Menu(): JSX.Element {
       return;
     }
     // every dialog-opening action closes the menu first (see ScreenStatus's
-    // openScreenFormat) — beginImageLoad's requester opens asynchronously
-    // (after decode), so without this the still-open menu (z-index above the
-    // modal) hides it once it appears
+    // openScreenFormat): beginImageLoad's requester opens asynchronously (after
+    // decode), so without this the still-open menu (z-index above the modal)
+    // hides it once it appears
     actions.app.closeMenu();
     void (async (): Promise<void> => {
       // The two indexed formats carry their own palette, so they skip the
-      // color-treatment requester entirely — there is nothing to decide.
+      // color-treatment requester entirely: there is nothing to decide.
       const format = await sniffFormat(file);
       if (format === 'iff') {
         actions.app.beginIlbmLoad(file);
@@ -78,10 +78,10 @@ export function Menu(): JSX.Element {
     actions.app.beginBrushLoad(URL.createObjectURL(file));
   };
 
-  // Both file inputs render once below, outside the menu's collapsible
-  // content (see the mount-location comment on useFileOpener) — the trigger
-  // buttons stay wherever they visually belong (each drawer's own File
-  // cluster, via the `open` passed down to PictureMenu/BrushMenu).
+  // Both file inputs render once below, outside the menu's collapsible content
+  // (see the mount-location comment on useFileOpener): the trigger buttons stay
+  // wherever they visually belong (each drawer's own File cluster, via the
+  // `open` passed down to PictureMenu/BrushMenu).
   const imageOpener = useFileOpener(handleImageFileOpen, 'image/*,.iff,.ilbm,.lbm');
   const brushOpener = useFileOpener(handleBrushFileOpen);
 
@@ -93,8 +93,8 @@ export function Menu(): JSX.Element {
       className={'menu' + (state.app.menuOpen ? ' menu--open' : '')}
       onMouseLeave={(event): void => {
         // The menubar sits directly above the drop-down panel, so leaving
-        // upward onto it fires this same as leaving out to the canvas — but
-        // the menubar's own onClick already owns toggling, so don't race it.
+        // upward onto it fires this same as leaving out to the canvas, but the
+        // menubar's own onClick already owns toggling, so don't race it.
         const related = event.relatedTarget as Node | null;
         if (related instanceof Element && related.closest('.menubar')) {
           return;
@@ -104,9 +104,9 @@ export function Menu(): JSX.Element {
       onContextMenu={(event): void => {
         event.preventDefault(); // right-click closes the menu, not the browser's own menu
         close();
-        // Closing uncovers the canvas under the pointer, but the overlay
-        // cursor only repaints on mousemove — replay one so it's visible
-        // immediately instead of only after the mouse next moves.
+        // Closing uncovers the canvas under the pointer, but the overlay cursor
+        // only repaints on mousemove: replay one so it's visible immediately
+        // instead of only after the mouse next moves.
         setTimeout(refreshBrushPreview, 0);
       }}
     >

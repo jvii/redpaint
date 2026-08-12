@@ -61,8 +61,8 @@ export class OverlayMainCanvasRenderer {
   }
 
   // The canvas element is resized when an image is loaded, which resets the
-  // drawing buffer but not the GL viewport — so the viewport is refreshed
-  // before every draw.
+  // drawing buffer but not the GL viewport, so the viewport is refreshed before
+  // every draw.
   private updateViewport(): void {
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
   }

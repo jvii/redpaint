@@ -5,8 +5,8 @@ import { isBuiltInBrush } from '../overmind/brush/state';
 
 // The automatic brush-recall layer (docs/brush-slots.md): a few named
 // references, deliberately not a history list. The class is not observable
-// state — reactive mirrors of "is there something to recall" live in
-// overmind state.brush (hasOriginalBrush).
+// state. Reactive mirrors of "is there something to recall" live in overmind
+// state.brush (hasOriginalBrush).
 class BrushRecall {
   constructor() {
     this.current = new PixelBrush();
@@ -16,25 +16,25 @@ class BrushRecall {
   current: BrushInterface;
   // The pre-transform brush, restorable via Restore / Shift-B
   // (docs/brush-transforms.md): captured on the first transform, kept across
-  // further ones, dropped only when a new custom brush arrives — a fresh
+  // further ones, dropped only when a new custom brush arrives. A fresh
   // capture/load makes the old original moot. Restore is disabled outright
-  // while a built-in brush is active (BrushMenu.tsx), so this is never read
-  // in that state — no need to track it across a built-in detour.
+  // while a built-in brush is active (BrushMenu.tsx), so this is never read in
+  // that state. No need to track it across a built-in detour.
   originalBrush: BrushInterface | null;
-  // Whatever custom brush was active before the current one took over — the
+  // Whatever custom brush was active before the current one took over. The
   // Previous slot (docs/brush-slots.md): banked the moment a different one
-  // (capture, load, slot recall, built-in selection) takes over, so
-  // switching away from a custom brush never silently loses it. Restore
-  // goes through the separate restore() method instead, since reverting to
-  // a brush you already had isn't a "switch". The *incoming* brush being a
-  // built-in is fine to bank away from (bankCurrentAsPrevious) — it's the
-  // built-in itself that's excluded from ever becoming previousBrush, since
-  // it's one click away in the built-in row already.
+  // (capture, load, slot recall, built-in selection) takes over, so switching
+  // away from a custom brush never silently loses it. Restore goes through the
+  // separate restore() method instead, since reverting to a brush you already
+  // had isn't a "switch". The *incoming* brush being a built-in is fine to bank
+  // away from (bankCurrentAsPrevious): it's the built-in itself that's excluded
+  // from ever becoming previousBrush, since it's one click away in the built-in
+  // row already.
   previousBrush: CustomBrush | null;
 
-  // The brush a switch is about to leave behind survives in previousBrush,
-  // as long as it's a genuine custom brush and not a built-in (built-ins
-  // don't need a way back — see previousBrush's comment)
+  // The brush a switch is about to leave behind survives in previousBrush, as
+  // long as it's a genuine custom brush and not a built-in (built-ins don't
+  // need a way back: see previousBrush's comment)
   private bankCurrentAsPrevious(): void {
     if (this.current instanceof CustomBrush && !isBuiltInBrush(this.current)) {
       this.previousBrush = this.current;
@@ -67,11 +67,11 @@ class BrushRecall {
     this.current = newBrush;
   }
 
-  // Restore / Shift-B reverting a transformed custom brush to its
-  // pre-transform original: unlike setCustom, this doesn't bank the
-  // transformed brush into previousBrush. It's not a switch to a different
-  // brush — it's undoing back to one you already had, so surfacing it in
-  // Previous would be surprising rather than useful.
+  // Restore / Shift-B reverting a transformed custom brush to its pre-transform
+  // original: unlike setCustom, this doesn't bank the transformed brush into
+  // previousBrush. It's not a switch to a different brush. It's undoing back to
+  // one you already had, so surfacing it in Previous would be surprising rather
+  // than useful.
   restore(original: BrushInterface): void {
     this.current = original;
     this.originalBrush = null;

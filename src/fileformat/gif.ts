@@ -1,8 +1,8 @@
 // GIF89a encode. Still images for now; the block layout below is the one an
 // animation adds frames to, which is why the pieces are separate writers.
 //
-// GIF is the one export format that cannot be anything but indexed — there is
-// no truecolor GIF — so unlike PNG, where the browser's encoder flattens the
+// GIF is the one export format that cannot be anything but indexed (there is no
+// truecolor GIF), so unlike PNG, where the browser's encoder flattens the
 // picture to RGBA on the way out, this writes redpaint's own indices through
 // unchanged. `CanvasColorIndex.toIndexedPixels()` is already exactly the array
 // this wants.
@@ -18,9 +18,9 @@ export interface GifImage {
   height: number;
   palette: Color[]; // up to 256; padded out to a power of two on the way out
   pixels: Uint8Array; // width*height palette indices, rows top-down
-  // The one index the decoder should leave alone, if any. GIF has no alpha —
-  // transparency is this single index, and it costs a Graphic Control
-  // Extension to say so.
+  // The one index the decoder should leave alone, if any. GIF has no alpha.
+  // Transparency is this single index, and it costs a Graphic Control Extension
+  // to say so.
   transparentIndex?: number;
 }
 
@@ -33,7 +33,7 @@ export class GifError extends Error {
 
 // A GIF color table has to be a power of two, at least 2 and at most 256
 // entries. Dropped palette slots keep their index in redpaint, so the table is
-// sized by the highest index actually used as well as by the palette's length —
+// sized by the highest index actually used as well as by the palette's length:
 // the same reasoning as encodeIlbm's register count.
 function colorTableSize(palette: Color[], pixels: Uint8Array): number {
   let maxIndex = 0;
@@ -49,8 +49,8 @@ function colorTableSize(palette: Color[], pixels: Uint8Array): number {
   return 1 << Math.ceil(Math.log2(needed));
 }
 
-// Collects bytes without knowing the total up front — the LZW stream's length
-// is not predictable, and neither is the file's.
+// Collects bytes without knowing the total up front. The LZW stream's length is
+// not predictable, and neither is the file's.
 class ByteWriter {
   private bytes: number[] = [];
 
@@ -131,7 +131,7 @@ function lzwCompress(pixels: Uint8Array, minCodeSize: number): Uint8Array {
         // an entry until it has seen the code after the one that created it, so
         // it is permanently one behind; checking after the increment widens an
         // emit too early and the two desynchronise. Verified against a real
-        // decoder rather than reasoned about — the round-trip against our own
+        // decoder rather than reasoned about: the round-trip against our own
         // reader passed happily with this wrong.
         if (nextCode >= 1 << codeSize && codeSize < 12) {
           codeSize++;
@@ -140,7 +140,7 @@ function lzwCompress(pixels: Uint8Array, minCodeSize: number): Uint8Array {
         nextCode++;
       } else {
         // Full at 12 bits, the format's ceiling: start over. The Clear goes out
-        // at the current width, before the reset — the decoder is still reading
+        // at the current width, before the reset. The decoder is still reading
         // 12-bit codes when it arrives.
         emit(clearCode);
         table = new Map<number, number>();
@@ -173,7 +173,7 @@ function writeSubBlocks(out: ByteWriter, data: Uint8Array): void {
 function writeColorTable(out: ByteWriter, palette: Color[], size: number): void {
   for (let i = 0; i < size; i++) {
     const color = palette[i];
-    // Entries past the palette are padding — a table has to be a power of two
+    // Entries past the palette are padding. A table has to be a power of two
     // whatever the picture uses. Black, as ILBM's CMAP padding is.
     out.byte(color ? color.r : 0);
     out.byte(color ? color.g : 0);
@@ -188,8 +188,8 @@ export interface DecodedGif {
   palette: Color[];
   pixels: Uint8Array;
   transparentIndex?: number;
-  // How many frames the file actually held. Decoding stops after the first —
-  // this is a paint program, not a player — but the caller may want to say so.
+  // How many frames the file actually held. Decoding stops after the first
+  // (this is a paint program, not a player), but the caller may want to say so.
   frameCount: number;
 }
 
@@ -207,7 +207,7 @@ export function isGifHeader(head: Uint8Array): boolean {
 // Rows of an interlaced GIF arrive in four passes rather than top to bottom.
 // Nothing this app writes is interlaced, but plenty of GIFs in the wild are,
 // and reading one as progressive gives a picture that is shuffled rather than
-// obviously broken — the worst kind of wrong.
+// obviously broken: the worst kind of wrong.
 const INTERLACE_PASSES = [
   { start: 0, step: 8 },
   { start: 4, step: 8 },
@@ -253,9 +253,9 @@ class GifReader {
   //
   // Runs out rather than throwing when the file is short. A truncated GIF is a
   // damaged file, but the part that did arrive is still a picture, and every
-  // browser shows it — refusing the whole thing would be this app being
-  // stricter than the format's own audience for no gain. The LZW below stops
-  // the same way, so a partial image comes back partial rather than jagged.
+  // browser shows it. Refusing the whole thing would be this app being stricter
+  // than the format's own audience for no gain. The LZW below stops the same
+  // way, so a partial image comes back partial rather than jagged.
   subBlocks(): Uint8Array {
     const parts: Uint8Array[] = [];
     let total = 0;
@@ -314,7 +314,7 @@ function lzwDecompress(data: Uint8Array, minCodeSize: number, pixelCount: number
   while (written < pixelCount) {
     while (bitCount < codeSize) {
       if (at >= data.length) {
-        // Truncated, but what has been decoded so far is still a picture —
+        // Truncated, but what has been decoded so far is still a picture:
         // better to show it than to refuse the file outright.
         return out;
       }
@@ -373,9 +373,9 @@ function lzwDecompress(data: Uint8Array, minCodeSize: number, pixelCount: number
   return out;
 }
 
-// Reads a GIF's first frame. Always indexed — there is no other kind — so
-// unlike a PNG this hands back the file's own palette and indices rather than
-// RGBA for the palette to be guessed back out of.
+// Reads a GIF's first frame. Always indexed (there is no other kind), so unlike
+// a PNG this hands back the file's own palette and indices rather than RGBA for
+// the palette to be guessed back out of.
 export function decodeGif(bytes: Uint8Array): DecodedGif {
   if (!isGifHeader(bytes)) {
     throw new GifError('Not a GIF file');
@@ -456,8 +456,8 @@ export function decodeGif(bytes: Uint8Array): DecodedGif {
     const frame = lzwDecompress(data, minCodeSize, frameWidth * frameHeight);
 
     // A frame need not cover the logical screen. What it leaves uncovered is
-    // the background index, which is what a decoder showing this file would
-    // put there — so the picture that loads is the picture you were looking at.
+    // the background index, which is what a decoder showing this file would put
+    // there, so the picture that loads is the picture you were looking at.
     pixels = new Uint8Array(screenWidth * screenHeight).fill(backgroundIndex);
     let source = 0;
     for (const pass of interlaced ? INTERLACE_PASSES : [{ start: 0, step: 1 }]) {
@@ -522,7 +522,7 @@ export function encodeGif(image: GifImage): Uint8Array {
 
   // Graphic Control Extension, only when there is something to say. A still
   // image with no transparent index needs no delay and no disposal, and the
-  // block is optional — an animation is where it stops being.
+  // block is optional. An animation is where it stops being.
   if (transparentIndex !== undefined) {
     if (transparentIndex < 0 || transparentIndex >= tableSize) {
       throw new GifError(
@@ -538,8 +538,8 @@ export function encodeGif(image: GifImage): Uint8Array {
     out.byte(0); // block terminator
   }
 
-  // Image Descriptor. No local color table — one image, so the global one is
-  // its table; per-frame local tables are what a cycling animation will want.
+  // Image Descriptor. No local color table. One image, so the global one is its
+  // table; per-frame local tables are what a cycling animation will want.
   out.byte(0x2c);
   out.uint16(0); // left
   out.uint16(0); // top

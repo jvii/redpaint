@@ -40,7 +40,7 @@ export function ZoomCanvas(): JSX.Element {
   // Page-pixel to CSS-pixel scale, per axis: the magnification times the main
   // view's own scale, so "6x" means six times the size the artwork is already
   // shown at. Relative rather than absolute because a screen format sizes the
-  // main view to fill the window — Lo-Res on a big window is already ~4 CSS px
+  // main view to fill the window. Lo-Res on a big window is already ~4 CSS px
   // per artwork pixel, where an absolute "2x" would be a zoom *out*. The main
   // scale also carries the format's pixel aspect, per axis.
   const displayScale = state.canvas.displayScale;
@@ -66,7 +66,7 @@ export function ZoomCanvas(): JSX.Element {
   };
   // The pane's own scroll handler. Scrolling slides a different artwork pixel
   // under a pointer that never moved, so the brush preview the overlay is
-  // holding now points at the wrong one — and it only ever repaints on mouse
+  // holding now points at the wrong one, and it only ever repaints on mouse
   // move. Replaying one at the pointer's own position puts it back under the
   // cursor. Not part of updateScrollFocusPoint itself: a divider drag calls
   // that too, with the pointer parked on the divider rather than on a canvas.
@@ -141,7 +141,7 @@ export function ZoomCanvas(): JSX.Element {
     event.preventDefault();
     // The panes slide sideways under a pointer that is only moving along the
     // divider, so a canvas repeatedly passes beneath it and takes an enter/
-    // move — which shows the brush crosshair for as long as it stays there,
+    // move, which shows the brush crosshair for as long as it stays there,
     // flickering it in and out through the drag. The class turns the canvases
     // deaf and pins the resize cursor for the duration (Canvas.css).
     document.body.classList.add('zoom-divider-dragging');
@@ -164,8 +164,8 @@ export function ZoomCanvas(): JSX.Element {
       // or a stale crosshair shows while the pointer sits on the divider.
       hideAppDrawnCursors();
       document.body.classList.remove('zoom-divider-dragging');
-      // the pane is a different width, so a different artwork pixel sits at
-      // its center — keep the focus point the main view scrolls to honest
+      // the pane is a different width, so a different artwork pixel sits at its
+      // center: keep the focus point the main view scrolls to honest
       updateScrollFocusPoint();
     };
     window.addEventListener('pointermove', onMove);

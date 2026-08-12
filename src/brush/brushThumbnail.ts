@@ -27,13 +27,12 @@ export function renderBrushThumbnail(brush: CustomBrush, boxSize: number): strin
     source.getContext('2d')?.putImageData(imageData, 0, 0);
     ctx.drawImage(source, 0, 0, imageData.width, imageData.height, x, y, width, height);
   } else {
-    // Downscale: point-sampled nearest-neighbor can skip a thin line
-    // entirely if it falls between sample points, since a whole block of
-    // source pixels collapses into one destination pixel. Any-hit
-    // downsampling checks every source pixel in that block instead, and
-    // keeps the destination pixel opaque if any of them is — a
-    // one-pixel-wide line stays visible at full strength no matter how
-    // small the brush shrinks to fit the box.
+    // Downscale: point-sampled nearest-neighbor can skip a thin line entirely
+    // if it falls between sample points, since a whole block of source pixels
+    // collapses into one destination pixel. Any-hit downsampling checks every
+    // source pixel in that block instead, and keeps the destination pixel
+    // opaque if any of them is. A one-pixel-wide line stays visible at full
+    // strength no matter how small the brush shrinks to fit the box.
     const destWidth = Math.max(1, Math.round(width));
     const destHeight = Math.max(1, Math.round(height));
     const scaled = downsampleAnyHit(imageData, destWidth, destHeight);

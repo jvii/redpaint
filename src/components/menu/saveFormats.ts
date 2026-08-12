@@ -74,7 +74,7 @@ function indexedPicture(): { width: number; height: number; pixels: Uint8Array }
   return { width: colorIndex.width, height: colorIndex.height, pixels };
 }
 
-// Builds the thing that produces the bytes — deliberately not the bytes.
+// Builds the thing that produces the bytes: deliberately not the bytes.
 //
 // saveFileAs calls it once the save picker has been through, which is the only
 // point at which the bytes are certainly wanted. PNG additionally *has* to be
@@ -101,7 +101,7 @@ export function blobMakerFor(
 
   // Read the canvas now, so the refusal happens before any requester goes up:
   // finding out a format cannot hold the picture is worth knowing before being
-  // asked where to put it, not after. The *encoding* still waits — see below.
+  // asked where to put it, not after. The *encoding* still waits: see below.
   const picture = indexedPicture();
   if (!picture) {
     alert(TRUE_COLOR_REFUSAL);

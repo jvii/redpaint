@@ -1,9 +1,9 @@
-// GLSL shared by the effect fragment shaders that do RGB math (Blend,
-// Smooth). displayed() resolves a tagged pixel to its on-screen RGB;
-// inRange() implements the spec's range-restriction rule; resolveColor()
-// is the write policy: hybrid writes the literal RGB as a true-color pixel,
-// indexed snaps to the nearest palette color within the active range
-// (fixed-bound loop — WebGL1 requires constant loop limits).
+// GLSL shared by the effect fragment shaders that do RGB math (Blend, Smooth).
+// displayed() resolves a tagged pixel to its on-screen RGB; inRange()
+// implements the spec's range-restriction rule; resolveColor() is the write
+// policy: hybrid writes the literal RGB as a true-color pixel, indexed snaps to
+// the nearest palette color within the active range (fixed-bound loop, WebGL1
+// requires constant loop limits).
 //
 // Reads and writes the pixel-format tag through ALPHA_TAG_LIB, which every
 // consumer must embed before this (see its own comment).

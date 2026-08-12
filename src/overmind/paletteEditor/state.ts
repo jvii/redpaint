@@ -3,9 +3,9 @@ import { PaletteRange } from '../palette/state';
 
 export type State = {
   isOpen: boolean;
-  // The slot being edited by the RGB/HSV sliders — independent of the
-  // painting foreground/background color, so opening the editor and
-  // clicking around its palette grid never changes what you paint with.
+  // The slot being edited by the RGB/HSV sliders. Independent of the painting
+  // foreground/background color, so opening the editor and clicking around its
+  // palette grid never changes what you paint with.
   editedColorId: string;
   // Snapshots taken on open, restored by Cancel; null while closed.
   paletteSnapshot: { [id: string]: Color } | null;
@@ -14,8 +14,8 @@ export type State = {
   // assign the currently edited color as that endpoint.
   activeRangeIndex: number | null;
   // An action awaiting a color pick: the next palette click completes it
-  // against the currently edited color (DPaint's sticky Copy/Ex/Spread/
-  // Range modes) — for 'range', selected color = start, clicked = end.
+  // against the currently edited color (DPaint's sticky Copy/Ex/Spread/ Range
+  // modes), for 'range', selected color = start, clicked = end.
   armedAction: 'copy' | 'swap' | 'spread' | 'range' | null;
 };
 

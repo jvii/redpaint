@@ -26,8 +26,8 @@ type GadgetProps = {
   // icon above the label instead of beside it (the transform gadgets)
   stacked?: boolean;
   // the single key that triggers this action (shown as a keycap beside the
-  // label, stacked gadgets only — see docs/style-guide.md's "Text on
-  // controls" section). Omit for gadgets with no hotkey (Bend H/V).
+  // label, stacked gadgets only: see docs/style-guide.md's "Text on controls"
+  // section). Omit for gadgets with no hotkey (Bend H/V).
   shortcut?: string;
 };
 
@@ -50,13 +50,13 @@ export function Gadget({
       title={title}
       aria-label={title}
       onClick={(event): void => {
-        // Gadgets like Open/Save image synchronously trigger a native OS
-        // file dialog that steals the cursor before the button unmounts
-        // (the menu closes on mouseleave once the cursor leaves the page —
-        // see MenuGadgets.tsx's useFileOpener comment). The browser's native
+        // Gadgets like Open/Save image synchronously trigger a native OS file
+        // dialog that steals the cursor before the button unmounts (the menu
+        // closes on mouseleave once the cursor leaves the page: see
+        // MenuGadgets.tsx's useFileOpener comment). The browser's native
         // title-attribute tooltip isn't tied to DOM lifecycle, so it stays
-        // painted over the canvas until the next real mouse move. Clearing
-        // (and restoring) the attribute forces it to hide immediately.
+        // painted over the canvas until the next real mouse move. Clearing (and
+        // restoring) the attribute forces it to hide immediately.
         const button = event.currentTarget;
         button.removeAttribute('title');
         onClick?.();
@@ -87,14 +87,14 @@ export type FileOpener = {
 
 // A hidden file input decoupled from its trigger button's mount lifetime. The
 // button lives in the menu's collapsible content, which unmounts when the menu
-// closes — and opening the OS file picker moves the cursor off-page, firing a
+// closes, and opening the OS file picker moves the cursor off-page, firing a
 // real mouseleave on .menu while the dialog is still open. An <input> in that
 // content would be torn down mid-flight and the 'change' event would have
 // nowhere to land: file picked, nothing happens, no error. (Never reproduces
 // under CDP, which cannot move the cursor into a native window.)
 //
-// The caller renders `input` somewhere that survives the close — a sibling of
-// the collapsible content — and wires a plain button's onClick to `open`.
+// The caller renders `input` somewhere that survives the close (a sibling of
+// the collapsible content), and wires a plain button's onClick to `open`.
 export function useFileOpener(
   handleFile: (input: HTMLInputElement) => void,
   accept = 'image/*'

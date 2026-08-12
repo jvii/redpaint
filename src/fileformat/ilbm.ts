@@ -1,7 +1,7 @@
-// IFF ILBM (the Amiga / Deluxe Paint image format) decode and encode.
-// v1 scope: indexed images, 1-8 bitplanes (incl. Extra-Half-Brite) and the
-// PBM chunky variant. HAM and 24-bit deep ILBM are rejected — decoding them
-// needs the true-color load path and is future work.
+// IFF ILBM (the Amiga / Deluxe Paint image format) decode and encode. v1 scope:
+// indexed images, 1-8 bitplanes (incl. Extra-Half-Brite) and the PBM chunky
+// variant. HAM and 24-bit deep ILBM are rejected. Decoding them needs the
+// true-color load path and is future work.
 
 import { Color } from '../types';
 import { IffChunk, readForm, writeForm } from './iff';
@@ -37,10 +37,10 @@ export class IlbmError extends Error {
   }
 }
 
-// Content-sniffs a FORM ILBM/PBM header from just the first 12 bytes (no
-// full readForm parse needed) — for detecting an IFF file by content rather
-// than extension, which in the wild varies (.iff, .lbm, .ilbm) and lies.
-// Safe to call on a short/partial read, e.g. a File.slice(0, 12).
+// Content-sniffs a FORM ILBM/PBM header from just the first 12 bytes (no full
+// readForm parse needed), for detecting an IFF file by content rather than
+// extension, which in the wild varies (.iff, .lbm, .ilbm) and lies. Safe to
+// call on a short/partial read, e.g. a File.slice(0, 12).
 export function isIlbmHeader(head: Uint8Array): boolean {
   if (head.length < 12) {
     return false;

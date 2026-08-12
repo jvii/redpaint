@@ -50,11 +50,11 @@ type EffectProgram = {
 
 type PassName = 'smear' | 'shade' | 'mask' | 'blend' | 'smooth' | 'cycle';
 
-// Each pass's fragment shader and the uniforms it declares — the whole
-// per-pass difference in setup, in one table. A function, not a const: the
-// shader sources are declared below the class (they're long), so they are
-// still in their temporal dead zone while this module initializes, but not
-// by the time a constructor calls this.
+// Each pass's fragment shader and the uniforms it declares: the whole per-pass
+// difference in setup, in one table. A function, not a const: the shader
+// sources are declared below the class (they're long), so they are still in
+// their temporal dead zone while this module initializes, but not by the time a
+// constructor calls this.
 function passShaders(): { [name in PassName]: { fragment: string; uniforms: string[] } } {
   return {
     smear: {
@@ -184,8 +184,8 @@ export class EffectIndexer {
       this.cycleSetup(state);
     }
 
-    // Stamps are order-dependent (each reads what the previous one wrote),
-    // so points are processed one by one — no batching.
+    // Stamps are order-dependent (each reads what the previous one wrote), so
+    // points are processed one by one: no batching.
     for (const point of points) {
       const shifted = shiftPoint(point);
       const origin = { x: Math.round(shifted.x) - 1, y: Math.round(shifted.y) - 1 };
@@ -310,9 +310,9 @@ export class EffectIndexer {
     this.drawStampQuad(attribs, rect);
   }
 
-  // Renders this stamp's brush coverage into the copy's mask texture. Runs
-  // on the scratch-sized framebuffer, so the viewport MUST be restored to
-  // canvas size afterwards — the other indexers rely on it.
+  // Renders this stamp's brush coverage into the copy's mask texture. Runs on
+  // the scratch-sized framebuffer, so the viewport MUST be restored to canvas
+  // size afterwards: the other indexers rely on it.
   private updateMask(rect: StampRect, state: CopyState): void {
     const gl = this.gl;
     const { locations: loc, attribs } = this.passes.mask;
@@ -377,9 +377,9 @@ export class EffectIndexer {
     this.drawStampQuad(attribs, rect);
   }
 
-  // Cycle's uniform state is the same for every point in one effectDraw call —
-  // the color advances once per segment, and shape and brush size do not vary
-  // mid-stroke — so it is set up once per call rather than once per point,
+  // Cycle's uniform state is the same for every point in one effectDraw call
+  // (the color advances once per segment, and shape and brush size do not vary
+  // mid-stroke), so it is set up once per call rather than once per point,
   // where only the stamp's position varies. Per-call GL overhead is higher on
   // some implementations (Safari's notably).
   private cycleSetup(state: CopyState): void {
@@ -823,8 +823,8 @@ ${ALPHA_TAG_LIB}
 
 uniform sampler2D u_shape;
 uniform sampler2D u_work;
-// highp to match the vertex shader's default precision for this uniform —
-// WebGL treats a precision mismatch on the same uniform name as a link error
+// highp to match the vertex shader's default precision for this uniform: WebGL
+// treats a precision mismatch on the same uniform name as a link error
 uniform highp vec2 u_scratchSize;
 
 varying vec2 v_texCoord;

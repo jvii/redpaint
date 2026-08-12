@@ -10,7 +10,7 @@ import { RetroInputField } from '../ui/RetroInputField';
 import { RetroToggle } from '../ui/RetroToggle';
 
 // Long enough for any name someone means, short enough that the note below
-// cannot outgrow the height reserved for it — and filesystems stop caring well
+// cannot outgrow the height reserved for it, and filesystems stop caring well
 // before this anyway.
 const MAX_NAME_LENGTH = 40;
 
@@ -29,8 +29,8 @@ const TRUE_COLOR_NOTE =
 
 // The one requester Save As goes through, on every browser.
 //
-// It asks the format always — the three differ in the thing this program is
-// about, since PNG flattens the palette where IFF and GIF keep it — and the
+// It asks the format always (the three differ in the thing this program is
+// about, since PNG flattens the palette where IFF and GIF keep it), and the
 // name only where nobody else will. On Chromium the OS picker asks for the name
 // a moment later, so a field here would be the same question twice; everywhere
 // else the file goes to the downloads folder under a name we supply.
@@ -53,21 +53,21 @@ function SaveAsDialogOpen(): JSX.Element {
   const [indexed] = useState(pictureIsIndexed);
 
   // The last format used, so repeating a save is one click and changing one is
-  // a deliberate act — unless that format cannot hold what is now on the
-  // canvas, in which case the only one that can is already selected rather
-  // than the requester opening on a disabled option.
+  // a deliberate act. Unless that format cannot hold what is now on the canvas,
+  // in which case the only one that can is already selected rather than the
+  // requester opening on a disabled option.
   const [format, setFormat] = useState<SaveFormat>(
     indexed || state.app.saveFormat === 'png' ? state.app.saveFormat : 'png'
   );
   const [name, setName] = useState(suggested);
 
-  // The extension follows the format rather than the name — picking GIF after
+  // The extension follows the format rather than the name. Picking GIF after
   // typing "harbour" offers harbour.gif, and the name field never carries one.
   const extension = saveFormats[format].fileType.extension;
 
   // Sanitized here rather than only on the way out, so the name previewed below
   // is the name that lands on disk. Doing it in saveFile alone meant typing
-  // "../bad:name?" promised exactly that and wrote "badname" — and left the
+  // "../bad:name?" promised exactly that and wrote "badname", and left the
   // document called something no save would ever produce.
   const cleaned = sanitizeFileName(name);
   const asksForName = !hasSaveFilePicker();
@@ -83,7 +83,7 @@ function SaveAsDialogOpen(): JSX.Element {
       return;
     }
     // Only answers the prompt. Naming the document and remembering the format
-    // are the save handler's job, once a file has actually been written — the
+    // are the save handler's job, once a file has actually been written. The
     // picker branch and this one both go through it, so they cannot disagree.
     close({ format, name: asksForName ? cleaned : null });
   };
@@ -96,7 +96,7 @@ function SaveAsDialogOpen(): JSX.Element {
             options={SAVE_FORMATS.map((id) => {
               // An indexed format cannot hold true-color pixels. Disabled here
               // rather than refused after the fact, and the tooltip goes on the
-              // segments that are actually out — hung off all three, it told you
+              // segments that are actually out: hung off all three, it told you
               // PNG could not store the picture while PNG sat there enabled.
               const unavailable = !indexed && id !== 'png';
               return {

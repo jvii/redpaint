@@ -1,6 +1,6 @@
 // A one-store key/value corner of IndexedDB, which is all the autosave needs.
 // Not localStorage: the payload is a raster, and localStorage is ~5MB,
-// string-only and synchronous — blocking the main thread the moment a stroke
+// string-only and synchronous, blocking the main thread the moment a stroke
 // ends. IndexedDB takes a Uint8Array as-is.
 const DATABASE = 'redpaint';
 const STORE = 'document';
@@ -17,7 +17,7 @@ function openDatabase(): Promise<IDBDatabase> {
 }
 
 // One connection, held. The last write of a session starts from `pagehide`, and
-// one that still has to open a connection asynchronously never lands — the
+// one that still has to open a connection asynchronously never lands. The
 // document is torn down first. Dropped if the connection goes away, so the next
 // call opens a new one.
 let connection: Promise<IDBDatabase> | null = null;

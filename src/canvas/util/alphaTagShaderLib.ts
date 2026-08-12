@@ -9,7 +9,7 @@ import {
 // Every pixel in the color-index texture carries its kind in the alpha channel
 // (docs/true-color-mode.md): ALPHA_TRANSPARENT / ALPHA_INDEXED /
 // ALPHA_TRUECOLOR. The thresholds below are the midpoints between those values,
-// computed from the constants themselves — a sampled tag lands exactly on a tag
+// computed from the constants themselves. A sampled tag lands exactly on a tag
 // value, so anything short of a midpoint is unambiguous. Hand-written
 // thresholds would mean changing ALPHA_INDEXED moved every TypeScript check and
 // no shader check.

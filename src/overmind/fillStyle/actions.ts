@@ -8,12 +8,12 @@ export const setMode = (context: Context, mode: FillMode): void => {
   context.state.fillStyle.mode = mode;
 };
 
-// DPaint's "From Brush": snapshots the current brush (built-in or custom —
-// see PatternFill.ts) into the Pattern fill slot. The button is only
-// enabled while Fill is already set to Pattern (FillStyleSettings.tsx), so
-// `mode` is always 'brush' by the time this runs; set here anyway so the
-// action stays correct on its own. No-ops if there's nothing to capture
-// (PixelBrush — no brush has ever been picked yet).
+// DPaint's "From Brush": snapshots the current brush (built-in or custom, see
+// PatternFill.ts) into the Pattern fill slot. The button is only enabled while
+// Fill is already set to Pattern (FillStyleSettings.tsx), so `mode` is always
+// 'brush' by the time this runs; set here anyway so the action stays correct on
+// its own. No-ops if there's nothing to capture (PixelBrush; no brush has ever
+// been picked yet).
 export const captureFromBrush = (context: Context): void => {
   if (!patternFillStore.captureFrom(brushRecall.current)) {
     return;
@@ -31,9 +31,9 @@ export const setDither = (context: Context, dither: number): void => {
   context.state.fillStyle.dither = Math.max(0, Math.min(20, Math.round(dither)));
 };
 
-// Experimental: tunes the dither jitter half-width (dither * jitter% of a
-// band — see gradientFill.ts). 17% (~1/6) matches PyDPainter's HORIZ_FIT
-// dither exactly.
+// Experimental: tunes the dither jitter half-width (dither * jitter% of a band,
+// see gradientFill.ts). 17% (~1/6) matches PyDPainter's HORIZ_FIT dither
+// exactly.
 export const setJitter = (context: Context, jitter: number): void => {
   context.state.fillStyle.jitter = Math.max(0, Math.min(50, Math.round(jitter)));
 };
@@ -57,9 +57,9 @@ export const closeSettings = (context: Context): void => {
   context.state.fillStyle.settingsSnapshot = null;
 };
 
-// Restore the values from when the panel was opened, then close — including
-// undoing a capture made via "From Brush" during this session, the same as
-// any other control here.
+// Restore the values from when the panel was opened, then close: including
+// undoing a capture made via "From Brush" during this session, the same as any
+// other control here.
 export const cancelSettings = (context: Context): void => {
   const snapshot = context.state.fillStyle.settingsSnapshot;
   if (snapshot) {

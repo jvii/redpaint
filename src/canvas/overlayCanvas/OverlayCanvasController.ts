@@ -27,33 +27,12 @@ class OverlayCanvasController implements CanvasController {
   // The overlay has preserveDrawingBuffer: false, so any draw made outside the
   // original mouse event's synchronous run (CycleDriver's rAF tick) composites
   // as a fresh frame and anything not re-issued is genuinely absent, not stale.
-  // So every overlay draw since the last beginFrame() is remembered — not just
-  // the color-bearing ones — and CycleDriver replays the whole frame: replaying
+  // So every overlay draw since the last beginFrame() is remembered (not just
+  // the color-bearing ones), and CycleDriver replays the whole frame: replaying
   // only the color-dependent calls would erase whatever was drawn alongside
   // them, and a symmetry preview issues one call per copy plus the cursor and
   // indicator dots. Canvas.tsx calls beginFrame() before each overlay handler,
   // so one event's calls accumulate and the next event starts a fresh list.
-  // actually persistent: any draw call made outside the original mouse
-  // event's synchronous run (e.g. from CycleDriver's rAF tick) composites as
-  // its own fresh frame, and anything not re-issued as part of *that* call
-  // sequence is gone — not just stale, genuinely absent from what's on
-  // screen. So a palette rotation doesn't show up on whatever's currently
-  // displayed until the next mouse move redraws it, and replaying only the
-  // color-bearing draws (to pick up the new palette) would erase anything
-  // drawn alongside them that didn't get replayed too — e.g. the Circle
-  // tool's edge-to-edge selectionCrosshair, drawn in the same mouse event as
-  // the symmetry-indicator dots but not itself color-dependent, would
-  // vanish the moment cycling's replay redrew just the dots. So this
-  // remembers *every* overlay draw call made since the last
-  // beginFrame()/clear() — color-bearing or not — and CycleDriver replays
-  // the whole frame every tick. Solid-color and gradient-filled shape
-  // previews are each a single call, but a symmetry-mode preview issues one
-  // per copy, plus separate calls for the brush cursor/indicator dots
-  // alongside it; all of them need replaying, not just the last, or every
-  // copy/indicator but one would freeze or vanish. Canvas.tsx calls
-  // beginFrame() before dispatching each overlay handler, so calls from a
-  // single mouse event accumulate together and calls from the next event
-  // start a fresh list instead of growing forever.
   private frameDraws: Array<() => void> = [];
   // Guards against redrawForCycling()'s replay re-recording itself into
   // frameDraws (each draw method records unconditionally otherwise).
@@ -61,10 +40,10 @@ class OverlayCanvasController implements CanvasController {
 
   // Whether the last composited overlay frame shows anything. The composited
   // frame outlives the (preserveDrawingBuffer: false) buffer, so "is there
-  // something on screen" can't be asked of GL — tracked here instead, set by
-  // every draw (replayed ones included) and cleared by clear(). The DOM
-  // hover preview (hoverBrushPreview.ts) uses it to clear a stale canvas
-  // stamp exactly once when it takes over, not on every mousemove.
+  // something on screen" can't be asked of GL, tracked here instead, set by
+  // every draw (replayed ones included) and cleared by clear(). The DOM hover
+  // preview (hoverBrushPreview.ts) uses it to clear a stale canvas stamp
+  // exactly once when it takes over, not on every mousemove.
   private contentOnScreen = false;
 
   hasContentOnScreen(): boolean {
@@ -163,9 +142,9 @@ class OverlayCanvasController implements CanvasController {
     this.drawImage(origins, brush);
   }
 
-  // The overlay's effectDraw already renders eagerly (via drawImage above) —
-  // it's just showing the brush cursor, never batched across symmetry
-  // copies the way the committed painting canvas is. Nothing to flush.
+  // The overlay's effectDraw already renders eagerly (via drawImage above).
+  // It's just showing the brush cursor, never batched across symmetry copies
+  // the way the committed painting canvas is. Nothing to flush.
   flushEffectDraw(): void {
     // no-op
   }
@@ -206,13 +185,13 @@ class OverlayCanvasController implements CanvasController {
     this.zoomCanvasRenderer?.clear();
   }
 
-  // Called by CycleDriver after updatePalette() re-uploads the rotated
-  // texture: replays every draw from the current frame (a brush cursor, an
-  // in-progress shape, a selection crosshair — possibly several calls, e.g.
-  // one per gradient-fill color band) so color-bearing content animates
-  // along with the canvas and everything else stays on screen instead of
-  // being dropped by the partial redraw (see the frameDraws comment above).
-  // A no-op when the overlay is empty.
+  // Called by CycleDriver after updatePalette() re-uploads the rotated texture:
+  // replays every draw from the current frame (a brush cursor, an in-progress
+  // shape, a selection crosshair, possibly several calls, e.g. one per
+  // gradient-fill color band) so color-bearing content animates along with the
+  // canvas and everything else stays on screen instead of being dropped by the
+  // partial redraw (see the frameDraws comment above). A no-op when the overlay
+  // is empty.
   redrawForCycling(): void {
     if (this.frameDraws.length === 0) {
       return;

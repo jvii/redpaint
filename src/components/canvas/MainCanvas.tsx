@@ -9,7 +9,7 @@ import './Canvas.css';
 
 // The pane in physical pixels, for a canvas that has to fit inside it. Floored
 // fractional rect rather than rounded offsetWidth, and the border box rather
-// than the box minus a scrollbar currently showing — both of the other ways
+// than the box minus a scrollbar currently showing: both of the other ways
 // produce scrollbars (docs/gotchas.md, "Fitting the canvas to its pane").
 function paneSize(pane: HTMLElement, dpr: number): { width: number; height: number } {
   const rect = pane.getBoundingClientRect();
@@ -26,7 +26,7 @@ export function MainCanvas(): JSX.Element {
   const canvasDivRef = useRef<HTMLDivElement>(document.createElement('div'));
   const dpr = useDevicePixelRatio();
 
-  // CSS pixels per buffer pixel, per axis — a format fills the window on both
+  // CSS pixels per buffer pixel, per axis. A format fills the window on both
   // axes independently, so pixels need not stay square. 'stretch' takes the
   // fractional scale (no margin, the cursor's pixel drifts slightly); 'integer'
   // floors to whole pixels (uniform blocks, black margin until the window
@@ -129,7 +129,7 @@ export function MainCanvas(): JSX.Element {
   // which the size belongs to the document and only Canvas Size or a crop
   // changes it. Tracked rather than measured once at mount, because the chrome
   // around the pane keeps settling and no event marks the moment the number is
-  // final — measured too early it is wrong for the whole session.
+  // final. Measured too early it is wrong for the whole session.
   //
   // Waits on restoreSettled: a restored record brings its own size, so the two
   // never both decide it (docs/autosave-simplification.md §4).

@@ -4,7 +4,7 @@ import { SaveFormat } from './saveFormats';
 export type SaveAsChoice = {
   format: SaveFormat;
   // The base name, or null when the browser has a save picker of its own and
-  // the requester therefore never asked — the picker is about to. Null is not
+  // the requester therefore never asked: the picker is about to. Null is not
   // "no name": it means the name is somebody else's question.
   name: string | null;
 };
@@ -14,7 +14,7 @@ export type SaveAsChoice = {
 // resolve function is not state, and putting a callback in an observable store
 // would make every reader of that store depend on it.
 //
-// PictureMenu awaits the promise; SaveAsDialog settles it — with the choice on
+// PictureMenu awaits the promise; SaveAsDialog settles it, with the choice on
 // Save, or null on Cancel. Only one can be open at a time (it is a modal), so
 // one slot is enough.
 let resolver: ((choice: SaveAsChoice | null) => void) | null = null;

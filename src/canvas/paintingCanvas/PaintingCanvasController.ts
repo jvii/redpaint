@@ -66,12 +66,12 @@ export class PaintingCanvasController implements CanvasController {
     this.zoomCanvasRenderer = new ZoomCanvasRenderer(zoomCanvas);
   }
 
-  // Rebuilds all GL state after a webglcontextlost/webglcontextrestored
-  // cycle: every program, buffer and texture from before the loss is
-  // invalid, so run the full attach + texture setup again on the restored
-  // context (getContext returns the same, now-restored context object).
-  // Unlike init(), no new undo point is set — the caller repaints the
-  // committed pixels from the undo buffer's current snapshot instead.
+  // Rebuilds all GL state after a webglcontextlost/webglcontextrestored cycle:
+  // every program, buffer and texture from before the loss is invalid, so run
+  // the full attach + texture setup again on the restored context (getContext
+  // returns the same, now-restored context object). Unlike init(), no new undo
+  // point is set: the caller repaints the committed pixels from the undo
+  // buffer's current snapshot instead.
   restoreContext(): void {
     this.attachMainCanvas(this.mainCanvas);
     this.initColorIndexTexture();
@@ -92,7 +92,7 @@ export class PaintingCanvasController implements CanvasController {
     this.initPaletteTexture();
 
     // No undo point here: whether the freshly initialized (empty) canvas is a
-    // history entry is the caller's call — see setResolution's recordUndoPoint.
+    // history entry is the caller's call, see setResolution's recordUndoPoint.
     // Recording one unconditionally plants blank entries in the middle of
     // content-preserving resizes and image loads.
   }

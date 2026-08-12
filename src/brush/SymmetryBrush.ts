@@ -164,13 +164,13 @@ export class SymmetryBrush implements BrushInterface {
     );
   }
 
-  // DPaint kept the hover feedback alive while dragging a shape: the brush
-  // is stamped at the pointer's mirrored positions even though the shape
-  // copies themselves only appear on release (SYMUP). Only does anything
-  // when this brush is currently suppressing the shape copies — with full
-  // mirrored previews the copies are already visible. The shape tools call
-  // this from their overlay drag branches, which are the only place the
-  // pointer position is known.
+  // DPaint kept the hover feedback alive while dragging a shape: the brush is
+  // stamped at the pointer's mirrored positions even though the shape copies
+  // themselves only appear on release (SYMUP). Only does anything when this
+  // brush is currently suppressing the shape copies, with full mirrored
+  // previews the copies are already visible. The shape tools call this from
+  // their overlay drag branches, which are the only place the pointer position
+  // is known.
   public drawPointerCopies(point: Point, canvas: DrawTarget): void {
     if (!this.suppressShapeCopies(canvas)) {
       return;
@@ -191,17 +191,16 @@ export class SymmetryBrush implements BrushInterface {
     buffer.replayTo(canvas);
   }
 
-  // DPaint's SYMUP behavior (PAINTW.C): with a captured/loaded custom
-  // (stamp) brush, the overlay SHAPE preview shows only the primary copy —
-  // the full symmetric set appears when the stroke commits on release.
-  // Stamping a whole shape's worth of brush copies times 2N on every mouse
-  // move (each with the full-canvas re-render a draw call costs) is the
-  // heaviest preview path in the app, slow enough to invite a GPU context
-  // loss in Safari. Everything else stays fully mirrored: the hover cursor
-  // (drawPoints, one stamp per copy — the symmetry-position feedback),
-  // filled shapes (they don't stamp the brush, just cheap quads/fill
-  // lines), the built-in brushes (small fixed bitmaps, cheap to stamp),
-  // and all pixel-brush previews.
+  // DPaint's SYMUP behavior (PAINTW.C): with a captured/loaded custom (stamp)
+  // brush, the overlay SHAPE preview shows only the primary copy, the full
+  // symmetric set appears when the stroke commits on release. Stamping a whole
+  // shape's worth of brush copies times 2N on every mouse move (each with the
+  // full-canvas re-render a draw call costs) is the heaviest preview path in
+  // the app, slow enough to invite a GPU context loss in Safari. Everything
+  // else stays fully mirrored: the hover cursor (drawPoints, one stamp per
+  // copy, the symmetry-position feedback), filled shapes (they don't stamp the
+  // brush, just cheap quads/fill lines), the built-in brushes (small fixed
+  // bitmaps, cheap to stamp), and all pixel-brush previews.
   private suppressShapeCopies(canvas: DrawTarget): boolean {
     return (
       canvas === overlayCanvasController &&

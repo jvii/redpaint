@@ -2,8 +2,8 @@
 //
 // The app's bindings are case-sensitive, DPaint's reference-card convention
 // where the letter's case *is* the shift state: `h` halves the brush and `H`
-// doubles it. A cap is not a reference card, though — a lone `H` reads as
-// "press H" and gives no sign a modifier is involved.
+// doubles it. A cap is not a reference card, though. A lone `H` reads as "press
+// H" and gives no sign a modifier is involved.
 //
 // So the letter is always uppercased, because that is what is engraved on the
 // key, and the shift state is carried by the ⇧ and nothing else: `R` and `⇧R`,

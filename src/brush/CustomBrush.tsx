@@ -35,11 +35,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public width: number;
   public heigth: number;
   public lastChanged: number;
-  // Set only on the built-in brushes (and their right-click resized
-  // variants, docs/brush-transforms.md "Sizing a built-in brush") — the tag
-  // `isBuiltInBrush` keys off, so a resized instance keeps reading as
-  // built-in (no Matte/Repl, never banked to Previous) even though it's a
-  // fresh object, not one of the fixed registry singletons.
+  // Set only on the built-in brushes (and their right-click resized variants,
+  // docs/brush-transforms.md "Sizing a built-in brush"). The tag
+  // `isBuiltInBrush` keys off, so a resized instance keeps reading as built-in
+  // (no Matte/Repl, never banked to Previous) even though it's a fresh object,
+  // not one of the fixed registry singletons.
   public builtInFamily?: BuiltInFamily;
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
@@ -214,23 +214,23 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     }
   }
 
-  // Sets up the bitmap variants a paint mode needs and switches to that
-  // mode's resting bitmap — the single place encoding which modes show the
-  // colorized brush vs the matte one (used by the setMode action and by
-  // transform previews on temporary brushes).
+  // Sets up the bitmap variants a paint mode needs and switches to that mode's
+  // resting bitmap: the single place encoding which modes show the colorized
+  // brush vs the matte one (used by the setMode action and by transform
+  // previews on temporary brushes).
   public applyMode(mode: Mode): void {
     if (usesColorizedBrush(mode)) {
-      // Color, Cycle and the canvas-reading effects all show (and Color/
-      // Cycle paint) the FG-colorized bitmap — the effects only ever read
-      // its alpha as a shape mask, but the colorized version is the more
-      // useful overlay cursor.
+      // Color, Cycle and the canvas-reading effects all show (and Color/ Cycle
+      // paint) the FG-colorized bitmap. The effects only ever read its alpha as
+      // a shape mask, but the colorized version is the more useful overlay
+      // cursor.
       this.setFGColor();
       this.setBGColor();
       this.toFGColor();
     } else {
       // Matte previews the brush's own transparency; Repl stamps that same
-      // pristine bitmap with holes filled from BG — both need the matte
-      // bitmap as their resting state, not a colorized one.
+      // pristine bitmap with holes filled from BG. Both need the matte bitmap
+      // as their resting state, not a colorized one.
       this.setBGColor();
       this.toMatte();
     }
@@ -283,13 +283,13 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // Resolves the brush's original (matte) bitmap into displayable pixels for
   // saving: indexed pixels through the palette, true-color pixels directly,
   // transparent pixels as alpha 0. Texture rows are bottom-up, ImageData rows
-  // top-down, so rows are flipped back here.
-  // The stamp as currently displayed: the active mode variant (matte, or the
-  // FG/BG-colorized bitmap in Color mode and friends), resolved through the
-  // *display* palette so a hover preview animates under Tab-cycling exactly
-  // like stamped pixels would (they sample the same rotated palette texture).
-  // Contrast toImageData below, which deliberately reads the pristine matte
-  // bitmap through the base palette — that one is for saving.
+  // top-down, so rows are flipped back here. The stamp as currently displayed:
+  // the active mode variant (matte, or the FG/BG-colorized bitmap in Color mode
+  // and friends), resolved through the *display* palette so a hover preview
+  // animates under Tab-cycling exactly like stamped pixels would (they sample
+  // the same rotated palette texture). Contrast toImageData below, which
+  // deliberately reads the pristine matte bitmap through the base palette: that
+  // one is for saving.
   public toDisplayImageData(): ImageData {
     const source = this.brushColorIndex.indexArray;
     const palette = overmind.state.palette.displayPalette;

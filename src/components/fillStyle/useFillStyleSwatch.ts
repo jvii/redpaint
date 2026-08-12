@@ -4,15 +4,15 @@ import { patternFillStore } from '../../brush/PatternFill';
 import { beginPreviewFrame, useFillPreviewGL } from './fillPreviewGL';
 
 // The menubar's Color Fill Box: a rectangle filled in the current fill style,
-// DPaint's own bit of user feedback for a fill type that the palette can't
-// show you (DP2 manual §4.25 — "displays the currently selected fill pattern,
-// or perspective fill or gradient fill… previews the pattern or gradient you
-// will get when you fill a shape").
+// DPaint's own bit of user feedback for a fill type that the palette can't show
+// you (DP2 manual §4.25. "displays the currently selected fill pattern, or
+// perspective fill or gradient fill… previews the pattern or gradient you will
+// get when you fill a shape").
 //
 // A rectangle, unlike the Fill Style requester's ellipse: at menubar size there
 // is no room for a shape showing how Horizontal Line hugs a contour, and the
 // axis reads from the band direction alone. So no row-span override and no
-// rasterization either — 'rect' is a shape kind both fill shaders handle.
+// rasterization either. 'rect' is a shape kind both fill shaders handle.
 //
 // Drawn only when a fill would come out patterned or gradient; the caller
 // unmounts the swatch otherwise, matching "The Color Fill Box is absent if fill
@@ -40,7 +40,7 @@ export function useFillStyleSwatch(
     const { palette, ranges, cycleOffsets } = state.palette;
     beginPreviewFrame(gl, palette, ranges, cycleOffsets, width, height);
 
-    // The whole buffer, corner to corner — inclusive pixel bounds, so the far
+    // The whole buffer, corner to corner. Inclusive pixel bounds, so the far
     // edge is the last pixel rather than one past it.
     const shape = {
       kind: 'rect' as const,

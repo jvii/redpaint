@@ -26,8 +26,8 @@ import {
 import { saveCanvasAsPng } from './saveAsPng';
 import './DrawerMenu.css';
 
-// Only captured or loaded brushes can be saved — the pixel brush has no
-// bitmap and the built-in brushes are not the user's work.
+// Only captured or loaded brushes can be saved. The pixel brush has no bitmap
+// and the built-in brushes are not the user's work.
 function isSaveableBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && !isBuiltInBrush(brush);
 }
@@ -42,14 +42,14 @@ function describeCurrentBrush(usingBuiltInBrush: boolean): string {
   const brush = brushRecall.current;
   const kind = usingBuiltInBrush ? 'Built-in' : 'Custom';
   // the pixel brush (built-in 1, DPaint's default dot) has no bitmap/size of
-  // its own — it always draws a single pixel
+  // its own. It always draws a single pixel
   const size = brush instanceof CustomBrush ? `${brush.width}×${brush.heigth}` : '1×1';
   return `${kind} ${size}`;
 }
 
 // The brush drawer: brush disk I/O plus the brush transforms
-// (docs/brush-transforms.md) — custom brushes only, like DPaint, grouped as
-// its Size/Flip/Rotate/Bend submenus. Double Horiz/Vert exist too but are
+// (docs/brush-transforms.md), custom brushes only, like DPaint, grouped as its
+// Size/Flip/Rotate/Bend submenus. Double Horiz/Vert exist too but are
 // keyboard-only (Shift-X/Y), matching the original. Instant transforms and the
 // modal drags close the menu on selection so the reshaped brush cursor (or the
 // armed drag) shows at once.
@@ -78,11 +78,11 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
     saveCanvasAsPng(brushCanvas, 'brush.png');
   };
 
-  // gadget click helpers: an instant transform applies and closes the menu;
-  // a drag transform arms its modal tool and closes so the drag can start.
-  // Both need the same brush-cursor refresh (see armTransform's comment) —
-  // an instant transform changes the bitmap under a cursor that otherwise
-  // won't repaint until the mouse actually moves.
+  // gadget click helpers: an instant transform applies and closes the menu; a
+  // drag transform arms its modal tool and closes so the drag can start. Both
+  // need the same brush-cursor refresh (see armTransform's comment): an instant
+  // transform changes the bitmap under a cursor that otherwise won't repaint
+  // until the mouse actually moves.
   const instant = (action: () => void) => (): void => {
     action();
     actions.app.closeMenu();
@@ -91,10 +91,10 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   const armTransform = (tool: BrushTransformToolId) => (): void => {
     actions.toolbox.toggleBrushTransformMode(tool);
     actions.app.closeMenu();
-    // the pointer is over the gadget that was just clicked, not the canvas —
-    // once the menu's close transition (Menu.css, 0.12s) finishes
-    // uncovering it, replay a mousemove there so the armed tool's cursor
-    // preview shows up without waiting for the mouse to actually move
+    // the pointer is over the gadget that was just clicked, not the canvas.
+    // Once the menu's close transition (Menu.css, 0.12s) finishes uncovering
+    // it, replay a mousemove there so the armed tool's cursor preview shows up
+    // without waiting for the mouse to actually move
     setTimeout(refreshBrushPreview, 150);
   };
 
@@ -196,8 +196,8 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             label="Any Angle"
             stacked
             // No keycap: 'R' is the toolbox's Filled Rectangle, DPaint's own
-            // (GlobalHotkeyManager). DPaint has this transform — its ROTATE,
-            // dragged about the brush's corner — but gave it no keyboard
+            // (GlobalHotkeyManager). DPaint has this transform (its ROTATE,
+            // dragged about the brush's corner), but gave it no keyboard
             // equivalent, so there is none to show.
             title={transformTitle('Rotate any angle (drag on canvas)')}
             disabled={usingBuiltInBrush}

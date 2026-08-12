@@ -12,12 +12,12 @@ import { RetroInputField } from '../ui/RetroInputField';
 // the screen is a normal working style. This app's word for the paper is the
 // canvas, which is what the status strip says.
 //
-// Never rescales — only grows or crops, pixels staying 1:1. Stretching a
+// Never rescales: only grows or crops, pixels staying 1:1. Stretching a
 // pixel-art painting is a destructive reinterpretation, not a side effect of
 // setting how big the paper is. (The Screen Format requester does offer to
 // scale, because fitting artwork to a newly chosen screen is a real want.)
 const MIN_SIDE = 1;
-// GL_MAX_TEXTURE_SIZE on anything we run on — past this the canvas would not
+// GL_MAX_TEXTURE_SIZE on anything we run on. Past this the canvas would not
 // render at all, whatever the memory says.
 const MAX_SIDE = 16384;
 // The area limit, which is the one that actually bites: cost scales with pixel
@@ -25,8 +25,8 @@ const MAX_SIDE = 16384;
 // gigabyte per undo snapshot. 16 megapixels sits above the 12 MP benched as
 // working-but-slow (docs/local/undo-memory.md) and well below where the tab
 // stops surviving. It guards a slipped keystroke rather than a considered
-// choice — loading a photo larger than this is still allowed, with a word
-// about what it will cost.
+// choice. Loading a photo larger than this is still allowed, with a word about
+// what it will cost.
 const MAX_PIXELS = 16_000_000;
 
 type SizeChoice = 'fit' | 'custom';
@@ -46,10 +46,10 @@ function CanvasSizeDialogOpen(): JSX.Element {
 
   const current = state.canvas.resolution;
   // The size that fills the display, whatever the display currently is: a
-  // simulated screen's own dimensions, or — at Native, where no screen is
-  // being simulated — the drawing pane itself, which is what the app sizes
-  // the canvas to at startup anyway. Naming both cases in one slot means the
-  // option is never the greyed-out dead weight it was at Native.
+  // simulated screen's own dimensions, or (at Native, where no screen is being
+  // simulated) the drawing pane itself, which is what the app sizes the canvas
+  // to at startup anyway. Naming both cases in one slot means the option is
+  // never the greyed-out dead weight it was at Native.
   const screen = state.canvas.screenFormatId
     ? resolveScreenFormat(state.canvas.screenFormatId, state.canvas.videoStandard)
     : null;
@@ -74,8 +74,8 @@ function CanvasSizeDialogOpen(): JSX.Element {
   const unchanged = valid && target.width === current.width && target.height === current.height;
   // Always something, never nothing: the note's space is reserved either way
   // (see CanvasSizeDialog.css), so an empty one is a hole rather than a saving,
-  // and both of these states are worth a word — one explains a disabled OK,
-  // the other confirms that OK would do nothing.
+  // and both of these states are worth a word. One explains a disabled OK, the
+  // other confirms that OK would do nothing.
   const note = problem ?? resizeNote(current, target);
 
   const handleOk = (): void => {
@@ -84,10 +84,10 @@ function CanvasSizeDialogOpen(): JSX.Element {
       return;
     }
     // Places the existing pixels 1:1 at the top-left, padding with the
-    // background color and cropping whatever falls outside — and records its
-    // own undo entry through the resize upload, so Ctrl+Z puts back both the
-    // pixels and the old canvas size (useUndo restores a snapshot's own
-    // resolution). That's why a crop needs no confirmation of its own.
+    // background color and cropping whatever falls outside, and records its own
+    // undo entry through the resize upload, so Ctrl+Z puts back both the pixels
+    // and the old canvas size (useUndo restores a snapshot's own resolution).
+    // That's why a crop needs no confirmation of its own.
     actions.canvas.resizeCanvasPlacingContent(target);
     actions.dialog.close();
   };
@@ -151,10 +151,10 @@ function CanvasSizeDialogOpen(): JSX.Element {
 // What the resize will do to the picture, in one sentence.
 //
 // Written per edge rather than per direction, because a change can crop one
-// axis while growing the other — and "smaller than the current canvas" and
-// "larger than the current canvas" cannot both be true of the same canvas.
-// Only a change that goes one way throughout gets to make that overall claim;
-// a mixed one simply names what happens at each edge.
+// axis while growing the other, and "smaller than the current canvas" and
+// "larger than the current canvas" cannot both be true of the same canvas. Only
+// a change that goes one way throughout gets to make that overall claim; a
+// mixed one simply names what happens at each edge.
 function resizeNote(
   current: { width: number; height: number },
   target: { width: number; height: number }
@@ -191,8 +191,8 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-// Keeps the field to digits as it is typed, so a minus sign, a decimal point
-// or a letter never reaches the value at all — there is no reading of "-5" or
+// Keeps the field to digits as it is typed, so a minus sign, a decimal point or
+// a letter never reaches the value at all. There is no reading of "-5" or
 // "12abc" worth guessing at.
 //
 // The leading run, not every digit in the string: deleting the non-digits from

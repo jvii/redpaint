@@ -6,9 +6,8 @@ import { ColorFillBox } from './ColorFillBox';
 import './Menubar.css';
 
 // The flood fill bucket glyph, lifted from the toolbox sprite's
-// "floodfill-active" symbol (src/resources/toolbar.svg) minus its outer
-// square outline — just the tilted bucket + pour lines, sized up a bit for
-// the menubar.
+// "floodfill-active" symbol (src/resources/toolbar.svg) minus its outer square
+// outline: just the tilted bucket + pour lines, sized up a bit for the menubar.
 const floodFillIcon = (
   <svg
     className="menubar__floodfill-icon"
@@ -39,11 +38,11 @@ export function Menubar(): JSX.Element {
   const state = useAppState();
 
   const mode = state.brush.mode;
-  // The armed modal state, as a name plus an optional live readout: the name
-  // is the mode, the readout is the thing the mode is deciding — a crop's
-  // size, a rotate's angle. Split rather than one string so the two can take
-  // different weights (see Menubar.css): the name is the loud part, the
-  // number is a value, and this app writes values in blue.
+  // The armed modal state, as a name plus an optional live readout: the name is
+  // the mode, the readout is the thing the mode is deciding, a crop's size, a
+  // rotate's angle. Split rather than one string so the two can take different
+  // weights (see Menubar.css): the name is the loud part, the number is a
+  // value, and this app writes values in blue.
   const selectorId = state.toolbox.selectedSelectorToolId;
   const armedTransform: { name: string; value?: string } | null =
     selectorId === 'brushStretchTool'
@@ -55,7 +54,7 @@ export function Menubar(): JSX.Element {
           : selectorId === 'brushRotateTool'
             ? {
                 // shown from the moment the mode is armed, reading 0° until a
-                // drag moves it — same as a crop showing its size before you
+                // drag moves it, same as a crop showing its size before you
                 // touch the box. brushRotateStart resets the angle whenever a
                 // drag ends, so this is never a stale figure from last time.
                 name: 'Rotate',
@@ -65,17 +64,17 @@ export function Menubar(): JSX.Element {
               ? { name: 'Bend' }
               : null;
   // A crop carries its live size the way an active rotate carries its angle.
-  // The multiplication sign, not a lowercase x — it centres on the digits'
+  // The multiplication sign, not a lowercase x. It centres on the digits'
   // baseline where the x sits 2px low (see ScreenStatus's Dimensions).
   const cropRect = state.crop.rect;
   const armedMode: { name: string; value?: string } | null = cropRect
     ? { name: 'Crop', value: `${cropRect.width}\u00d7${cropRect.height}` }
     : armedTransform;
-  // What an armed mode lets you do, beside the mode's own name. Keycaps are
-  // for keyboard keys only — a mouse gesture written as a cap would be
-  // pretending a button is a key — so those stay plain text. Kept to two
-  // chips: this shares a row with the title and the indicators, and a hint
-  // that crowds them is worse than a hint that says less.
+  // What an armed mode lets you do, beside the mode's own name. Keycaps are for
+  // keyboard keys only (a mouse gesture written as a cap would be pretending a
+  // button is a key), so those stay plain text. Kept to two chips: this shares
+  // a row with the title and the indicators, and a hint that crowds them is
+  // worse than a hint that says less.
   const armedHint: { key?: string; text: string }[] | null = cropRect
     ? [{ text: 'right-click to apply' }, { key: 'ESC', text: 'cancel' }]
     : armedTransform
@@ -98,9 +97,9 @@ export function Menubar(): JSX.Element {
       onContextMenu={(event): void => {
         event.preventDefault(); // right-click toggles the menu, not the browser's own menu
         actions.app.toggleMenu();
-        // Closing uncovers the canvas under the pointer, but the overlay
-        // cursor only repaints on mousemove — replay one so it's visible
-        // immediately instead of only after the mouse next moves.
+        // Closing uncovers the canvas under the pointer, but the overlay cursor
+        // only repaints on mousemove: replay one so it's visible immediately
+        // instead of only after the mouse next moves.
         setTimeout(refreshBrushPreview, 0);
       }}
     >

@@ -1,16 +1,14 @@
 import { ShapeGeometry } from '../../algorithm/fillShape';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY } from './util';
 
-// The draw call every GPU fill program issues: one triangle-strip quad
-// covering the shape's bounding box, which the fragment shader then discards
-// outside of. Identical across all four of them (Gradient/Pattern x commit/
-// preview), so it lives here rather than four times over — pairs with
-// FILL_VERTEX_SHADER (shapeFillShaderLib.ts), the equally shared vertex
-// shader it feeds.
+// The draw call every GPU fill program issues: one triangle-strip quad covering
+// the shape's bounding box, which the fragment shader then discards outside of.
+// Identical across all four of them (Gradient/Pattern x commit/ preview), so it
+// lives here rather than four times over: pairs with FILL_VERTEX_SHADER
+// (shapeFillShaderLib.ts), the equally shared vertex shader it feeds.
 //
-// Assumes ARRAY_BUFFER is already bound (the canvas controllers bind one
-// shared vertex buffer at init and never rebind) and the program is already
-// active.
+// Assumes ARRAY_BUFFER is already bound (the canvas controllers bind one shared
+// vertex buffer at init and never rebind) and the program is already active.
 export function drawShapeQuad(
   gl: WebGLRenderingContext,
   aPosition: number,

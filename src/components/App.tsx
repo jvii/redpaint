@@ -38,12 +38,12 @@ function App(): JSX.Element {
     <div
       className={'app' + (state.crop.rect ? ' app--cropping' : '')}
       // While a crop is armed the chrome takes no pointer events (App.css), so
-      // the menubar's own handler — the one that normally suppresses the
-      // browser menu there — never runs, and a right-click anywhere off the
-      // canvas raises the OS menu instead. Right-click is the crop's commit
-      // gesture, so that is exactly the button someone will be pressing.
-      // Suppressed at the root, which is the whole viewport; the overlay's own
-      // handler has already run and committed by the time this bubbles.
+      // the menubar's own handler (the one that normally suppresses the browser
+      // menu there) never runs, and a right-click anywhere off the canvas
+      // raises the OS menu instead. Right-click is the crop's commit gesture,
+      // so that is exactly the button someone will be pressing. Suppressed at
+      // the root, which is the whole viewport; the overlay's own handler has
+      // already run and committed by the time this bubbles.
       onContextMenu={state.crop.rect ? (event): void => event.preventDefault() : undefined}
     >
       <Menubar />

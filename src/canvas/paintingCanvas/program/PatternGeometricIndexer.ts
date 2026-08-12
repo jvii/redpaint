@@ -12,16 +12,16 @@ import { drawShapeQuad } from '../../util/shapeFillDraw';
 import { PatternTexture } from '../../util/patternTexture';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
-// Writes a Pattern-filled convex shape (rect/circle/ellipse/polygon) into
-// the color-index texture in ONE draw call — the Pattern-fill twin of
-// GradientGeometricIndexer, tiling a captured brush bitmap instead of
-// computing a band index. The pattern texture lives on its own dedicated
-// unit (7 — every other unit in the codebase is already permanently
-// claimed: 0/1/2 by the canvas/palette/brush-stamp textures, 3-6 by
-// EffectIndexer's scratch textures, 8 by Gradient fill's row-span texture),
-// re-uploaded only when the captured pattern actually changes
-// (patternFillStore.version, PatternFill.ts). The row-span texture (see
-// ROW_SPAN_TEXTURE_UNIT) is this class's own second texture, on unit 9.
+// Writes a Pattern-filled convex shape (rect/circle/ellipse/polygon) into the
+// color-index texture in ONE draw call: the Pattern-fill twin of
+// GradientGeometricIndexer, tiling a captured brush bitmap instead of computing
+// a band index. The pattern texture lives on its own dedicated unit (7; every
+// other unit in the codebase is already permanently claimed: 0/1/2 by the
+// canvas/palette/brush-stamp textures, 3-6 by EffectIndexer's scratch textures,
+// 8 by Gradient fill's row-span texture), re-uploaded only when the captured
+// pattern actually changes (patternFillStore.version, PatternFill.ts). The
+// row-span texture (see ROW_SPAN_TEXTURE_UNIT) is this class's own second
+// texture, on unit 9.
 const PATTERN_TEXTURE_UNIT = 7;
 const ROW_SPAN_TEXTURE_UNIT = 9;
 
@@ -43,8 +43,8 @@ export class PatternGeometricIndexer {
     for (const name of PATTERN_UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
-    // the pattern/row-span textures are always in their own fixed unit, so
-    // the sampler uniforms can be set once
+    // the pattern/row-span textures are always in their own fixed unit, so the
+    // sampler uniforms can be set once
     gl.uniform1i(this.uniforms['u_pattern'], PATTERN_TEXTURE_UNIT);
     gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
     this.patternTexture = new PatternTexture(gl, PATTERN_TEXTURE_UNIT);
@@ -75,8 +75,8 @@ export class PatternGeometricIndexer {
     void main () {
       vec4 texel = patternTexel();
       if (isTrueColor(texel)) {
-        // a true-color tile paints its literal RGB, tag and all — exactly
-        // what stamping the same brush directly would write
+        // a true-color tile paints its literal RGB, tag and all. Exactly what
+        // stamping the same brush directly would write
         gl_FragColor = vec4(texel.rgb, 1.0);
         return;
       }

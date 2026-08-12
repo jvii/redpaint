@@ -24,8 +24,8 @@ export interface SetResolutionParams extends Resolution {
   // Whether the freshly initialized (empty) canvas becomes a history entry.
   // True for a bare resize (startup sizing the canvas to the window); false
   // when content is queued to follow (image load, content-preserving resize,
-  // undo restore) — there the upload effect owns the history, and recording
-  // here would plant a blank artifact entry the user then undoes onto.
+  // undo restore). There the upload effect owns the history, and recording here
+  // would plant a blank artifact entry the user then undoes onto.
   recordUndoPoint?: boolean;
 }
 
@@ -76,7 +76,7 @@ export const resizeCanvasPlacingContent = (
   context.actions.canvas.setResolution({ width, height, recordUndoPoint: false });
 };
 
-// Resizes to the given size with a blank canvas — the counterpart to
+// Resizes to the given size with a blank canvas. The counterpart to
 // resizeCanvasPlacingContent when a screen-format change is not keeping the
 // picture. Queued, not cleared on the spot: the element resize only commits on
 // the next render, so a snapshot taken now would be of the old size, and the
@@ -131,7 +131,7 @@ export const setScreenFormat = (context: Context, { formatId }: SetScreenFormatP
 
 // Which broadcast standard the 4 named formats' dimensions resolve to. Set
 // directly by an ILBM load auto-matching a standard Amiga size, which is
-// cosmetic — the canvas is already that size. The requester instead commits it
+// cosmetic. The canvas is already that size. The requester instead commits it
 // through applyScreenFormat, as part of one choice.
 export const setVideoStandard = (context: Context, standard: VideoStandard): void => {
   context.state.canvas.videoStandard = standard;
@@ -145,8 +145,8 @@ export const toggleScaleMode = (context: Context): void => {
     context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
 };
 
-// Mirrors MainCanvas's own locally computed displayScale into Overmind
-// state — see state.ts's displayScale comment for why.
+// Mirrors MainCanvas's own locally computed displayScale into Overmind state:
+// see state.ts's displayScale comment for why.
 export const setDisplayScale = (context: Context, scale: Point): void => {
   context.state.canvas.displayScale = scale;
 };
@@ -160,7 +160,7 @@ export const setViewportSize = (
 
 // The one automatic sizing: a Native canvas fitted to the drawing pane at
 // startup. MainCanvas may call it more than once while the chrome settles, so
-// it resets the history rather than appending — two baseline entries read as
+// it resets the history rather than appending: two baseline entries read as
 // "painted on" to everything downstream, the autosave included.
 //
 // Refuses once the size is no longer its to decide: a screen format driving it,
@@ -173,7 +173,7 @@ export const setStartupResolution = (context: Context, { width, height }: Resolu
   if (context.state.canvas.screenFormatId !== null) {
     return; // a format owns the size; this is the Native path only
   }
-  // Content queued but not yet uploaded — a restored autosave or a load, whose
+  // Content queued but not yet uploaded. A restored autosave or a load, whose
   // resize is what woke the observer that called this. The state below still
   // describes the blank startup canvas for another tick, so the fit would
   // otherwise re-init the canvas out from under the upload.
@@ -200,9 +200,9 @@ export const setTrueColorEnabled = (context: Context, enabled: boolean): void =>
 };
 
 // Where a color reduction takes its palette from: keep the current colors
-// (truncation — surviving slots unchanged, dropped ones remapped) or rebuild
-// an optimal palette from the image itself (exact when the image's distinct
-// colors fit the depth, median cut otherwise).
+// (truncation, surviving slots unchanged, dropped ones remapped) or rebuild an
+// optimal palette from the image itself (exact when the image's distinct colors
+// fit the depth, median cut otherwise).
 export type PaletteSource = 'current' | 'image';
 
 export interface ApplyScreenFormatParams extends SetScreenFormatParams {
@@ -271,8 +271,8 @@ export const applyScreenFormat = (
   overlayCanvasController.updatePalette();
 
   // Conform without recording history: the caller commits exactly one undo
-  // entry for the whole change — via its resize's upload, or setUndoPoint for
-  // a same-size change — so undo restores the full pre-change canvas. Returns
+  // entry for the whole change (via its resize's upload, or setUndoPoint for a
+  // same-size change), so undo restores the full pre-change canvas. Returns
   // whether the pixels changed, so the caller knows an entry is owed.
   if (needsConform) {
     const current = paintingCanvasController.getCanvasColorIndex();

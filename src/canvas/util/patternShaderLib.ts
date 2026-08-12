@@ -7,7 +7,7 @@
 // for it.
 //
 // Tiling anchors to the canvas origin via mod(pix, u_patternSize), so
-// separately-filled shapes show one continuous pattern — and must stay
+// separately-filled shapes show one continuous pattern, and must stay
 // pixel-identical with patternColorAt (algorithm/patternFill.ts). NEAREST
 // filtering, and mod() rather than gl.REPEAT so the texture's wrap mode is not
 // shared with the unrelated brush-stamp code.
@@ -20,9 +20,9 @@ import { applyShapeUniforms, SHAPE_FILL_LIB, SHAPE_FILL_UNIFORM_NAMES } from './
 // uniform PATTERN_LIB declares (the shape-describing ones via
 // SHAPE_FILL_UNIFORM_NAMES) except u_palette, the overlay-only sampler that
 // resolves the fetched index to a display color. u_pattern/u_rowSpans are
-// texture unit numbers each caller binds once at program-construction time —
-// their locations are still looked up here since applyPatternUniforms
-// doesn't set them.
+// texture unit numbers each caller binds once at program-construction time.
+// Their locations are still looked up here since applyPatternUniforms doesn't
+// set them.
 export const PATTERN_UNIFORM_NAMES = [
   ...SHAPE_FILL_UNIFORM_NAMES,
   'u_pattern',
@@ -61,11 +61,11 @@ export const PATTERN_LIB = `
     uniform sampler2D u_pattern;  // the captured pattern bitmap
     uniform vec2 u_patternSize;   // pattern width/height in pixels
 
-    // The pattern's raw (unresolved) texel for this fragment, tiled from
-    // the fixed canvas origin (0,0) — or discards, either because the
-    // fragment is outside the shape, or the tiled pattern pixel is
-    // transparent/true-color (indexed-only for now — see patternColorAt,
-    // the CPU twin this stays pixel-identical with).
+    // The pattern's raw (unresolved) texel for this fragment, tiled from the
+    // fixed canvas origin (0,0), or discards, either because the fragment is
+    // outside the shape, or the tiled pattern pixel is transparent/true-color
+    // (indexed-only for now; see patternColorAt, the CPU twin this stays
+    // pixel-identical with).
     vec4 patternTexel() {
       vec2 pix = canvasPixel();
 
@@ -86,18 +86,18 @@ export const PATTERN_LIB = `
 
       vec2 tile = mod(pix, u_patternSize);
       // The uploaded texture's rows are bottom-up (BrushColorIndex's own
-      // storage convention, see patternColorAt) — texture v=0 samples the
-      // first (bottom) row, so the row that visually sits tile.y pixels
-      // down from the pattern's own top needs the mirrored v.
+      // storage convention, see patternColorAt). Texture v=0 samples the first
+      // (bottom) row, so the row that visually sits tile.y pixels down from the
+      // pattern's own top needs the mirrored v.
       vec2 uv = vec2(
         (tile.x + 0.5) / u_patternSize.x,
         (u_patternSize.y - tile.y - 0.5) / u_patternSize.y
       );
       vec4 texel = texture2D(u_pattern, uv);
-      // Only a transparent tile is skipped. A true-color tile keeps its
-      // literal RGB and is written through as a true-color pixel by the
-      // caller — the same pass-through stamping a true-color brush does
-      // (see patternColorAt, the CPU twin this stays identical with).
+      // Only a transparent tile is skipped. A true-color tile keeps its literal
+      // RGB and is written through as a true-color pixel by the caller. The
+      // same pass-through stamping a true-color brush does (see patternColorAt,
+      // the CPU twin this stays identical with).
       if (isTransparent(texel)) {
         discard;
       }

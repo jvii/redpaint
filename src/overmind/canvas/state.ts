@@ -96,13 +96,13 @@ export type ScaleMode = 'stretch' | 'integer';
 export type State = {
   // the canvas: the actual pixel bitmap being painted (GL drawing buffer size)
   resolution: { width: number; height: number };
-  // the simulated screen: null means no simulation — the canvas is shown 1:1
-  // in the browser window (the startup behavior). With a format selected,
-  // the main canvas is scaled so one screenful of the canvas fills the
-  // window, and a canvas larger than the screen scrolls.
+  // the simulated screen: null means no simulation. The canvas is shown 1:1 in
+  // the browser window (the startup behavior). With a format selected, the main
+  // canvas is scaled so one screenful of the canvas fills the window, and a
+  // canvas larger than the screen scrolls.
   screenFormatId: ScreenFormatId | null;
-  // which broadcast standard's pixel dimensions the 4 formats above resolve
-  // to (see resolveScreenFormat) — a real Amiga only ran one at a time
+  // which broadcast standard's pixel dimensions the 4 formats above resolve to
+  // (see resolveScreenFormat): a real Amiga only ran one at a time
   videoStandard: VideoStandard;
   scaleMode: ScaleMode;
   // the active format's pixel display shape ({1,1} when no format): every
@@ -113,11 +113,11 @@ export type State = {
   zoomFocusPoint: Point | null;
   // Mirror of MainCanvas's displayScale (CSS px per buffer px, per axis),
   // computed there from the live pane size and kept locally for its own render.
-  // Mirrored so other UI — the Fill Style preview — can see the canvas's
-  // current pixel density. {1,1} until the canvas has mounted once.
+  // Mirrored so other UI (the Fill Style preview) can see the canvas's current
+  // pixel density. {1,1} until the canvas has mounted once.
   displayScale: Point;
   // The main drawing pane's size in artwork pixels (CSS box times device pixel
-  // ratio) — what "fit to window" means at Native. Mirrored from MainCanvas for
+  // ratio). What "fit to window" means at Native. Mirrored from MainCanvas for
   // the same reason displayScale is: the Canvas Size requester cannot measure
   // that pane itself. {0,0} until the canvas has mounted once.
   viewportSize: { width: number; height: number };
@@ -130,8 +130,8 @@ export type State = {
   // palette; loading an image as True Color switches it back on.
   trueColorEnabled: boolean;
   // A screen format change that would shrink the canvas (and so lose pixels) is
-  // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up —
-  // nothing changes until the user answers, so Cancel has something to cancel.
+  // held here *unapplied* while the Resize/Crop/Keep/Cancel question is up.
+  // Nothing changes until the user answers, so Cancel has something to cancel.
   pendingScreenFormat: PendingScreenFormat | null;
 };
 
@@ -147,7 +147,7 @@ export type PendingScreenFormat = {
 
 // The size a canvas takes when its screen has no page size of its own: the
 // drawing pane, or its own current size if the pane has never been measured.
-// Shared by the two gestures that mean "a fresh page at Native" — the new-page
+// Shared by the two gestures that mean "a fresh page at Native": the new-page
 // half of CLR, and switching to Native without keeping the picture.
 export function nativeCanvasSize(canvas: {
   viewportSize: { width: number; height: number };
@@ -160,7 +160,7 @@ export function nativeCanvasSize(canvas: {
 // What the display side of a document starts as; the new-page gesture
 // (app.newPicture) restores exactly these. scaleMode is not among them: it is a
 // view preference owned by a menu toggle, and the autosave record does not
-// carry it either. These three it does — they belong to the picture.
+// carry it either. These three it does: they belong to the picture.
 export const DEFAULT_SCREEN_FORMAT_ID: ScreenFormatId | null = null;
 export const DEFAULT_VIDEO_STANDARD: VideoStandard = 'PAL';
 export const DEFAULT_TRUE_COLOR_ENABLED = true;

@@ -1,7 +1,7 @@
 export type LetterboxRect = { x: number; y: number; width: number; height: number };
 
-// Fits a source width/height into a boxSize square, preserving aspect ratio
-// and centering the result — the layout math behind brush-slot thumbnails
+// Fits a source width/height into a boxSize square, preserving aspect ratio and
+// centering the result. The layout math behind brush-slot thumbnails
 // (docs/brush-slots.md), kept pure and separate from the canvas drawing that
 // uses it (src/brush/brushThumbnail.ts) so it can be tested standalone.
 export function fitLetterboxed(

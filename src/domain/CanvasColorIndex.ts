@@ -89,10 +89,10 @@ export class CanvasColorIndex {
   }
 
   // The export-side mirror of fromIndexedPixels: per-pixel 0-based palette
-  // positions in top-down row order (texture rows are stored bottom-up, so
-  // rows are flipped here). Returns null if any pixel is true color — an
-  // indexed export has no representation for those; the caller decides what
-  // to tell the user.
+  // positions in top-down row order (texture rows are stored bottom-up, so rows
+  // are flipped here). Returns null if any pixel is true color. An indexed
+  // export has no representation for those; the caller decides what to tell the
+  // user.
   toIndexedPixels(): Uint8Array | null {
     const out = new Uint8Array(this.width * this.height);
     for (let y = 0; y < this.height; y++) {
@@ -126,9 +126,9 @@ export class CanvasColorIndex {
 
   // Whether any pixel is true color (the canvas is hybrid rather than fully
   // indexed). A tag scan with an early exit: a true-color image answers on the
-  // first pixel; a fully indexed canvas costs one pass. Memoized — undo
-  // snapshots are built fresh by getIndex() and never written to afterwards,
-  // so the answer cannot change under an instance.
+  // first pixel; a fully indexed canvas costs one pass. Memoized. Undo
+  // snapshots are built fresh by getIndex() and never written to afterwards, so
+  // the answer cannot change under an instance.
   private trueColorScan: boolean | null = null;
   hasTrueColorPixels(): boolean {
     if (this.trueColorScan === null) {
@@ -161,11 +161,11 @@ export class CanvasColorIndex {
 
   // Nearest-neighbor resize to a new size. Each destination pixel copies a
   // whole source pixel verbatim, so indices, true colors and tags are all
-  // preserved and no new colors are introduced — the right scaling for pixel
-  // art and for keeping an indexed image indexed. Used to rescale the current
+  // preserved and no new colors are introduced: the right scaling for pixel art
+  // and for keeping an indexed image indexed. Used to rescale the current
   // canvas when the screen/canvas size changes instead of clearing it. Works
-  // directly on the stored (bottom-up) rows; proportional row mapping keeps
-  // the orientation, so no flip is needed here.
+  // directly on the stored (bottom-up) rows; proportional row mapping keeps the
+  // orientation, so no flip is needed here.
   resizedTo(width: number, height: number): CanvasColorIndex {
     const destArray = new Uint8Array(width * height * 4);
     const dest32 = new Uint32Array(destArray.buffer);
@@ -234,14 +234,14 @@ export class CanvasColorIndex {
   }
 
   // Conforms every pixel to a palette (the DPaint-spirited automatic color
-  // reduction, done properly — the Amiga just dropped bitplanes and let the
+  // reduction, done properly: the Amiga just dropped bitplanes and let the
   // indices alias). With remapAll unset, indexed pixels within the new depth
-  // keep their index (a truncation shrink leaves surviving slots unchanged)
-  // and only pixels beyond it resolve to their old color and take the nearest
-  // new one; with remapAll set (a rebuilt palette, where every slot changed)
-  // all indexed pixels remap that way. True-color pixels are flattened the
-  // same way when includeTrueColor is set (the True Color switch turning
-  // off), otherwise kept verbatim.
+  // keep their index (a truncation shrink leaves surviving slots unchanged) and
+  // only pixels beyond it resolve to their old color and take the nearest new
+  // one; with remapAll set (a rebuilt palette, where every slot changed) all
+  // indexed pixels remap that way. True-color pixels are flattened the same way
+  // when includeTrueColor is set (the True Color switch turning off), otherwise
+  // kept verbatim.
   conformedTo(
     oldPalette: Color[],
     newPalette: Color[],
@@ -277,10 +277,10 @@ export class CanvasColorIndex {
     return new CanvasColorIndex(this.width, this.height, dest);
   }
 
-  // The canvas resolved to displayable RGBA pixels (indexed pixels through
-  // the palette, true-color pixels directly) — the input for extracting an
-  // optimal palette from the picture itself. Row order is the stored one;
-  // palette building is orientation-blind.
+  // The canvas resolved to displayable RGBA pixels (indexed pixels through the
+  // palette, true-color pixels directly): the input for extracting an optimal
+  // palette from the picture itself. Row order is the stored one; palette
+  // building is orientation-blind.
   resolveToRGBA(palette: Color[]): Uint8ClampedArray {
     const source = this.indexArray;
     const rgba = new Uint8ClampedArray(source.length);

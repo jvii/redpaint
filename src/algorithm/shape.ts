@@ -9,15 +9,15 @@ import { LineV } from '../domain/LineV';
 export function line(start: Point, end: Point): Point[] {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
-  // Steps = the dominant axis's pixel span, not the Euclidean distance —
-  // using distance() here (as this once did) over-samples any non-45-degree
-  // line, landing more than one step in some columns/rows (duplicate
-  // pixels) while unevenly spacing the rest, an uneven, "noisy" look
-  // distinct from a clean single-pixel-wide Bresenham-style line.
-  // Rounded because start/end aren't guaranteed to be integers (e.g. an
-  // odd-width custom brush's handle offset is a .5 fraction) — new Array()
-  // below requires an integer length, and used to get one for free from
-  // Math.round(distance(...)) before this became dominant-axis-based.
+  // Steps = the dominant axis's pixel span, not the Euclidean distance. Using
+  // distance() here (as this once did) over-samples any non-45-degree line,
+  // landing more than one step in some columns/rows (duplicate pixels) while
+  // unevenly spacing the rest, an uneven, "noisy" look distinct from a clean
+  // single-pixel-wide Bresenham-style line. Rounded because start/end aren't
+  // guaranteed to be integers (e.g. an odd-width custom brush's handle offset
+  // is a .5 fraction): new Array() below requires an integer length, and used
+  // to get one for free from Math.round(distance(...)) before this became
+  // dominant-axis-based.
   const dist = Math.round(Math.max(Math.abs(dx), Math.abs(dy)));
   if (dist === 0) {
     // just draw a dot
@@ -179,17 +179,17 @@ export function unfilledCircle(center: Point, r: number): Point[] {
   return circle;
 }
 
-// The ellipse boundary is a rotated conic
-// ((x*cos(phi) + y*sin(phi))^2)/a^2 + ((x*sin(phi) - y*cos(phi))^2)/b^2 = 1
+// The ellipse boundary is a rotated conic ((x*cos(phi) + y*sin(phi))^2)/a^2 +
+// ((x*sin(phi) - y*cos(phi))^2)/b^2 = 1
 // (https://www.wolframalpha.com/input/?i=%28%28x*cos%28k%29+%2B+y*sin%28k%29%29%5E2%29%2Fa%5E2+%2B+%28%28x*sin%28k%29+-+y*cos%28k%29%29%5E2%29%2Fb%5E2+%3D+1),
 // symmetric in x and y. Sampling only "given x, solve for y" undersamples any
-// column where the true boundary is steep (nearly vertical) — near-vertical
+// column where the true boundary is steep (nearly vertical). Near-vertical
 // stretches can cross several rows within a single integer x step, which a
 // single rounded y1/y2 per column can't represent, leaving notches (unfilled)
 // or missing rows (filled). Solving the same conic the other way, "given y,
 // solve for x", is exactly as accurate but samples finely wherever the first
-// form was coarse (and vice versa) — at every point on an ellipse either
-// |dy/dx| <= 1 or |dx/dy| <= 1, so the union of both is always complete.
+// form was coarse (and vice versa). At every point on an ellipse either |dy/dx|
+// <= 1 or |dx/dy| <= 1, so the union of both is always complete.
 
 function yGivenX(x: number, a: number, b: number, phi: number): [number, number] {
   const a2 = a ** 2;

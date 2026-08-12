@@ -20,16 +20,16 @@ import { BrushColorIndex } from '../domain/BrushColorIndex';
 //
 // Batched *by color*, not collapsed to one: most strokes are one color across
 // every copy (the common case, one real call), but a gradient fill paints
-// several colors within what SymmetryBrush treats as a single stroke — each
+// several colors within what SymmetryBrush treats as a single stroke, each
 // copy's own gradient buckets, across every copy, still need to survive the
 // buffer and reach the canvas as their own color.
 //
-// Effect draws (Cycle/Smear/Shade/Blend/Smooth) can't merge by color at all —
+// Effect draws (Cycle/Smear/Shade/Blend/Smooth) can't merge by color at all,
 // each copy's stepped color depends on its own per-copy counter (Cycle's
-// cycleStep), so they stay one effectDraw call per copy. What they *can*
-// share is the render: effectDraw only indexes, so replayTo issues every
-// copy's call before triggering one flushEffectDraw, rather than paying a
-// full canvas re-render per copy.
+// cycleStep), so they stay one effectDraw call per copy. What they *can* share
+// is the render: effectDraw only indexes, so replayTo issues every copy's call
+// before triggering one flushEffectDraw, rather than paying a full canvas
+// re-render per copy.
 export class DrawCallBuffer implements DrawTarget {
   private pointBatches = new Map<number, { color: PaintColor; points: Point[] }>();
   private lineBatches = new Map<number, { color: PaintColor; lines: (LineH | LineV)[] }>();
@@ -81,8 +81,8 @@ export class DrawCallBuffer implements DrawTarget {
   }
 
   public effectDraw(points: Point[], brush: CustomBrush, copyId: number): void {
-    // the caller's copyId is ignored: the buffer assigns replay ordinals —
-    // each symmetry copy contributes exactly one effectDraw per segment
+    // the caller's copyId is ignored: the buffer assigns replay ordinals, each
+    // symmetry copy contributes exactly one effectDraw per segment
     this.effectBatches.push({ points, brush });
   }
 
@@ -130,8 +130,8 @@ export class DrawCallBuffer implements DrawTarget {
       this.effectBatches.forEach((batch, copyId) => {
         target.effectDraw(batch.points, batch.brush, copyId);
       });
-      // one render for every copy's effectDraw above, instead of one per
-      // copy — see the DrawTarget.effectDraw doc comment
+      // one render for every copy's effectDraw above, instead of one per copy:
+      // see the DrawTarget.effectDraw doc comment
       target.flushEffectDraw();
     }
   }

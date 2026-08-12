@@ -65,14 +65,14 @@ export class ShearBrushTool extends BrushTransformTool {
     // left edge follows the drag while the top row stays visually put
     const topLeft = { x: anchor.x + Math.min(dx, 0), y: anchor.y };
     this.drawPreviewAt(topLeft, preview);
-    // the parallelogram the sheared brush actually fills — top row anchored,
-    // bottom row slid by dx — not the wider axis-aligned box around it
+    // the parallelogram the sheared brush actually fills (top row anchored,
+    // bottom row slid by dx), not the wider axis-aligned box around it
     overlayCanvasController.selectionPolygon(shearedCorners(anchor, brush.width, brush.heigth, dx));
   }
 }
 
-// the brush's entry w x h rectangle with its bottom edge slid by dx — the
-// top row is anchored (shear's pivot), the bottom row is where it lands
+// the brush's entry w x h rectangle with its bottom edge slid by dx. The top
+// row is anchored (shear's pivot), the bottom row is where it lands
 function shearedCorners(anchor: Point, width: number, height: number, dx: number): Point[] {
   return [
     { x: anchor.x, y: anchor.y },
@@ -83,7 +83,7 @@ function shearedCorners(anchor: Point, width: number, height: number, dx: number
 }
 
 // Horizontal distance dragged past the brush's bottom-right corner (the
-// anchored top-left plus the entry width) — DPaint's dx = mx - bpl.x - w.
+// anchored top-left plus the entry width): DPaint's dx = mx - bpl.x - w.
 function shearAmount(anchor: Point, mousePos: Point): number {
   const brush = brushRecall.current;
   const width = brush instanceof CustomBrush ? brush.width : 0;

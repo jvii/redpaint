@@ -10,10 +10,10 @@ function formatMegabytes(bytes: number): string {
 }
 
 // The preferences drawer: app-wide settings that aren't part of the document
-// (so nothing here belongs in Picture or Brush). Mutually exclusive with
-// those two — see Menu.tsx's app.openDrawer radio group. Settings are
-// RetroToggles rather than gadgets, so unlike the other drawers this one has
-// no GadgetCluster; the cluster subhead is reused on its own to label each.
+// (so nothing here belongs in Picture or Brush). Mutually exclusive with those
+// two: see Menu.tsx's app.openDrawer radio group. Settings are RetroToggles
+// rather than gadgets, so unlike the other drawers this one has no
+// GadgetCluster; the cluster subhead is reused on its own to label each.
 export function PreferencesMenu(): JSX.Element {
   const actions = useActions();
   const state = useAppState();

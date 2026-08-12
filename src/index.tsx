@@ -16,7 +16,7 @@ export const overmind = createOvermind(config, {
 
 // debug access from the devtools console
 (window as unknown as { __redpaint: typeof overmind }).__redpaint = overmind;
-// why a restore did or did not happen — see documentAutosave.autosaveState
+// why a restore did or did not happen: see documentAutosave.autosaveState
 (window as unknown as { __redpaintAutosave: unknown }).__redpaintAutosave = autosaveState;
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);

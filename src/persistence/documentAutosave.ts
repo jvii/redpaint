@@ -3,7 +3,7 @@ import { CycleRange } from '../algorithm/paletteRange';
 import { idbDelete, idbGet, idbKeys, idbSet } from './idb';
 import { ensureTabId, tabId } from './tabIdentity';
 
-// One record per tab, not one for the origin — see tabIdentity.ts for why, and
+// One record per tab, not one for the origin. See tabIdentity.ts for why, and
 // for how a tab keeps the same id across a reload.
 const KEY_PREFIX = 'doc:';
 
@@ -34,8 +34,8 @@ const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 // migrated.
 const VERSION = 1;
 
-// What comes back after a reload. No undo history — session state, and
-// megabytes an entry (docs/local/undo-memory.md, part 4 "Scope").
+// What comes back after a reload. No undo history: session state, and megabytes
+// an entry (docs/local/undo-memory.md, part 4 "Scope").
 export type DocumentRecord = {
   version: number;
   width: number;
@@ -106,7 +106,7 @@ async function prune(): Promise<void> {
   const mine = ownKey();
   const keys = await idbKeys();
   // Records only: a marker has no savedAt, so it would date as ancient and be
-  // swept — including the live one (docs/gotchas.md).
+  // swept, including the live one (docs/gotchas.md).
   const records = keys.filter((key) => key.startsWith(KEY_PREFIX) && key !== mine);
   const dated = await Promise.all(
     records.map(async (key) => ({ key, at: (await idbGet<DocumentRecord>(key))?.savedAt ?? 0 }))
@@ -150,7 +150,7 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
 }
 
 // The saved document, or null if there is nothing to restore, it cannot be
-// trusted, or the last attempt died — all three leave a blank canvas.
+// trusted, or the last attempt died: all three leave a blank canvas.
 export async function loadDocument(): Promise<DocumentRecord | null> {
   await ensureTabId();
   // Not awaited: a restore should not wait on housekeeping.

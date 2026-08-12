@@ -148,7 +148,7 @@ export function Toolbox(): JSX.Element {
       <ToolboxActionButton
         buttonClass="clr"
         hint={toolboxHints.clr}
-        // Pixels only — see app.clearPage. Starting a new page is the
+        // Pixels only: see app.clearPage. Starting a new page is the
         // right-click below.
         onClick={(): void => actions.app.clearPage()}
         onRightClick={(): void => actions.app.newPicture()}

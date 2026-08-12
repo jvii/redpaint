@@ -1,8 +1,8 @@
-// UI scaling — PROTOTYPE.
+// UI scaling: PROTOTYPE.
 //
 // The problem: Windows display scaling (125%, 150%) and small laptop screens
-// both shrink the viewport measured in CSS pixels — 125% turns a 1920x1080
-// screen into 1536x864 — while every chrome dimension in this app is a
+// both shrink the viewport measured in CSS pixels (125% turns a 1920x1080
+// screen into 1536x864) while every chrome dimension in this app is a
 // hardcoded px. A fixed-size UI in a smaller box: the menubar and toolbox eat
 // a bigger share of the window and the taller requesters stop fitting. The
 // browser exposes no way to read (let alone override) the OS setting;
@@ -13,7 +13,7 @@
 // The mechanism is CSS `zoom` on the chrome containers, applied through the
 // --ui-scale custom property on :root. Why zoom and not the alternatives:
 //
-//   - `transform: scale()` doesn't reflow — the layout keeps its old size and
+//   - `transform: scale()` doesn't reflow: the layout keeps its old size and
 //     you're left with a gap where the shrunk chrome used to be.
 //   - rem-scaling every length would break the pixel-art typography: the
 //     style guide requires Press Start 2P at a multiple of 8px, and
@@ -23,7 +23,7 @@
 //     physical pixels, i.e. crisper than the unscaled 125% state, with every
 //     multiple-of-8 size still a multiple of 8 in real pixels.
 //
-// The zoom is deliberately NOT on .app — it covers the menubar, menu panel,
+// The zoom is deliberately NOT on .app: it covers the menubar, menu panel,
 // toolbox column and requesters only. The canvas stack stays unzoomed: it
 // already renders at devicePixelRatio (see components/canvas/hooks.tsx) and
 // maps pointer coordinates against its own unscaled box, and shrinking the
@@ -32,7 +32,7 @@
 // Viewport units INSIDE a zoomed box have to divide by --ui-scale to keep
 // meaning real screen pixels: zoom multiplies computed lengths on render, and
 // 100vh keeps its raw viewport value going in, so it comes out scaled.
-// Percentages do NOT need this — the containing block is converted into the
+// Percentages do NOT need this: the containing block is converted into the
 // zoomed box's own units first, so 100% still means "all of it". (Verified in
 // Chrome; getting this backwards pushed the menubar's right-hand indicators
 // off screen.) Grep --ui-scale for the handful of sites; they're all vh.
@@ -76,7 +76,7 @@ export function applyUiScale(scale: number): void {
 // divided by this first, or it lands at scale x the offset it was given.
 //
 // Read from the custom property rather than from Overmind, so it is whatever
-// CSS is actually doing — the two cannot drift, and callers need no store.
+// CSS is actually doing. The two cannot drift, and callers need no store.
 export function currentUiScale(): number {
   const value = Number(getComputedStyle(document.documentElement).getPropertyValue('--ui-scale'));
   return value > 0 ? value : 1;

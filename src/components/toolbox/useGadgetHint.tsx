@@ -19,7 +19,7 @@ type Hinted = {
   hintRef: RefObject<HTMLDivElement | null>;
   showHint: () => void;
   hideHint: () => void;
-  // Render inside the same element — null until the wait is over.
+  // Render inside the same element: null until the wait is over.
   hintPanel: JSX.Element | null;
 };
 
@@ -29,7 +29,7 @@ export function useGadgetHint(hint?: GadgetHint): Hinted {
   const hintTimer = useRef<number | undefined>(undefined);
 
   const hideHint = (): void => {
-    // Cancel first, then forget the id — the other order cancels nothing.
+    // Cancel first, then forget the id: the other order cancels nothing.
     window.clearTimeout(hintTimer.current);
     hintTimer.current = undefined;
     if (closeOpenHint === hideHint) {
@@ -58,16 +58,16 @@ export function useGadgetHint(hint?: GadgetHint): Hinted {
       const belowMiddle = rect.top > window.innerHeight / 2;
       // Every offset below is measured in real screen pixels and then handed to
       // an element inside the zoomed chrome, where CSS multiplies it by the UI
-      // Size factor again — so it has to be divided out first or the panel
-      // lands at scale x the offset it was given. At 80% that put it 18px above
-      // the gadget and 3px *over* the toolbox instead of 12px clear of it.
+      // Size factor again, so it has to be divided out first or the panel lands
+      // at scale x the offset it was given. At 80% that put it 18px above the
+      // gadget and 3px *over* the toolbox instead of 12px clear of it.
       const scale = currentUiScale();
       setHintAt({
         right: (window.innerWidth - rect.left) / scale,
         top: belowMiddle ? undefined : rect.top / scale,
         bottom: belowMiddle ? (window.innerHeight - rect.bottom) / scale : undefined,
         // The panel's anchored edge is level with the gadget's, so the gadget's
-        // middle is half its height in from that edge — measured, not a CSS
+        // middle is half its height in from that edge: measured, not a CSS
         // constant, since the chrome scales with the UI Size setting.
         arrow: belowMiddle
           ? `calc(100% - ${rect.height / 2 / scale}px)`

@@ -11,10 +11,10 @@ import { drawShapeQuad } from '../../util/shapeFillDraw';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 import { RowSpanTable } from '../../../algorithm/rowSpans';
 
-// Mirrors GradientGeometricIndexer's own ROW_SPAN_TEXTURE_UNIT constant —
-// see that file's comment. A separate context (this is the overlay canvas,
-// not the painting canvas) so the unit number doesn't have to match, but
-// keeping it identical avoids a second, arbitrary number to track.
+// Mirrors GradientGeometricIndexer's own ROW_SPAN_TEXTURE_UNIT constant: see
+// that file's comment. A separate context (this is the overlay canvas, not the
+// painting canvas) so the unit number doesn't have to match, but keeping it
+// identical avoids a second, arbitrary number to track.
 const ROW_SPAN_TEXTURE_UNIT = 8;
 
 // The live-preview twin of GradientGeometricIndexer: same shape/band/dither
@@ -40,10 +40,10 @@ export class OverlayGradientRenderer {
     this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
-  // rowSpanTableOverride: see RowSpanTexture.use's own comment — the Fill
-  // Style preview swatch's way of keeping Gradient/Pattern's preview
-  // consistent with Solid's, both using symmetricFilledEllipse instead of
-  // this shape's real row-span table.
+  // rowSpanTableOverride: see RowSpanTexture.use's own comment, the Fill Style
+  // preview swatch's way of keeping Gradient/Pattern's preview consistent with
+  // Solid's, both using symmetricFilledEllipse instead of this shape's real
+  // row-span table.
   public renderGradientFill(
     shape: FillShape,
     style: GradientFillStyle,

@@ -25,11 +25,11 @@ export const setNumberOfColors = (context: Context, colors: number): void => {
   clampColorReferences(context, colors);
 };
 
-// Replaces the whole palette with the given colors (the palette extracted
-// from a loaded image), resizing its depth to match — the browser-era
-// equivalent of DPaint loading a picture's palette along with the picture.
-// The cycling ranges as a whole, for the paths that bring a document's own set
-// with it (an ILBM's cycle chunks, a restored autosave) rather than editing one.
+// Replaces the whole palette with the given colors (the palette extracted from
+// a loaded image), resizing its depth to match: the browser-era equivalent of
+// DPaint loading a picture's palette along with the picture. The cycling ranges
+// as a whole, for the paths that bring a document's own set with it (an ILBM's
+// cycle chunks, a restored autosave) rather than editing one.
 export const replaceRanges = (context: Context, ranges: (PaletteRange | null)[]): void => {
   context.state.palette.ranges = ranges;
 };
@@ -118,9 +118,9 @@ export const setRange = (context: Context, { rangeIndex, start, end }: SetRangeP
   };
 };
 
-// Prunes empty slots above the six defaults — a slot that only existed
-// because a loaded file carried it disappears once cleared — and keeps the
-// editor's selection in bounds.
+// Prunes empty slots above the six defaults (a slot that only existed because a
+// loaded file carried it disappears once cleared), and keeps the editor's
+// selection in bounds.
 export const clearRange = (context: Context, rangeIndex: number): void => {
   const ranges = context.state.palette.ranges;
   ranges[rangeIndex] = null;
@@ -140,7 +140,7 @@ export interface SetRangeSettingsParams {
   reverse?: boolean;
 }
 
-// Updates a range slot's cycling settings in place. No-op on an unset slot —
+// Updates a range slot's cycling settings in place. No-op on an unset slot:
 // settings ride on a range, they don't create one.
 export const setRangeSettings = (
   context: Context,
@@ -176,9 +176,9 @@ export interface SwapColorsParams {
   bId: string;
 }
 
-// DPaint's Ex(change): swap the colors of two palette slots. Fresh copies,
-// not moved references — proxy-state-tree rejects re-inserting an object
-// that's already tracked at another path.
+// DPaint's Ex(change): swap the colors of two palette slots. Fresh copies, not
+// moved references: proxy-state-tree rejects re-inserting an object that's
+// already tracked at another path.
 export const swapColors = (context: Context, { aId, bId }: SwapColorsParams): void => {
   const a = { ...context.state.palette.palette[aId] };
   context.state.palette.palette[aId] = { ...context.state.palette.palette[bId] };
@@ -193,7 +193,7 @@ export interface SpreadParams {
 // DPaint's Spread (PALETTE.C, MO_SPREAD): re-colors the palette slots
 // strictly between the two endpoints as an HSV interpolation from one
 // endpoint color to the other (the endpoints themselves are unchanged).
-// HSV, not RGB — a blue-to-yellow spread passes through greens instead of
+// HSV, not RGB: a blue-to-yellow spread passes through greens instead of
 // grey. Two faithful details:
 //  - an achromatic endpoint has no meaningful hue (grey) or saturation
 //    (black), so those "undefined" components are borrowed from the other

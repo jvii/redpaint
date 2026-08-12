@@ -15,13 +15,12 @@ type Props = {
   canvasRef: RefObject<HTMLCanvasElement | null>;
 };
 
-// What was opened (size, distinct colors) plus a live preview canvas the
-// caller draws into via canvasRef — shared by the Load Image and Load Brush
-// requesters, which show identical information about identically-shaped
-// pending pixels. Drawn at native size and scaled by CSS with
-// image-rendering: pixelated; tiny images upscale by a whole factor so their
-// pixels stay even, large ones shrink fractionally, which a preview can
-// afford.
+// What was opened (size, distinct colors) plus a live preview canvas the caller
+// draws into via canvasRef: shared by the Load Image and Load Brush requesters,
+// which show identical information about identically-shaped pending pixels.
+// Drawn at native size and scaled by CSS with image-rendering: pixelated; tiny
+// images upscale by a whole factor so their pixels stay even, large ones shrink
+// fractionally, which a preview can afford.
 export function LoadPreview({
   label,
   width,

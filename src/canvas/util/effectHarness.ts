@@ -7,8 +7,8 @@ import { symmetryBrush } from '../../brush/SymmetryBrush';
 import { paintingCanvasController } from '../paintingCanvas/PaintingCanvasController';
 import { overmind } from '../..';
 
-// Vertical bars of palette colors 1..n across the canvas — a deterministic
-// scene for the effect fixtures to smear/shade/blend into.
+// Vertical bars of palette colors 1..n across the canvas: a deterministic scene
+// for the effect fixtures to smear/shade/blend into.
 function effectScene(colors: number): string {
   const { width, height } = overmind.state.canvas.resolution;
   const barWidth = Math.floor(width / colors);

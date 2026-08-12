@@ -3,9 +3,9 @@ export type State = {
   lastUndoRedoTime: number;
   lastUndoPointTime: number;
   // Reactive mirrors of UndoBuffer's size (the buffer itself is a plain
-  // singleton outside Overmind, like brushRecall) — for the Preferences
-  // drawer's readout. Maintained wherever the buffer is written, which is
-  // setUndoPoint and reset only.
+  // singleton outside Overmind, like brushRecall), for the Preferences drawer's
+  // readout. Maintained wherever the buffer is written, which is setUndoPoint
+  // and reset only.
   bufferBytes: number;
   bufferEntryCount: number;
 };

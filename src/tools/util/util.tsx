@@ -60,8 +60,8 @@ export function isRightMouseButton(
 }
 
 // The middle button is reserved app-wide for toggling the menu
-// (GlobalHotkeyManager's useMiddleClickMenuToggle) — canvas tools never act
-// on it, so Canvas.tsx checks this before dispatching to any tool handler.
+// (GlobalHotkeyManager's useMiddleClickMenuToggle). Canvas tools never act on
+// it, so Canvas.tsx checks this before dispatching to any tool handler.
 export function isMiddleMouseButton(
   event: React.MouseEvent<HTMLCanvasElement, MouseEvent>
 ): boolean {

@@ -5,11 +5,11 @@ import { Point } from '../../types';
 import './CropOverlay.css';
 
 // The eight resize grips, named by which edges each one moves. Corner grips
-// move two edges, edge grips one — which is the whole definition, so the hit
-// areas and the cursors both fall out of it rather than being listed twice.
-// The grip glyph: one double-headed arrow, rotated to match the axis each grip
-// drags along. Action-glyph register per the style guide — currentColor stroke,
-// no fill — so it tracks the grip's own colour for free. The rotation is
+// move two edges, edge grips one, which is the whole definition, so the hit
+// areas and the cursors both fall out of it rather than being listed twice. The
+// grip glyph: one double-headed arrow, rotated to match the axis each grip
+// drags along. Action-glyph register per the style guide (currentColor stroke,
+// no fill), so it tracks the grip's own colour for free. The rotation is
 // already implied by the cursor, so it's derived rather than listed twice.
 const ARROW_ROTATION: Record<string, number> = {
   'ew-resize': 0,
@@ -78,17 +78,17 @@ type Drag =
 // double-click inside; Escape cancels.
 //
 // Deliberately DOM rather than the WebGL overlay the other previews use. This
-// is chrome, not pixels — it wants hover cursors, forgiving grip hit areas and
-// a live readout, all of which are free here and hand-rolled there. Covering
-// the canvas is also what makes the mode modal: pointer events stop at the
-// overlay, so no painting happens underneath.
+// is chrome, not pixels. It wants hover cursors, forgiving grip hit areas and a
+// live readout, all of which are free here and hand-rolled there. Covering the
+// canvas is also what makes the mode modal: pointer events stop at the overlay,
+// so no painting happens underneath.
 export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Element | null {
   const state = useAppState();
   const actions = useActions();
   const rect = state.crop.rect;
   const dragRef = useRef<Drag | null>(null);
-  // Shown until the first drag actually moves something, then gone for the
-  // rest of the session — it answers "what do I do here", which stops being a
+  // Shown until the first drag actually moves something, then gone for the rest
+  // of the session. It answers "what do I do here", which stops being a
   // question the moment you have done it. Component state, not Overmind: the
   // overlay is mounted only while a crop is armed, so every crop starts by
   // saying this once.
@@ -145,7 +145,7 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
   };
 
   // Moving keeps the box's size and stops against the edges. Clamping its
-  // extents instead — the rule the other two gestures want — made a box shoved
+  // extents instead (the rule the other two gestures want) made a box shoved
   // right shrink against the edge rather than halt at it.
   const clampMoved = (next: CropRect): CropRect => ({
     ...next,
@@ -181,7 +181,7 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
       return;
     }
     // A move with no button held cannot be a drag, so a drag still recorded
-    // here is stale — the overlay's DOM can vanish mid-gesture when a
+    // here is stale. The overlay's DOM can vanish mid-gesture when a
     // right-click commits, taking the captured element and its pointerup. Drop
     // it, or the box follows the pointer with nothing pressed.
     if (event.buttons === 0) {
@@ -253,7 +253,7 @@ export function CropOverlay({ displayScale }: { displayScale: Point }): JSX.Elem
       style={{ width: canvas.width * scale.x, height: canvas.height * scale.y }}
       onPointerDown={(event): void =>
         // on the dimmed area: arm a redraw, but leave the box as it is until
-        // the pointer moves — see the 'draw' case above
+        // the pointer moves, see the 'draw' case above
         onPointerDown({ kind: 'draw', origin: pointerToCanvas(event), started: false })(event)
       }
       onPointerMove={onPointerMove}

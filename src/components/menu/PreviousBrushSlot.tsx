@@ -5,12 +5,12 @@ import { GadgetCluster } from './MenuGadgets';
 import './BrushSlotStrip.css';
 
 // The automatic companion to the curated slots (docs/brush-slots.md): the
-// custom brush BrushRecall last replaced — capture, load, slot/Previous
-// recall, and selecting a built-in all feed it, so switching away from a
-// custom brush never silently drops it. No store/clear controls: the user
-// doesn't curate this one, brushRecall does — so unlike BrushSlotStrip
-// there's no download-glyph empty state (nothing to store here) and no
-// Clear in the hover overlay (nothing to clear).
+// custom brush BrushRecall last replaced. Capture, load, slot/Previous recall,
+// and selecting a built-in all feed it, so switching away from a custom brush
+// never silently drops it. No store/clear controls: the user doesn't curate
+// this one, brushRecall does, so unlike BrushSlotStrip there's no
+// download-glyph empty state (nothing to store here) and no Clear in the hover
+// overlay (nothing to clear).
 export function PreviousBrushSlot(): JSX.Element {
   const actions = useActions();
   const state = useAppState();

@@ -7,13 +7,13 @@ export interface SaveFileType {
 // Asks the user what to call the file, for the branch that has no native save
 // picker to ask for us. Resolves to the chosen base name, or null if cancelled.
 // A callback rather than a direct call, so this module stays free of React and
-// Overmind — the requester lives in the component layer where it belongs.
+// Overmind. The requester lives in the component layer where it belongs.
 export type PromptForName = (suggested: string) => Promise<string | null>;
 
 // A handle to the file the picker wrote, kept so a later save can write to it
-// again — same file, no dialog, no numbered duplicate. Only Chromium's
-// showSaveFilePicker produces one; the download branch has no equivalent,
-// which is the whole reason repeat saves are numbered there.
+// again, same file, no dialog, no numbered duplicate. Only Chromium's
+// showSaveFilePicker produces one; the download branch has no equivalent, which
+// is the whole reason repeat saves are numbered there.
 export type SaveFileHandle = {
   name: string;
   createWritable: () => Promise<WritableStream>;
@@ -29,7 +29,7 @@ export type SaveTarget = { name: string; handle: SaveFileHandle | null };
 // the download attribute themselves, silently and differently, so the name in
 // the requester would stop matching the name on disk.
 //
-// Must be idempotent — the requester sanitizes to preview and saveFile again on
+// Must be idempotent. The requester sanitizes to preview and saveFile again on
 // the way out, so a differing second pass makes the preview a lie. Trim, then
 // remove, then strip: stripping dots before slashes fails, as "../bad:name?"
 // gives "..badname" once and "badname" twice.
@@ -40,8 +40,8 @@ export function sanitizeFileName(name: string): string {
     .replace(/^\.+/, '');
 }
 
-// Appends the format's extension unless it is already there — so "mypic"
-// becomes "mypic.png" and "mypic.png" is left alone rather than becoming
+// Appends the format's extension unless it is already there, so "mypic" becomes
+// "mypic.png" and "mypic.png" is left alone rather than becoming
 // "mypic.png.png".
 export function withExtension(name: string, extension: string): string {
   return name.toLowerCase().endsWith(extension.toLowerCase()) ? name : name + extension;
@@ -53,7 +53,7 @@ export function withExtension(name: string, extension: string): string {
 // is called before makeBlob so the user gesture is still fresh, since transient
 // activation can expire across async work. Everywhere else the file goes to the
 // downloads folder under a name we supply, so promptForName is asked on that
-// branch only — and its OK click is itself a fresh gesture for the download.
+// branch only, and its OK click is itself a fresh gesture for the download.
 //
 // Returns the base name written, without the extension, or null if nothing was:
 // every early return is a cancel or a failure, and neither should clear the
@@ -102,8 +102,8 @@ export async function saveFileAs(
     if (chosen === null) {
       return null; // user cancelled the requester
     }
-    // The requester sanitizes as it previews, so this is belt and braces —
-    // idempotent, and the one thing standing between a hand-written
+    // The requester sanitizes as it previews, so this is belt and braces.
+    // Idempotent, and the one thing standing between a hand-written
     // promptForName and a name the browser would quietly rewrite.
     const cleaned = sanitizeFileName(chosen);
     downloadName = withExtension(cleaned === '' ? suggestedName : cleaned, fileType.extension);
@@ -120,7 +120,7 @@ export async function saveFileAs(
     await writer.write(blob);
     await writer.close();
     // What the user actually called it in the OS dialog, which may be nothing
-    // like what was suggested — and the handle itself, so the next save can go
+    // like what was suggested, and the handle itself, so the next save can go
     // straight back to this file.
     return { name: baseName(fileHandle.name, fileType.extension), handle: fileHandle };
   }
@@ -139,7 +139,7 @@ export async function saveFileAs(
   return { name: baseName(downloadName, fileType.extension), handle: null };
 }
 
-// Writes to a file already chosen, with no dialog of any kind — the "Save" half
+// Writes to a file already chosen, with no dialog of any kind: the "Save" half
 // of Save/Save As, and the only way to overwrite rather than accumulate
 // numbered copies. Returns false if the handle has gone stale (the file moved
 // or deleted, or permission lapsed after a reload), which the caller answers by
@@ -150,7 +150,7 @@ export async function writeToHandle(
 ): Promise<boolean> {
   try {
     // Granted at pick time and kept for the session, so this is normally a
-    // formality — but a handle restored later needs asking again, and that has
+    // formality, but a handle restored later needs asking again, and that has
     // to happen inside the click that triggered the save.
     if (
       handle.queryPermission &&

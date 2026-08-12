@@ -4,24 +4,24 @@ import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { FillShape, ShapeGeometry, shapeGeometry } from './fillShape';
 
 // DPaint's Pattern fill: a captured brush bitmap tiled edge-to-edge from a
-// fixed canvas origin (0,0) — the same anchor DPaint's own hardware-blitter
+// fixed canvas origin (0,0), the same anchor DPaint's own hardware-blitter
 // tiling used, so multiple separately-filled shapes show one continuous,
-// aligned pattern instead of each restarting the tile at its own bounding
-// box (see the Fill Style requester, src/components/fillStyle/).
+// aligned pattern instead of each restarting the tile at its own bounding box
+// (see the Fill Style requester, src/components/fillStyle/).
 //
-// A pattern carries whatever the captured brush carried, indexed or
-// true-color, and paints it through unchanged — the same rule stamping that
-// brush directly follows (DrawImageIndexer writes a true-color brush pixel
-// as a true-color canvas pixel, without consulting trueColorEnabled). Only
-// *computed* colors need a write policy, which is why the paint effects have
-// one and this doesn't; reconciling true-color content with an indexed
-// document happens in one designated place, applyScreenFormat's flatten.
+// A pattern carries whatever the captured brush carried, indexed or true-color,
+// and paints it through unchanged. The same rule stamping that brush directly
+// follows (DrawImageIndexer writes a true-color brush pixel as a true-color
+// canvas pixel, without consulting trueColorEnabled). Only *computed* colors
+// need a write policy, which is why the paint effects have one and this
+// doesn't; reconciling true-color content with an indexed document happens in
+// one designated place, applyScreenFormat's flatten.
 
-// The color the pattern paints at canvas position (x, y): a palette index
-// for an indexed pattern pixel, a literal RGB for a true-color one. Returns
-// null for a transparent pixel — the caller skips that point, leaving
-// existing canvas content showing through, matching the brush-stamp shader's
-// own transparency handling (DrawImageIndexer discards on ALPHA_TRANSPARENT).
+// The color the pattern paints at canvas position (x, y): a palette index for
+// an indexed pattern pixel, a literal RGB for a true-color one. Returns null
+// for a transparent pixel: the caller skips that point, leaving existing canvas
+// content showing through, matching the brush-stamp shader's own transparency
+// handling (DrawImageIndexer discards on ALPHA_TRANSPARENT).
 export function patternColorAt(
   pattern: BrushColorIndex,
   x: number,
@@ -49,14 +49,14 @@ export function patternColorAt(
 }
 
 // Buckets an arbitrary point set by the color the pattern paints there,
-// dropping points on a transparent pattern pixel. Only caller is
-// FloodFillTool — its region comes from pixel connectivity, not geometry, so
-// (like bucketPointsByGradient) it has no closed form to hand a shader.
-// Returns one entry per distinct resulting color; the caller issues one
-// ordinary single-color draw call per bucket.
+// dropping points on a transparent pattern pixel. Only caller is FloodFillTool.
+// Its region comes from pixel connectivity, not geometry, so (like
+// bucketPointsByGradient) it has no closed form to hand a shader. Returns one
+// entry per distinct resulting color; the caller issues one ordinary
+// single-color draw call per bucket.
 //
 // Keyed by a string rather than the color id, since a true-color pattern's
-// colors have no id — 'i:<n>' for indexed, 'c:<r>,<g>,<b>' for RGB — with the
+// colors have no id ('i:<n>' for indexed, 'c:<r>,<g>,<b>' for RGB), with the
 // PaintColor carried alongside so the caller never re-derives it.
 export function bucketPointsByPattern(
   points: Point[],
@@ -82,11 +82,11 @@ export function bucketPointsByPattern(
   return buckets;
 }
 
-// Everything the Pattern GPU shaders need, computed once per draw call —
-// the GPU-path analog of bucketPointsByPattern above, for the shapes that
-// DO have a closed form (filled rect/circle/ellipse/polygon). Shares its
-// shape bounding-quad/center/radius/rotation math with Gradient fill's own
-// uniform prep (shapeGeometry, fillShape.ts) rather than recomputing the
+// Everything the Pattern GPU shaders need, computed once per draw call. The
+// GPU-path analog of bucketPointsByPattern above, for the shapes that DO have a
+// closed form (filled rect/circle/ellipse/polygon). Shares its shape
+// bounding-quad/center/radius/rotation math with Gradient fill's own uniform
+// prep (shapeGeometry, fillShape.ts) rather than recomputing the
 // rotated-ellipse bounding box a second time.
 export type PatternUniforms = ShapeGeometry & {
   patternWidth: number;

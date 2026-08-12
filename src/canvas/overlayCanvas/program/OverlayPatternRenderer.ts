@@ -13,21 +13,21 @@ import { PatternTexture } from '../../util/patternTexture';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 import { RowSpanTable } from '../../../algorithm/rowSpans';
 
-// The pattern/row-span textures' own dedicated units — this renderer lives
-// in the overlay canvas's own separate GL context, so these don't collide
-// with PatternGeometricIndexer's identically-numbered units in the painting
-// canvas's context (the two are independent GPU resource namespaces); using
-// the same numbers for both is just the established convention (mirrors
+// The pattern/row-span textures' own dedicated units. This renderer lives in
+// the overlay canvas's own separate GL context, so these don't collide with
+// PatternGeometricIndexer's identically-numbered units in the painting canvas's
+// context (the two are independent GPU resource namespaces); using the same
+// numbers for both is just the established convention (mirrors
 // DrawImageIndexer/OverlayDrawImageRenderer both using unit 2 for the
 // brush-stamp texture, each in its own context).
 const PATTERN_TEXTURE_UNIT = 7;
 const ROW_SPAN_TEXTURE_UNIT = 9;
 
-// The live-preview twin of PatternGeometricIndexer: same shape/tiling GLSL,
-// but resolves the fetched texel's storage index through the palette
-// texture (unit 1, the texture CycleDriver re-uploads every cycling step)
-// so the preview shows display colors and animates under Tab-cycling for
-// free — same trick OverlayGradientRenderer uses for gradient previews.
+// The live-preview twin of PatternGeometricIndexer: same shape/tiling GLSL, but
+// resolves the fetched texel's storage index through the palette texture (unit
+// 1, the texture CycleDriver re-uploads every cycling step) so the preview
+// shows display colors and animates under Tab-cycling for free, same trick
+// OverlayGradientRenderer uses for gradient previews.
 export class OverlayPatternRenderer {
   private gl: WebGLRenderingContext;
   private program: WebGLProgram;
@@ -50,10 +50,10 @@ export class OverlayPatternRenderer {
     this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
 
-  // rowSpanTableOverride: see RowSpanTexture.use's own comment — the Fill
-  // Style preview swatch's way of keeping Gradient/Pattern's preview
-  // consistent with Solid's, both using symmetricFilledEllipse instead of
-  // this shape's real row-span table.
+  // rowSpanTableOverride: see RowSpanTexture.use's own comment, the Fill Style
+  // preview swatch's way of keeping Gradient/Pattern's preview consistent with
+  // Solid's, both using symmetricFilledEllipse instead of this shape's real
+  // row-span table.
   public renderPatternFill(
     shape: FillShape,
     pattern: BrushColorIndex,

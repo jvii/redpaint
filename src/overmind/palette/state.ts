@@ -57,10 +57,10 @@ export type State = {
   // would bind to. Drop it with that idea, not as dead-code cleanup.
   cyclingOn: boolean;
   cycleOffsets: number[];
-  // What the UI shows for each slot: the base palette with each cycling
-  // range rotated by its current offset. Components read these; canvas
-  // controllers compute the same rotation from the raw fields instead
-  // (deriveds read as undefined inside actions — see the note above).
+  // What the UI shows for each slot: the base palette with each cycling range
+  // rotated by its current offset. Components read these; canvas controllers
+  // compute the same rotation from the raw fields instead (deriveds read as
+  // undefined inside actions: see the note above).
   readonly displayPalette: { [id: string]: Color };
   readonly displayForegroundColor: Color;
   readonly displayBackgroundColor: Color;
@@ -69,7 +69,7 @@ export type State = {
 // The palette and ranges a session starts with, as functions rather than
 // constants so a caller can never hand back the object the state is using.
 // Shared with the new-page gesture (app.newPicture), which restores exactly
-// what startup had — the point being that "default" has one definition.
+// what startup had. The point being that "default" has one definition.
 export const DEFAULT_PALETTE_SIZE = 32;
 
 // The slots a session starts on. Color 1 is black in every DPaint default

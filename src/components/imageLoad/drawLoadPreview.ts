@@ -1,7 +1,7 @@
 import { Color } from '../../types';
 
 // Draws a pending image into a preview canvas as the chosen treatment would
-// load it — what the Load Image and Load Brush requesters do identically. They
+// load it. What the Load Image and Load Brush requesters do identically. They
 // differ only in how a source pixel resolves to a color, which is the callback.
 //
 // `colorAt` returns the color a pixel becomes, or null to leave it fully

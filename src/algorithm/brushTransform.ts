@@ -67,11 +67,11 @@ export function rotate90(brush: BrushColorIndex): BrushColorIndex {
   return new BrushColorIndex(height, width, result);
 }
 
-// Rotate by any angle, degrees clockwise (visually) — rotate(b, 90) matches
+// Rotate by any angle, degrees clockwise (visually): rotate(b, 90) matches
 // rotate90(b) exactly. Rasterized by inverse mapping (like DPaint's BMRot in
-// ROTATE.C): every destination pixel center is rotated back into source
-// space and sampled nearest, so there are no holes. The bounding box grows
-// to fit; uncovered pixels stay transparent.
+// ROTATE.C): every destination pixel center is rotated back into source space
+// and sampled nearest, so there are no holes. The bounding box grows to fit;
+// uncovered pixels stay transparent.
 export function rotate(brush: BrushColorIndex, degrees: number): BrushColorIndex {
   const { width, height, indexArray } = brush;
   const radians = (degrees * Math.PI) / 180;
@@ -103,7 +103,7 @@ export function rotate(brush: BrushColorIndex, degrees: number): BrushColorIndex
 // Horizontal shear, a direct port of DPaint's BMShearX (SHEAR.C): the visual
 // top row stays anchored and each row below shifts progressively toward the
 // bottom row's total offset of dx pixels (right for positive dx), advanced by
-// an integer error term — no resampling, every pixel just moves. The output
+// an integer error term. No resampling, every pixel just moves. The output
 // widens by |dx| so nothing clips; uncovered pixels stay transparent.
 export function shearHorizontal(brush: BrushColorIndex, dx: number): BrushColorIndex {
   const { width, height, indexArray } = brush;
@@ -137,9 +137,9 @@ export function shearHorizontal(brush: BrushColorIndex, dx: number): BrushColorI
 
 // A bend's control offsets: one quadratic Bezier from `start` (offset of the
 // first row/column) through the `control` point (offset `middle`, sitting at
-// row/column `middleAt`) to `end` (offset of the last row/column). In a
-// DPaint bend drag exactly one of the three is nonzero — the pointer's
-// region picks which — but the math is uniform.
+// row/column `middleAt`) to `end` (offset of the last row/column). In a DPaint
+// bend drag exactly one of the three is nonzero (the pointer's region picks
+// which), but the math is uniform.
 export type BendControls = {
   start: number;
   middle: number;
@@ -154,7 +154,7 @@ export type BendControls = {
 export function bendOffsets(count: number, bend: BendControls): number[] {
   const controlAt = Math.min(count - 1, Math.max(0, bend.middleAt));
   const offsets: (number | null)[] = new Array(count).fill(null);
-  // the ends anchor exactly on their controls — sampling alone would let a
+  // the ends anchor exactly on their controls. Sampling alone would let a
   // mid-curve value claim an end cell first
   offsets[0] = Math.round(bend.start);
   offsets[count - 1] = Math.round(bend.end);
@@ -177,7 +177,7 @@ export function bendOffsets(count: number, bend: BendControls): number[] {
 }
 
 // Bend horizontally, DPaint's BMBendH (BEND.C): every row shifts sideways by
-// its position on the bend curve — a shear whose offset follows a quadratic
+// its position on the bend curve, a shear whose offset follows a quadratic
 // instead of a line. The output widens to fit the extremes; uncovered pixels
 // stay transparent. Controls run visually top to bottom.
 export function bendHorizontal(brush: BrushColorIndex, bend: BendControls): BrushColorIndex {
@@ -198,7 +198,7 @@ export function bendHorizontal(brush: BrushColorIndex, bend: BendControls): Brus
   return new BrushColorIndex(newWidth, height, result);
 }
 
-// Bend vertically (BMBendV): the transpose — every column shifts up or down
+// Bend vertically (BMBendV), the transpose: every column shifts up or down
 // along the curve, the output growing in height. Controls run left to right.
 export function bendVertical(brush: BrushColorIndex, bend: BendControls): BrushColorIndex {
   const { width, height, indexArray } = brush;
@@ -219,9 +219,9 @@ export function bendVertical(brush: BrushColorIndex, bend: BendControls): BrushC
   return new BrushColorIndex(width, newHeight, result);
 }
 
-// Nearest-neighbor resize (no filtering — pixel art). Both dimensions are
-// clamped to at least 1. Halve/Double and the interactive Stretch are all
-// this function with computed target dimensions.
+// Nearest-neighbor resize (no filtering: pixel art). Both dimensions are
+// clamped to at least 1. Halve/Double and the interactive Stretch are all this
+// function with computed target dimensions.
 export function resize(
   brush: BrushColorIndex,
   targetWidth: number,

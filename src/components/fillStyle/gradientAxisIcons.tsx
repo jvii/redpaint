@@ -1,15 +1,14 @@
 import { JSX } from 'react';
 
 // Action glyphs for the Fill Style dialog's gradient-axis toggle (see
-// docs/style-guide.md's Icons section) — the axis names shown as arrows
-// instead of text, DPaint-style. Same register as transformIcons.tsx:
-// single-color line drawings, 24x24 viewBox, currentColor stroke, no fill,
-// so they inherit the toggle segment's hover/selected/disabled color.
-// Vertical/Horizontal use the shared square-cap/miter style so their
-// arrowheads read as crisp triangles; Horizontal Line intentionally swaps
-// in round caps/joins for its curved arrowheads, since a rounded head
-// (rather than a sharp one) is the thing that sets this axis apart from
-// plain Horizontal.
+// docs/style-guide.md's Icons section): the axis names shown as arrows instead
+// of text, DPaint-style. Same register as transformIcons.tsx: single-color line
+// drawings, 24x24 viewBox, currentColor stroke, no fill, so they inherit the
+// toggle segment's hover/selected/disabled color. Vertical/Horizontal use the
+// shared square-cap/miter style so their arrowheads read as crisp triangles;
+// Horizontal Line intentionally swaps in round caps/joins for its curved
+// arrowheads, since a rounded head (rather than a sharp one) is the thing that
+// sets this axis apart from plain Horizontal.
 type IconProps = { size?: number };
 
 const base = {

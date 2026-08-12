@@ -5,11 +5,11 @@ import { colorToRGBString } from '../../algorithm/color';
 import { StoreIcon } from '../menu/BrushSlotIcons';
 import './RangeSlotStrip.css';
 
-// A hard-edged strip of the range's actual colors (one stripe per palette
-// slot it spans), not a 2-stop CSS gradient between just the endpoints —
-// the in-between colors aren't guaranteed to be a perfect ramp (a hand-
-// authored palette, or one loaded from a file), so this reads as a genuine
-// preview rather than an approximation.
+// A hard-edged strip of the range's actual colors (one stripe per palette slot
+// it spans), not a 2-stop CSS gradient between just the endpoints. The
+// in-between colors aren't guaranteed to be a perfect ramp (a hand- authored
+// palette, or one loaded from a file), so this reads as a genuine preview
+// rather than an approximation.
 function rangeSwatchBackground(colors: Color[]): string {
   const n = colors.length;
   if (n === 0) {

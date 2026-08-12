@@ -16,7 +16,7 @@ import './GadgetHint.css';
 //
 // The two kinds of instruction look different on purpose. `use` is prose in
 // full-strength ink, about the picture. The rows below are a table with a dimmed
-// label, and that label is always a gesture on this gadget — so grey means
+// label, and that label is always a gesture on this gadget, so grey means
 // exactly one thing.
 export type GadgetHint = {
   name: string;
@@ -27,7 +27,7 @@ export type GadgetHint = {
   // The gadget's own parts: the halves of a dual toggle, the swatches of the
   // colour indicator. Labelled rather than assumed to be a top and a bottom
   // half, since not every divided gadget is divided that way. `keys` here as
-  // well as on the head because a divided gadget's halves have a key each —
+  // well as on the head because a divided gadget's halves have a key each:
   // DPaint's lowercase for the unfilled shape, shifted for the filled.
   parts?: { gesture: string; does: string; keys?: string[] }[];
   rightClick?: string;
@@ -54,8 +54,8 @@ export type HintPlacement = {
 // Grouped rather than loose, so the head's space-between separates the name
 // from the shortcuts instead of spreading name and every key evenly apart.
 //
-// Joined by "or", because these are alternatives and two caps side by side
-// read as a chord — u ⌘Z looks like something you press together.
+// Joined by "or", because these are alternatives and two caps side by side read
+// as a chord: u ⌘Z looks like something you press together.
 //
 // Written through shortcutCap, so a binding stored the way the code reads it
 // (case-sensitive, DPaint's convention: 'R' is Shift-R) reaches the reader as

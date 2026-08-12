@@ -14,12 +14,12 @@ import { Point } from '../types';
 
 // DPaint's Bend Horiz/Vert (docs/brush-transforms.md, BEND.C), on the shared
 // interactive-transform rails: press plants the brush; the pointer's region
-// then steers one control of a quadratic bend curve — beyond the near end it
-// bends that end, beyond the far end the other, in between it drags the
-// middle bulge (and where along the edge the pointer sits places the bulge).
-// The preview is the actual bent bitmap plus its curved outline (DPaint
-// showed only the XOR outline). Release commits; same no-mutation contract
-// as the other drag transforms.
+// then steers one control of a quadratic bend curve. Beyond the near end it
+// bends that end, beyond the far end the other, in between it drags the middle
+// bulge (and where along the edge the pointer sits places the bulge). The
+// preview is the actual bent bitmap plus its curved outline (DPaint showed only
+// the XOR outline). Release commits; same no-mutation contract as the other
+// drag transforms.
 export class BendBrushTool extends BrushTransformTool {
   private horizontal: boolean;
 

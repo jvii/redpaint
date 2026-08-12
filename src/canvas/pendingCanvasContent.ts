@@ -10,8 +10,8 @@ import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 //    entry)
 //  - content-preserving resize: defaults (this content becomes the next entry
 //    of the same document)
-//  - undo/redo restore across a canvas size change: recordUndoPoint false —
-//    navigating history must not append to it
+//  - undo/redo restore across a canvas size change: recordUndoPoint false,
+//    since navigating history must not append to it
 type PendingCanvasContent = {
   content: CanvasColorIndex;
   freshDocument: boolean;
@@ -64,7 +64,7 @@ export function takePendingCanvasContent(): PendingCanvasContent | null {
 // Whether content is queued and waiting for its resize to commit. The startup
 // auto-fit asks, because between the resize being requested and the upload
 // landing the canvas looks blank and unnamed while in fact it already belongs
-// to a restored or loaded document — see setStartupResolution.
+// to a restored or loaded document: see setStartupResolution.
 export function hasPendingCanvasContent(): boolean {
   return pending !== null;
 }

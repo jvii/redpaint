@@ -1,9 +1,9 @@
 // Which keyboard idiom this machine speaks.
 //
 // Two separate jobs depend on this, and they want opposite things. Accepting
-// input is generous — Ctrl+Z works on a Mac and Cmd+Z on Windows, because a
-// keystroke someone tried in good faith should not be swallowed. Advertising
-// it is narrow: a Mac user never needs to know Ctrl+Y exists, and showing both
+// input is generous. Ctrl+Z works on a Mac and Cmd+Z on Windows, because a
+// keystroke someone tried in good faith should not be swallowed. Advertising it
+// is narrow: a Mac user never needs to know Ctrl+Y exists, and showing both
 // idioms costs a reader more than it tells them.
 //
 // userAgentData is the non-deprecated one and is absent in Safari and Firefox,

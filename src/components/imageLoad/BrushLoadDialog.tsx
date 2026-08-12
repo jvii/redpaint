@@ -27,14 +27,14 @@ function remapToIndexByColor(image: ImageData, palette: Color[]): Map<number, nu
   return indexByColor;
 }
 
-// How the loaded brush's colors are treated — simpler than image loading's
+// How the loaded brush's colors are treated, simpler than image loading's
 // three-way choice, since a brush never carries a palette of its own into the
 // document (only "new palette from image" needs that):
 //  - 'true':    every opaque pixel a true-color pixel, matching today's
 //               (only) behavior
 //  - 'current': indexed against the existing palette, DPaint's REMAP.C-style
 //               greedy assignment (see remapColorsGreedy) rather than a plain
-//               per-pixel nearest-color search — a brush usually has few
+//               per-pixel nearest-color search, since a brush usually has few
 //               distinct colors, so they're worth keeping distinct on the
 //               palette instead of collapsing onto the same nearest slot
 type ColorMode = 'true' | 'current';
@@ -61,7 +61,7 @@ function BrushLoadDialogOpen(): JSX.Element {
 
   // One preview showing the brush as the draft treatment would load it,
   // re-rendered when the mode changes (True Color shows the original).
-  // Transparent pixels stay transparent regardless of mode — the checker
+  // Transparent pixels stay transparent regardless of mode. The checker
   // background shows through, same idiom as the image load preview.
   const previewRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
@@ -112,8 +112,8 @@ function BrushLoadDialogOpen(): JSX.Element {
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
     actions.brush.refreshPreviousBrushSlot();
-    // DPaint switches to (dotted) freehand after loading a brush — matches
-    // the brush selector tool's own switch after capturing one.
+    // DPaint switches to (dotted) freehand after loading a brush: matches the
+    // brush selector tool's own switch after capturing one.
     actions.toolbox.setSelectedDrawingTool('dottedFreehand');
 
     actions.app.clearBrushLoadInfo();

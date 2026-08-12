@@ -5,9 +5,9 @@ import { SaveFormat, SAVE_FORMATS } from './saveFormats';
 // like pendingImage and brushRecall: a FileSystemFileHandle is a live browser
 // object, not state, and nothing renders from it.
 //
-// Per format because the formats write different files — after Save As on
-// harbour.png and then Save As on harbour.iff, switching back to PNG and
-// saving must go to its own file rather than to whichever was written last.
+// Per format because the formats write different files. After Save As on
+// harbour.png and then Save As on harbour.iff, switching back to PNG and saving
+// must go to its own file rather than to whichever was written last.
 //
 // Only Chromium fills these in. On the download branch there is no handle to
 // keep, which is exactly why repeat saves there are numbered by the browser.

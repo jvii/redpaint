@@ -216,8 +216,8 @@ export class DrawImageIndexer {
 
     gl.activeTexture(gl.TEXTURE2);
 
-    // one texture, created once and re-uploaded into — creating a new
-    // texture per brush change without deleting the old one leaks
+    // one texture, created once and re-uploaded into: creating a new texture
+    // per brush change without deleting the old one leaks
     if (!this.texture) {
       this.texture = gl.createTexture();
     }

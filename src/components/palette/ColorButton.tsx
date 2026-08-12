@@ -11,10 +11,10 @@ interface Props {
   isSelected: boolean;
   onClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onRightClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  // DPaint's Range bracket: every swatch in the active range gets a white
-  // mark filling the column gap on its left, and the range's first/last
-  // color additionally gets a short white cap across its top-left/
-  // bottom-left — the "start" and "end" corners of the bracket.
+  // DPaint's Range bracket: every swatch in the active range gets a white mark
+  // filling the column gap on its left, and the range's first/last color
+  // additionally gets a short white cap across its top-left/ bottom-left, the
+  // "start" and "end" corners of the bracket.
   isRangeMember?: boolean;
   isRangeStart?: boolean;
   isRangeEnd?: boolean;
@@ -33,13 +33,13 @@ export function ColorButton({
   isRangeEnd = false,
   fillCell = false,
 }: Props): JSX.Element {
-  // Marks are painted outside the swatch's own box, into space no sibling
-  // owns: the column dividers are the grid's gaps (black container
-  // background showing through), so the range mark just fills the gap on
-  // its left, and the selection ring — a plain outline — lands exactly on
-  // the divider gaps left/right while overlapping real neighbor color
-  // where there is no gap (top/bottom, and everywhere in the gapless
-  // toolbox palette). Layout rules in docs/palette-grid-marks.md.
+  // Marks are painted outside the swatch's own box, into space no sibling owns:
+  // the column dividers are the grid's gaps (black container background showing
+  // through), so the range mark just fills the gap on its left, and the
+  // selection ring (a plain outline) lands exactly on the divider gaps
+  // left/right while overlapping real neighbor color where there is no gap
+  // (top/bottom, and everywhere in the gapless toolbox palette). Layout rules
+  // in docs/palette-grid-marks.md.
   const buttonStyle: React.CSSProperties = {
     backgroundColor: colorToRGBString(useAppState().palette.displayPalette[colorId]),
   };

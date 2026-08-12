@@ -29,8 +29,8 @@ type Props = {
 
 // A segmented toggle: a raised gadget group with one shared drop shadow, where
 // the selected segment sits pressed-in (workbench blue, orange label). The
-// component owns its layout and border seams so callers only pick a variant —
-// segments always share a single 2px border where they meet, never a doubled
+// component owns its layout and border seams so callers only pick a variant.
+// Segments always share a single 2px border where they meet, never a doubled
 // one, whatever the shape.
 export function RetroToggle({
   options,

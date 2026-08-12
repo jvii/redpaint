@@ -5,15 +5,15 @@ import { rowSpansFromLines } from '../../algorithm/rowSpans';
 import { patternFillStore } from '../../brush/PatternFill';
 import { beginPreviewFrame, useFillPreviewGL } from './fillPreviewGL';
 
-// The Fill Style dialog's live preview swatch: a filled ellipse painted in
-// the current (uncommitted-until-OK) fill style, redrawn whenever anything
-// it depends on changes. A circle rather than a flat rect shows the
-// Horizontal Line axis's per-row contour-hugging "3-D" look, which is
-// otherwise easy to misjudge from the axis name alone.
+// The Fill Style dialog's live preview swatch: a filled ellipse painted in the
+// current (uncommitted-until-OK) fill style, redrawn whenever anything it
+// depends on changes. A circle rather than a flat rect shows the Horizontal
+// Line axis's per-row contour-hugging "3-D" look, which is otherwise easy to
+// misjudge from the axis name alone.
 //
 // Renders through the same WebGL renderer classes the overlay canvas uses for
 // its live drag preview, not a separate 2D reimplementation, so the swatch
-// cannot drift from what actually gets painted — it did once, dithering via
+// cannot drift from what actually gets painted. It did once, dithering via
 // Math.random() where the shader uses a deterministic hash.
 //
 // Split out of FillStyleSettings.tsx, which is otherwise plain layout: this is
@@ -45,8 +45,8 @@ export function useFillStylePreview(
   // Rounded to whole pixels: the row-span table Gradient/Pattern look up is
   // center-relative and the shader reconstructs local coords as `pix -
   // u_center`, a translation that only preserves the shape for an integer
-  // center. At a half-integer one — any odd raw dimension — the three fill
-  // modes disagree by a row and a couple of columns. Every real fill passes an
+  // center. At a half-integer one (any odd raw dimension) the three fill modes
+  // disagree by a row and a couple of columns. Every real fill passes an
   // integer center anyway; this costs half a pixel of centering.
   const center = useMemo(
     () => ({ x: Math.round(previewWidth / 2), y: Math.round(previewHeight / 2) }),
@@ -54,13 +54,13 @@ export function useFillStylePreview(
   );
 
   // Built from the same symmetricFilledEllipse the Solid branch draws with and
-  // handed to Gradient/Pattern as an override, so all three fill modes share one
-  // shape — at this preview's low raw resolution they otherwise look visibly
+  // handed to Gradient/Pattern as an override, so all three fill modes share
+  // one shape: at this preview's low raw resolution they otherwise look visibly
   // different.
   //
-  // Memoized on the radii: RowSpanTexture caches the override by table identity,
-  // so a stable table keeps a dialog left open during color cycling from
-  // re-uploading it every frame.
+  // Memoized on the radii: RowSpanTexture caches the override by table
+  // identity, so a stable table keeps a dialog left open during color cycling
+  // from re-uploading it every frame.
   const rowSpanOverride = useMemo(
     () => rowSpansFromLines(symmetricFilledEllipse({ x: 0, y: 0 }, radiusX, radiusY)),
     [radiusX, radiusY]

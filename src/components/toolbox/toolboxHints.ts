@@ -3,8 +3,8 @@ import { GadgetHint } from './GadgetHint';
 
 const FILL_STYLE = 'Fill Style settings';
 
-// DPaint's Fill Type dialog, which every gadget that fills can reach — and it
-// is Shift-F from all of them
+// DPaint's Fill Type dialog, which every gadget that fills can reach, and it is
+// Shift-F from all of them
 const FILL_STYLE_KEYS = ['F'];
 
 // Both halves of a shape gadget, with DPaint's pair of keys: the plain letter

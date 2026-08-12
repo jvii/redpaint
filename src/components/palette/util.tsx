@@ -1,16 +1,16 @@
 import { Color } from '../../types';
 
 // DPaint's actual default palettes per color depth. 2/4/8/16 are DPaint I's
-// (PRISM.C: default1..4, the only source we have — exact, byte-for-byte).
-// The 32-color entry is DPaint II's instead: DPaint II shipped a different
-// default32 (confirmed by a user-provided screenshot of it — not just one
-// changed swatch but a differently laid-out palette entirely, e.g. white
-// sits at the end of the gray ramp rather than as the second color) and we
-// have no DPaint II source to read exact values from, so this is sampled
-// from that screenshot and snapped to the nearest 4-bit-per-channel Amiga
-// primary — approximate, not byte-exact like the others. Values are 12-bit
-// Amiga RGB (0xRGB, 4 bits per channel); amigaRgbToColor below scales each
-// nibble to 8 bits.
+// (PRISM.C: default1..4, the only source we have, exact, byte-for-byte). The
+// 32-color entry is DPaint II's instead: DPaint II shipped a different
+// default32 (confirmed by a user-provided screenshot of it, not just one
+// changed swatch but a differently laid-out palette entirely, e.g. white sits
+// at the end of the gray ramp rather than as the second color) and we have no
+// DPaint II source to read exact values from, so this is sampled from that
+// screenshot and snapped to the nearest 4-bit-per-channel Amiga primary,
+// approximate, not byte-exact like the others. Values are 12-bit Amiga RGB
+// (0xRGB, 4 bits per channel); amigaRgbToColor below scales each nibble to 8
+// bits.
 const DPAINT_DEFAULTS: { [colors: number]: number[] } = {
   2: [0x000, 0xfff],
   4: [0x000, 0xfff, 0x55f, 0xf80],

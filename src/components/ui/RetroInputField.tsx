@@ -21,19 +21,19 @@ type Props = {
   // the slider readouts have always sat). Free text stays left-aligned, where
   // reading a filename starts.
   numeric?: boolean;
-  // Enter commits, for a field whose requester has one obvious action — typing
-  // a name and reaching for the mouse to confirm it is a step nobody wants.
+  // Enter commits, for a field whose requester has one obvious action. Typing a
+  // name and reaching for the mouse to confirm it is a step nobody wants.
   onEnter?: () => void;
 };
 
 // A labelled text entry: an optional Press Start 2P label beside the shared
 // .retro-input field (index.css), the same treatment as the readout next to a
-// RetroLabeledSlider — softer and rounded, so a field you type into doesn't
-// read as a button you press.
+// RetroLabeledSlider, softer and rounded, so a field you type into doesn't read
+// as a button you press.
 //
 // Always type="text", even when numeric. type="number" brings spinner arrows
 // that are rounded, gradiented platform chrome no amount of bordering makes
-// look like Workbench — a pixel count is typed, not nudged one at a time — and
+// look like Workbench (a pixel count is typed, not nudged one at a time), and
 // it refuses to report a half-typed value, which is the whole reason this holds
 // a string.
 export function RetroInputField({

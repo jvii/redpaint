@@ -17,19 +17,19 @@ type Props = {
   // sized to divide that height evenly (not necessarily square). Omitted in
   // the palette editor, where cells stay square and sized off the width.
   fillHeight?: boolean;
-  // Palette editor only: a persistent black rule between each of the 4
-  // columns, like DPaint's requester (the toolbox palette stays undivided).
-  // The rules are simply the grid's column gaps with the black container
-  // background showing through — neutral space no swatch owns, which is
-  // what lets the range/selection marks replace them by just painting there.
+  // Palette editor only: a persistent black rule between each of the 4 columns,
+  // like DPaint's requester (the toolbox palette stays undivided). The rules
+  // are simply the grid's column gaps with the black container background
+  // showing through. Neutral space no swatch owns, which is what lets the
+  // range/selection marks replace them by just painting there.
   columnDividers?: boolean;
 };
 
 // Column count per palette depth. DPaint laid its 32-color palette out as 4
-// columns of 8; we keep 4 columns up to 64 (so 64 is 4x16, wide swatches),
-// then widen to 8 for the deep palettes — Personal Paint style (256 = 8x32).
-// The same grid renders in the toolbox and the palette editor so a swatch's
-// position never shifts between the two.
+// columns of 8; we keep 4 columns up to 64 (so 64 is 4x16, wide swatches), then
+// widen to 8 for the deep palettes: Personal Paint style (256 = 8x32). The same
+// grid renders in the toolbox and the palette editor so a swatch's position
+// never shifts between the two.
 function columnCountFor(colorCount: number): number {
   if (colorCount <= 8) return 1;
   if (colorCount <= 16) return 2;
@@ -37,13 +37,13 @@ function columnCountFor(colorCount: number): number {
   return 8;
 }
 
-// Palette editor only: cap the square swatch at roughly the 32-color size
-// (the 148px grid split into 4 columns). Without a cap a low-column palette
-// (8 colors = 1 column) would blow each swatch up to the full grid width and
-// make the grid — and the sliders stretched to match it — many times too
-// tall. Wider palettes already have >4 columns, so their cells fall below the
-// cap and shrink to fit as before; height then tracks the row count, not the
-// column scarcity.
+// Palette editor only: cap the square swatch at roughly the 32-color size (the
+// 148px grid split into 4 columns). Without a cap a low-column palette (8
+// colors = 1 column) would blow each swatch up to the full grid width and make
+// the grid (and the sliders stretched to match it) many times too tall. Wider
+// palettes already have >4 columns, so their cells fall below the cap and
+// shrink to fit as before; height then tracks the row count, not the column
+// scarcity.
 const EDITOR_MAX_CELL_PX = 35;
 
 function Palette({
@@ -60,12 +60,12 @@ function Palette({
   const columns = columnCountFor(colorCount);
   const rows = Math.ceil(colorCount / columns);
 
-  // While the Fill Style dialog is open, DPaint only let the FG color
-  // change (that's what picks the gradient range) — everything else in the
-  // app (including this same grid's own BG pick) stays behind the modal's
-  // usual full-page click-catcher (Modal.tsx). Doesn't apply when this grid
-  // is embedded elsewhere with its own onSelectColor (e.g. the palette
-  // editor, which never renders while Fill Style is up anyway).
+  // While the Fill Style dialog is open, DPaint only let the FG color change
+  // (that's what picks the gradient range). Everything else in the app
+  // (including this same grid's own BG pick) stays behind the modal's usual
+  // full-page click-catcher (Modal.tsx). Doesn't apply when this grid is
+  // embedded elsewhere with its own onSelectColor (e.g. the palette editor,
+  // which never renders while Fill Style is up anyway).
   const isFillStyleException = !onSelectColor && state.fillStyle.settingsOpen;
 
   const isSelected = (id: string): boolean =>
@@ -120,10 +120,10 @@ function Palette({
         'palette' +
         (fillHeight ? ' palette--fill' : '') +
         // Lifts this grid's own stacking context (already isolated, see
-        // Palette.css) above the Fill Style modal's full-page click-catcher
-        // — the one exception to that dialog blocking the whole app, rather
-        // than punching a hole in the catcher itself and re-blocking every
-        // other surface (canvas, menubar, toolbox, ...) by hand.
+        // Palette.css) above the Fill Style modal's full-page click-catcher:
+        // the one exception to that dialog blocking the whole app, rather than
+        // punching a hole in the catcher itself and re-blocking every other
+        // surface (canvas, menubar, toolbox, ...) by hand.
         (isFillStyleException ? ' palette--above-modal' : '')
       }
       style={gridStyle}

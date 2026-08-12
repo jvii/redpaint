@@ -9,25 +9,25 @@ type Props = {
   step?: number;
   vertical?: boolean;
   onChange: (value: number) => void;
-  // Greys out and ignores clicks/drags (still shows the current value), for
-  // a slider that doesn't apply in the current context — same treatment as
+  // Greys out and ignores clicks/drags (still shows the current value), for a
+  // slider that doesn't apply in the current context, same treatment as
   // RetroToggle's disabled prop.
   disabled?: boolean;
 };
 
-// Matches the thumb's 20px length in RetroSlider.css — needed here too so a
+// Matches the thumb's 20px length in RetroSlider.css. Needed here too so a
 // click's position can be tested against where the thumb actually is.
 const THUMB_LENGTH = 20;
 
-// A composed slider (retroui's Slider look): an invisible native range
-// input provides the interaction and keyboard/a11y behavior, while the
-// track and thumb are drawn as sibling elements positioned from the value.
-// Drawing our own visuals is what makes a real gap in the track possible —
-// the thumb's interior is genuinely transparent, showing whatever
-// background is behind the requester, with neither the track borders nor
-// the orange fill passing through it. A native track can't express that
-// (its border runs edge to edge behind the thumb), and browsers disagree
-// on the native thumb's exact geometry anyway.
+// A composed slider (retroui's Slider look): an invisible native range input
+// provides the interaction and keyboard/a11y behavior, while the track and
+// thumb are drawn as sibling elements positioned from the value. Drawing our
+// own visuals is what makes a real gap in the track possible. The thumb's
+// interior is genuinely transparent, showing whatever background is behind the
+// requester, with neither the track borders nor the orange fill passing through
+// it. A native track can't express that (its border runs edge to edge behind
+// the thumb), and browsers disagree on the native thumb's exact geometry
+// anyway.
 export function RetroSlider({
   value,
   min,
@@ -45,12 +45,11 @@ export function RetroSlider({
   const fill = max > min ? (value - min) / (max - min) : 0;
 
   // Clicking the track steps by one instead of jumping to the click position
-  // (the native range input's default) — above the thumb increases, below
+  // (the native range input's default): above the thumb increases, below
   // decreases (vertical: min at the bottom, matching the fill direction);
   // left/right for horizontal. Clicking the thumb itself is left alone, so
-  // dragging it still works normally. Same geometry as the CSS thumb
-  // placement (RetroSlider.css), computed here so the click can be compared
-  // against it.
+  // dragging it still works normally. Same geometry as the CSS thumb placement
+  // (RetroSlider.css), computed here so the click can be compared against it.
   const handlePointerDown = (event: React.PointerEvent<HTMLInputElement>): void => {
     if (disabled) {
       return;
@@ -59,7 +58,7 @@ export function RetroSlider({
     const trackLength = vertical ? rect.height : rect.width;
     // THUMB_LENGTH is a CSS length and the track is measured in real screen
     // pixels, so the two only agree at 100%. The CSS draws the thumb 20px long
-    // *inside the zoomed chrome* — 16 real pixels at 80%, 13 at 67% — and
+    // *inside the zoomed chrome* (16 real pixels at 80%, 13 at 67%), and
     // comparing a click against a flat 20 put the grab zone up to 7px out of
     // place on a 13px thumb, which is enough to page when you meant to drag.
     const thumbLength = THUMB_LENGTH * currentUiScale();

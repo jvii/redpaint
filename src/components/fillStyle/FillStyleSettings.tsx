@@ -16,7 +16,7 @@ import {
   GradientVerticalIcon,
 } from './gradientAxisIcons';
 
-// Icons, not text, per axis — a deliberate exception to RetroToggle's usual
+// Icons, not text, per axis. A deliberate exception to RetroToggle's usual
 // text-only segments (see docs/style-guide.md), matching DPaint's Fill Type
 // requester where the axis is an arrow glyph rather than a word.
 const AXIS_OPTIONS: { value: GradientAxis; label: JSX.Element; title: string }[] = [
@@ -25,25 +25,25 @@ const AXIS_OPTIONS: { value: GradientAxis; label: JSX.Element; title: string }[]
   { value: 'horizontalLine', label: <GradientHorizontalLineIcon />, title: 'Horizontal Line' },
 ];
 
-// CSS px — the preview's display box is a fixed PREVIEW_DISPLAY_SIZE square
+// CSS px. The preview's display box is a fixed PREVIEW_DISPLAY_SIZE square
 // regardless of screen format or window shape (using the layout space DPaint
-// itself would use for this, not shrinking on one axis to match whatever
-// the raw buffer's aspect happens to be — see previewWidth/Height below for
-// how the raw buffer can end up a very different shape than the box).
+// itself would use for this, not shrinking on one axis to match whatever the
+// raw buffer's aspect happens to be; see previewWidth/Height below for how the
+// raw buffer can end up a very different shape than the box).
 const PREVIEW_DISPLAY_SIZE = 260;
 
-// The fill style requester — redpaint's equivalent of DPaint's Fill Type
-// dialog, opened by right-clicking the flood fill button or any filled
-// shape tool button (they all edit the same shared style, like DPaint).
-// Solid / Pattern ("from brush") / Gradient, the same three DPaint offers.
+// The fill style requester: redpaint's equivalent of DPaint's Fill Type dialog,
+// opened by right-clicking the flood fill button or any filled shape tool
+// button (they all edit the same shared style, like DPaint). Solid / Pattern
+// ("from brush") / Gradient, the same three DPaint offers.
 export function FillStyleSettings(): JSX.Element | null {
   const state = useAppState();
 
   if (!state.fillStyle.settingsOpen) {
     return null;
   }
-  // remounts on every open, so useFillStylePreview's GL context and dither
-  // seed always start fresh
+  // remounts on every open, so useFillStylePreview's GL context and dither seed
+  // always start fresh
   return <FillStyleSettingsOpen />;
 }
 
@@ -55,7 +55,7 @@ function FillStyleSettingsOpen(): JSX.Element {
   // the real canvas: the display box's fixed CSS size divided by MainCanvas's
   // live displayScale, which already folds in devicePixelRatio, the screen
   // format's pixel aspect and the window size. Unlike the box, the raw buffer
-  // can come out a very different shape per axis — the ellipse
+  // can come out a very different shape per axis: the ellipse
   // useFillStylePreview draws compensates per axis rather than the box chasing
   // the buffer's aspect and wasting the dialog's width. Computed here, not in
   // the hook, so the hook and the JSX canvas attributes agree.
@@ -70,9 +70,9 @@ function FillStyleSettingsOpen(): JSX.Element {
   const isPattern = state.fillStyle.mode === 'brush';
 
   return (
-    // Wider than the default requester because it lays out in two columns
-    // (see the CSS): the 260px mode column, the gap, and a settings column
-    // with room for the axis toggle and the sliders' labels.
+    // Wider than the default requester because it lays out in two columns (see
+    // the CSS): the 260px mode column, the gap, and a settings column with room
+    // for the axis toggle and the sliders' labels.
     <Modal header="Fill Style" width={820}>
       <div className="fill-style-settings__body">
         {/* what the fill is, then what it looks like: the mode choice leads

@@ -6,11 +6,11 @@ import { StoreIcon } from './BrushSlotIcons';
 import './BrushSlotStrip.css';
 
 // The brush-slot strip (docs/brush-slots.md Phase B): no permanently-visible
-// controls. An empty slot is just the download-glyph well ("store the
-// current brush here"); an occupied slot is a plain thumbnail, with the
-// size caption and the Clear control revealed only on hover, as an overlay
-// bar — so filling a slot again means clearing it first, deliberately,
-// rather than overwriting it by accident.
+// controls. An empty slot is just the download-glyph well ("store the current
+// brush here"); an occupied slot is a plain thumbnail, with the size caption
+// and the Clear control revealed only on hover, as an overlay bar, so filling a
+// slot again means clearing it first, deliberately, rather than overwriting it
+// by accident.
 export function BrushSlotStrip(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
@@ -34,9 +34,9 @@ export function BrushSlotStrip(): JSX.Element {
     actions.brush.storeBrushInSlot(index);
   };
 
-  // the clear control sits inside the cell's own click target (an overlay
-  // over the recall button, not literally nested inside it — buttons can't
-  // nest), so its own clicks must not also fire the cell's
+  // the clear control sits inside the cell's own click target (an overlay over
+  // the recall button, not literally nested inside it; buttons can't nest), so
+  // its own clicks must not also fire the cell's
   const clear = (index: number) => (event: React.SyntheticEvent): void => {
     event.stopPropagation();
     actions.brush.clearBrushSlot(index);

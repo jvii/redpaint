@@ -64,13 +64,13 @@ export class FloodFillTool implements Tool {
     );
   }
 
-  // Solid mode (the default) merges every seed's points into a single call
-  // with solidColor, as before (the color is uniform, so merging first costs
-  // nothing). Gradient mode ignores solidColor (a gradient isn't a single
-  // color to swap for FG/BG — left- and right-click apply the same gradient)
-  // and buckets each seed's points *independently*, so every symmetry copy
-  // gets its own gradient normalized to its own extent, rather than one
-  // gradient stretched across the combined bounding box of every copy.
+  // Solid mode (the default) merges every seed's points into a single call with
+  // solidColor, as before (the color is uniform, so merging first costs
+  // nothing). Gradient mode ignores solidColor (a gradient isn't a single color
+  // to swap for FG/BG: left- and right-click apply the same gradient) and
+  // buckets each seed's points *independently*, so every symmetry copy gets its
+  // own gradient normalized to its own extent, rather than one gradient
+  // stretched across the combined bounding box of every copy.
   private paintPoints(pointGroups: Point[][], solidColor: PaintColor): void {
     if (overmind.state.fillStyle.mode === 'brush' && patternFillStore.pattern) {
       const pattern = patternFillStore.pattern.brushColorIndex;
@@ -122,13 +122,13 @@ export class FloodFillTool implements Tool {
     overmind.actions.tool.floodFillToolHoverColor(null);
   }
 
-  // Under symmetry a flood fill cannot be a rotated copy of the fill region, because
-  // the underlying image is not symmetric. Instead we run an independent real flood
-  // fill from each symmetry-transformed seed point. The fills run sequentially on the
-  // same (mutating) color index, so overlapping regions are handled like DPaint.
-  // Returns one group per seed (rather than one merged array) so a gradient
-  // fill can bucket each seed's region against its own extent independently
-  // — see paintPoints.
+  // Under symmetry a flood fill cannot be a rotated copy of the fill region,
+  // because the underlying image is not symmetric. Instead we run an
+  // independent real flood fill from each symmetry-transformed seed point. The
+  // fills run sequentially on the same (mutating) color index, so overlapping
+  // regions are handled like DPaint. Returns one group per seed (rather than
+  // one merged array) so a gradient fill can bucket each seed's region against
+  // its own extent independently: see paintPoints.
   private floodFillWithSymmetry(
     fillColor: PaintColor,
     seed: Point,

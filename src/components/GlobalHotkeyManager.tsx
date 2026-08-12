@@ -8,7 +8,7 @@ import { isEdge } from '../browser';
 // A non-rendering logic component for managing hotkeys and copy/paste.
 //
 // Every hook below registers its listeners on `document` and removes them on
-// unmount. The component never unmounts today, so the cleanups never run — they
+// unmount. The component never unmounts today, so the cleanups never run. They
 // are here so nothing depends on that, nor on addEventListener de-duplicating
 // StrictMode's double invocation. Either changing would give every hotkey two
 // handlers, and two handlers on the cycling toggle cancel out into a dead Tab.
@@ -88,7 +88,7 @@ function useMenuHotkey(): void {
     event.preventDefault(); // keep the page from scrolling
     actions.app.toggleMenu();
     // Closing uncovers the canvas under the pointer, but the overlay cursor
-    // only repaints on mousemove — replay one so it's visible immediately.
+    // only repaints on mousemove: replay one so it's visible immediately.
     setTimeout(refreshBrushPreview, 0);
   }
 
@@ -121,7 +121,7 @@ function useCyclingHotkey(): void {
 
 // Undo and redo: U, DPaint's own, plus Ctrl/Cmd-Z and Ctrl-Y. Every chord is
 // accepted on every platform, though the hints print one idiom each
-// (src/platform.ts). preventDefault on the chords only — they are the browser's
+// (src/platform.ts). preventDefault on the chords only. They are the browser's
 // own undo.
 function useUndoHotkeys(): void {
   const actions = useActions();
@@ -155,8 +155,8 @@ function useUndoHotkeys(): void {
   }, []);
 }
 
-// Middle-click toggles the menu from anywhere — canvas, toolbox, palette,
-// the menubar/menu itself — same as spacebar (useMenuHotkey above).
+// Middle-click toggles the menu from anywhere (canvas, toolbox, palette, the
+// menubar/menu itself), same as spacebar (useMenuHotkey above).
 function useMiddleClickMenuToggle(): void {
   const actions = useActions();
 
@@ -171,9 +171,8 @@ function useMiddleClickMenuToggle(): void {
       return;
     }
     actions.app.toggleMenu();
-    // Closing uncovers whatever was under the pointer, but the overlay
-    // cursor only repaints on mousemove — replay one so it's visible
-    // immediately.
+    // Closing uncovers whatever was under the pointer, but the overlay cursor
+    // only repaints on mousemove: replay one so it's visible immediately.
     setTimeout(refreshBrushPreview, 0);
   }
 
@@ -312,18 +311,18 @@ function isTextTool(toolId: string): boolean {
 let lastPointerPos: { x: number; y: number } | null = null;
 
 // Exported for callers that arm a transform tool while the pointer is not over
-// the canvas — the menu's transform gadgets, whose click leaves the mouse over
-// a gadget the closing panel is about to uncover.
+// the canvas. The menu's transform gadgets, whose click leaves the mouse over a
+// gadget the closing panel is about to uncover.
 export function refreshBrushPreview(): void {
   if (!lastPointerPos) {
     return;
   }
   const target = document.elementFromPoint(lastPointerPos.x, lastPointerPos.y);
   // Only a canvas is worth replaying to. Elsewhere nothing repaints the
-  // preview, and the replay can make a stale one visible again — a caller
-  // firing while the pointer sits off-canvas (the zoom divider mid-drag) would
-  // flag the old crosshair back up. A canvas covered by the menu panel is not
-  // a target either, and elementFromPoint says so.
+  // preview, and the replay can make a stale one visible again. A caller firing
+  // while the pointer sits off-canvas (the zoom divider mid-drag) would flag
+  // the old crosshair back up. A canvas covered by the menu panel is not a
+  // target either, and elementFromPoint says so.
   if (!(target instanceof HTMLCanvasElement)) {
     return;
   }
@@ -336,8 +335,8 @@ export function refreshBrushPreview(): void {
   );
 }
 
-// DPaint's Brush menu transform keys (docs/brush-transforms.md). Case matters —
-// lowercase and shifted letters are different operations — so this switches on
+// DPaint's Brush menu transform keys (docs/brush-transforms.md). Case matters
+// (lowercase and shifted letters are different operations), so this switches on
 // event.key. Modifier chords (Cmd-X cut etc.) must pass through untouched.
 function useBrushTransformHotkeys(): void {
   const actions = useActions();

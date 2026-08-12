@@ -97,9 +97,9 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
 
     context.actions.canvas.setTrueColorEnabled(false);
     context.actions.palette.replacePalette(image.palette);
-    // after replacePalette — it clamps/keeps the previous document's ranges
+    // after replacePalette. It clamps/keeps the previous document's ranges
     context.state.palette.ranges = cycleRangesToPaletteRanges(image.cycleRanges);
-    // the GL palette textures don't watch Overmind — push the new palette
+    // the GL palette textures don't watch Overmind: push the new palette
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
 
@@ -117,10 +117,10 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
     });
 
     // If the image happens to be an exact standard Amiga screen size, select
-    // that screen format (cosmetic only — the canvas is already that exact
-    // size, so no resize/palette conform is needed, unlike the requester's
-    // own OK). A non-matching size (or an arbitrary previous document's
-    // format) falls back to Native rather than leaving a stale format set.
+    // that screen format (cosmetic only; the canvas is already that exact size,
+    // so no resize/palette conform is needed, unlike the requester's own OK). A
+    // non-matching size (or an arbitrary previous document's format) falls back
+    // to Native rather than leaving a stale format set.
     const match = findMatchingScreenFormat(image.width, image.height);
     context.actions.canvas.setScreenFormat({ formatId: match?.id ?? null });
     if (match) {
@@ -151,7 +151,7 @@ export const beginGifLoad = async (context: Context, file: File): Promise<void> 
 
     context.actions.canvas.setTrueColorEnabled(false);
     context.actions.palette.replacePalette(image.palette);
-    // the GL palette textures don't watch Overmind — push the new palette
+    // the GL palette textures don't watch Overmind: push the new palette
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
 
@@ -235,7 +235,7 @@ export const markDocumentClean = (context: Context): void => {
 };
 
 // DPaint's CLR: cover the page with the background color and nothing else.
-// Pixels only, so undo puts back exactly what it took — it does not drop the
+// Pixels only, so undo puts back exactly what it took. It does not drop the
 // document's name or mark it clean, which would make it half a new page (that
 // is `newPicture` below).
 export const clearPage = (context: Context): void => {
@@ -247,7 +247,7 @@ export const clearPage = (context: Context): void => {
 // the document no longer standing for any file. Right-click on CLR.
 //
 // Undoable, unlike a load. A snapshot carries pixels, canvas size and palette,
-// so one step puts all three back — but not the document's name, nor the screen
+// so one step puts all three back, but not the document's name, nor the screen
 // format, video standard and True Color switch, which are not in one. Undoing a
 // new page therefore gives the painting back on a Native canvas of its old
 // size, untitled. Making that exact means widening UndoEntry, not
@@ -280,8 +280,8 @@ export const newPicture = (context: Context): void => {
   const size = nativeCanvasSize(context.state.canvas);
 
   // Queued rather than cleared here, and the undo point taken by the upload:
-  // setResolution's canvas element resize only commits on the next render, so
-  // a snapshot taken now would be of the old size (see useCanvasContentUpload).
+  // setResolution's canvas element resize only commits on the next render, so a
+  // snapshot taken now would be of the old size (see useCanvasContentUpload).
   const backgroundColorNumber = Number(context.state.palette.backgroundColorId);
   setPendingCanvasContent(
     CanvasColorIndex.createEmptyWithBackgroundColor(size.width, size.height, backgroundColorNumber),
@@ -303,7 +303,7 @@ export const setDocumentName = (context: Context, name: string): void => {
   context.state.app.documentName = name;
 };
 
-// The name to offer, extension included — the requester splits it, since which
+// The name to offer, extension included. The requester splits it, since which
 // part is the extension follows from the string itself.
 export const openSaveAsPrompt = (context: Context, suggested: string): void => {
   context.state.app.saveAsPrompt = suggested;
@@ -325,8 +325,8 @@ export const closeMenu = (context: Context): void => {
   context.state.app.menuOpen = false;
 };
 
-// The drawers are a radio group (Menu.tsx) — opening one closes the others,
-// and clicking the open one again collapses it.
+// The drawers are a radio group (Menu.tsx): opening one closes the others, and
+// clicking the open one again collapses it.
 export const toggleDrawer = (context: Context, drawer: Drawer): void => {
   context.state.app.openDrawer = context.state.app.openDrawer === drawer ? null : drawer;
 };

@@ -1,13 +1,12 @@
 import { JSX } from 'react';
 
-// Action glyphs for the drawer's transform gadgets (see
-// docs/style-guide.md): single-color line drawings, 24x24 viewBox,
-// currentColor stroke, no fill, so they scale smoothly and inherit the
-// gadget's hover/disabled/pressed color. Square caps and miter joins, not
-// rounded — the crisp line-ends read like a sharp 1-bit drawing at native
-// resolution, which is what period toolbar glyphs actually were; rounded
-// caps are the modern-web tell. The disk and brush identity icons stay
-// pixel art (pixelIcons.tsx).
+// Action glyphs for the drawer's transform gadgets (see docs/style-guide.md):
+// single-color line drawings, 24x24 viewBox, currentColor stroke, no fill, so
+// they scale smoothly and inherit the gadget's hover/disabled/pressed color.
+// Square caps and miter joins, not rounded. The crisp line-ends read like a
+// sharp 1-bit drawing at native resolution, which is what period toolbar glyphs
+// actually were; rounded caps are the modern-web tell. The disk and brush
+// identity icons stay pixel art (pixelIcons.tsx).
 
 type IconProps = { size?: number };
 
@@ -20,9 +19,9 @@ const base = {
   strokeLinejoin: 'miter' as const,
 };
 
-// two standard arrows pointing away from a dashed mirror axis — exact
-// coordinate reflections of each other, so the glyph is symmetric by
-// construction, and the arrow style matches the other transform icons
+// two standard arrows pointing away from a dashed mirror axis. Exact coordinate
+// reflections of each other, so the glyph is symmetric by construction, and the
+// arrow style matches the other transform icons
 export function FlipHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -109,9 +108,9 @@ export function StretchIcon({ size = 24 }: IconProps): JSX.Element {
 }
 
 // the box plus what the drag does to it: the top edge slides one way, the
-// bottom the other — the box runs the full icon height; the viewBox is
-// widened (not square, unlike the other transform icons) so the arrows
-// flagging each edge's direction can sit clear of the box, out at the sides
+// bottom the other. The box runs the full icon height; the viewBox is widened
+// (not square, unlike the other transform icons) so the arrows flagging each
+// edge's direction can sit clear of the box, out at the sides
 export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg
@@ -131,9 +130,9 @@ export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the bent rectangle from the drag preview — both long edges bow the same
-// way, the short ends stay anchored — plus an arrow for the drag direction
-// the bulge follows
+// the bent rectangle from the drag preview (both long edges bow the same way,
+// the short ends stay anchored), plus an arrow for the drag direction the bulge
+// follows
 export function BendHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg
@@ -184,10 +183,10 @@ export function RestoreIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The two overlapping corner marks a photographer's crop L's make — the
-// long-standing glyph for the operation, and legible at 24px in a way a
-// dashed rectangle is not. Drawn as two polylines rather than four lines so
-// each corner is one mitred joint, matching the other glyphs' joins.
+// The two overlapping corner marks a photographer's crop L's make. The
+// long-standing glyph for the operation, and legible at 24px in a way a dashed
+// rectangle is not. Drawn as two polylines rather than four lines so each
+// corner is one mitred joint, matching the other glyphs' joins.
 export function CropIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">

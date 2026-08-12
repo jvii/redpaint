@@ -29,33 +29,33 @@ export function isBuiltInBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && brush.builtInFamily !== undefined;
 }
 
-// Reactive mirror of one brushSlots entry (docs/brush-slots.md Phase B) —
-// the class instance itself stays out of Overmind state, like brushRecall.
+// Reactive mirror of one brushSlots entry (docs/brush-slots.md Phase B). The
+// class instance itself stays out of Overmind state, like brushRecall.
 export type BrushSlotState = {
   occupied: boolean;
   thumbnail: string | null;
-  // the brush's own pixel dimensions, captioned onto the thumbnail — a
-  // scaled-to-fit thumbnail can't show actual size, and this is cheaper
-  // than reading it back out of the rendered image
+  // the brush's own pixel dimensions, captioned onto the thumbnail. A
+  // scaled-to-fit thumbnail can't show actual size, and this is cheaper than
+  // reading it back out of the rendered image
   size: { width: number; height: number } | null;
 };
 
 export type State = {
   // null for a custom brush, and for a right-click-resized built-in, which
   // matches no toolbar preset. So this tracks "which icon, if any, highlights",
-  // not "is the current brush built-in" — usingBuiltInBrush is that, kept
+  // not "is the current brush built-in". UsingBuiltInBrush is that, kept
   // separate precisely so the two can disagree.
   selectedBuiltInBrushId: BuiltInBrushId | null;
-  // reactive mirror of isBuiltInBrush(brushRecall.current) — drives Matte/
-  // Repl and the brush-transform menu items' disabled state. Stays true
-  // through a right-click resize even though selectedBuiltInBrushId clears.
+  // reactive mirror of isBuiltInBrush(brushRecall.current): drives Matte/ Repl
+  // and the brush-transform menu items' disabled state. Stays true through a
+  // right-click resize even though selectedBuiltInBrushId clears.
   usingBuiltInBrush: boolean;
   mode: Mode;
   // reactive mirror of brushRecall.originalBrush (the class itself is not
-  // observable state) — drives the Restore menu item's disabled state
+  // observable state): drives the Restore menu item's disabled state
   hasOriginalBrush: boolean;
   slots: BrushSlotState[];
-  // mirror of brushRecall.previousBrush (docs/brush-slots.md) — the
+  // mirror of brushRecall.previousBrush (docs/brush-slots.md): the
   // automatically-managed companion to the curated slots above
   previousSlot: BrushSlotState;
 };

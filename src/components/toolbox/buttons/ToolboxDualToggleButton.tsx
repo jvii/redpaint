@@ -9,8 +9,8 @@ interface Props {
   isUpperHalfSelected: boolean;
   onUpperHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onLowerHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  // Only the lower (filled) half opens a right-click menu today — the
-  // outline half has no per-tool settings of its own.
+  // Only the lower (filled) half opens a right-click menu today. The outline
+  // half has no per-tool settings of its own.
   onLowerHalfRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 

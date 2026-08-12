@@ -5,14 +5,14 @@ import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasCo
 import { rotate } from '../algorithm/brushTransform';
 import { Point } from '../types';
 
-// DPaint's Rotate Any Angle (docs/brush-transforms.md, ROTATE.C), on the
-// same rails as Stretch/Shear but with two deliberate upgrades: the brush
-// rotates about its center (DPaint pinned the bottom-left corner — center
-// matches this app's center-anchored stamps), and the drag previews the
-// actual rotated bitmap instead of DPaint's XOR outline. Press fixes the
-// center; the pointer's swing around it sets the angle (Shift snaps to 15°);
-// release commits. Same no-mutation contract: previews are temporary
-// brushes, cancel needs no restore.
+// DPaint's Rotate Any Angle (docs/brush-transforms.md, ROTATE.C), on the same
+// rails as Stretch/Shear but with two deliberate upgrades: the brush rotates
+// about its center (DPaint pinned the bottom-left corner, center matches this
+// app's center-anchored stamps), and the drag previews the actual rotated
+// bitmap instead of DPaint's XOR outline. Press fixes the center; the pointer's
+// swing around it sets the angle (Shift snaps to 15°); release commits. Same
+// no-mutation contract: previews are temporary brushes, cancel needs no
+// restore.
 export class RotateBrushTool extends BrushTransformTool {
   public onInit(): void {
     overmind.actions.tool.brushRotateStart(null);
@@ -64,8 +64,8 @@ export class RotateBrushTool extends BrushTransformTool {
     preview.applyMode(overmind.state.brush.mode);
     preview.drawPoints([rotateState.center], overlayCanvasController);
     // the box is the original w x h rectangle rotating with the brush (like
-    // DPaint's XOR outline), not the growing axis-aligned bitmap bounds —
-    // a box that rotates reads as rotation, a box that resizes reads as scale
+    // DPaint's XOR outline), not the growing axis-aligned bitmap bounds. A box
+    // that rotates reads as rotation, a box that resizes reads as scale
     overlayCanvasController.selectionPolygon(
       rotatedCorners(rotateState.center, brush.width, brush.heigth, degrees)
     );

@@ -23,14 +23,15 @@ function Dimensions({ width, height }: { width: number; height: number }): JSX.E
 
 // Four arrows radiating to the corners: the standard "expand to fill" glyph.
 // (Axis-aligned outward arrows crossing at the centre are the *move* cursor.)
-// Each arrow is an open barb — two strokes meeting at the tip — and a diagonal
+// Each arrow is an open barb (two strokes meeting at the tip), and a diagonal
 // shaft stepping corner to corner, as a 45-degree line does in pixel art.
 //
 // A 12-unit grid drawn at 48px puts one drawn pixel on 4 css pixels, which is
-// exactly what Press Start 2P renders at the close gadget's 32px (its glyphs sit
-// on an 8px grid), so the icon and the X are built from the same size of pixel.
-// The font carries no arrow glyphs, so a text arrow would fall back to a system
-// one. fill inherits currentColor, following the gadget's hover/active colors.
+// exactly what Press Start 2P renders at the close gadget's 32px (its glyphs
+// sit on an 8px grid), so the icon and the X are built from the same size of
+// pixel. The font carries no arrow glyphs, so a text arrow would fall back to a
+// system one. fill inherits currentColor, following the gadget's hover/active
+// colors.
 const stretchIcon = (
   <svg className="view-scaling__icon" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
     {/* top-left */}

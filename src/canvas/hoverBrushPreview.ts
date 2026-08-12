@@ -14,8 +14,8 @@ import { overlayCanvasController } from './overlayCanvas/OverlayCanvasController
 // is not touched; painting and dragging keep the overlay pipeline.
 //
 // The bitmap re-renders only when its cache key changes, never per mousemove.
-// The key is built from primitives — object identity across Overmind proxy
-// reads is not dependable, which is why every cache here keys on primitives.
+// The key is built from primitives. Object identity across Overmind proxy reads
+// is not dependable, which is why every cache here keys on primitives.
 type PreviewView = {
   host: HTMLCanvasElement; // the painting canvas whose buffer coords position the preview
   element: HTMLCanvasElement; // the DOM element showing the brush bitmap
@@ -25,8 +25,7 @@ type PreviewView = {
 
 // Buffer-pixel size of the brush's stamp. The one built-in that isn't a
 // CustomBrush is the default single-pixel brush (PixelBrush, see
-// overmind/brush/state.ts) — its stamp is one pixel of the active paint
-// color.
+// overmind/brush/state.ts). Its stamp is one pixel of the active paint color.
 function stampSize(brush: BrushInterface): { width: number; height: number } {
   return brush instanceof CustomBrush
     ? { width: brush.width, height: brush.heigth }
@@ -49,9 +48,9 @@ class HoverBrushPreviewController {
 
   // Each Canvas view (main, and zoom when open) registers its host painting
   // canvas and its preview element; positioning maps the same buffer
-  // coordinates through each host's own bounding rect, which is what makes
-  // the zoom twin free — the zoom host is the same buffer at a magnified
-  // CSS size, so the ghost lands magnified and pan-corrected automatically.
+  // coordinates through each host's own bounding rect, which is what makes the
+  // zoom twin free. The zoom host is the same buffer at a magnified CSS size,
+  // so the ghost lands magnified and pan-corrected automatically.
   register(host: HTMLCanvasElement, element: HTMLCanvasElement): () => void {
     const view: PreviewView = { host, element, cssWidth: -1, cssHeight: -1 };
     this.views.push(view);
@@ -78,8 +77,8 @@ class HoverBrushPreviewController {
     }
   }
 
-  // Re-render the bitmap in place (same position) — CycleDriver calls this
-  // when a cycling step changes the display palette while the mouse rests.
+  // Re-render the bitmap in place (same position): CycleDriver calls this when
+  // a cycling step changes the display palette while the mouse rests.
   refresh(): void {
     if (this.shownAt === null) {
       return;
@@ -99,8 +98,8 @@ class HoverBrushPreviewController {
       view.cssWidth = cssWidth;
       view.cssHeight = cssHeight;
     }
-    // center the brush on the hovered buffer pixel's center — the DOM
-    // equivalent of CustomBrush.adjustHandle's point - size/2
+    // center the brush on the hovered buffer pixel's center: the DOM equivalent
+    // of CustomBrush.adjustHandle's point - size/2
     const x = rect.left + (p.x + 0.5) * sx - cssWidth / 2;
     const y = rect.top + (p.y + 0.5) * sy - cssHeight / 2;
     view.element.style.transform = `translate(${x}px, ${y}px)`;
@@ -163,8 +162,8 @@ export function drawHoverBrushStamp(mousePos: Point): void {
     return;
   }
   // the overlay's last composited frame stays visible until something new
-  // composites — clear a stale canvas stamp once when taking the DOM path
-  // (never per move; the flag makes this a no-op while the overlay is clean)
+  // composites. Clear a stale canvas stamp once when taking the DOM path (never
+  // per move; the flag makes this a no-op while the overlay is clean)
   if (overlayCanvasController.hasContentOnScreen()) {
     overlayCanvasController.clear();
   }

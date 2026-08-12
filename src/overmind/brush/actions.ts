@@ -22,7 +22,7 @@ import {
 
 // DPaint switches away to (dotted) freehand when a built-in brush is picked
 // while a fill tool is active, since a brush stamp and an area fill don't
-// combine — this app switches to plain freehand instead.
+// combine: this app switches to plain freehand instead.
 const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
   'floodFill',
   'rectangleFilled',
@@ -55,8 +55,8 @@ export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId
 // Right-click entry point for BuiltInBrushes.tsx (docs/brush-transforms.md):
 // selectBuiltInBrush, plus for the 1-pixel dot a swap to a resizable size-1
 // round brush. The dot is a bare PixelBrush, not a CustomBrush, so it cannot be
-// dragged to a new size — DPaint did the same (MODES.C:
-// `if ((pn==0)||(pn==USERBRUSH)) pnType = ROUND_B`).
+// dragged to a new size. DPaint did the same (MODES.C: `if
+// ((pn==0)||(pn==USERBRUSH)) pnType = ROUND_B`).
 export const armBuiltInBrushForSizing = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.actions.brush.selectBuiltInBrush(brushNumber);
   if (brushNumber === 1) {
@@ -105,11 +105,11 @@ export const toBGBrush = (context: Context): void => {
 };
 
 // Brush transformations (docs/brush-transforms.md). No-ops for built-in
-// brushes, like DPaint's curpen == USERBRUSH guard — built-ins are CustomBrush
+// brushes, like DPaint's curpen == USERBRUSH guard. Built-ins are CustomBrush
 // instances too, so the identity check matters.
 //
 // A brush is uploaded as a GL texture, so doubling is capped at the realistic
-// device floor for MAX_TEXTURE_SIZE — comfortably above any capturable canvas,
+// device floor for MAX_TEXTURE_SIZE. Comfortably above any capturable canvas,
 // since a whole-screen brush that refuses to double reads as broken.
 const MAX_BRUSH_DIMENSION = 4096;
 
@@ -129,8 +129,8 @@ const transformBrush = (
 };
 
 // Restore / Shift-B undoes a transformed custom brush back to the brush as
-// captured or loaded. Every transform is undone, DPaint's revert kept flips —
-// the simpler rule, and a flip is one keypress to redo. Disabled on a built-in
+// captured or loaded. Every transform is undone, DPaint's revert kept flips.
+// The simpler rule, and a flip is one keypress to redo. Disabled on a built-in
 // (BrushMenu.tsx): DPaint's Shift-B also re-activated the last custom brush,
 // but that is the Previous slot's job now (docs/brush-slots.md).
 export const restoreOriginalBrush = (context: Context): void => {
@@ -189,10 +189,10 @@ export const stretchBrushTo = (context: Context, size: { width: number; height: 
 };
 
 // Commits the right-click drag-resize of a built-in brush
-// (SizeBuiltInBrushTool, docs/brush-transforms.md) — DPaint's SizePen
-// (MODES.C). A separate path from Stretch above: it regenerates the family's
-// shape at the new size rather than resampling a bitmap, and stays tagged as a
-// built-in, so Matte/Repl and Previous-banking remain disabled.
+// (SizeBuiltInBrushTool, docs/brush-transforms.md): DPaint's SizePen (MODES.C).
+// A separate path from Stretch above: it regenerates the family's shape at the
+// new size rather than resampling a bitmap, and stays tagged as a built-in, so
+// Matte/Repl and Previous-banking remain disabled.
 export const resizeBuiltInBrushTo = (
   context: Context,
   size: { width: number; height: number }
@@ -203,7 +203,7 @@ export const resizeBuiltInBrushTo = (
   }
   const resized = createSizedBuiltInBrush(brush.builtInFamily, size.width, size.height);
   brushRecall.setBuiltIn(resized);
-  // No preset icon matches a custom-dragged size — DPaint's cpPenBox = -1
+  // No preset icon matches a custom-dragged size: DPaint's cpPenBox = -1
   // (CTRPAN.C:189). usingBuiltInBrush stays true: that is the flag Matte/Repl
   // and the transform menu key off, so it outlives the id clearing here.
   context.state.brush.selectedBuiltInBrushId = null;
@@ -270,7 +270,7 @@ export const clearBrushSlot = (context: Context, index: number): void => {
 
 // The Previous slot (docs/brush-slots.md): the automatic companion to the
 // curated slots, populated by BrushRecall.setCustom whenever a different custom
-// brush takes over. No store/clear — this one is not curated.
+// brush takes over. No store/clear: this one is not curated.
 export const refreshPreviousBrushSlot = (context: Context): void => {
   const previous = brushRecall.previousBrush;
   context.state.brush.previousSlot = previous
@@ -287,7 +287,7 @@ export const recallPreviousBrush = (context: Context): void => {
   if (!previous) {
     return;
   }
-  // A copy, independent of the stored reference — as BrushSlots.recall.
+  // A copy, independent of the stored reference, as BrushSlots.recall.
   // setCustom then banks the brush this replaces, so Previous is a two-way
   // swap.
   const brush = previous.transform((matte) => matte);
@@ -295,7 +295,7 @@ export const recallPreviousBrush = (context: Context): void => {
 };
 
 // Shared tail of every "a different custom brush becomes current" flow that is
-// not a fresh capture or load — those call brushRecall.setCustom directly, in
+// not a fresh capture or load: those call brushRecall.setCustom directly, in
 // BrushSelector.tsx and BrushLoadDialog.tsx.
 function activateCustomBrush(context: Context, brush: CustomBrush): void {
   brushRecall.setCustom(brush);

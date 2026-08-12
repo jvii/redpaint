@@ -2,13 +2,13 @@ import { FillShape } from '../../algorithm/fillShape';
 import { circleRowSpans, ellipseRowSpans, RowSpanTable } from '../../algorithm/rowSpans';
 
 // Packs a circle/ellipse's exact row-span table (rowSpans.ts) into an RGBA
-// texture the Gradient and Pattern fill shaders sample per-fragment instead
-// of testing the shape against a continuous ellipse equation — see
+// texture the Gradient and Pattern fill shaders sample per-fragment instead of
+// testing the shape against a continuous ellipse equation: see
 // shapeFillShaderLib.ts's rowSpanInside(). Each texel is one local row: R/G
-// pack that row's min local x, B/A pack its max, both as unsigned 16-bit
-// values biased by ROW_SPAN_OFFSET so negative local offsets stay
-// representable in unsigned bytes. A shape radius anywhere near
-// ROW_SPAN_OFFSET (32768px) is far outside any canvas this app supports.
+// pack that row's min local x, B/A pack its max, both as unsigned 16-bit values
+// biased by ROW_SPAN_OFFSET so negative local offsets stay representable in
+// unsigned bytes. A shape radius anywhere near ROW_SPAN_OFFSET (32768px) is far
+// outside any canvas this app supports.
 export const ROW_SPAN_OFFSET = 32768;
 
 export function encodeRowSpanTexture(table: RowSpanTable): { height: number; data: Uint8Array } {
@@ -26,12 +26,12 @@ export function encodeRowSpanTexture(table: RowSpanTable): { height: number; dat
   return { height, data };
 }
 
-// Cache key for "is this the same shape geometry as last upload" — center
-// is deliberately excluded: every symmetry copy of one stroke shares the
-// same radius/rotation and only translates, so all copies in a frame reuse
-// one upload (RowSpanTexture.use below), the same way the rest of the
-// gradient fill pipeline already shares per-stroke work (seed, dither hash)
-// across copies instead of redoing it per copy.
+// Cache key for "is this the same shape geometry as last upload". Center is
+// deliberately excluded: every symmetry copy of one stroke shares the same
+// radius/rotation and only translates, so all copies in a frame reuse one
+// upload (RowSpanTexture.use below), the same way the rest of the gradient fill
+// pipeline already shares per-stroke work (seed, dither hash) across copies
+// instead of redoing it per copy.
 function cacheKey(shape: FillShape): string | null {
   if (shape.kind === 'circle') {
     return `circle:${shape.radius}`;
@@ -52,11 +52,11 @@ function tableForShape(shape: FillShape): RowSpanTable | null {
   return null;
 }
 
-// Sets the two row-span uniforms (yMin/rowCount) from the texture the
-// caller just uploaded/bound via RowSpanTexture.use — kept separate from
-// applyGradientUniforms/applyPatternUniforms because it's only meaningful
-// for shapeKind 1/2 and depends on the texture upload having already
-// happened this draw call.
+// Sets the two row-span uniforms (yMin/rowCount) from the texture the caller
+// just uploaded/bound via RowSpanTexture.use: kept separate from
+// applyGradientUniforms/applyPatternUniforms because it's only meaningful for
+// shapeKind 1/2 and depends on the texture upload having already happened this
+// draw call.
 export function applyRowSpanUniforms(
   gl: WebGLRenderingContext,
   locations: { [name: string]: WebGLUniformLocation | null },
@@ -89,14 +89,14 @@ export class RowSpanTexture {
   }
 
   // Binds this shape's row-span texture, re-uploading only when the geometry
-  // changed. Returns false for shapes with no table (rect/polygon) — callers
+  // changed. Returns false for shapes with no table (rect/polygon): callers
   // should skip the row-span branch rather than bind an empty texture.
   //
   // `overrideTable` is uploaded instead of the one derived from `shape`: the
   // Fill Style preview swatch uses its own ellipse rasterization so its three
   // fill modes agree with each other rather than with the real (visibly
   // asymmetric at that size) shape. Cached by table identity, since the caller
-  // owns it — otherwise a dialog left open re-uploads every cycling frame.
+  // owns it: otherwise a dialog left open re-uploads every cycling frame.
   public use(shape: FillShape, overrideTable?: RowSpanTable): boolean {
     if (overrideTable) {
       if (overrideTable !== this.lastTable) {

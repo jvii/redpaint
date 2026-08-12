@@ -5,19 +5,19 @@ import type { OvermindState } from '../../overmind';
 
 export type FillMode = 'solid' | 'gradient' | 'brush';
 
-// What a fill would *actually* paint right now, as opposed to `mode`, which
-// is only what the requester has armed. The two differ whenever the armed
-// mode can't be honoured: Pattern with nothing captured yet, or Gradient
-// with an FG color that isn't in a usable range. DPaint has the same split —
-// "If your current color is outside all ranges, DeluxePaint will not create
-// a gradient fill but will fill with the solid color" (DP2 manual §2.19) —
-// and hangs real UI off it: the menubar's Color Fill Box appears only when
-// this is not 'solid' (§4.25, "absent if fill mode is set to normal").
+// What a fill would *actually* paint right now, as opposed to `mode`, which is
+// only what the requester has armed. The two differ whenever the armed mode
+// can't be honoured: Pattern with nothing captured yet, or Gradient with an FG
+// color that isn't in a usable range. DPaint has the same split. "If your
+// current color is outside all ranges, DeluxePaint will not create a gradient
+// fill but will fill with the solid color" (DP2 manual §2.19), and hangs real
+// UI off it: the menubar's Color Fill Box appears only when this is not 'solid'
+// (§4.25, "absent if fill mode is set to normal").
 export type EffectiveFillMode = 'solid' | 'gradient' | 'pattern';
 
 // Snapshot/restore shape for the settings panel's Cancel: every field a
 // requester control can change. The pattern bitmap never enters this object, or
-// Overmind state at all (see PatternFill.ts) — Overmind deep-proxies anything
+// Overmind state at all (see PatternFill.ts). Overmind deep-proxies anything
 // assigned into state, which corrupts a CustomBrush's Uint8Array and makes
 // texImage2D reject it. Only the boolean/number mirrors travel through here.
 type Snapshot = {
@@ -40,10 +40,10 @@ export type State = {
   settingsOpen: boolean;
   settingsSnapshot: Snapshot | null;
   // Reactive mirror of patternFillStore (PatternFill.ts), whose bitmap stays
-  // out of Overmind — the same split as brushRecall/state.brush. hasPattern
-  // gates every "is Pattern usable" check; patternVersion exists so a recapture,
-  // which does not flip an already-true hasPattern, still gives the live
-  // preview's effect a changed dependency.
+  // out of Overmind: the same split as brushRecall/state.brush. hasPattern
+  // gates every "is Pattern usable" check; patternVersion exists so a
+  // recapture, which does not flip an already-true hasPattern, still gives the
+  // live preview's effect a changed dependency.
   hasPattern: boolean;
   patternVersion: number;
   // The effective gradient to paint with: null in solid mode, or in gradient
@@ -52,7 +52,7 @@ export type State = {
   // contains the FG color (activeRangeIndices, the lookup Cycle/Shade/Blend
   // use), so changing the range means changing the FG color.
   readonly effectiveFillStyle: GradientFillStyle | null;
-  // The one place deciding which of the three fill paths a fill takes — read by
+  // The one place deciding which of the three fill paths a fill takes. Read by
   // drawStyledFilledShape and by the menubar's Color Fill Box, so the swatch
   // cannot claim a gradient the fill would decline to paint.
   readonly effectiveMode: EffectiveFillMode;
@@ -95,9 +95,9 @@ export const state: State = {
       return state.hasPattern ? 'pattern' : 'solid';
     }
     const style = state.effectiveFillStyle;
-    // A one-color range is a gradient with a single band, i.e. a solid fill
-    // by another name — treated as solid so the Color Fill Box doesn't show
-    // a flat rectangle indistinguishable from no fill style at all.
+    // A one-color range is a gradient with a single band, i.e. a solid fill by
+    // another name: treated as solid so the Color Fill Box doesn't show a flat
+    // rectangle indistinguishable from no fill style at all.
     return style && style.rangeHigh > style.rangeLow ? 'gradient' : 'solid';
   }),
 };

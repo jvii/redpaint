@@ -67,7 +67,7 @@ export class BrushColorIndex {
   // Same as fromImageData, but opaque pixels are indexed against indexByColor
   // (a 24-bit RGB -> 0-based palette position map, built by the brush load
   // requester from remapColorsGreedy) instead of carrying their own literal
-  // RGB — the "remap to current palette" load option.
+  // RGB: the "remap to current palette" load option.
   static fromRemappedImageData(
     imageData: ImageData,
     indexByColor: Map<number, number>

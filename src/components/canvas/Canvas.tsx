@@ -56,9 +56,9 @@ const RESIZE_CURSOR_ICON = ((): string => {
   // center: the rotation keeps it exactly symmetric, which authoring the
   // diagonal directly would not.
   const arrow = 'M0,-9 4,-4 1.5,-4 1.5,4 4,4 0,9 -4,4 -1.5,4 -1.5,-4 -4,-4 Z';
-  // scale(-1,1) mirrors the rotated diagonal horizontally about the icon's
-  // own center (applied after rotate, since SVG transforms compose
-  // right-to-left) — flips the arrow from a nwse to a nesw diagonal.
+  // scale(-1,1) mirrors the rotated diagonal horizontally about the icon's own
+  // center (applied after rotate, since SVG transforms compose right-to-left):
+  // flips the arrow from a nwse to a nesw diagonal.
   const path = `<path d='${arrow}' transform='translate(12,12) scale(-1,1) rotate(45)' fill='%23eeeeee' stroke='%23333333' stroke-width='1'/>`;
   return `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='${RESIZE_CURSOR_SIZE}' height='${RESIZE_CURSOR_SIZE}' viewBox='0 0 ${RESIZE_CURSOR_SIZE} ${RESIZE_CURSOR_SIZE}'%3e${path}%3c/svg%3e")`;
 })();
@@ -114,23 +114,23 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
 
   const tool = state.toolbox.activeTool;
 
-  // The native cursor is hidden over the canvas and replaced by this
-  // app-drawn crosshair, instead of a custom CSS cursor image whose hotspot
-  // Chromium misplaces on Windows at fractional display scaling.
+  // The native cursor is hidden over the canvas and replaced by this app-drawn
+  // crosshair, instead of a custom CSS cursor image whose hotspot Chromium
+  // misplaces on Windows at fractional display scaling.
   //
   // On the main canvas it's snapped to the screen center of whichever buffer
-  // pixel getMousePos would report for this same event — the exact pixel any
-  // overlay preview (brush stamp, shape preview, ...) paints into — so the
+  // pixel getMousePos would report for this same event. The exact pixel any
+  // overlay preview (brush stamp, shape preview, ...) paints into, so the
   // crosshair and the preview can never disagree, regardless of any residual
   // sub-pixel rounding between the two. On the zoom canvas this would be a
-  // visible jump every time the mouse crosses into the next (hugely
-  // magnified) buffer pixel, so there it just tracks the raw pointer.
+  // visible jump every time the mouse crosses into the next (hugely magnified)
+  // buffer pixel, so there it just tracks the raw pointer.
   //
   // Skipped entirely for a captured or loaded brush, which is usually large
   // enough that exact hotspot alignment barely matters: no per-mousemove work,
-  // and the native pointer shows instead. Suppressed while
-  // SizeBuiltInBrushTool is armed too — selectedBuiltInBrushId stays set
-  // through that drag, but the resize cursor is what should show.
+  // and the native pointer shows instead. Suppressed while SizeBuiltInBrushTool
+  // is armed too. SelectedBuiltInBrushId stays set through that drag, but the
+  // resize cursor is what should show.
   const usePreciseCursor =
     state.brush.selectedBuiltInBrushId !== null &&
     state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool';
@@ -169,8 +169,8 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
 
   // The Stretch/SizeBuiltInBrushTool resize indicator (see RESIZE_CURSOR_ICON
   // above): unlike the precise crosshair, this doesn't need buffer-pixel
-  // snapping — it's a decorative corner indicator, not a paint-target
-  // marker — so it just follows the raw client position, offset.
+  // snapping (it's a decorative corner indicator, not a paint-target marker),
+  // so it just follows the raw client position, offset.
   const showResizeCursor =
     !state.app.isLoading &&
     (state.toolbox.selectedSelectorToolId === 'brushStretchTool' ||
@@ -197,11 +197,11 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     height: state.canvas.resolution.height * displayScale.y,
   };
 
-  // An armed brush transform shows the matching cursor — the conventional
+  // An armed brush transform shows the matching cursor. The conventional
   // "dragging will reshape" affordance (diagonal resize for Stretch and its
   // built-in-brush counterpart SizeBuiltInBrushTool, horizontal for Shear, a
-  // circular arrow for Rotate — CSS has no rotate cursor, so it's a
-  // pixel-art data URI like the crosshair above).
+  // circular arrow for Rotate; CSS has no rotate cursor, so it's a pixel-art
+  // data URI like the crosshair above).
   const transformCursor = showResizeCursor
     ? null // native cursor hidden; .canvas-resize-cursor draws the indicator instead, offset clear of the brush
     : state.toolbox.selectedSelectorToolId === 'brushShearTool'
@@ -281,10 +281,10 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           updateCursorPos(event);
           updateResizeCursorPos(event);
           getEventHandler(tool, 'onMouseMove')(event);
-          // Each mouse event's overlay draws (possibly several — a gradient
-          // fill preview issues one call per color band) replace the
-          // previous frame's, so CycleDriver's replay doesn't accumulate
-          // stale draws from earlier positions.
+          // Each mouse event's overlay draws (possibly several: a gradient fill
+          // preview issues one call per color band) replace the previous
+          // frame's, so CycleDriver's replay doesn't accumulate stale draws
+          // from earlier positions.
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseMoveOverlay')(event);
         }}

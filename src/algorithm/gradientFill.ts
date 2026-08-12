@@ -5,9 +5,9 @@ import { FillShape, ShapeGeometry, shapeGeometry } from './fillShape';
 // contiguous color band. See docs/true-color-mode.md and the Fill Style
 // requester (src/components/fillStyle/) for the user-facing picture. The
 // binning and dither math below follow PyDPainter's Random dither mode
-// (libs/prim.py) rather than an invented scheme — its result is genuinely
-// random per pixel (not an ordered/repeating pattern), confirmed against
-// real DPaint II output.
+// (libs/prim.py) rather than an invented scheme. Its result is genuinely random
+// per pixel (not an ordered/repeating pattern), confirmed against real DPaint
+// II output.
 export type GradientAxis = 'vertical' | 'horizontal' | 'horizontalLine';
 
 export type GradientFillStyle = {
@@ -15,32 +15,32 @@ export type GradientFillStyle = {
   rangeLow: number; // 1-based color id, inclusive — same units as PaintColor.colorNumber
   rangeHigh: number; // 1-based color id, inclusive
   dither: number; // 0..20, 0 = off — PyDPainter's Random dither scale
-  // How far dither can push a pixel's position, as a percentage of a band's
-  // own width, per unit of dither (half-width = dither * jitter% of a
-  // band). 17 (the default when omitted, ~1/6) matches PyDPainter's
-  // hline() FillMode.HORIZ_FIT dither exactly (ditherfactor =
-  // gradient_dither/3.0 * pointspercolor, half-width = ditherfactor/2 =
-  // gradient_dither/6 * pointspercolor) — see colorIdForPosition. Exposed
-  // as a parameter, rather than only the fixed constant, so the Fill Style
-  // requester can offer it as an experimental tuning slider without the
-  // algorithm needing to know about the UI.
+  // How far dither can push a pixel's position, as a percentage of a band's own
+  // width, per unit of dither (half-width = dither * jitter% of a band). 17
+  // (the default when omitted, ~1/6) matches PyDPainter's hline()
+  // FillMode.HORIZ_FIT dither exactly (ditherfactor = gradient_dither/3.0 *
+  // pointspercolor, half-width = ditherfactor/2 = gradient_dither/6 *
+  // pointspercolor): see colorIdForPosition. Exposed as a parameter, rather
+  // than only the fixed constant, so the Fill Style requester can offer it as
+  // an experimental tuning slider without the algorithm needing to know about
+  // the UI.
   jitter?: number;
 };
 
 const DEFAULT_JITTER_PERCENT = 100 / 6;
 
 // The color id for one pixel at `pos` along an axis spanning [min, min+span)
-// over bandCount+1 colors. Each color owns a "pointsPerColor"-wide band of
-// raw positions (floor-divided, not rounded — matching the reference); with
-// dither > 0, pos is jittered first by up to +/-(dither * jitter% *
-// pointsPerColor) pixels — the jitter range grows with the band width
-// itself, which is why high dither can blend a pixel several bands away,
-// not just its immediate neighbor. jitter=1/6 (the default) matches
-// PyDPainter's hline() dither for FillMode.HORIZ_FIT ("Horizontal Line")
-// exactly — verified against prim.py's hline(): ditherfactor =
-// gradient_dither/3.0 * pointspercolor, half-width = ditherfactor/2.
-// `random` defaults to Math.random (genuine per-pixel randomness, as in
-// the reference) but is injectable so tests can assert exact output.
+// over bandCount+1 colors. Each color owns a "pointsPerColor"-wide band of raw
+// positions (floor-divided, not rounded; matching the reference); with dither >
+// 0, pos is jittered first by up to +/-(dither * jitter% * pointsPerColor)
+// pixels. The jitter range grows with the band width itself, which is why high
+// dither can blend a pixel several bands away, not just its immediate neighbor.
+// jitter=1/6 (the default) matches PyDPainter's hline() dither for
+// FillMode.HORIZ_FIT ("Horizontal Line") exactly: verified against prim.py's
+// hline(): ditherfactor = gradient_dither/3.0 * pointspercolor, half-width =
+// ditherfactor/2. `random` defaults to Math.random (genuine per-pixel
+// randomness, as in the reference) but is injectable so tests can assert exact
+// output.
 function colorIdForPosition(
   pos: number,
   min: number,
@@ -62,21 +62,21 @@ function colorIdForPosition(
 }
 
 // Buckets an arbitrary point set by target color id. Only caller left is
-// FloodFillTool — its region comes from pixel connectivity, not geometry,
-// so it has no closed form to hand a shader (see gradientShaderLib.ts).
-// 'vertical'/'horizontal' normalize against the whole point set's own
-// bounding box; 'horizontalLine' groups points by row first and normalizes
-// each row's *contiguous runs* against their own local x-extent,
-// independently — the axis mode that makes a filled circle read as a
-// sphere. Splitting each row into contiguous runs (rather than one bbox per
-// row) matters for flood fill in particular: PyDPainter's floodfill()
-// builds one scanline fragment per contiguous run and draws each with its
-// own hline() call, normalized only to that fragment's own span (prim.py's
-// hline(), the FillMode.HORIZ_FIT branch — not the row's overall extent
-// bridging any gap). A row with a gap (a ring, a crescent, anything with a
-// "waist") would otherwise stretch the gradient across the gap instead of
-// restarting it per run. Returns one Point[] per distinct resulting color
-// id; the caller issues one ordinary single-color draw call per bucket.
+// FloodFillTool. Its region comes from pixel connectivity, not geometry, so it
+// has no closed form to hand a shader (see gradientShaderLib.ts).
+// 'vertical'/'horizontal' normalize against the whole point set's own bounding
+// box; 'horizontalLine' groups points by row first and normalizes each row's
+// *contiguous runs* against their own local x-extent, independently. The axis
+// mode that makes a filled circle read as a sphere. Splitting each row into
+// contiguous runs (rather than one bbox per row) matters for flood fill in
+// particular: PyDPainter's floodfill() builds one scanline fragment per
+// contiguous run and draws each with its own hline() call, normalized only to
+// that fragment's own span (prim.py's hline(), the FillMode.HORIZ_FIT branch,
+// not the row's overall extent bridging any gap). A row with a gap (a ring, a
+// crescent, anything with a "waist") would otherwise stretch the gradient
+// across the gap instead of restarting it per run. Returns one Point[] per
+// distinct resulting color id; the caller issues one ordinary single-color draw
+// call per bucket.
 export function bucketPointsByGradient(
   points: Point[],
   style: GradientFillStyle,
@@ -94,8 +94,8 @@ export function bucketPointsByGradient(
 
   const bandCount = style.rangeHigh - style.rangeLow;
   if (bandCount <= 0) {
-    // a degenerate (single-color) range: nothing to gradient, everything
-    // gets that one color
+    // a degenerate (single-color) range: nothing to gradient, everything gets
+    // that one color
     for (const point of points) {
       add(style.rangeLow, point);
     }
@@ -153,9 +153,9 @@ export function bucketPointsByGradient(
   return buckets;
 }
 
-// Everything the gradient shaders need, computed once per draw call on the
-// JS side. This is the single place where 1-based color ids become 0-based
-// storage indices and where degrees become radians.
+// Everything the gradient shaders need, computed once per draw call on the JS
+// side. This is the single place where 1-based color ids become 0-based storage
+// indices and where degrees become radians.
 export type GradientUniforms = ShapeGeometry & {
   axisMode: 0 | 1 | 2; // vertical | horizontal | horizontalLine
   axisMin: number;

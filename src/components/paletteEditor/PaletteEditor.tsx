@@ -60,9 +60,9 @@ export function PaletteEditor(): JSX.Element | null {
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
   const activeRange = activeRangeIndex !== null ? state.palette.ranges[activeRangeIndex] : null;
 
-  // Every cycling control below edits the selected slot and no-ops when
-  // there isn't one — the controls are all disabled in that state anyway,
-  // so this guard is belt-and-braces rather than reachable.
+  // Every cycling control below edits the selected slot and no-ops when there
+  // isn't one. The controls are all disabled in that state anyway, so this
+  // guard is belt-and-braces rather than reachable.
   function updateActiveRange(settings: {
     active?: boolean;
     reverse?: boolean;
@@ -75,7 +75,7 @@ export function PaletteEditor(): JSX.Element | null {
   }
 
   // overflowingBody: the armed-action callout deliberately hangs past the
-  // requester's right edge (see .palette-editor__callout) — a scrolling body
+  // requester's right edge (see .palette-editor__callout). A scrolling body
   // would clip it. This requester is short enough not to need the scroll.
   return (
     <Modal header="Color Palette" width={700} overflowingBody>

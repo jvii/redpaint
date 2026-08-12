@@ -1,16 +1,16 @@
 // Shape generators backing the built-in brushes' right-click resize (see
-// docs/brush-transforms.md, "Sizing a built-in brush"). DPaint regenerated
-// its round/square pens procedurally on resize rather than bitmap-stretching
-// them (CURBRUSH.C: RoundPen/SquarePen), which is why they stayed crisp at
-// any size — these mirror that instead of routing through the pixel-art
-// nearest-neighbor `resize()` used for custom brushes.
+// docs/brush-transforms.md, "Sizing a built-in brush"). DPaint regenerated its
+// round/square pens procedurally on resize rather than bitmap-stretching them
+// (CURBRUSH.C: RoundPen/SquarePen), which is why they stayed crisp at any size.
+// These mirror that instead of routing through the pixel-art nearest-neighbor
+// `resize()` used for custom brushes.
 //
 // All bitmaps are top-down string arrays of '.'/'@', the same convention
 // `BrushColorIndex.fromBuiltInBrushStringBitmap` expects.
 
 export type BuiltInFamily = 'round' | 'square' | 'dither';
 
-// A filled ellipse inscribed in width x height — the round family (dot3x3/
+// A filled ellipse inscribed in width x height: the round family (dot3x3/
 // dot5x5/dot7x7 in the toolbar). Using an ellipse rather than a fixed-radius
 // circle means a non-uniform drag (Shift not held) still produces a sensible
 // shape instead of clamping to a circle.
@@ -34,23 +34,23 @@ export function roundBitmap(width: number, height: number): string[] {
   return rows;
 }
 
-// A solid block — the square family (square2x2/.../square8x8). A resize of a
+// A solid block: the square family (square2x2/.../square8x8). A resize of a
 // solid fill has no resampling artifact either way, so this is really just
-// `resize()` made explicit; kept as its own generator so all three families
-// go through the same interface.
+// `resize()` made explicit; kept as its own generator so all three families go
+// through the same interface.
 export function squareBitmap(width: number, height: number): string[] {
   const w = Math.max(1, Math.round(width));
   const h = Math.max(1, Math.round(height));
   return Array.from({ length: h }, () => '@'.repeat(w));
 }
 
-// The dither family (dither3x3/dither7x6) is a hand-placed sparse scatter,
-// not a shape that can be stretched to an arbitrary size without turning to
-// mush. DPaint didn't try: dragging its DOT_B pen snapped to one of 6 fixed
-// bitmaps (CURBRUSH.C: dots10..dots60, decoded below from the original
-// Amiga bitplane data in docs/reference/dpaint-source/src/DOTBMS.C — 16-bit
-// words, MSB-first, sizes 4s+1 for s=1..6). Resizing a dither brush here
-// snaps to the nearest of these the same way.
+// The dither family (dither3x3/dither7x6) is a hand-placed sparse scatter, not
+// a shape that can be stretched to an arbitrary size without turning to mush.
+// DPaint didn't try: dragging its DOT_B pen snapped to one of 6 fixed bitmaps
+// (CURBRUSH.C: dots10..dots60, decoded below from the original Amiga bitplane
+// data in docs/reference/dpaint-source/src/DOTBMS.C, 16-bit words, MSB-first,
+// sizes 4s+1 for s=1..6). Resizing a dither brush here snaps to the nearest of
+// these the same way.
 const ditherBitmaps: readonly string[][] = [
   ['@....', '.....', '....@', '.....', '.@...'],
   ['....@....', '.........', '.........', '........@', '@...@....', '.........', '.........', '.........', '.....@...'],

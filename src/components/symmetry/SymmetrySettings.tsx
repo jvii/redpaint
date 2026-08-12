@@ -8,7 +8,7 @@ import { RetroLabeledSlider } from '../ui/RetroLabeledSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 import { MAX_ORDER } from '../../algorithm/symmetry';
 
-// The symmetry settings panel — redpaint's equivalent of DPaint's SymRequest
+// The symmetry settings panel: redpaint's equivalent of DPaint's SymRequest
 // requester (SYMREQ.C: Cyclic / Mirror / Order / Cancel / Ok), opened by
 // right-clicking the symmetry toolbox button (CTRPAN.C case 13). Center
 // selection, which DPaint kept as a separate menu item (Picture > Symmetry

@@ -10,13 +10,13 @@ export function DialogManager(): JSX.Element | null {
 
   const pasteAsBrush = (): void => {
     actions.dialog.close();
-    // decodes, then opens the load requester — the same flow as Brush > Open
+    // decodes, then opens the load requester: the same flow as Brush > Open
     actions.app.beginBrushLoad(state.app.pasteBufferImageObjectURL);
   };
 
   const pasteAsImage = (): void => {
     actions.dialog.close();
-    // decodes, then opens the load requester — the same flow as Image > Open
+    // decodes, then opens the load requester. The same flow as Image > Open
     // pasted pixels have no file behind them, so the document stays unnamed
     actions.app.beginImageLoad({ url: state.app.pasteBufferImageObjectURL });
   };

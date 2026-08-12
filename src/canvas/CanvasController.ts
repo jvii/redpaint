@@ -6,18 +6,18 @@ import { GradientFillStyle } from '../algorithm/gradientFill';
 import { FillShape } from '../algorithm/fillShape';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 
-// A sink for draw commands. This is all a brush needs to draw into — the
+// A sink for draw commands. This is all a brush needs to draw into. The
 // painting and overlay canvas controllers implement it, and so does the
 // DrawCallBuffer used by SymmetryBrush to batch draw calls.
 export interface DrawTarget {
   points(points: Point[], color: PaintColor): void;
   lines(lines: (LineH | LineV)[], color: PaintColor): void;
   quad(start: Point, end: Point, color: PaintColor): void;
-  // GPU gradient fill for convex shapes (rect/circle/ellipse): one draw
-  // call per shape, band+dither decided per fragment. Solid fills and
-  // degenerate ranges never come through here — the brushes fall back to
-  // quad()/lines() (see fillStyleDraw.ts). seed: the per-stroke dither
-  // seed, identical across a stroke's symmetry copies.
+  // GPU gradient fill for convex shapes (rect/circle/ellipse): one draw call
+  // per shape, band+dither decided per fragment. Solid fills and degenerate
+  // ranges never come through here: the brushes fall back to quad()/lines()
+  // (see fillStyleDraw.ts). seed: the per-stroke dither seed, identical across
+  // a stroke's symmetry copies.
   gradientFill(shape: FillShape, style: GradientFillStyle, seed: number): void;
   // GPU Pattern fill for convex shapes: one draw call per shape, tiling the
   // captured pattern bitmap per fragment (see patternShaderLib.ts). version
@@ -32,14 +32,13 @@ export interface DrawTarget {
   // resets the chains (previous-stamp state) at stroke end.
   //
   // Unlike every other DrawTarget method, effectDraw does NOT render on its
-  // own — it only writes into the color-index texture. Under N-way symmetry
-  // each copy needs its own effectDraw call (DrawCallBuffer can't merge them:
-  // each copy's stepped color, e.g. Cycle's per-copy counter, genuinely
-  // differs), so rendering per call would mean N full-canvas re-renders per
-  // stroke segment instead of 1. Callers must call flushEffectDraw() once
-  // after they're done issuing effectDraw calls for a segment (a single
-  // direct call, or a whole batch of symmetry copies) to trigger the one
-  // render they share.
+  // own. It only writes into the color-index texture. Under N-way symmetry each
+  // copy needs its own effectDraw call (DrawCallBuffer can't merge them: each
+  // copy's stepped color, e.g. Cycle's per-copy counter, genuinely differs), so
+  // rendering per call would mean N full-canvas re-renders per stroke segment
+  // instead of 1. Callers must call flushEffectDraw() once after they're done
+  // issuing effectDraw calls for a segment (a single direct call, or a whole
+  // batch of symmetry copies) to trigger the one render they share.
   effectDraw(points: Point[], brush: CustomBrush, copyId: number): void;
   flushEffectDraw(): void;
   endEffectStroke(): void;

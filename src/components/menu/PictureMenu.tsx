@@ -9,27 +9,27 @@ import { fileHandleFor, rememberFileHandle } from './savedFileHandle';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
 
-// The picture drawer: whole-image disk I/O — DPaint's term for the canvas as a
+// The picture drawer: whole-image disk I/O, DPaint's term for the canvas as a
 // whole, as opposed to a brush. Mutually exclusive with the Brush drawer
 // (Menu.tsx's app.openDrawer radio group); unlike BrushMenu there's nothing to
 // transform here, so it's a single File row.
 //
 // Two save gadgets, not one per format. Which format to write is a question the
 // requester asks (SaveAsDialog) and the document then remembers, so adding GIF
-// cost no gadget — where a third "Save GIF" button would have made the row a
+// cost no gadget, where a third "Save GIF" button would have made the row a
 // list of formats and still left "Save" silently meaning PNG.
 export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const state = useAppState();
   const actions = useActions();
 
-  // What a save offers as the name: whatever the document is already called,
-  // or the same word the tab title uses for one that is not called anything —
-  // the one derived, so the two cannot drift apart. Held without an extension,
+  // What a save offers as the name: whatever the document is already called, or
+  // the same word the tab title uses for one that is not called anything. The
+  // one derived, so the two cannot drift apart. Held without an extension,
   // since the format the requester picks is what decides that.
   const baseName = state.app.displayName;
 
   // A written file is now what the document is: it takes that name, there is
-  // nothing left unsaved, and — where the browser gave us one — the handle is
+  // nothing left unsaved, and (where the browser gave us one) the handle is
   // kept so the next plain Save can go straight back to that file.
   const remember = (format: SaveFormat, target: SaveTarget | null): void => {
     if (target === null) {
@@ -42,11 +42,11 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   };
 
   // Save As: ask what format (and, where nothing else will, what name), then
-  // write it. The requester goes up before anything reads the canvas — a
+  // write it. The requester goes up before anything reads the canvas. A
   // cancelled save should cost nothing, and the PNG path holds the cycling
   // palette still while it captures.
   const saveAs = (): void => {
-    // The menu is still open — a save is clicked from inside it — and its panel
+    // The menu is still open (a save is clicked from inside it), and its panel
     // is translucent and above the requesters, so leaving it up would tint this
     // one blue and swallow its clicks. Every other route into a requester
     // closes the menu the same way (ScreenStatus, crop.begin).
@@ -83,7 +83,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
 
   // What Save promises, which depends on whether there is anything to repeat.
   // For a picture nobody has saved yet there is no file to go back to and no
-  // format yet either — `save` falls through to the requester — so the tooltip
+  // format yet either (`save` falls through to the requester), so the tooltip
   // must not name one.
   const saveTitle = (): string => {
     const format = saveFormats[state.app.saveFormat];
@@ -98,7 +98,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
 
   // Plain Save: same format as last time, back to the same file with no dialog
   // where the browser allows it, and otherwise straight to a download under the
-  // name already chosen. It only asks when there is nothing to repeat — a
+  // name already chosen. It only asks when there is nothing to repeat. A
   // document nobody has named yet, or a handle that has gone stale.
   const save = (): void => {
     const format = state.app.saveFormat;
@@ -123,7 +123,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
         remember(format, await saveFileAs(makeBlob, `${baseName}${fileType.extension}`, fileType));
         return;
       }
-      // Nothing to repeat, so this is a Save As after all — including the
+      // Nothing to repeat, so this is a Save As after all. Including the
       // format, which an unnamed document has never actually been asked about.
       saveAs();
     })();

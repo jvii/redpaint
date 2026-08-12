@@ -14,14 +14,14 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroToggle } from '../ui/RetroToggle';
 import { RetroFieldset } from '../ui/RetroFieldset';
 
-// 'Native' is the no-simulation state (screenFormatId === null): the
-// page is shown 1:1 in the window, no Amiga screen scaling — the startup mode.
+// 'Native' is the no-simulation state (screenFormatId === null): the page is
+// shown 1:1 in the window, no Amiga screen scaling, the startup mode.
 const NATIVE = 'native';
 type FormatChoice = ScreenFormatId | typeof NATIVE;
 
 // Depends on the draft videoStandard (PAL/NTSC), so it's a function of it
-// rather than a static list — the same 4 formats mean different pixel sizes
-// per standard (see resolveScreenFormat).
+// rather than a static list: the same 4 formats mean different pixel sizes per
+// standard (see resolveScreenFormat).
 function formatOptions(videoStandard: VideoStandard) {
   return [
     { value: NATIVE, label: 'Native' },
@@ -69,7 +69,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const isNative = formatId === NATIVE;
   const [videoStandard, setVideoStandard] = useState<VideoStandard>(state.canvas.videoStandard);
   // Sizes are always a power of two between 2 and 256 (every path that builds a
-  // palette produces one), so this is a real option on the row below — the
+  // palette produces one), so this is a real option on the row below. The
   // fallback is for a document that somehow arrived with a size that is not.
   const currentPaletteSize = COLOR_OPTIONS.some(
     (option) => Number(option.value) === state.palette.paletteArray.length
@@ -78,14 +78,14 @@ function ScreenFormatDialogOpen(): JSX.Element {
     : 32;
   const [colors, setColors] = useState(currentPaletteSize);
   // Whether the document allows true-color pixels. Switching it off (with OK)
-  // conforms the canvas to the palette — the explicit color-reducing move.
+  // conforms the canvas to the palette: the explicit color-reducing move.
   const [trueColorEnabled, setTrueColorEnabled] = useState(state.canvas.trueColorEnabled);
   // Where a reduction takes its palette from (see PaletteSource). Only
   // meaningful when the draft actually reduces colors, so the toggle below is
   // disabled otherwise.
   //
   // From the image by default. "Current Palette" means the palette exactly as
-  // it stands, which is only a thing you can remap to at its own size — at any
+  // it stands, which is only a thing you can remap to at its own size. At any
   // other size it was neither: growing filled the new slots from the default
   // ramp, so picking 256 against a 32-color document produced 32 colors of
   // yours and 224 nobody had chosen, and the picture then mapped onto those
@@ -94,7 +94,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
 
   // Whether the picture survives the change, DPaint-style: choosing a screen
   // was a way of starting a picture, not of converting the one you had. No by
-  // default for that reason — and because conforming a picture to a screen it
+  // default for that reason, and because conforming a picture to a screen it
   // was not drawn for is the more deliberate of the two acts, so it is the one
   // worth asking for. Either way it is a single undo away.
   const [retainPicture, setRetainPicture] = useState(false);
@@ -127,7 +127,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
   const handleOk = (): void => {
     const resolvedFormatId = isNative ? null : formatId;
     // Native has no page size of its own. Keeping the picture, that means the
-    // canvas it has — there is a picture on it and no size to prefer over its
+    // canvas it has. There is a picture on it and no size to prefer over its
     // own. Discarding it, there is nothing to preserve and no size on offer but
     // the window's, so a fresh Native page fits the pane, exactly as the
     // new-page half of CLR does (app.newPicture, same helper). Arriving from
@@ -137,11 +137,11 @@ function ScreenFormatDialogOpen(): JSX.Element {
       ? nativeTarget
       : resolveScreenFormat(formatId as ScreenFormatId, videoStandard);
 
-    // Not keeping the picture: apply the format, then put a blank canvas at
-    // the new size. No conform (applyScreenFormat skips it) and no shrink
-    // question either — that question exists to protect pixels from being
-    // cropped away, and these are going regardless. One undo entry, recorded
-    // by the upload, covers the format change and the blank canvas together.
+    // Not keeping the picture: apply the format, then put a blank canvas at the
+    // new size. No conform (applyScreenFormat skips it) and no shrink question
+    // either. That question exists to protect pixels from being cropped away,
+    // and these are going regardless. One undo entry, recorded by the upload,
+    // covers the format change and the blank canvas together.
     if (!retainPicture) {
       actions.canvas.applyScreenFormat({
         formatId: resolvedFormatId,
@@ -174,7 +174,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
     }
 
     // An Amiga format fits the canvas to its dimensions. Growing (or an equal
-    // size) anchors the existing pixels top-left at 1:1 — nothing is lost, so
+    // size) anchors the existing pixels top-left at 1:1. Nothing is lost, so
     // commit straight away. Shrinking in either dimension would crop, so hold
     // the *whole* change unapplied and ask; that way Cancel undoes nothing
     // (reverting a narrowed palette would lose the dropped colors for good).
@@ -204,7 +204,7 @@ function ScreenFormatDialogOpen(): JSX.Element {
       retainPicture: true,
     });
     if (!sameSize) {
-      // one history entry for the whole change, via the resize upload — which
+      // one history entry for the whole change, via the resize upload, which
       // picks up the conformed pixels, if any
       actions.canvas.resizeCanvasPlacingContent(target);
     } else if (conformed) {

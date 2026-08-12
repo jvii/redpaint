@@ -1,6 +1,6 @@
 import { Point } from '../types';
 
-// The shape vocabulary shared by every GPU fill mode — Gradient
+// The shape vocabulary shared by every GPU fill mode. Gradient
 // (gradientFill.ts) and Pattern (patternFill.ts) both take one of these and
 // both need the same bounding-quad/center/radius math out of it. It lived in
 // gradientFill.ts while Gradient was the only GPU fill; Pattern reusing it
@@ -9,12 +9,12 @@ import { Point } from '../types';
 
 // A shape the GPU fill paths can handle
 // (docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md). Flood fill is
-// deliberately NOT here — its region comes from pixel connectivity, not
+// deliberately NOT here. Its region comes from pixel connectivity, not
 // geometry, so it has no closed form to hand a shader at all. Polygon *is*
 // geometry (SymmetryBrush already resolves each copy's vertices to final
 // absolute coordinates on the CPU before this ever runs), so its fragment
 // shader does a bounded-loop point-in-polygon test instead of a closed-form
-// inside test — see MAX_FILL_POLYGON_VERTICES.
+// inside test: see MAX_FILL_POLYGON_VERTICES.
 export type FillShape =
   | { kind: 'rect'; start: Point; end: Point }
   | { kind: 'circle'; center: Point; radius: number }
@@ -22,19 +22,18 @@ export type FillShape =
   | { kind: 'polygon'; vertices: Point[] };
 
 // WebGL1 (GLSL ES 1.00) requires uniform array sizes to be compile-time
-// constants, so the polygon shader loop is bounded at this many vertices
-// (baked into SHAPE_FILL_LIB's source text — see shapeFillShaderLib.ts). A
-// polygon with more vertices than this falls back to the CPU path
-// (fillStyleDraw.ts's drawStyledFilledShape checks against this same
-// constant) rather than silently truncating.
+// constants, so the polygon shader loop is bounded at this many vertices (baked
+// into SHAPE_FILL_LIB's source text: see shapeFillShaderLib.ts). A polygon with
+// more vertices than this falls back to the CPU path (fillStyleDraw.ts's
+// drawStyledFilledShape checks against this same constant) rather than silently
+// truncating.
 export const MAX_FILL_POLYGON_VERTICES = 64;
 
-// Everything the Gradient and Pattern GPU shaders both need from a
-// FillShape: its bounding quad (the actual draw target — a quad the shader
-// then discards outside of), center/radii/rotation (the ellipse inside-test),
-// and polygon vertices. Shared so the rotated-ellipse bounding-box math (the
-// one part of this that's easy to get subtly wrong) has a single source of
-// truth.
+// Everything the Gradient and Pattern GPU shaders both need from a FillShape:
+// its bounding quad (the actual draw target, a quad the shader then discards
+// outside of), center/radii/rotation (the ellipse inside-test), and polygon
+// vertices. Shared so the rotated-ellipse bounding-box math (the one part of
+// this that's easy to get subtly wrong) has a single source of truth.
 export type ShapeGeometry = {
   shapeKind: 0 | 1 | 2 | 3; // rect | circle | ellipse | polygon
   center: Point;

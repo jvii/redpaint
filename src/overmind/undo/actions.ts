@@ -7,13 +7,13 @@ import { newGradientSeed } from '../../brush/fillStyleDraw';
 import { plainPalette } from '../../algorithm/imageColors';
 
 export const setUndoPoint = (context: Context): void => {
-  // every committed stroke ends here — also the effect chains' reset point
+  // every committed stroke ends here: also the effect chains' reset point
   paintingCanvasController.endEffectStroke();
   newGradientSeed(); // next gradient fill gets fresh dither speckle
   const colorIndex = paintingCanvasController.getCanvasColorIndex();
   if (!colorIndex) {
-    // the canvas has no readable index texture yet — nothing to snapshot, and
-    // an undo point that silently isn't recorded is worth a console entry
+    // the canvas has no readable index texture yet. Nothing to snapshot, and an
+    // undo point that silently isn't recorded is worth a console entry
     console.warn('setUndoPoint: no canvas color index available');
     return;
   }
@@ -37,7 +37,7 @@ export const setUndoPoint = (context: Context): void => {
 };
 
 // Empties the history. Loading an image starts a new document, so undoing back
-// into the previous picture is not wanted — a policy call, not a technical one:
+// into the previous picture is not wanted. A policy call, not a technical one:
 // history does survive a canvas resize (useUndo restores each snapshot's own
 // resolution). Snapshots cost megabytes and the two pictures are unrelated. The
 // caller follows with setUndoPoint, making the fresh content the one entry.
@@ -48,7 +48,7 @@ export const reset = (context: Context): void => {
 };
 
 // Keeps the state mirrors of the buffer's size in step with the buffer itself
-// (see undo/state.ts) — call after every write to it.
+// (see undo/state.ts): call after every write to it.
 function syncBufferSize(context: Context): void {
   context.state.undo.bufferBytes = undoBuffer.getTotalBytes();
   context.state.undo.bufferEntryCount = undoBuffer.getBuffer().length;
@@ -76,10 +76,10 @@ export const redo = (context: Context): void => {
 };
 
 // Moving through history changes the committed document, so the state riding on
-// the entry follows: the true-color flag (read off how the snapshot is held — an
-// entry packs exactly when it has none, so no rescan) and the palette the pixels
-// index into. Without the palette, undoing a depth reduction would restore
-// indices pointing at missing or different colors.
+// the entry follows: the true-color flag (read off how the snapshot is held; an
+// entry packs exactly when it has none, so no rescan) and the palette the
+// pixels index into. Without the palette, undoing a depth reduction would
+// restore indices pointing at missing or different colors.
 function restoreEntryState(context: Context): void {
   const entry = undoBuffer.getItem(context.state.undo.currentIndex);
   context.state.canvas.hasTrueColorPixels = entry ? !entry.packed : false;

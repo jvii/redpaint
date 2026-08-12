@@ -11,16 +11,16 @@ import { drawShapeQuad } from '../../util/shapeFillDraw';
 import { ALPHA_INDEXED } from '../../../domain/CanvasColorIndex';
 import { applyRowSpanUniforms, RowSpanTexture } from '../../util/rowSpanTexture';
 
-// The row-span texture lives on its own dedicated unit (8 — every other
-// unit in the codebase is already permanently claimed: 0/1/2 by the
-// canvas/palette/brush-stamp textures, 3-6 by EffectIndexer's scratch
-// textures, 7 by Pattern fill's captured-bitmap texture).
+// The row-span texture lives on its own dedicated unit (8; every other unit in
+// the codebase is already permanently claimed: 0/1/2 by the
+// canvas/palette/brush-stamp textures, 3-6 by EffectIndexer's scratch textures,
+// 7 by Pattern fill's captured-bitmap texture).
 const ROW_SPAN_TEXTURE_UNIT = 8;
 
 // Writes a gradient-filled convex shape (rect/circle/ellipse) into the
 // color-index texture in ONE draw call: the fragment shader classifies each
 // pixel into its color band (with per-stroke seeded dither) and writes the
-// packed indexed pixel directly — the per-fragment version of what
+// packed indexed pixel directly. The per-fragment version of what
 // GeometricIndexer's u_pixel does per draw call. See
 // docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md.
 export class GradientGeometricIndexer {
@@ -42,9 +42,8 @@ export class GradientGeometricIndexer {
     for (const name of GRADIENT_UNIFORM_NAMES) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
-    // the row-span texture is always in ROW_SPAN_TEXTURE_UNIT, so the
-    // sampler uniform can be set once (mirrors PatternGeometricIndexer's
-    // u_pattern)
+    // the row-span texture is always in ROW_SPAN_TEXTURE_UNIT, so the sampler
+    // uniform can be set once (mirrors PatternGeometricIndexer's u_pattern)
     gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
     this.rowSpanTexture = new RowSpanTexture(gl, ROW_SPAN_TEXTURE_UNIT);
   }
