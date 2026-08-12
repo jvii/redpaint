@@ -148,13 +148,12 @@ function channel(cluster: Cluster, ch: number): number {
 // Call only when the image has more distinct colors than n; otherwise use
 // extractExactPalette.
 export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
-  // The number of occupied bins is a hard ceiling on how many boxes the cut can
-  // ever produce, and 5-bit bins are coarse enough that ordinary pictures fall
-  // below it: a smooth sky gradient of 261 distinct colors occupies 31 bins, so
-  // asking for 256 colors returned 35 and padded the rest with black. Anything
-  // painted in True Color tends this way. Gradients and soft edges are many
-  // colors within a narrow range, which is exactly the shape that collapses
-  // under quantization.
+  // The occupied bin count is a hard ceiling on how many boxes the cut can
+  // produce, and 5-bit bins are coarse enough that ordinary pictures fall below
+  // it: a smooth sky gradient of 261 distinct colors occupies 31 bins, so asking
+  // for 256 gave 35 and padded the rest with black. Gradients and soft edges are
+  // many colors within a narrow range, which is what collapses under
+  // quantization.
   //
   // So the coarse histogram is a fast path, not the algorithm: when it cannot
   // supply enough points, the cut runs on the image's exact colors instead.
@@ -256,36 +255,23 @@ export function mapToPaletteExact(data: Uint8ClampedArray, palette: Color[]): Ui
   return indices;
 }
 
-// A nearest-palette-color lookup (squared RGB distance), exact.
+// A nearest-palette-color lookup (squared RGB distance), exact and fast.
 //
-// It used to answer per 15-bit bin: one search for the first color to land in a
-// bin, and every other color in that bin got the same answer. A bin is 8 units
-// per channel, and a 256-color palette is finer than that (several entries
-// routinely share one), so the result depended on which color the caller
-// happened to visit first, and the caller's scan order therefore changed the
-// picture. On a dark photograph, where a large share of the pixels sit in the
-// one bin nearest black, seeding that bin from a color a few units up lifted
-// every deep black to match it: the same image quantized by two paths that scan
-// in different row orders came out at 7.3 and 44.9 mean squared error against a
-// 4.8 ideal. Both are now 4.8, and identical to each other.
+// A 15-bit bin indexes the cache, but what it caches is *candidates*, not an
+// answer: answering per bin makes the result depend on which color the caller
+// visited first, and memoizing per distinct color costs a full palette scan
+// each, which on a photograph is a million of them.
 //
-// Exactness alone is affordable only if it stays fast. Memoizing per distinct
-// color instead is exact but costs a full palette scan per color, which on a
-// photograph where nearly every pixel differs is a million scans: 2.4s for one
-// megapixel, against 60ms before.
-//
-// So the bin is still the index, but it now caches *candidates* rather than an
-// answer. For each bin, any palette entry that could be nearest for some color
-// somewhere in it is kept, and each color is then measured exactly against
-// those few. Which entries qualify follows from the geometry: with c the bin's
-// center, R the distance from c to its farthest corner, and m the distance from
-// c to the closest entry, the true nearest p* for any q in the bin satisfies
+// For each bin, any palette entry that could be nearest for some color anywhere
+// in it is kept, and each color is measured exactly against those few. With c
+// the bin's center, R the distance from c to its farthest corner and m the
+// distance from c to the closest entry, the true nearest p* for any q in the
+// bin satisfies
 //
 // dist(c, p*) <= dist(q, p*) + R <= dist(q, p_m) + R <= m + 2R
 //
 // so keeping everything within m + 2R cannot discard the right answer. In
-// practice that is a handful of entries, and the cost lands back where the
-// approximation was.
+// practice that is a handful of entries.
 export function createNearestMapper(palette: Color[]): (r: number, g: number, b: number) => number {
   // Half a bin's extent per channel, so the corner is that far out in all three.
   const half = ((1 << SHIFT) - 1) / 2;

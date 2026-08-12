@@ -1,12 +1,8 @@
 import { Color } from '../types';
 
-// Color-space conversions for the palette editor and the palette UI. Pure, and
-// in the algorithm layer for that reason. They lived in tools/util alongside
-// getMousePos and the mouse-button predicates, which meant six non-tool modules
-// (five components and the palette actions) reached into the tools layer for
-// color math, and that the repo's tested tree didn't cover them even though
-// DPaint's Spread (palette/actions.ts) is built entirely out of
-// rgbToHsv/hsvToRgb.
+// Color-space conversions for the palette editor and the palette UI. Pure, so
+// they live in the algorithm layer, where the tests are: DPaint's Spread
+// (palette/actions.ts) is built entirely out of rgbToHsv/hsvToRgb.
 
 export function colorToRGBString(color: Color): string {
   return 'rgb(' + color.r + ',' + color.g + ',' + color.b + ')';

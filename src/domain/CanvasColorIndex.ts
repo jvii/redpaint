@@ -159,13 +159,11 @@ export class CanvasColorIndex {
     return { kind: 'index', colorNumber: this.indexArray[arrayIndex] + 1 };
   }
 
-  // Nearest-neighbor resize to a new size. Each destination pixel copies a
-  // whole source pixel verbatim, so indices, true colors and tags are all
-  // preserved and no new colors are introduced: the right scaling for pixel art
-  // and for keeping an indexed image indexed. Used to rescale the current
-  // canvas when the screen/canvas size changes instead of clearing it. Works
-  // directly on the stored (bottom-up) rows; proportional row mapping keeps the
-  // orientation, so no flip is needed here.
+  // Nearest-neighbor resize. Each destination pixel copies a whole source pixel
+  // verbatim, so indices, true colors and tags survive and no new colors are
+  // introduced: the right scaling for pixel art, and what keeps an indexed image
+  // indexed. Works on the stored (bottom-up) rows; proportional row mapping
+  // keeps the orientation, so no flip is needed.
   resizedTo(width: number, height: number): CanvasColorIndex {
     const destArray = new Uint8Array(width * height * 4);
     const dest32 = new Uint32Array(destArray.buffer);
@@ -183,11 +181,10 @@ export class CanvasColorIndex {
   }
 
   // Places this content, unscaled, into the top-left of a new canvas of the
-  // given size. The rest is filled with the background color; content that
-  // falls outside is cropped. DPaint's behaviour, and how the canvas grows and
-  // crops without scaling the pixels: a canvas that grows adds to the right
-  // and bottom, one that shrinks takes from there. Cropping to a chosen region
-  // is croppedTo's job, not an anchor's.
+  // given size, filling the rest with the background color and cropping any
+  // overflow. DPaint's behaviour: a canvas that grows adds to the right and
+  // bottom, one that shrinks takes from there. Cropping to a chosen region is
+  // croppedTo's job.
   placedInto(width: number, height: number, backgroundColorNumber: number): CanvasColorIndex {
     return this.copiedInto(width, height, backgroundColorNumber, 0, 0);
   }

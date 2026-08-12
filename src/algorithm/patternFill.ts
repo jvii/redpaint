@@ -10,12 +10,10 @@ import { FillShape, ShapeGeometry, shapeGeometry } from './fillShape';
 // (see the Fill Style requester, src/components/fillStyle/).
 //
 // A pattern carries whatever the captured brush carried, indexed or true-color,
-// and paints it through unchanged. The same rule stamping that brush directly
-// follows (DrawImageIndexer writes a true-color brush pixel as a true-color
-// canvas pixel, without consulting trueColorEnabled). Only *computed* colors
-// need a write policy, which is why the paint effects have one and this
-// doesn't; reconciling true-color content with an indexed document happens in
-// one designated place, applyScreenFormat's flatten.
+// and paints it through unchanged, as stamping that brush directly does. Only
+// *computed* colors need a write policy, which is why the paint effects have one
+// and this does not: reconciling true-color content with an indexed document
+// happens in one place, applyScreenFormat's flatten.
 
 // The color the pattern paints at canvas position (x, y): a palette index for
 // an indexed pattern pixel, a literal RGB for a true-color one. Returns null

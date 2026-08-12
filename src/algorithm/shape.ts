@@ -9,15 +9,12 @@ import { LineV } from '../domain/LineV';
 export function line(start: Point, end: Point): Point[] {
   const dx = end.x - start.x;
   const dy = end.y - start.y;
-  // Steps = the dominant axis's pixel span, not the Euclidean distance. Using
-  // distance() here (as this once did) over-samples any non-45-degree line,
-  // landing more than one step in some columns/rows (duplicate pixels) while
-  // unevenly spacing the rest, an uneven, "noisy" look distinct from a clean
-  // single-pixel-wide Bresenham-style line. Rounded because start/end aren't
-  // guaranteed to be integers (e.g. an odd-width custom brush's handle offset
-  // is a .5 fraction): new Array() below requires an integer length, and used
-  // to get one for free from Math.round(distance(...)) before this became
-  // dominant-axis-based.
+  // Steps = the dominant axis's pixel span, not the Euclidean distance, which
+  // over-samples any non-45-degree line: more than one step lands in some
+  // columns while the rest are unevenly spaced, a noisy look distinct from a
+  // clean single-pixel-wide Bresenham line. Rounded because start/end are not
+  // guaranteed to be integers (an odd-width brush's handle offset is a .5
+  // fraction) and new Array() requires an integer length.
   const dist = Math.round(Math.max(Math.abs(dx), Math.abs(dy)));
   if (dist === 0) {
     // just draw a dot

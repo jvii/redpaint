@@ -1,11 +1,9 @@
 import { Point } from '../types';
 
-// The shape vocabulary shared by every GPU fill mode. Gradient
+// The shape vocabulary shared by every GPU fill mode: Gradient
 // (gradientFill.ts) and Pattern (patternFill.ts) both take one of these and
-// both need the same bounding-quad/center/radius math out of it. It lived in
-// gradientFill.ts while Gradient was the only GPU fill; Pattern reusing it
-// wholesale (including the polygon vertex cap) is what moved it here, so
-// neither fill mode imports its shape types from the other.
+// need the same bounding-quad/center/radius math out of it. Here rather than in
+// either, so neither imports its shape types from the other.
 
 // A shape the GPU fill paths can handle
 // (docs/superpowers/plans/2026-07-23-gpu-gradient-fill.md). Flood fill is

@@ -61,22 +61,20 @@ function colorIdForPosition(
   return style.rangeLow + Math.max(0, Math.min(bandCount, colorIndex));
 }
 
-// Buckets an arbitrary point set by target color id. Only caller left is
-// FloodFillTool. Its region comes from pixel connectivity, not geometry, so it
-// has no closed form to hand a shader (see gradientShaderLib.ts).
-// 'vertical'/'horizontal' normalize against the whole point set's own bounding
-// box; 'horizontalLine' groups points by row first and normalizes each row's
-// *contiguous runs* against their own local x-extent, independently. The axis
-// mode that makes a filled circle read as a sphere. Splitting each row into
-// contiguous runs (rather than one bbox per row) matters for flood fill in
-// particular: PyDPainter's floodfill() builds one scanline fragment per
-// contiguous run and draws each with its own hline() call, normalized only to
-// that fragment's own span (prim.py's hline(), the FillMode.HORIZ_FIT branch,
-// not the row's overall extent bridging any gap). A row with a gap (a ring, a
-// crescent, anything with a "waist") would otherwise stretch the gradient
-// across the gap instead of restarting it per run. Returns one Point[] per
-// distinct resulting color id; the caller issues one ordinary single-color draw
-// call per bucket.
+// Buckets an arbitrary point set by target color id, for FloodFillTool, whose
+// region comes from pixel connectivity rather than geometry and so has no
+// closed form to hand a shader.
+//
+// 'vertical'/'horizontal' normalize against the whole point set's bounding box.
+// 'horizontalLine' groups points by row and normalizes each row's *contiguous
+// runs* against their own local x-extent, independently: the axis mode that
+// makes a filled circle read as a sphere, and PyDPainter's own arrangement (one
+// hline() per scanline fragment). Per run rather than per row because a row
+// with a gap (a ring, a crescent) would otherwise stretch the gradient across
+// the gap instead of restarting it.
+//
+// Returns one Point[] per distinct color id; the caller issues one draw call
+// per bucket.
 export function bucketPointsByGradient(
   points: Point[],
   style: GradientFillStyle,

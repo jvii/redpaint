@@ -8,10 +8,9 @@ import { BrushColorIndex } from '../domain/BrushColorIndex';
 // Pixels move as whole RGBA quads, so indexed, true-color and transparent
 // pixels (the alpha tag) all survive any transform unchanged.
 //
-// Rows in the index array are stored bottom-up (GL texture convention).
-// Horizontal/vertical flips are the same operation in either row order, and
-// resize sampling is anchor-agnostic for the integer factors used here, so
-// only rotate90 needs to care (see its mapping derivation).
+// Rows in the index array are stored bottom-up (GL texture convention). Flips
+// are the same operation in either row order and resize sampling is
+// anchor-agnostic, so only rotate90 needs to care.
 
 const STRIDE = 4;
 

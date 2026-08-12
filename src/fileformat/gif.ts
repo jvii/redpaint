@@ -1,11 +1,10 @@
 // GIF89a encode. Still images for now; the block layout below is the one an
-// animation adds frames to, which is why the pieces are separate writers.
+// animation adds frames to, hence the separate writers.
 //
-// GIF is the one export format that cannot be anything but indexed (there is no
-// truecolor GIF), so unlike PNG, where the browser's encoder flattens the
-// picture to RGBA on the way out, this writes redpaint's own indices through
-// unchanged. `CanvasColorIndex.toIndexedPixels()` is already exactly the array
-// this wants.
+// There is no truecolor GIF, so unlike PNG, where the browser's encoder
+// flattens the picture to RGBA on the way out, this writes redpaint's own
+// indices through unchanged: `CanvasColorIndex.toIndexedPixels()` is already
+// the array it wants.
 //
 // Written by hand for the same reason ILBM is: `canvas.toBlob` will not produce
 // a GIF at any quality setting, and asking it for a type it cannot encode
@@ -129,10 +128,9 @@ function lzwCompress(pixels: Uint8Array, minCodeSize: number): Uint8Array {
       if (nextCode < 4096) {
         // Widen *before* taking the code, not after. The decoder cannot define
         // an entry until it has seen the code after the one that created it, so
-        // it is permanently one behind; checking after the increment widens an
-        // emit too early and the two desynchronise. Verified against a real
-        // decoder rather than reasoned about: the round-trip against our own
-        // reader passed happily with this wrong.
+        // it is permanently one behind, and checking after the increment widens
+        // an emit too early. Getting this wrong still round-trips against our
+        // own reader, so verify against a real decoder.
         if (nextCode >= 1 << codeSize && codeSize < 12) {
           codeSize++;
         }
@@ -251,11 +249,10 @@ class GifReader {
   // and image data use them, so skipping an extension is just reading and
   // discarding.
   //
-  // Runs out rather than throwing when the file is short. A truncated GIF is a
-  // damaged file, but the part that did arrive is still a picture, and every
-  // browser shows it. Refusing the whole thing would be this app being stricter
-  // than the format's own audience for no gain. The LZW below stops the same
-  // way, so a partial image comes back partial rather than jagged.
+  // Runs out rather than throwing when the file is short: a truncated GIF is
+  // still a picture as far as it got, and every browser shows it. The LZW below
+  // stops the same way, so a partial image comes back partial rather than
+  // jagged.
   subBlocks(): Uint8Array {
     const parts: Uint8Array[] = [];
     let total = 0;
