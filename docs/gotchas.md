@@ -66,6 +66,33 @@ one as a record dates it as ancient and sweeps it immediately — including the
 one written moments earlier by the restore running alongside, quietly disabling
 the crash detection it exists for.
 
+## Tab identity
+
+Each tab owns its own autosave record, keyed by an id in `sessionStorage`. The
+difficulty is that sessionStorage is *copied*: Duplicate Tab, `window.open` and
+opening a link all hand the new tab an id another tab may already be painting
+under. A Web Lock named for the id settles it — held for the life of the
+document, released by the browser when it is destroyed, so `ifAvailable`
+answers "is a live document using this id" immediately, with no protocol and
+nothing to clean up.
+
+Two earlier attempts tried to *infer* that answer, and both are worth knowing
+about because both look reasonable:
+
+- **A heartbeat registry in localStorage**, read-modify-written by every tab. A
+  tab releasing its claim on reload had it written straight back by another
+  tab's heartbeat mid-flight, so it came back, believed itself a duplicate, and
+  lost its own record on every reload.
+- **A BroadcastChannel question with a 250ms reply window.** The document being
+  replaced was still alive to answer, so a reloading tab reported itself as its
+  own duplicate. Closing the responder on `pagehide` helped, and a
+  navigation-type check — only a fresh navigation can be a copy — avoided asking
+  on reload. But Duplicate Tab restores the session history, so its navigation
+  type is `reload`: the copy skipped the check and adopted the original's
+  record. The heuristic was wrong in precisely the case it existed to catch.
+
+A lock has no window in which to be wrong.
+
 ## Overmind
 
 **Deriveds are not reliable inside actions.** They can still hold the value from

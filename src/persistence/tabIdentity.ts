@@ -1,43 +1,16 @@
-// Which tab this is, so each one can own its own autosave record.
-//
-// Two tabs share IndexedDB, so a single key meant whichever painted last owned
-// the backup and the other tab's was gone — and a reloaded tab got back
-// whatever its neighbour had been doing rather than its own picture.
-//
-// The id lives in sessionStorage: unique per tab, survives that tab's reloads,
-// dies with it. So a reload finds its own record, and a genuinely new tab finds
-// none.
+// Which tab this is, so each one owns its own autosave record. sessionStorage
+// survives a reload and dies with the tab, so a reload finds its own record and
+// a new tab finds none.
 const TAB_KEY = 'redpaint.tabId';
 
-// sessionStorage is not quite per tab, which is the whole difficulty here.
-// Duplicate Tab, window.open and opening a link all *copy* it, so a new tab can
-// arrive holding an id another tab is already painting under, and the two would
-// share a record.
+// sessionStorage is *copied* by Duplicate Tab, window.open and opening a link,
+// so an inherited id may already belong to a live tab. A Web Lock named for the
+// id answers that by construction: held for the life of the document, released
+// by the browser when it is destroyed, and `ifAvailable` answers immediately.
 //
-// A Web Lock settles it by construction. Each tab holds a lock named for its id
-// for as long as its document lives, and the browser releases it when that
-// document is destroyed. So `ifAvailable` answers the only question that
-// matters — is a live document already using this id — immediately, with no
-// protocol, no timeout, and nothing left behind to clean up.
-//
-// Both earlier attempts failed by trying to infer that answer instead:
-//
-//   A heartbeat registry in localStorage, read-modify-written by every tab. A
-//   tab releasing its claim on reload had it written straight back by another
-//   tab's heartbeat mid-flight, so it returned, believed itself a duplicate,
-//   and lost its own record on every single reload.
-//
-//   A BroadcastChannel question with a 250ms reply window. The document being
-//   replaced was still alive to answer, so a reloading tab reported itself as
-//   its own duplicate. Closing the responder on pagehide helped, and a
-//   navigation-type check — only a fresh navigation can be a copy — avoided
-//   asking on reload. But Duplicate Tab restores the session history, so its
-//   navigation type is `reload`: the copy skipped the check and adopted the
-//   original's record. The heuristic was wrong in precisely the case it existed
-//   to catch.
-//
-// A lock has no window in which to be wrong: it is held or it is not, and the
-// answer comes back without waiting for anyone.
+// Do not replace this with a heartbeat registry or a broadcast question. Both
+// were tried and both are wrong on exactly the cases this exists for
+// (docs/gotchas.md, "Tab identity").
 const LOCK_PREFIX = 'redpaint.tab.';
 
 function newId(): string {
@@ -48,9 +21,8 @@ function newId(): string {
 
 let claimed: string | null = null;
 
-// Takes the lock for an id, or reports false when a live document holds it.
-// The callback's promise is deliberately never settled, so the lock is held for
-// the life of this document — there is no release to arrange, or to forget.
+// False when a live document already holds the id. The callback's promise is
+// never settled, so the lock is held for the life of this document.
 function claim(id: string): Promise<boolean> {
   if (!navigator.locks) {
     return Promise.resolve(true); // no way to ask; assume it is ours, as it usually is
@@ -65,9 +37,8 @@ function claim(id: string): Promise<boolean> {
   });
 }
 
-// This tab's id, settled once per page load. The inherited id is kept unless a
-// live document already holds its lock, which is the only thing that means we
-// were copied — so an ordinary reload keeps its id, and its record.
+// Settled once per page load. The inherited id is kept unless a live document
+// holds its lock, which is the only thing that means we were copied.
 export async function ensureTabId(): Promise<string> {
   if (claimed) {
     return claimed;
@@ -76,8 +47,7 @@ export async function ensureTabId(): Promise<string> {
   try {
     inherited = window.sessionStorage.getItem(TAB_KEY);
   } catch {
-    // storage blocked: this tab cannot keep an identity across reloads, so it
-    // behaves like a new one each time — it still saves, it just never restores
+    // storage blocked: behaves as a new tab each load — saves, never restores
   }
   let id = inherited ?? newId();
   if (!(await claim(id))) {
@@ -95,9 +65,8 @@ export async function ensureTabId(): Promise<string> {
   return id;
 }
 
-// The settled id, or the best guess at it before ensureTabId has run. Callers
-// reach this only if a save somehow beat the restore; the inherited id is the
-// same answer in every case but a duplicated tab.
+// The settled id, or the inherited one if a save somehow beat the restore —
+// the same answer except in a duplicated tab.
 export function tabId(): string {
   if (claimed) {
     return claimed;
