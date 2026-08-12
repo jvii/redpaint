@@ -48,10 +48,8 @@ function isImageFile(file: File): boolean {
   return file.type.search(/^image\//i) === 0;
 }
 
-// Hotkeys belong to the canvas: they are suspended whenever keystrokes (or,
-// for the middle-click menu toggle below, clicks) mean something else — a
-// text field has focus, a dialog/requester is open, or the text tool is
-// capturing keys. Takes just the `target` so it works for mouse events too.
+// Hotkeys belong to the canvas, so they are suspended whenever keystrokes mean
+// something else. Takes just the `target`, so it works for mouse events too.
 function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
   const target = event.target as HTMLElement | null;
   if (
@@ -71,8 +69,7 @@ function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
   if (state.paletteEditor.isOpen || state.symmetry.settingsOpen) {
     return true;
   }
-  // An armed crop owns the keyboard: the overlay takes Enter and Escape, and
-  // every other hotkey would act on a canvas the user has stopped painting on.
+  // An armed crop owns the keyboard: the overlay takes Enter and Escape.
   if (state.crop.rect) {
     return true;
   }
@@ -102,10 +99,9 @@ function useMenuHotkey(): void {
 }
 
 // Tab toggles color cycling, like DPaint. Deliberately not gated by
-// hotkeysSuspended: cycling is display-only, and the point of the key is to
-// toggle it from inside the palette editor while tuning a range.
-// preventDefault every time, so native focus traversal never wins the key
-// back.
+// hotkeysSuspended: the point of the key is to toggle it from inside the
+// palette editor. preventDefault every time, so native focus traversal never
+// wins the key back.
 function useCyclingHotkey(): void {
   const actions = useActions();
 
@@ -123,22 +119,15 @@ function useCyclingHotkey(): void {
   }, []);
 }
 
-// Undo and redo from the keyboard, in both vocabularies:
-//
-//  - U, DPaint's own ("Keyboard Equivalent: U; Mnemonic: undo", DP2 manual).
-//    No bare-letter redo — DPaint had none, and a letter spent on the rarer
-//    half of the pair is one no tool can have.
-//  - Ctrl/Cmd-Z, with Shift for redo, and Ctrl-Y for Windows's redo.
-//
-// Accepted generously, advertised narrowly: Ctrl-Z works on a Mac and Cmd-Z on
-// Windows, but the hints print one idiom per platform (src/platform.ts).
-// preventDefault on the chords only — they are the browser's own undo.
+// Undo and redo: U, DPaint's own, plus Ctrl/Cmd-Z and Ctrl-Y. Every chord is
+// accepted on every platform, though the hints print one idiom each
+// (src/platform.ts). preventDefault on the chords only — they are the browser's
+// own undo.
 function useUndoHotkeys(): void {
   const actions = useActions();
 
   function handleKey(event: KeyboardEvent): void {
-    // hotkeysSuspended covers a focused text field, where Ctrl-Z belongs to
-    // the field, and an open requester, where it belongs to nothing yet.
+    // In a focused text field Ctrl-Z belongs to the field.
     if (hotkeysSuspended(event)) {
       return;
     }
@@ -198,10 +187,9 @@ function useMiddleClickMenuToggle(): void {
   }, []);
 }
 
-// DPaint's F1-F8 brush-mode keys, in the same MODE_ORDER the Mode toggle
-// renders (Menu.tsx). Matte/Repl are custom-brush-only, same as the toggle's
-// own disabled segments — the hotkey mirrors that instead of quietly setting
-// a mode a built-in brush can't use.
+// DPaint's F1-F8 brush-mode keys, in the MODE_ORDER the Mode toggle renders
+// (Menu.tsx). Matte/Repl are skipped on a built-in brush, as the toggle's own
+// segments are.
 function useModeHotkeys(): void {
   const actions = useActions();
 
@@ -228,15 +216,9 @@ function useModeHotkeys(): void {
   }, []);
 }
 
-// DPaint's Toolbox commands (DP2 manual, "Keyboard Commands and Cursors").
-//
-// Case is the convention, and DPaint's: a lowercase letter picks the unfilled
-// shape and the shifted one the filled shape, which is how a dual-toggle gadget
-// gets both halves from one letter.
-//
-// Taken verbatim from the manual's table, including the mnemonics that have not
-// aged well — `s` for the *dotted* freehand ("sketch") and `d` for the
-// continuous one ("draw"), which look swapped and are not.
+// DPaint's Toolbox commands (DP2 manual, "Keyboard Commands and Cursors"),
+// taken verbatim from the manual's table. Case is the convention: a lowercase
+// letter picks the unfilled shape and the shifted one the filled shape.
 const SHAPE_KEYS: { [key: string]: DrawingToolId } = {
   s: 'dottedFreehand',
   d: 'freeHand',
@@ -252,17 +234,14 @@ const SHAPE_KEYS: { [key: string]: DrawingToolId } = {
   t: 'textNoFill',
 };
 
-// Airbrush and Polygon are absent because DPaint gave them no key, and the
-// letters left over are ones it spent on things redpaint may still grow (g/G
-// grid, j spare page, D one-pixel brush).
+// Airbrush and Polygon are absent because DPaint gave them no key.
 function useToolHotkeys(): void {
   const actions = useActions();
 
   function handleKey(event: KeyboardEvent): void {
     // Before the suspension check: a text tool suspends every key below,
     // including the ones that would pick another tool, so this is the keyboard's
-    // only way back out. The manual's own answer — "Press ESC or click a drawing
-    // tool to exit Text mode".
+    // only way out of it.
     if (event.key === 'Escape' && isTextTool(overmind.state.toolbox.activeToolId)) {
       event.preventDefault();
       actions.toolbox.setSelectedDrawingTool('freeHand');
@@ -283,8 +262,7 @@ function useToolHotkeys(): void {
     }
 
     switch (event.key) {
-      // Both of these open the Fill Type dialog in DPaint, and both select the
-      // tool first, exactly as right-clicking the gadget does.
+      // Selects the tool first, as right-clicking the gadget does.
       case 'F':
         actions.toolbox.setSelectedDrawingTool('floodFill');
         actions.fillStyle.openSettings();
@@ -304,14 +282,11 @@ function useToolHotkeys(): void {
         actions.app.clearPage();
         break;
       case ',':
-        // DPaint's "Select Color cursor": the picker that samples a color off
-        // the canvas, which is the Color Indicator's own click.
         actions.toolbox.toggleForegroundColorSelectionMode();
         break;
       case 'p':
         // Opens only, where DPaint's toggled: closing would have to reach past
-        // hotkeysSuspended, and the editor has OK and Cancel, which a palette
-        // being edited wants rather than one key meaning neither.
+        // hotkeysSuspended, and the editor has OK and Cancel.
         actions.paletteEditor.open();
         break;
       default:
@@ -330,11 +305,10 @@ function isTextTool(toolId: string): boolean {
   return toolId === 'textFilled' || toolId === 'textNoFill';
 }
 
-// The brush-cursor preview on the overlay canvas only repaints on mouse move,
-// so a transform applied via the keyboard would otherwise stay invisible until
-// the mouse next moves. Re-sending a mousemove at the pointer's last position
-// replays the active tool's own preview path (getMousePos reads clientX/Y),
-// showing the transformed brush immediately.
+// The overlay's brush-cursor preview only repaints on mouse move, so a
+// transform applied from the keyboard stays invisible until the mouse next
+// moves. Re-sending a mousemove at the pointer's last position replays the
+// active tool's own preview path.
 let lastPointerPos: { x: number; y: number } | null = null;
 
 // Exported for callers that arm a transform tool while the pointer is not over
@@ -362,10 +336,9 @@ export function refreshBrushPreview(): void {
   );
 }
 
-// DPaint's Brush menu transform keys (docs/brush-transforms.md). Case matters:
-// lowercase and Shift-modified letters are different operations, so this
-// switches on event.key. No-ops while a built-in brush is active (the actions
-// guard). Modifier chords (Cmd-X cut etc.) must pass through untouched.
+// DPaint's Brush menu transform keys (docs/brush-transforms.md). Case matters —
+// lowercase and shifted letters are different operations — so this switches on
+// event.key. Modifier chords (Cmd-X cut etc.) must pass through untouched.
 function useBrushTransformHotkeys(): void {
   const actions = useActions();
 
@@ -410,10 +383,8 @@ function useBrushTransformHotkeys(): void {
       case 'S':
         actions.toolbox.toggleBrushTransformMode('brushShearTool');
         break;
-      // No 'R' here: it is DPaint's Filled Rectangle (useToolHotkeys below).
-      // DPaint's Brush menu gives ROTATE no keyboard equivalent, unlike the
-      // Flip, Stretch, Halve and Double entries around it. Shear keeps 'S' and
-      // Stretch 'Z', neither of which the toolbox wants.
+      // No 'R' here: it is DPaint's Filled Rectangle (useToolHotkeys below),
+      // and DPaint gives ROTATE no keyboard equivalent.
       case 'Escape': {
         // cancel a pending drag transform: nothing to undo, it only previews
         const armed = overmind.state.toolbox.selectedSelectorToolId;
@@ -426,10 +397,8 @@ function useBrushTransformHotkeys(): void {
         ) {
           actions.toolbox.toggleBrushTransformMode(armed);
         } else if (armed === 'sizeBuiltInBrushTool') {
-          // The built-in resize is armed by a right-click on a brush icon and
-          // leaves by its own action, not toggleBrushTransformMode, whose guard
-          // rejects built-in brushes — so it needs its own case. To the user it
-          // is the same modal drag, offered the same Escape.
+          // The built-in resize leaves by its own action, not
+          // toggleBrushTransformMode, whose guard rejects built-in brushes.
           actions.toolbox.exitSizeBuiltInBrushMode();
         } else {
           return;

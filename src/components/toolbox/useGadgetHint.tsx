@@ -2,10 +2,6 @@ import { JSX, RefObject, useEffect, useRef, useState } from 'react';
 import { GadgetHint, GadgetHintPanel, HintPlacement } from './GadgetHint';
 import { currentUiScale } from '../../uiScale';
 
-// Deliberately long. Reaching for a gadget you already know is the overwhelming
-// case, and a panel arriving mid-reach is only in the way; the hint is for
-// someone who has stopped and is wondering, which is a much longer pause than
-// a tooltip's usual half-second assumes.
 const HINT_DELAY_MS = 2000;
 
 // Only one hint is ever open. Each caller owns its own state, so nothing stops
@@ -27,10 +23,6 @@ type Hinted = {
   hintPanel: JSX.Element | null;
 };
 
-// The hover-hint behaviour on its own, so anything in the toolbox column can
-// carry one. It started inside ToolboxButtonHoverManager and stayed there while
-// only the three button components needed it; the colour indicator is not one
-// of those and had no business growing a second copy.
 export function useGadgetHint(hint?: GadgetHint): Hinted {
   const [hintAt, setHintAt] = useState<HintPlacement | null>(null);
   const hintRef = useRef<HTMLDivElement>(null);
