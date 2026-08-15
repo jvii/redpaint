@@ -62,23 +62,27 @@
 }
 
 /* stacked variant (the transform gadgets): icon above the label, centered.
-   Taller than the base gadget height — Bend's icons run past the standard
-   24-unit viewBox (the box needs the full height, the arrow sits clear
-   below it), and without the extra room flexbox has nowhere to shrink but
-   the icon, coming out smaller than every sibling gadget's. Every stacked
-   gadget takes the same height so labels stay aligned across Size / Flip /
-   Rotate / Bend, even though only Bend actually needs the room. */
+   Taller than the base gadget height, and every stacked gadget takes the same
+   height so labels stay aligned across Size / Flip / Rotate / Bend.
+
+   84 is the exact sum of what is in it, borders included, because box-sizing is
+   border-box: 2 border + 8 padding + 32 icon + 8 gap + 24 label row + 8 padding
+   + 2 border. Get this wrong low and nothing reports an error — the column
+   simply overflows and flexbox takes it out of the one item that can give, the
+   icon slot, so the glyphs come out smaller than the 32 this file says they
+   are. At 76 they were rendering at 29.7. */
 .wb-gadget--stacked {
   flex-direction: column;
   justify-content: flex-end;
   gap: 8px;
   padding: 8px 12px;
-  height: 76px;
+  height: 84px;
 }
 
 /* a fixed-height slot above the label, sized to whatever's left once the
    label and gap are accounted for — icons shorter than that (everything
-   but Bend) center inside it instead of sitting flush against the label */
+   but Bend, whose viewBox is 38 units tall) center inside it instead of
+   sitting flush against the label */
 .wb-gadget--stacked .wb-gadget__icon {
   display: flex;
   align-items: center;
@@ -88,11 +92,19 @@
 
 /* label + keycap on one line, so the hotkey hint costs horizontal room
    (gadgets already vary in width with label length) rather than adding a
-   row's worth of vertical space to every stacked gadget. */
+   row's worth of vertical space to every stacked gadget.
+
+   Held at the keycap's own height (16px text + 3px padding + 1px border, both
+   sides) whether or not there is a keycap in it. The row is bottom-anchored, so
+   without this the taller row a keycap makes lifts its label above the labels
+   of the gadgets beside it — Stretch and Halve sitting a few pixels higher than
+   Any Angle and Crop. */
 .wb-gadget__labelrow {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  height: 24px;
 }
 
 /* monospace keycap per the style guide's "below 16px, plain monospace"
