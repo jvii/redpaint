@@ -8,14 +8,33 @@ import { paletteTextureData } from '../../algorithm/cycle';
 // so the rotation composition can't drift between them.
 export const PALETTE_TEXTURE_UNIT = 1;
 
+// The texture each context's palette lives in. Held here rather than in the
+// controllers because this module already owns the convention that there is one
+// per context on a fixed unit, and because texImage2D writes to whatever is
+// *bound*, not to a unit — so the upload below has to bind before it writes
+// rather than trust that nothing since has touched the target.
+const paletteTextures = new WeakMap<WebGLRenderingContext, WebGLTexture>();
+
 // Uploads the current palette, with color cycling's rotation applied.
 //
 // Composes from the raw state fields rather than the displayPalette derived:
 // this runs inside actions (undo, resize, every cycling tick), where Overmind
 // deriveds read undefined.
+//
+// Silent when the context has no palette texture yet. The autosave restore
+// reaches this before the canvas has been initialized — the startup sizing
+// waits for the restore to settle, and init() is what creates the texture — so
+// the call arrives with a context but nothing bound, and used to spend its
+// texImage2D on an INVALID_OPERATION. Nothing is lost by skipping: whatever
+// creates the texture next fills it from this same state.
 export function uploadPaletteTexture(gl: WebGLRenderingContext): void {
+  const texture = paletteTextures.get(gl);
+  if (!texture) {
+    return;
+  }
   const { palette, ranges, cycleOffsets } = overmind.state.palette;
   gl.activeTexture(gl.TEXTURE0 + PALETTE_TEXTURE_UNIT);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(
     gl.TEXTURE_2D,
     0,
@@ -37,6 +56,11 @@ export function createPaletteTexture(gl: WebGLRenderingContext): WebGLTexture | 
   gl.activeTexture(gl.TEXTURE0 + PALETTE_TEXTURE_UNIT);
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
+  if (texture) {
+    // before the upload below, which now looks itself up here. A restored
+    // context hands back the same gl object, so this replaces the dead entry.
+    paletteTextures.set(gl, texture);
+  }
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
