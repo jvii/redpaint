@@ -147,7 +147,11 @@ export function ScreenStatus(): JSX.Element {
           >
             <span className="screen-status__field">
               <span className="screen-status__label">Page</span>
-              <b>{state.pages.currentPageIndex + 1}</b>/{state.pages.pageCount}
+              {/* Which page, not how many: the count is always two, and the
+                  segment is only here at all once there is a second one. The
+                  number reads in the value blue like every other reading on
+                  the strip. */}
+              <b>{state.pages.currentPageIndex + 1}</b>
             </span>
           </button>
         )}
