@@ -142,6 +142,40 @@ export function parkedPageRasters(): CanvasColorIndex[] {
   return rasters;
 }
 
+// The page a swap would go to, as plain data the autosave can write: its
+// raster and the state that belongs to the page. Null when there is only one
+// page, which is what tells the writer to drop the record instead.
+export function offScreenPageRecord(): {
+  width: number;
+  height: number;
+  pixels: Uint8Array;
+  packed: boolean;
+  backgroundColorId: string;
+} | null {
+  const target = nextPage();
+  const entry = target && target.history.getItem(target.currentIndex);
+  if (!target || !entry) {
+    return null;
+  }
+  return {
+    width: entry.width,
+    height: entry.height,
+    // A copy: the entry's buffer belongs to that page's history, and handing
+    // the live one to an asynchronous write risks a torn record.
+    pixels: new Uint8Array(entry.pixels),
+    packed: entry.packed,
+    backgroundColorId: target.backgroundColorId,
+  };
+}
+
+// Puts a restored page in front of the one already here and stays on the
+// latter, so a document restored onto page two comes back reading page two.
+export function insertPageBefore(page: Page): void {
+  pages.unshift(page);
+  shareBudget(page.history);
+  currentIndex += 1;
+}
+
 // Discards every page but the one on screen, which keeps its history and its
 // index. The document is back to a single page, so nothing about pages shows in
 // the UI again until the next swap creates one.

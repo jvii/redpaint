@@ -8,6 +8,7 @@ import { syncBufferSize } from '../undo/actions';
 import {
   activateNextPage,
   addPage,
+  insertPageBefore,
   currentHistory,
   currentPageIndex,
   nextPage,
@@ -80,6 +81,7 @@ export const copyToSpare = (context: Context): void => {
   target.size = { ...context.state.canvas.resolution };
   target.backgroundColorId = context.state.palette.backgroundColorId;
   context.state.pages.pageCount = pageCount();
+  context.state.pages.lastChangeTime = Date.now();
   syncBufferSize(context); // the other page's history just grew
 };
 
@@ -152,6 +154,53 @@ export const deleteCurrentPage = (context: Context): void => {
   showCurrentPage(context, target);
 };
 
+// Rebuilds the off-screen page from its autosave record, at startup. Its
+// history starts as that one raster, exactly as a page created by a swap does
+// and as the document's own restored picture does: history is session state and
+// is never persisted.
+//
+// `before` puts it on the near side of the page being restored, which is what
+// keeps the readout naming the same page after a reload as before it.
+export const restoreOffScreenPage = (
+  context: Context,
+  restored: {
+    width: number;
+    height: number;
+    pixels: Uint8Array;
+    packed: boolean;
+    backgroundColorId: string;
+    before: boolean;
+  }
+): void => {
+  const history = new UndoBuffer();
+  const entry: UndoEntry = {
+    // The palette is the document's, shared by every page, and is already
+    // installed by the time this runs.
+    palette: plainPalette(Object.values(context.state.palette.palette)),
+    width: restored.width,
+    height: restored.height,
+    packed: restored.packed,
+    pixels: restored.pixels,
+  };
+  const page: Page = {
+    history,
+    currentIndex: history.push(entry, null),
+    size: { width: restored.width, height: restored.height },
+    backgroundColorId: restored.backgroundColorId,
+    scrollFocusPoint: null,
+  };
+  if (restored.before) {
+    insertPageBefore(page);
+  } else {
+    addPage(page);
+  }
+  context.state.pages.currentPageIndex = currentPageIndex();
+  context.state.pages.pageCount = pageCount();
+  // Deliberately not stamping lastChangeTime: nothing has changed that the
+  // autosave needs to write back, and saying otherwise would have the restore
+  // immediately rewrite the records it just read.
+};
+
 // Puts a page on screen: its raster, its size, and the state that belongs to it
 // rather than to the document. Shared by the swap and the delete, which differ
 // only in what happens to the page being left.
@@ -163,6 +212,7 @@ function showCurrentPage(context: Context, target: Page): void {
   }
   context.state.pages.currentPageIndex = currentPageIndex();
   context.state.pages.pageCount = pageCount();
+  context.state.pages.lastChangeTime = Date.now();
 
   setPendingCanvasContent(toCanvasColorIndex(entry), { recordUndoPoint: false });
   // Through the action, so a matte brush picks up the new page's transparent

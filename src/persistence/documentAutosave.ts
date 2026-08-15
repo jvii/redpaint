@@ -17,6 +17,58 @@ function ownKey(): string {
 // the record key (docs/gotchas.md, "Autosave").
 const GUARD_PREFIX = 'guard:';
 
+// The page that is not on screen, kept beside the document rather than inside
+// it. One record per tab, like the document's.
+//
+// Its own key because of how differently the two change: the document record is
+// rewritten every time the painting pauses, and folding a second raster into it
+// would double every one of those writes for a page that only changes on a
+// swap, a copy or a delete. A swap rewrites both, once, as the two pages trade
+// places.
+const OFF_PAGE_PREFIX = 'offpage:';
+
+function ownOffPageKey(): string {
+  return OFF_PAGE_PREFIX + tabId();
+}
+
+// What an off-screen page needs to come back: its raster and the state that
+// belongs to the page rather than to the document. No history — session state,
+// and megabytes an entry (docs/local/spare-page.md).
+export type OffPageRecord = {
+  version: number;
+  width: number;
+  height: number;
+  pixels: Uint8Array;
+  packed: boolean;
+  // Per page by decree of the DPaint II manual, so it cannot ride on the
+  // document record.
+  backgroundColorId: string;
+  savedAt: number;
+};
+
+export async function saveOffPage(record: Omit<OffPageRecord, 'savedAt'>): Promise<boolean> {
+  return idbSet(ownOffPageKey(), { ...record, savedAt: Date.now() });
+}
+
+// Called when the document goes back to a single page: a record nothing will
+// claim is a record that only takes up quota.
+export async function clearOffPage(): Promise<void> {
+  await idbDelete(ownOffPageKey());
+}
+
+// Read as part of the same guarded attempt as the document, so a poisoned one
+// is dropped with it rather than surviving to break the next start too.
+export async function loadOffPage(): Promise<OffPageRecord | null> {
+  const record = await idbGet<OffPageRecord>(ownOffPageKey());
+  if (!record || record.version !== VERSION || !isUsableRaster(record)) {
+    if (record) {
+      await clearOffPage();
+    }
+    return null;
+  }
+  return record;
+}
+
 function ownGuardKey(): string {
   return GUARD_PREFIX + tabId();
 }
@@ -53,6 +105,12 @@ export type DocumentRecord = {
   documentName: string;
   // Restoring is not saving, so one that came back unsaved must still say so.
   modified: boolean;
+  // Which page this raster was, so the readout names the same page after a
+  // reload as before it. Absent on records written before pages existed, which
+  // read as page one. Not version-bumping for it: an older build ignores the
+  // field, and a bump would throw away every backup in existence to add a
+  // number nobody's picture depends on.
+  currentPageIndex?: number;
   // When it was written; decides pruning. Absent on pre-per-tab records, which
   // therefore sort as oldest.
   savedAt: number;
@@ -92,6 +150,9 @@ export async function autosaveState(): Promise<unknown> {
   return {
     thisTab: ownKey(),
     records,
+    offPages: keys
+      .filter((key) => key.startsWith(OFF_PAGE_PREFIX))
+      .map((key) => ({ key, mine: key === ownOffPageKey() })),
     // Set only while a restore is in flight, or left behind by one that died.
     interruptedMarker: await idbGet<string>(ownGuardKey()),
     otherTabsRestoring: keys.filter((key) => key.startsWith(GUARD_PREFIX) && key !== ownGuardKey()),
@@ -118,16 +179,41 @@ async function prune(): Promise<void> {
     .slice(0, MAX_RECORDS - 1)
     .map((entry) => entry.key);
   // A marker goes when the record sharing its id goes, as does one that never
-  // had a record. Never this tab's own.
+  // had a record. Never this tab's own. The off-screen page goes with its
+  // document for the same reason and is the larger of the two: a page nobody
+  // can reach is the whole of what pruning is for.
   const kept = new Set([mine, ...survivors].map((key) => key.slice(KEY_PREFIX.length)));
-  const staleGuards = keys.filter(
-    (key) =>
-      key.startsWith(GUARD_PREFIX) &&
-      key !== ownGuardKey() &&
-      !kept.has(key.slice(GUARD_PREFIX.length))
-  );
+  const orphaned = (prefix: string, own: string): string[] =>
+    keys.filter(
+      (key) => key.startsWith(prefix) && key !== own && !kept.has(key.slice(prefix.length))
+    );
   const doomed = dated.filter((entry) => !survivors.includes(entry.key)).map((entry) => entry.key);
-  await Promise.all([...doomed, ...staleGuards].map((key) => idbDelete(key)));
+  await Promise.all(
+    [
+      ...doomed,
+      ...orphaned(GUARD_PREFIX, ownGuardKey()),
+      ...orphaned(OFF_PAGE_PREFIX, ownOffPageKey()),
+    ].map((key) => idbDelete(key))
+  );
+}
+
+// The half of the check both records share: a raster whose bytes match the size
+// it claims. A truncated write otherwise paints garbage.
+function isUsableRaster(record: {
+  width: number;
+  height: number;
+  pixels: Uint8Array;
+  packed: boolean;
+}): boolean {
+  const { width, height, pixels } = record;
+  return (
+    Number.isInteger(width) &&
+    Number.isInteger(height) &&
+    width > 0 &&
+    height > 0 &&
+    pixels instanceof Uint8Array &&
+    pixels.length === width * height * (record.packed ? 1 : 4)
+  );
 }
 
 // Untrusted input: an older build, or a half-written record.
@@ -135,18 +221,7 @@ function isUsable(record: DocumentRecord | null): record is DocumentRecord {
   if (!record || record.version !== VERSION) {
     return false;
   }
-  const { width, height, pixels, palette } = record;
-  return (
-    Number.isInteger(width) &&
-    Number.isInteger(height) &&
-    width > 0 &&
-    height > 0 &&
-    pixels instanceof Uint8Array &&
-    // catches a truncated write, which otherwise paints garbage
-    pixels.length === width * height * (record.packed ? 1 : 4) &&
-    Array.isArray(palette) &&
-    palette.length > 0
-  );
+  return isUsableRaster(record) && Array.isArray(record.palette) && record.palette.length > 0;
 }
 
 // The saved document, or null if there is nothing to restore, it cannot be

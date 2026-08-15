@@ -170,6 +170,89 @@ describe('document autosave', () => {
     });
   });
 
+  // The page that is not on screen: its own key, so a stroke rewrites only the
+  // page it touched, and it lives and dies with the document beside it.
+  describe('the off-screen page', () => {
+    function offPage(over: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
+      return {
+        version: 1,
+        width: 4,
+        height: 3,
+        pixels: new Uint8Array(12),
+        packed: true,
+        backgroundColorId: '1',
+        savedAt: Date.now(),
+        ...over,
+      };
+    }
+
+    test('round trips under its own key', async () => {
+      const { saveOffPage, loadOffPage } = await freshModule();
+      await saveOffPage(offPage({ backgroundColorId: '7' }) as never);
+
+      expect(idb.keys()).toContain(`offpage:${TAB}`);
+      const back = await loadOffPage();
+      expect(back?.backgroundColorId).toBe('7');
+      expect(back?.width).toBe(4);
+    });
+
+    test('is not confused with a document record', async () => {
+      const { saveOffPage, loadDocument } = await freshModule();
+      await saveOffPage(offPage() as never);
+
+      // no document was written, so there is nothing to restore
+      expect(await loadDocument()).toBeNull();
+    });
+
+    test('another tab s page is not restored', async () => {
+      const { loadOffPage } = await freshModule();
+      idb.seed('offpage:some-other-tab', offPage());
+
+      expect(await loadOffPage()).toBeNull();
+    });
+
+    test('a raster that does not match its size is dropped, not applied', async () => {
+      const { loadOffPage } = await freshModule();
+      idb.seed(`offpage:${TAB}`, offPage({ pixels: new Uint8Array(5) })); // 4x3 packed is 12
+
+      expect(await loadOffPage()).toBeNull();
+      expect(idb.keys()).not.toContain(`offpage:${TAB}`);
+    });
+
+    test('clearing removes it', async () => {
+      const { saveOffPage, clearOffPage } = await freshModule();
+      await saveOffPage(offPage() as never);
+      await clearOffPage();
+
+      expect(idb.keys()).not.toContain(`offpage:${TAB}`);
+    });
+
+    test('a dead tab s page is pruned with its document', async () => {
+      const week = 7 * 24 * 60 * 60 * 1000;
+      const { loadDocument } = await freshModule();
+      idb.seed('doc:ancient', record({ savedAt: Date.now() - week - 1000 }));
+      idb.seed('offpage:ancient', offPage());
+
+      await loadDocument();
+      await vi.waitFor((): void => {
+        expect(idb.keys()).not.toContain('doc:ancient');
+      });
+      expect(idb.keys()).not.toContain('offpage:ancient');
+    });
+
+    test('this tab s page survives pruning', async () => {
+      const { saveOffPage, loadDocument } = await freshModule();
+      await saveOffPage(offPage() as never);
+      idb.seed(`doc:${TAB}`, record());
+
+      await loadDocument();
+      await vi.waitFor((): void => {
+        expect(idb.keys().length).toBeGreaterThan(0);
+      });
+      expect(idb.keys()).toContain(`offpage:${TAB}`);
+    });
+  });
+
   describe('pruning', () => {
     const week = 7 * 24 * 60 * 60 * 1000;
 

@@ -8,11 +8,16 @@ import { setPendingCanvasContent } from '../canvas/pendingCanvasContent';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 import { ScreenFormatId, VideoStandard } from '../overmind/canvas/state';
 import {
+  clearOffPage,
   DocumentRecord,
   finishRestore,
   loadDocument,
+  loadOffPage,
+  OffPageRecord,
   saveDocument,
+  saveOffPage,
 } from '../persistence/documentAutosave';
+import { offScreenPageRecord } from '../overmind/pages/PageStore';
 import { markRestoreSettled } from '../persistence/restoreSettled';
 
 // The shortest gap between writes. A change with at least this much since the
@@ -36,6 +41,9 @@ export function useDocumentAutosave(): void {
   const unsaved = useRef(false);
   // When the last write went out; the throttle measures from here.
   const lastWriteAt = useRef(0);
+  // The pages.lastChangeTime the off-screen record was last written for, so a
+  // stroke does not rewrite a page it did not touch.
+  const pagesWrittenAt = useRef(0);
 
   useEffect((): void => {
     if (restored.current) {
@@ -47,7 +55,10 @@ export function useDocumentAutosave(): void {
       try {
         record = await loadDocument();
         if (record) {
-          applyDocument(record);
+          // Inside the same guarded attempt: a page that cannot be applied
+          // should be dropped with the document rather than survive to break
+          // the next start as well.
+          applyDocument(record, await loadOffPage());
           await finishRestore();
         }
       } finally {
@@ -59,7 +70,7 @@ export function useDocumentAutosave(): void {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const applyDocument = (record: DocumentRecord): void => {
+  const applyDocument = (record: DocumentRecord, offPage: OffPageRecord | null): void => {
     // Through the actions, in dependency order, as an image load does: the
     // palette must reach the GL textures before the pixels that index into it,
     // and the raster is uploaded after the canvas element has resized.
@@ -70,6 +81,18 @@ export function useDocumentAutosave(): void {
     overlayCanvasController.updatePalette();
     actions.canvas.setScreenFormat({ formatId: record.screenFormatId as ScreenFormatId | null });
     actions.canvas.setVideoStandard(record.videoStandard as VideoStandard);
+    if (offPage) {
+      // After the palette, whose colors its indices mean; before the canvas
+      // content, so the page exists by the time the upload effect runs.
+      actions.pages.restoreOffScreenPage({
+        width: offPage.width,
+        height: offPage.height,
+        pixels: offPage.pixels,
+        packed: offPage.packed,
+        backgroundColorId: offPage.backgroundColorId,
+        before: (record.currentPageIndex ?? 0) > 0,
+      });
+    }
     setPendingCanvasContent(
       record.packed
         ? CanvasColorIndex.fromIndexedPixels(record.width, record.height, record.pixels)
@@ -89,13 +112,25 @@ export function useDocumentAutosave(): void {
   // appending, and either leaves the record stale. Raw timestamps rather than
   // documentModified, because a second stroke must restart the timer even though
   // the document was modified before it and still is after.
-  const changedAt = Math.max(state.undo.lastUndoPointTime, state.undo.lastUndoRedoTime);
+  // A swap changes the visible picture without appending an undo entry, so
+  // without the third of these a reload would come back showing the page that
+  // was swapped away from.
+  const changedAt = Math.max(
+    state.undo.lastUndoPointTime,
+    state.undo.lastUndoRedoTime,
+    state.pages.lastChangeTime
+  );
   // Moves when the picture starts or stops matching a file. A save changes that
   // without touching the pixels, so it has to schedule a write of its own.
   const cleanAt = state.app.lastCleanTime;
   // Nothing is written for an untouched canvas: a blank picture at this window's
-  // size would come back into a differently sized window.
-  const worthSaving = state.undo.bufferEntryCount > 1 || state.app.documentName !== '';
+  // size would come back into a differently sized window. A second page counts
+  // as something to save whatever is on the one in front: the test is about the
+  // document, and reading it off the current page's history alone meant that
+  // swapping to a page with a single entry stopped the writer, leaving the
+  // record describing the page that had just been swapped away from.
+  const worthSaving =
+    state.undo.bufferEntryCount > 1 || state.app.documentName !== '' || state.pages.pageCount > 1;
 
   // In a ref so the timer and the unload listeners always call the current
   // closure rather than the one they were registered with. Refreshed in an
@@ -119,6 +154,15 @@ export function useDocumentAutosave(): void {
       if (!entry) {
         return;
       }
+      // Only when the pages themselves changed. The document record goes out
+      // whenever the painting pauses; the off-screen page changes on a swap, a
+      // copy or a delete, and rewriting its raster on every stroke would be the
+      // write amplification its separate key exists to avoid.
+      if (pagesWrittenAt.current !== state.pages.lastChangeTime) {
+        pagesWrittenAt.current = state.pages.lastChangeTime;
+        const offPage = offScreenPageRecord();
+        void (offPage ? saveOffPage({ version: 1, ...offPage }) : clearOffPage());
+      }
       void saveDocument({
         version: 1,
         width: entry.width,
@@ -136,6 +180,7 @@ export function useDocumentAutosave(): void {
         documentName: state.app.documentName,
         // the same value the tab title's asterisk reports, by construction
         modified: state.app.documentModified,
+        currentPageIndex: state.pages.currentPageIndex,
       });
     };
   });
