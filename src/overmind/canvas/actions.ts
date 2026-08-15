@@ -251,10 +251,17 @@ export const applyScreenFormat = (
   // document, and so is what the other pages have to answer to.
   const trueColorTurnedOff = context.state.canvas.trueColorEnabled && !trueColorEnabled;
   const depthShrunk = colors < oldPalette.length;
-  // Nothing to conform when the picture is not being kept: the caller replaces
-  // it with a blank canvas straight after, so remapping the pixels first would
-  // be work whose only result is thrown away.
-  const needsConform = retainPicture && (depthShrunk || flatten);
+  // Whether this change touches pixels at all, asked of the *document*: a depth
+  // reduction remaps indices, and True Color going off flattens whatever holds
+  // true-color pixels — which may be a page that is not on screen. Reading it
+  // off `flatten` alone asked only about the visible page, so a document whose
+  // true-color pixels were all on the spare took neither the rebuild below nor
+  // the conform.
+  //
+  // False when the picture is not being kept: the caller replaces it with a
+  // blank canvas straight after, so remapping first would be work whose only
+  // result is thrown away.
+  const conforming = retainPicture && (depthShrunk || trueColorTurnedOff);
 
   // A rebuilt palette comes from the image as displayed: resolve the canvas
   // to RGB, then take its own colors outright when they fit the depth
@@ -268,7 +275,7 @@ export const applyScreenFormat = (
   // reds flattened to black — destroyed, with room to spare that would have
   // held them exactly.
   let rebuilt: Color[] | null = null;
-  if (needsConform && paletteSource === 'image') {
+  if (conforming && paletteSource === 'image') {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
       const rgba = combinedRGBA(
@@ -306,7 +313,7 @@ export const applyScreenFormat = (
     context.state.pages.pageCount = pageCount();
     // the freed histories were counted in the shared total until now
     syncBufferSize(context);
-  } else if (depthShrunk || rebuilt !== null || trueColorTurnedOff) {
+  } else if (conforming) {
     // Kept, so every page comes along: they all index into this palette, by
     // decree of the DPaint II manual, and the ones off screen hold nothing but
     // their history's current entry, which nothing else in the app will touch.
@@ -329,7 +336,12 @@ export const applyScreenFormat = (
   // entry for the whole change (via its resize's upload, or setUndoPoint for a
   // same-size change), so undo restores the full pre-change canvas. Returns
   // whether the pixels changed, so the caller knows an entry is owed.
-  if (needsConform) {
+  // The page on screen conforms when anything changed for *it*: a narrower
+  // palette, true-color pixels of its own to flatten, or a rebuilt palette its
+  // indices no longer mean the same against. That last one is why this cannot
+  // simply be `conforming`: a rebuild triggered by another page's pixels still
+  // moves every color this page indexes.
+  if (conforming && (depthShrunk || flatten || rebuilt !== null)) {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
       // `rebuilt` when there is one: it is the palette just installed.

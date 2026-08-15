@@ -885,6 +885,28 @@ operation, but it is the reason this is written down rather than assumed.
   rewrites both once as the pages trade storage roles, and painting afterwards
   goes back to the document alone. Deleting a page removes its record.
 
+### The last of the True Color asymmetries
+
+`applyScreenFormat` asked two questions off the visible page that are really
+about the document, and the second only became reachable once the first was
+fixed:
+
+- **Whether anything needs conforming.** It read `flatten`, which is "does _this
+  page_ hold true-color pixels". A document whose true-color pixels were all on
+  the page behind therefore took neither the palette rebuild nor the conform
+  when True Color was switched off with no depth change. Now it asks
+  `depthShrunk || trueColorTurnedOff`, both document-level.
+- **Whether the visible page conforms.** Fixing the first means a rebuild can
+  now be triggered by pixels on another page — and a rebuilt palette moves every
+  color _this_ page indexes too. So its conform is `conforming && (depthShrunk
+|| flatten || rebuilt !== null)`, where before the last term could not arise.
+
+Measured, with an indexed visible page and a true-color green (17,200,90) on the
+page behind, True Color off at the same 32 colors: the palette is rebuilt and
+holds that green exactly, so both pages come through lossless. With the old gate
+the green flattened to 0,187,85 — the nearest colour in the palette that was
+already there.
+
 ## Open questions
 
 - ~~**Undo across a palette change, with a second page holding pixels.**~~
