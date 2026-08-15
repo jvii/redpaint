@@ -117,8 +117,8 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     keys: ['K'],
     // No key for the right-click: a new page is this app's, not DPaint's,
     // which had no New at all (its File menu begins at Load Picture).
-    use: 'Covers the page with the background color.',
-    rightClick: 'New page: fits the window, default palette',
+    use: 'Covers the canvas with the background color.',
+    rightClick: 'Clear all and start over.',
   },
 };
 
