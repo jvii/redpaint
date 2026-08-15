@@ -9,7 +9,7 @@ import {
 } from '../undo/UndoBuffer';
 
 // The document's pages: DPaint's spare page, which is not a second document but
-// a scratch surface belonging to this one (docs/local/spare-page.md).
+// a scratch surface belonging to this one (docs/spare-page.md).
 //
 // "Spare" is a position, not an identity — the DPaint II manual defines it as
 // "always 'the other page,' the one that is not currently displayed", and

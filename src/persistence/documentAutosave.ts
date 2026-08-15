@@ -33,7 +33,7 @@ function ownOffPageKey(): string {
 
 // What an off-screen page needs to come back: its raster and the state that
 // belongs to the page rather than to the document. No history — session state,
-// and megabytes an entry (docs/local/spare-page.md).
+// and megabytes an entry (docs/spare-page.md).
 export type OffPageRecord = {
   version: number;
   width: number;
