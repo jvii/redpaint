@@ -230,6 +230,36 @@ export class CanvasColorIndex {
     return dest;
   }
 
+  // Composites `other` over this one, treating `other`'s pixels of the given
+  // color number as transparent — the stencil SPARE.C builds with MakeMask and
+  // paints through with MaskBlit, and what DPaint's Merge In Front does. The
+  // result is this canvas's size, with `other` anchored top-left and anything
+  // past the edges dropped, like every other size-mismatched copy here.
+  //
+  // Only an *indexed* pixel can be transparent: the test is against the packed
+  // 32-bit value, and a true-color pixel carries ALPHA_TRUECOLOR, so it can
+  // never equal an indexed background and always paints.
+  mergedWith(other: CanvasColorIndex, transparentColorNumber: number): CanvasColorIndex {
+    const merged = new CanvasColorIndex(this.width, this.height, new Uint8Array(this.indexArray));
+    const transparent = CanvasColorIndex.packIndexed(transparentColorNumber);
+    const endX = Math.min(this.width, other.width);
+    const endY = Math.min(this.height, other.height);
+    for (let y = 0; y < endY; y++) {
+      // Both are addressed in canvas coordinates (y down from the top) while
+      // the rows are stored bottom-up, so each side flips against its own
+      // height — they need not be the same size.
+      const sourceRow = (other.height - 1 - y) * other.width;
+      const destRow = (this.height - 1 - y) * this.width;
+      for (let x = 0; x < endX; x++) {
+        const pixel = other.pixel32Array[sourceRow + x];
+        if (pixel !== transparent) {
+          merged.pixel32Array[destRow + x] = pixel;
+        }
+      }
+    }
+    return merged;
+  }
+
   // Conforms every pixel to a palette (the DPaint-spirited automatic color
   // reduction, done properly: the Amiga just dropped bitplanes and let the
   // indices alias). With remapAll unset, indexed pixels within the new depth

@@ -61,13 +61,85 @@ describe('placedInto', () => {
     ]);
   });
 
-
-
   test('crops from the right and bottom', () => {
     expect(grid(source().placedInto(1, 1, 9))).toEqual([[1]]);
   });
+});
 
+describe('mergedWith', () => {
+  // reads a whole canvas back as color numbers, canvas order, row by row
+  const grid = (canvas: CanvasColorIndex): number[][] => {
+    const rows: number[][] = [];
+    for (let y = 0; y < canvas.height; y++) {
+      const row: number[] = [];
+      for (let x = 0; x < canvas.width; x++) {
+        row.push(canvas.getPaintColorForPixel({ x, y }).colorNumber as number);
+      }
+      rows.push(row);
+    }
+    return rows;
+  };
 
+  // 2x2 of color 5, over a 2x2 of color 1, with 9 as the transparent color
+  const filled = (width: number, height: number, color: number): CanvasColorIndex =>
+    CanvasColorIndex.createEmptyWithBackgroundColor(width, height, color);
+
+  test('paints every non-transparent pixel of the overlay', () => {
+    expect(grid(filled(2, 2, 1).mergedWith(filled(2, 2, 5), 9))).toEqual([
+      [5, 5],
+      [5, 5],
+    ]);
+  });
+
+  test('lets the base show through the overlay transparent color', () => {
+    const overlay = filled(2, 2, 9); // all transparent
+    overlay.setPixel32({ x: 1, y: 0 }, CanvasColorIndex.packIndexed(5));
+    expect(grid(filled(2, 2, 1).mergedWith(overlay, 9))).toEqual([
+      [1, 5],
+      [1, 1],
+    ]);
+  });
+
+  test('anchors the overlay top-left and crops what runs past the edge', () => {
+    const overlay = filled(3, 3, 5);
+    expect(grid(filled(2, 2, 1).mergedWith(overlay, 9))).toEqual([
+      [5, 5],
+      [5, 5],
+    ]);
+  });
+
+  test('leaves the base alone where a smaller overlay does not reach', () => {
+    const overlay = filled(1, 1, 5);
+    expect(grid(filled(2, 2, 1).mergedWith(overlay, 9))).toEqual([
+      [5, 1],
+      [1, 1],
+    ]);
+  });
+
+  test('keeps the base canvas unchanged', () => {
+    const base = filled(2, 2, 1);
+    base.mergedWith(filled(2, 2, 5), 9);
+    expect(grid(base)).toEqual([
+      [1, 1],
+      [1, 1],
+    ]);
+  });
+
+  // A true-color pixel carries a different alpha tag, so it can never equal the
+  // packed indexed background: it always paints, whatever the transparent color
+  // number happens to be.
+  test('never treats a true-color pixel as transparent', () => {
+    const overlay = filled(1, 1, 9);
+    overlay.setPixel32(
+      { x: 0, y: 0 },
+      CanvasColorIndex.packPaintColor({ kind: 'rgb', color: { r: 9, g: 0, b: 0 } })
+    );
+    const merged = filled(1, 1, 1).mergedWith(overlay, 9);
+    expect(merged.getPaintColorForPixel({ x: 0, y: 0 })).toEqual({
+      kind: 'rgb',
+      color: { r: 9, g: 0, b: 0 },
+    });
+  });
 });
 
 describe('croppedTo', () => {

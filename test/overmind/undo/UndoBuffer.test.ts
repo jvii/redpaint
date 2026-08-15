@@ -2,7 +2,7 @@ import { describe, expect, test, beforeEach } from 'vitest';
 import {
   createUndoEntry,
   toCanvasColorIndex,
-  undoBuffer,
+  UndoBuffer,
   UndoEntry,
   MAX_UNDO_ENTRIES,
   MAX_UNDO_BYTES,
@@ -11,10 +11,12 @@ import {
 } from '../../../src/overmind/undo/UndoBuffer';
 import { CanvasColorIndex } from '../../../src/domain/CanvasColorIndex';
 
-// The buffer is a module singleton (like the app's), so each test starts by
-// clearing it rather than constructing its own.
+// A buffer of its own per test. The app's are owned by PageStore, one per page,
+// and share a byte budget; one built here is on nobody's budget but its own,
+// which is what makes the limits below measurable in isolation.
+let undoBuffer: UndoBuffer;
 beforeEach((): void => {
-  undoBuffer.clear();
+  undoBuffer = new UndoBuffer();
 });
 
 function entry(width: number, height: number): UndoEntry {
@@ -74,6 +76,36 @@ describe('push', () => {
     undoBuffer.push(entry(2, 2), null);
     undoBuffer.push(entry(8, 8), 0);
     expect(undoBuffer.getTotalBytes()).toBe(packedBytesFor(2, 2) + packedBytesFor(8, 8));
+  });
+});
+
+describe('replaceItem', () => {
+  test('swaps the entry without changing the history length', () => {
+    undoBuffer.push(entry(4, 4), null);
+    undoBuffer.push(entry(4, 4), 0);
+    const replacement = entry(4, 4);
+    undoBuffer.replaceItem(1, replacement);
+    expect(undoBuffer.getBuffer()).toHaveLength(2);
+    expect(undoBuffer.getItem(1)).toBe(replacement);
+  });
+
+  // A conform can change an entry's size in bytes: an all-indexed page packs to
+  // a byte a pixel, one holding true color does not, and flattening moves a
+  // page from the second to the first.
+  test('keeps the byte total right when the replacement is a different size', () => {
+    undoBuffer.push(sizedEntry(1000), null);
+    undoBuffer.push(sizedEntry(1000), 0);
+    undoBuffer.replaceItem(1, sizedEntry(250));
+    expect(undoBuffer.getTotalBytes()).toBe(1250);
+  });
+
+  test('ignores an index that addresses nothing', () => {
+    undoBuffer.push(entry(4, 4), null);
+    const before = undoBuffer.getTotalBytes();
+    undoBuffer.replaceItem(null, entry(4, 4));
+    undoBuffer.replaceItem(7, entry(4, 4));
+    expect(undoBuffer.getBuffer()).toHaveLength(1);
+    expect(undoBuffer.getTotalBytes()).toBe(before);
   });
 });
 

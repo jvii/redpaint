@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { json } from 'overmind';
 import { useActions, useAppState } from '../overmind';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
-import { undoBuffer } from '../overmind/undo/UndoBuffer';
+import { currentHistory } from '../overmind/pages/PageStore';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { setPendingCanvasContent } from '../canvas/pendingCanvasContent';
 import { CanvasColorIndex } from '../domain/CanvasColorIndex';
@@ -115,7 +115,7 @@ export function useDocumentAutosave(): void {
       // a full-canvas GPU readback, and the timer can fire mid-stroke,
       // capturing it half-drawn and stalling the drag. Already packed, as
       // wanted.
-      const entry = undoBuffer.getItem(state.undo.currentIndex);
+      const entry = currentHistory().getItem(state.undo.currentIndex);
       if (!entry) {
         return;
       }

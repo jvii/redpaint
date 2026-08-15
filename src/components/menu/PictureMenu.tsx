@@ -2,7 +2,16 @@ import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
-import { CropIcon } from './transformIcons';
+import {
+  CopyToSpareIcon,
+  CropIcon,
+  DeletePageIcon,
+  MergeBackIcon,
+  MergeFrontIcon,
+  SwapPageIcon,
+} from './transformIcons';
+import { shortcutCap } from '../ui/shortcutCap';
+import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
 import { blobMakerFor, SaveFormat, saveFormats } from './saveFormats';
 import { fileHandleFor, rememberFileHandle } from './savedFileHandle';
@@ -79,6 +88,22 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
         )
       );
     })();
+  };
+
+  // Every Spare gadget acts on a page and then gets out of the way. The panel
+  // covers the canvas, so a swap or a merge would otherwise land behind it, and
+  // DPaint's own menus closed on any selection. Copy is in here too even though
+  // it writes to the page you cannot see: a gadget that leaves the screen
+  // exactly as it was reads as a gadget that did nothing.
+  //
+  // The refresh is the transform gadgets' (BrushMenu's `instant`): the pointer
+  // is over the gadget, not the canvas, and the brush preview only repaints on
+  // a real mouse move, so one is replayed once the close transition has
+  // uncovered the canvas.
+  const spareAction = (run: () => void) => (): void => {
+    run();
+    actions.app.closeMenu();
+    setTimeout(refreshBrushPreview, 150);
   };
 
   // What Save promises, which depends on whether there is anything to repeat.
@@ -179,6 +204,66 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             stacked
             title="Crop the canvas — drag a box, right-click or Enter to apply"
             onClick={(): void => actions.crop.begin()}
+          />
+        </GadgetCluster>
+        {/* DPaint's own Pict-menu grouping, kept as a head of its own because
+            Copy To Spare and the two merges join it. "Spare" is positional —
+            always the page you are not on — so the gadget swaps rather than
+            going anywhere named. */}
+        <GadgetCluster head="Spare">
+          <Gadget
+            icon={<SwapPageIcon />}
+            label="Swap"
+            stacked
+            shortcut={shortcutCap('j')}
+            title="Show the other page. Tools, brush and palette come with you; the background color belongs to the page"
+            onClick={spareAction((): void => actions.pages.swap())}
+          />
+          <Gadget
+            icon={<CopyToSpareIcon />}
+            label="Copy"
+            stacked
+            shortcut={shortcutCap('J')}
+            title="Copy this page onto the other one, replacing what is there — somewhere to try something without risking the picture"
+            onClick={spareAction((): void => actions.pages.copyToSpare())}
+          />
+          <Gadget
+            icon={<DeletePageIcon />}
+            label="Delete"
+            stacked
+            // Nothing to fall back to with a single page, and a document
+            // always has one.
+            disabled={state.pages.pageCount < 2}
+            title="Delete the page you are on and show the other one. Its history goes with it"
+            // Closes the menu first, as every other route into a requester
+            // does: the panel is translucent and sits above them, so it would
+            // tint this one blue and swallow its clicks.
+            onClick={(): void => {
+              actions.app.closeMenu();
+              actions.dialog.open('DELETE_PAGE');
+            }}
+          />
+          {/* The merges sit on the same strip: everything here is an operation
+              on the other page, and a second head would have split that into
+              two ideas. Labelled by where the other page lands rather than
+              "Merge Front" — the head already says Spare, the glyphs show the
+              layering, and the longer wording makes the strip wider than the
+              panel at the default window size. */}
+          <Gadget
+            icon={<MergeFrontIcon />}
+            label="Front"
+            stacked
+            disabled={state.pages.pageCount < 2}
+            title="Merge the other page in front of this one, its background color reading as transparent"
+            onClick={spareAction((): void => actions.pages.mergeFront())}
+          />
+          <Gadget
+            icon={<MergeBackIcon />}
+            label="Back"
+            stacked
+            disabled={state.pages.pageCount < 2}
+            title="Merge the other page behind this one, showing through wherever this page is background color"
+            onClick={spareAction((): void => actions.pages.mergeBack())}
           />
         </GadgetCluster>
       </div>

@@ -183,10 +183,119 @@ export function RestoreIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
+// The three Spare glyphs share a page frame at the full extent of the 24-unit
+// box, with the mark inside drawn as large as the frame allows. A thin frame
+// around a small mark reads lighter than a Flip or Rotate glyph whose strokes
+// cross the whole box, which is why these looked smaller than their neighbours
+// at the same nominal size — the ink, not the bounds, is what the eye measures.
+//
+// Every coordinate is a whole unit. With a 2px stroke centred on the path, an
+// integer lands the edges on pixel boundaries at 24px and at any whole multiple
+// of it; the half-units this started with put vertices mid-pixel and cost the
+// glyph its crispness at the one size it is actually drawn at.
+
+// The picture's frame, and the two opposed arrows that mean swap everywhere
+// else. The pair reads as a verb where two stacked page outlines would only
+// have said "two pages" — and "the other page" is the whole of what the gesture
+// does. They keep two clear units between them: drawn any closer the heads meet
+// in the middle and the glyph is one dark smudge.
+//
+// Each arrow is shifted one unit the way it points, which is what centres it in
+// the frame — not the two units the shafts' coordinates suggest. A mitred tip
+// puts ink about 1.4 units past the vertex it is drawn at (half the stroke over
+// sin 45°), so an arrow's ink already reaches further forward than its numbers
+// do, and moving it a full two overshoots and crowds the frame.
+export function SwapPageIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="1" y="1" width="22" height="22" />
+      <line x1="5" y1="8" x2="18" y2="8" />
+      <polyline points="15,5 18,8 15,11" />
+      <line x1="19" y1="16" x2="6" y2="16" />
+      <polyline points="9,13 6,16 9,19" />
+    </svg>
+  );
+}
+
+// The same page frame as the swap glyph with a one-way arrow: this page's
+// contents going to the other one. A family, so the three Spare gadgets read as
+// three things done to the same object rather than three unrelated pictures.
+export function CopyToSpareIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="1" y="1" width="22" height="22" />
+      <line x1="4" y1="12" x2="18" y2="12" />
+      <polyline points="14,7 19,12 14,17" />
+    </svg>
+  );
+}
+
+// The page frame struck through. An X rather than a wastebasket: the bin is a
+// desktop metaphor for a file, and this is not a file — nothing goes anywhere,
+// the page stops existing.
+export function DeletePageIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="1" y="1" width="22" height="22" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+    </svg>
+  );
+}
+
+// The merges take two pages rather than one, so they step outside the single
+// frame the other three Spare glyphs share: two overlapping pages, and which
+// one is in front says which the gesture is.
+//
+// The overlap is drawn by interrupting the outline of whichever page is behind,
+// the way a line drawing has always shown one thing lying over another. Filling
+// the front page would have been the easy way and is what most icon sets do,
+// but every glyph in this file is an unfilled stroke drawing (see the style
+// guide's two registers), and a solid black page next to the Flip and Rotate
+// glyphs would read as a different kind of thing entirely.
+//
+// Both show the *spare* as the page at the top right. In front it is whole and
+// crosses over this page; behind, this page is whole and the spare shows as the
+// corner still visible past it.
+//
+// Two alternatives were built and dropped, both for reasons that would recur:
+//
+//  - Dotting the spare says "the page you cannot see" in one stroke, but a
+//    dotted outline cannot occlude anything, and occlusion is the entire cue
+//    that separates these two. A heavier dash only fixes that by ceasing to
+//    look dotted: square caps extend every dash by a unit at each end, so
+//    4-on-2-off renders solid.
+//  - One page with the other's material as an arrow running through it, over
+//    for front and behind for back, reads well at 10x and fails at 24px. A page
+//    big enough to read as a page leaves too little of the box for an arrow
+//    whose middle can visibly go missing; shrinking it to 10x14 to make room
+//    put the glyph back to looking smaller than its neighbours.
+export function MergeFrontIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      {/* this page, its top edge and right side broken where the spare covers */}
+      <path d="M10 8 H2 V21 H14 V16" />
+      {/* the spare, whole, on top */}
+      <rect x="10" y="3" width="12" height="13" />
+    </svg>
+  );
+}
+
+export function MergeBackIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      {/* this page, whole, on top */}
+      <rect x="2" y="8" width="12" height="13" />
+      {/* the spare behind it: only the corner that clears this page */}
+      <path d="M10 8 V3 H22 V16 H14" />
+    </svg>
+  );
+}
+
 // The two overlapping corner marks a photographer's crop L's make. The
-// long-standing glyph for the operation, and legible at 24px in a way a dashed
-// rectangle is not. Drawn as two polylines rather than four lines so each
-// corner is one mitred joint, matching the other glyphs' joins.
+// long-standing glyph for the operation, legible in a way a dashed rectangle is
+// not. Drawn as two polylines rather than four lines so each corner is one
+// mitred joint, matching the other glyphs' joins.
 export function CropIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">

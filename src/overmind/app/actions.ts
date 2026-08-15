@@ -1,4 +1,6 @@
 import { Context } from '../../overmind';
+import { currentPageIndex, dropParkedPages, pageCount } from '../pages/PageStore';
+import { syncBufferSize } from '../undo/actions';
 import { countDistinctColors, distinctOpaqueColorsByFrequency } from '../../algorithm/imageColors';
 import { setPendingImage } from '../../canvas/pendingImage';
 import { setPendingBrush } from '../../canvas/pendingBrush';
@@ -253,6 +255,16 @@ export const clearPage = (context: Context): void => {
 // size, untitled. Making that exact means widening UndoEntry, not
 // special-casing here.
 export const newPicture = (context: Context): void => {
+  // A fresh document is a fresh document: any other page goes with the old one,
+  // rather than being left behind the `j` key holding the previous picture's
+  // material. Not undoable, unlike the rest of this action — a page's history
+  // is the page, so there is nothing left to step back into.
+  dropParkedPages();
+  context.state.pages.currentPageIndex = currentPageIndex();
+  context.state.pages.pageCount = pageCount();
+  // the freed histories were counted in the shared total until now
+  syncBufferSize(context);
+
   // The simulated screen goes first, and back to none: fitting the canvas to
   // the window only means anything at Native, and leaving a format selected
   // would give a Lo-Res document a window-sized canvas, which no route through

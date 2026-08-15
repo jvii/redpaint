@@ -3,7 +3,8 @@ import { Point } from '../../types';
 import { forgetFileHandles } from '../menu/savedFileHandle';
 import { overmind } from '../..';
 import { useActions, useAppState } from '../../overmind';
-import { toCanvasColorIndex, undoBuffer } from '../../overmind/undo/UndoBuffer';
+import { toCanvasColorIndex } from '../../overmind/undo/UndoBuffer';
+import { currentHistory } from '../../overmind/pages/PageStore';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import {
@@ -37,7 +38,7 @@ export function useContextLossRecovery(
     const restorePaintingCanvas = (): void => {
       console.warn('WebGL context restored (painting canvas)');
       paintingCanvasController.restoreContext();
-      const entry = undoBuffer.getItem(overmind.state.undo.currentIndex);
+      const entry = currentHistory().getItem(overmind.state.undo.currentIndex);
       if (entry) {
         paintingCanvasController.setCanvasColorIndex(toCanvasColorIndex(entry));
       }
@@ -92,7 +93,7 @@ export function useUndo(isZoomCanvas: boolean): void {
     if (isZoomCanvas || state.undo.currentIndex === null) {
       return;
     }
-    const entry = undoBuffer.getItem(state.undo.currentIndex);
+    const entry = currentHistory().getItem(state.undo.currentIndex);
     if (!entry) {
       throw new Error('No entry in undo buffer at index ' + state.undo.currentIndex);
     }

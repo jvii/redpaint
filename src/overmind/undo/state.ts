@@ -2,10 +2,11 @@ export type State = {
   currentIndex: number | null;
   lastUndoRedoTime: number;
   lastUndoPointTime: number;
-  // Reactive mirrors of UndoBuffer's size (the buffer itself is a plain
-  // singleton outside Overmind, like brushRecall), for the Preferences drawer's
-  // readout. Maintained wherever the buffer is written, which is setUndoPoint
-  // and reset only.
+  // Reactive mirrors of UndoBuffer's size (the buffers live outside Overmind,
+  // like brushRecall), for the Preferences drawer's readout. Maintained
+  // wherever the buffer is written, which is setUndoPoint and reset only.
+  // bufferBytes is every live buffer's, since they share one budget;
+  // bufferEntryCount is this page's history alone.
   bufferBytes: number;
   bufferEntryCount: number;
 };

@@ -2,7 +2,10 @@ import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Color } from '../../types';
-import { createUndoEntry, undoBuffer } from './UndoBuffer';
+import { createUndoEntry, totalUndoBytes } from './UndoBuffer';
+import { conformParkedPages, currentHistory } from '../pages/PageStore';
+import { createNearestMapper } from '../../algorithm/quantize';
+import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { newGradientSeed } from '../../brush/fillStyleDraw';
 import { plainPalette } from '../../algorithm/imageColors';
 
@@ -28,7 +31,7 @@ export const setUndoPoint = (context: Context): void => {
   // push owns both the array and the resulting index: it discards the redo
   // future and evicts old entries to stay inside the memory budget, either of
   // which shifts where the new entry lands (see UndoBuffer).
-  context.state.undo.currentIndex = undoBuffer.push(entry, context.state.undo.currentIndex);
+  context.state.undo.currentIndex = currentHistory().push(entry, context.state.undo.currentIndex);
   syncBufferSize(context);
   context.state.undo.lastUndoPointTime = Date.now();
   // every committed content change passes through here, which is what keeps
@@ -42,16 +45,18 @@ export const setUndoPoint = (context: Context): void => {
 // resolution). Snapshots cost megabytes and the two pictures are unrelated. The
 // caller follows with setUndoPoint, making the fresh content the one entry.
 export const reset = (context: Context): void => {
-  undoBuffer.clear();
+  currentHistory().clear();
   context.state.undo.currentIndex = null;
   syncBufferSize(context);
 };
 
 // Keeps the state mirrors of the buffer's size in step with the buffer itself
-// (see undo/state.ts): call after every write to it.
-function syncBufferSize(context: Context): void {
-  context.state.undo.bufferBytes = undoBuffer.getTotalBytes();
-  context.state.undo.bufferEntryCount = undoBuffer.getBuffer().length;
+// (see undo/state.ts): call after every write to it, and after a page swap,
+// which changes which history the readout is describing without writing to
+// either.
+export function syncBufferSize(context: Context): void {
+  context.state.undo.bufferBytes = totalUndoBytes();
+  context.state.undo.bufferEntryCount = currentHistory().getBuffer().length;
 }
 
 export const undo = (context: Context): void => {
@@ -65,7 +70,7 @@ export const undo = (context: Context): void => {
 };
 
 export const redo = (context: Context): void => {
-  if (context.state.undo.currentIndex === undoBuffer.getBuffer().length - 1) {
+  if (context.state.undo.currentIndex === currentHistory().getBuffer().length - 1) {
     // already at the last index
     return;
   }
@@ -81,12 +86,34 @@ export const redo = (context: Context): void => {
 // pixels index into. Without the palette, undoing a depth reduction would
 // restore indices pointing at missing or different colors.
 function restoreEntryState(context: Context): void {
-  const entry = undoBuffer.getItem(context.state.undo.currentIndex);
+  const entry = currentHistory().getItem(context.state.undo.currentIndex);
   context.state.canvas.hasTrueColorPixels = entry ? !entry.packed : false;
   if (entry && !paletteEquals(entry.palette, Object.values(context.state.palette.palette))) {
+    const oldPalette = plainPalette(Object.values(context.state.palette.palette));
     context.actions.palette.replacePalette(entry.palette);
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
+    // The palette belongs to the document, not to the page whose history this
+    // is, so putting an older one back is the same kind of event as a depth
+    // reduction: every page indexes into it, and the pages that are not on
+    // screen have to come along or they are left indexing colors that moved.
+    // Only ever reached by an undo that crosses a palette change, which is
+    // rare — the common step compares equal here and does nothing.
+    //
+    // remapAll, because the whole palette was replaced: every indexed pixel
+    // resolves to the color it was showing and takes the nearest new one.
+    // Nothing is flattened; an undo is not the True Color switch.
+    conformParkedPages(
+      (colorIndex): CanvasColorIndex =>
+        colorIndex.conformedTo(
+          oldPalette,
+          entry.palette,
+          false,
+          true,
+          createNearestMapper(entry.palette)
+        ),
+      entry.palette
+    );
   }
 }
 

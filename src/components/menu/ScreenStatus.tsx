@@ -132,6 +132,25 @@ export function ScreenStatus(): JSX.Element {
             />
           </span>
         </button>
+        {/* Only once a second page exists, and appended rather than placed
+            first so that its arrival shifts nothing already on the strip.
+            DPaint never showed this — it swapped the two bitmaps, so it could
+            not have named the page — but two identical-looking pages behind a
+            one-key swap need saying in a window that also has tabs. Numbered,
+            not "Spare": the page you are looking at is never the spare one. */}
+        {state.pages.pageCount > 1 && (
+          <button
+            className="screen-status__segment"
+            type="button"
+            onClick={(): void => actions.pages.swap()}
+            title="Show the other page (j)"
+          >
+            <span className="screen-status__field">
+              <span className="screen-status__label">Page</span>
+              <b>{state.pages.currentPageIndex + 1}</b>/{state.pages.pageCount}
+            </span>
+          </button>
+        )}
       </div>
       {/* How the simulated screen fills the window. Named for what
           switching it on does, so the resting state needs no label: on,

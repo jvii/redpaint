@@ -17,6 +17,14 @@ import { Color } from '../../types';
 import { Point } from '../../types';
 import { PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+import { syncBufferSize } from '../undo/actions';
+import {
+  conformParkedPages,
+  currentPageIndex,
+  dropParkedPages,
+  pageCount,
+  parkedPageRasters,
+} from '../pages/PageStore';
 
 type Resolution = { width: number; height: number };
 
@@ -238,6 +246,10 @@ export const applyScreenFormat = (
   // damage (docs/gotchas.md, "Overmind").
   const oldPalette = plainPalette(Object.values(context.state.palette.palette));
   const flatten = !trueColorEnabled && context.state.canvas.hasTrueColorPixels;
+  // Read before the switch below is applied. The flag above is about the page
+  // on screen (whether *it* holds any true-color pixels); this one is about the
+  // document, and so is what the other pages have to answer to.
+  const trueColorTurnedOff = context.state.canvas.trueColorEnabled && !trueColorEnabled;
   const depthShrunk = colors < oldPalette.length;
   // Nothing to conform when the picture is not being kept: the caller replaces
   // it with a blank canvas straight after, so remapping the pixels first would
@@ -247,11 +259,23 @@ export const applyScreenFormat = (
   // A rebuilt palette comes from the image as displayed: resolve the canvas
   // to RGB, then take its own colors outright when they fit the depth
   // (lossless), or the median cut when they don't.
+  //
+  // From *every* page, not just the one on screen. They share the palette, so
+  // they all have a claim on what is in it, and building it from the visible
+  // page alone hands the others a palette that never saw their colors. Two
+  // true-color pages, blues on one and reds on the other, reduced to 8: the
+  // palette came out as three blues and five slots of black padding, and the
+  // reds flattened to black — destroyed, with room to spare that would have
+  // held them exactly.
   let rebuilt: Color[] | null = null;
   if (needsConform && paletteSource === 'image') {
     const current = paintingCanvasController.getCanvasColorIndex();
     if (current) {
-      const rgba = current.resolveToRGBA(oldPalette);
+      const rgba = combinedRGBA(
+        [current, ...parkedPageRasters()].map(
+          (raster): Uint8ClampedArray => raster.resolveToRGBA(oldPalette)
+        )
+      );
       rebuilt =
         countDistinctColors(rgba) <= colors
           ? extractExactPalette(rgba, colors)
@@ -269,6 +293,37 @@ export const applyScreenFormat = (
   context.state.canvas.trueColorEnabled = trueColorEnabled;
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();
+
+  // "Keep the picture?" is a question about the document, and the pages are part
+  // of it: answering no puts a blank canvas on this page and takes the others
+  // with it, rather than leaving a page of the old picture's material behind
+  // the `j` key. The only route here with retainPicture false is the
+  // requester's own discard branch (ScreenFormatDialog), where the user has
+  // just chosen exactly that.
+  if (!retainPicture) {
+    dropParkedPages();
+    context.state.pages.currentPageIndex = currentPageIndex();
+    context.state.pages.pageCount = pageCount();
+    // the freed histories were counted in the shared total until now
+    syncBufferSize(context);
+  } else if (depthShrunk || rebuilt !== null || trueColorTurnedOff) {
+    // Kept, so every page comes along: they all index into this palette, by
+    // decree of the DPaint II manual, and the ones off screen hold nothing but
+    // their history's current entry, which nothing else in the app will touch.
+    const newPalette = rebuilt ?? plainPalette(Object.values(context.state.palette.palette));
+    const mapper = createNearestMapper(newPalette);
+    conformParkedPages(
+      (colorIndex): CanvasColorIndex =>
+        colorIndex.conformedTo(
+          oldPalette,
+          newPalette,
+          trueColorTurnedOff,
+          rebuilt !== null,
+          mapper
+        ),
+      newPalette
+    );
+  }
 
   // Conform without recording history: the caller commits exactly one undo
   // entry for the whole change (via its resize's upload, or setUndoPoint for a
@@ -305,3 +360,19 @@ export const setZoomFocusPoint = (context: Context, point: Point | null): void =
     context.state.toolbox.selectedSelectorToolId = null;
   }
 };
+
+// One buffer for the quantizers, which take a single RGBA array. Returns the
+// only buffer untouched when there is one, so the common case of a single page
+// costs no copy.
+function combinedRGBA(buffers: Uint8ClampedArray[]): Uint8ClampedArray {
+  if (buffers.length === 1) {
+    return buffers[0];
+  }
+  const combined = new Uint8ClampedArray(buffers.reduce((total, one) => total + one.length, 0));
+  let at = 0;
+  for (const buffer of buffers) {
+    combined.set(buffer, at);
+    at += buffer.length;
+  }
+  return combined;
+}

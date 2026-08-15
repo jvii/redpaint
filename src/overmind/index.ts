@@ -18,6 +18,7 @@ import * as tool from './tool';
 import * as symmetry from './symmetry';
 import * as fillStyle from './fillStyle';
 import * as crop from './crop';
+import * as pages from './pages';
 
 export const config = namespaced({
   app,
@@ -32,6 +33,7 @@ export const config = namespaced({
   symmetry,
   fillStyle,
   crop,
+  pages,
 });
 
 export type Context = IContext<typeof config>

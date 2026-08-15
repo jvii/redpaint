@@ -280,6 +280,12 @@ function useToolHotkeys(): void {
       case 'K':
         actions.app.clearPage();
         break;
+      case 'j':
+        actions.pages.swap();
+        break;
+      case 'J':
+        actions.pages.copyToSpare();
+        break;
       case ',':
         actions.toolbox.toggleForegroundColorSelectionMode();
         break;

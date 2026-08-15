@@ -68,6 +68,11 @@ export function DialogManager(): JSX.Element | null {
     actions.dialog.close();
   };
 
+  const deletePage = (): void => {
+    actions.dialog.close();
+    actions.pages.deleteCurrentPage();
+  };
+
   switch (state.dialog.activeDialog) {
     case 'PASTE_SELECT':
       return (
@@ -104,6 +109,22 @@ export function DialogManager(): JSX.Element | null {
             Keep original canvas size
           </RetroButton>
           <RetroButton variant="secondary" onClick={resizeScreenCancel}>
+            Cancel
+          </RetroButton>
+        </Dialog>
+      );
+
+    // The manual confirms this one ("DeluxePaint asks you to confirm the
+    // deletion and then switches you to the other page"), and it is the only
+    // gesture here that discards a page's history with no way back.
+    case 'DELETE_PAGE':
+      return (
+        <Dialog
+          header="Delete This Page"
+          prompt="Delete the page you are on, and show the other one? Its picture and undo history go with it."
+        >
+          <RetroButton onClick={deletePage}>Delete</RetroButton>
+          <RetroButton variant="secondary" onClick={actions.dialog.close}>
             Cancel
           </RetroButton>
         </Dialog>

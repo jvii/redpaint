@@ -73,7 +73,47 @@ export function undoLevelsForCanvas(width: number, height: number): number {
   return Math.min(MAX_UNDO_ENTRIES, Math.max(MIN_UNDO_LEVELS, Math.floor(MAX_UNDO_BYTES / bytes)));
 }
 
-class UndoBuffer {
+// The histories sharing the byte budget: one per page of the document
+// (PageStore registers each as it creates it). Registration is explicit rather
+// than done in the constructor so that a buffer built on its own — in a test —
+// is measured against itself alone and cannot be perturbed by any other.
+const budgetSharers: UndoBuffer[] = [];
+
+export function shareBudget(buffer: UndoBuffer): void {
+  budgetSharers.push(buffer);
+}
+
+// A history that no page owns any more. Without this its bytes would go on
+// counting against what the surviving pages may keep, forever.
+export function releaseBudget(buffer: UndoBuffer): void {
+  const at = budgetSharers.indexOf(buffer);
+  if (at !== -1) {
+    budgetSharers.splice(at, 1);
+  }
+}
+
+// What the Preferences readout reports. The pages of one document draw from one
+// pool rather than a budget each, so the number that matters is the total.
+// Summed over the handful of histories rather than kept as a second running
+// total, which could drift from the totals it duplicates.
+export function totalUndoBytes(): number {
+  return budgetSharers.reduce((bytes, buffer) => bytes + buffer.getTotalBytes(), 0);
+}
+
+// Everything the budget covers except this buffer, which counts its own bytes
+// directly. An unregistered buffer therefore sees exactly its own total, which
+// is what makes the limits testable in isolation.
+function bytesInOtherHistories(self: UndoBuffer): number {
+  return budgetSharers.reduce(
+    (bytes, buffer) => (buffer === self ? bytes : bytes + buffer.getTotalBytes()),
+    0
+  );
+}
+
+// A single page's history. Instantiable rather than a bare singleton because
+// each page of the document owns one; PageStore.currentHistory() is the page on
+// screen's, which is the one undo, redo and setUndoPoint work on.
+export class UndoBuffer {
   constructor() {
     this.undoBuffer = [];
     this.totalBytes = 0;
@@ -97,6 +137,20 @@ class UndoBuffer {
     return this.totalBytes;
   }
 
+  // Rewrites one entry in place, keeping the byte total right. Not an edit to
+  // the history: conforming a page to a changed palette keeps its pixels
+  // meaning what they already meant, so it replaces the entry rather than
+  // appending a step to undo. Older entries keep the palettes they were taken
+  // under, which is what lets undo cross a palette change at all.
+  replaceItem(index: number | null, entry: UndoEntry): void {
+    if (index === null || !this.undoBuffer[index]) {
+      return;
+    }
+    this.totalBytes -= entryBytes(this.undoBuffer[index]);
+    this.undoBuffer[index] = entry;
+    this.totalBytes += entryBytes(entry);
+  }
+
   // Appends after currentIndex, discarding any redo future beyond it, then
   // evicts from the oldest end until the limits are met, and returns the index
   // the entry ended up at. The caller passes its index in and takes the new one
@@ -112,9 +166,13 @@ class UndoBuffer {
     this.undoBuffer.push(entry);
     this.totalBytes += entryBytes(entry);
 
+    // The entry cap is this buffer's own (a page does not hoard history nobody
+    // wants); the byte budget is shared, so what the other pages hold counts
+    // against what this one may keep.
+    const otherBytes = bytesInOtherHistories(this);
     while (
       this.undoBuffer.length > MIN_UNDO_LEVELS &&
-      (this.undoBuffer.length > MAX_UNDO_ENTRIES || this.totalBytes > MAX_UNDO_BYTES)
+      (this.undoBuffer.length > MAX_UNDO_ENTRIES || this.totalBytes + otherBytes > MAX_UNDO_BYTES)
     ) {
       this.totalBytes -= entryBytes(this.undoBuffer.shift() as UndoEntry);
     }
@@ -127,5 +185,3 @@ class UndoBuffer {
     this.totalBytes = 0;
   }
 }
-
-export const undoBuffer = new UndoBuffer();

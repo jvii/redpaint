@@ -97,6 +97,8 @@ ellipse both were. `S` and `Z` stay — nothing in the toolbox wants either.
 | --- | --- |
 | `Space`, middle-click | toggle the menu |
 | `Tab` | toggle color cycling |
+| `j` | swap to the other page (manual: "Spare Page") |
+| `J` | copy this page onto the other one (not in the manual; PyDPainter's binding) |
 
 ## When hotkeys are off
 
