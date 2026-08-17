@@ -961,7 +961,8 @@
     <g transform="matrix(.97353 0 0 .97353 .46747 .56764)" vectornator:layerName="layer1">
       <path
         d="m-0.064873 0.10662h26.245v26.245h-26.245v0z"
-        stroke="#000"
+        fill="transparent"
+        stroke="white"
         stroke-linecap="round"
         stroke-linejoin="bevel"
         stroke-width=".21324"
@@ -989,10 +990,10 @@
     xmlns:vectornator="http://vectornator.io"
   >
     <g transform="matrix(.97353 0 0 .97353 .46747 .56764)" vectornator:layerName="layer1">
-      <path d="m-0.45091-0.57075h27.21v27.357h-27.21v0z" fill="white" stroke="white" />
       <path
         d="m-0.064873 0.10662h26.245v26.245h-26.245v0z"
-        stroke="#000"
+        fill="transparent"
+        stroke="white"
         stroke-linecap="round"
         stroke-linejoin="bevel"
         stroke-width=".21324"

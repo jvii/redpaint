@@ -161,11 +161,11 @@
 }
 
 .toolbox__button--text-lower-half-selected {
-  background: url(../../resources/toolbar.svg#text-filled-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#text-filled-active-view) no-repeat;
 }
 
 .toolbox__button--text-upper-half-selected {
-  background: url(../../resources/toolbar.svg#text-nofill-active-view) black no-repeat;
+  background: url(../../resources/toolbar.svg#text-nofill-active-view) no-repeat;
 }
 
 .toolbox__button--zoom {
