@@ -13,9 +13,13 @@ interface Props {
   // what a fill does, and the outline half does not fill.
   onLowerHalfRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   // For gadgets whose settings belong to both halves. Text's font is the same
-  // font whether it is drawn solid or outlined, so either half opens it, and
-  // right-clicking the half you are not on should not have to select it first.
-  onRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  // font whether it is drawn solid or outlined, so either half opens it. Told
+  // which half was hit, since the caller still selects that one — the geometry
+  // is this component's (see isLowerHalfClick), not the caller's to redo.
+  onRightClick?: (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    isLowerHalf: boolean
+  ) => void;
 }
 
 export function ToolboxDualToggleButton({
@@ -38,7 +42,7 @@ export function ToolboxDualToggleButton({
 
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     if (onRightClick) {
-      onRightClick(event);
+      onRightClick(event, isLowerHalfClick(event));
     } else if (onLowerHalfRightClick && isLowerHalfClick(event)) {
       onLowerHalfRightClick(event);
     }

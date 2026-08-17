@@ -28,9 +28,10 @@ is scheduled. Design details live in the linked docs where they exist.
       Its preview renders through the real rasterizer (`useFontPreview`), not
       CSS text in the chosen family: the question at that dialog is whether a
       face survives thresholding at a given size, and a smooth DOM sample
-      answers a different one. Small sizes are magnified at a whole-number
-      zoom, so a face that falls apart at 8px shows it there rather than on the
-      canvas.
+      answers a different one. It draws 1:1 with the canvas — the buffer is the
+      box divided by `displayScale`, the same window-into-the-picture the fill
+      style swatch is — so a face that falls apart at a size shows it there
+      first, at the size it will really be.
 
       **The font list is the hard part, and it is not portable.** Rendering with
       an installed family by name works in every browser and needs no
@@ -44,43 +45,44 @@ is scheduled. Design details live in the linked docs where they exist.
       Edge and a curated probed one elsewhere (`domain/systemFonts.ts`), and it
       says which of the two it is showing rather than letting the short list
       read as everything installed.
-- [x] **Text tool: a bundled pixel font** — unscii-8, public domain, 8x8.
-      Measured on Arial, an outline face is clean at 12px and up, marginal at
-      10 and mush at 8: stems that small are narrower than a pixel and canvas
-      grid-fits nothing, so it is missing information rather than a sampling
-      error. A face drawn as pixels never had it to lose, and reads perfectly
-      at 8px. Sizes are whole-number scales only (`BITMAP_SCALES`), since
-      anything between is a resample and that is how a pixel face stops being
-      one. `domain/BitmapFont.ts` parses it; both kinds of face reach the same
-      `TextRun`, so the tool and the preview never branch on which they got.
+- [x] **Text tool: bundled pixel faces** — Press Start 2P (already served for
+      the UI, so it costs no bytes) and Silkscreen, both public-domain-adjacent
+      OFL and both drawn on an 8px grid. Measured on Arial, an outline face is
+      clean at 20px and up and breaks up below that, which is why the system
+      faces floor there; a face drawn on a pixel grid is all axis-aligned
+      rectangles, so the coverage threshold has nothing to be ambiguous about
+      and it stays crisp from 8px. Those are offered only at whole multiples of
+      their grid (`BUNDLED_OUTLINE_FACES.gridSize`).
 
-      The asset is **fetched at runtime from `public/fonts/`, never bundled**,
-      and `tools/buildBitmapFont.mjs` reads `.hex` and `.raw` alike. Both are
-      deliberate: a GPL-licensed face (the Amiga conversions below) can then be
-      dropped in beside a public-domain one without the two licences meeting
-      inside a build artifact.
+      They are loaded by their bytes through `FontFace`, not `@font-face`: the
+      rasterizer has to know a face is ready before it measures anything. That
+      is also all a font the user supplies would need — a dropped File gives the
+      same ArrayBuffer, with no font parsing at any point.
 
-- [ ] **Text tool: more bundled faces.** Permissive and ready to drop in:
-      **Spleen** (BSD-2) has the size ladder — 5x8, 6x12, 8x16, 12x24, 16x32,
-      32x64 — and unscii's own siblings (`unscii-8-thin`, `-alt`, `-mcr`,
-      `-fantasy`, all public domain) are different looks for free.
+      A true bitmap path (`.rpbf` container plus an offline converter reading
+      `.hex`/`.raw`) carried unscii-8 for a while and was removed: Press Start
+      2P at 8px is the same 8x8 cell to within two pixels of advance, so it
+      brought a second rendering path, a bespoke asset format and a build tool
+      for a face already covered. It is in the history if a face ever ships only
+      as `.raw`.
+
+- [ ] **Text tool: more bundled faces.** Anything pixel-gridded with a clean
+      licence drops straight in — a `BUNDLED_OUTLINE_FACES` entry, the woff2,
+      and its copyright line in `public/fonts/README.txt`. Worth checking each
+      candidate in the requester's preview first: a face that is pixel-*styled*
+      rather than pixel-gridded (Pixelify Sans) has real curves and behaves like
+      any other outline, and one drawn on a larger grid (VT323, Jersey 10)
+      breaks up below roughly 15 and 20px. All three were tried and dropped.
 
       **Topaz and the Amiga faces** (P0T-NOoDLE, MicroKnight, mO'sOul, from
-      `rewtnull/amigafonts`) ship a headerless `.raw` of 256 8x16 cells that
-      the converter already reads — but they are **GPL with the font
-      exception**, over a design still marked "Topaz is © AmigaInc". The
-      exception covers the pictures a user paints, not an app that ships the
-      font: adding one means carrying the GPL text and dMG's notices, and means
-      redpaint having a licence of its own to reason from (it has none today).
-      Worth doing deliberately or not at all.
+      `rewtnull/amigafonts`) ship TrueType versions, so they would arrive the
+      same way — but they are **GPL with the font exception**, over a design
+      still marked "Topaz is © AmigaInc". The exception covers the pictures a
+      user paints, not an app that ships the font: adding one means carrying the
+      GPL text and dMG's notices, and means redpaint having a licence of its own
+      to reason from (it has none today). Worth doing deliberately or not at
+      all.
 
-      The remaining alternative for small sizes — parsing font outlines
-      ourselves and scan-converting with TrueType-style drop-out control, the
-      one thing that would beat the canvas rasterizer where it is weak — is a
-      great deal of work for what a bitmap face already delivers, and must be
-      built on font *files* (one the user drops in, or one we ship) rather than
-      on `queryLocalFonts()`'s raw bytes: reading a file we were handed works
-      in every browser, reading an installed font does not.
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
       either steps twice as far. Not done with the rest (`docs/keyboard.md`)

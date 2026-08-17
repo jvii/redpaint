@@ -1,6 +1,10 @@
 export interface Tool {
   onInit?(): void;
   onExit?(): void;
+  // A requester that edits this tool's own settings is about to open. Anything
+  // half-finished belongs to the settings it was started with, so it should be
+  // committed now rather than left to be reinterpreted under the new ones.
+  onSettingsOpen?(): void;
   onClick?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
   onContextMenu?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
   onMouseMove?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;

@@ -125,9 +125,17 @@ export const textToolNewLine = (context: Context, lineHeight: number): void => {
   context.state.tool.textTool.text = '';
 };
 
-export const textToolReset = (context: Context): void => {
-  context.state.tool.textTool.start = null;
-  context.state.tool.textTool.lineStart = null;
+// A line has just been stamped onto the picture. The caret carries on from the
+// end of it rather than being put away: committing is what happens whenever the
+// settings change under a line being typed — switching the gadget's half,
+// opening the font requester — and in those cases the typing is not finished,
+// only the part of it that was in the old font. Keeps lineStart, so Return
+// still goes back to the paragraph's own left edge.
+export const textToolCommitted = (context: Context, advance: number): void => {
+  const start = context.state.tool.textTool.start;
+  if (start) {
+    context.state.tool.textTool.start = { x: start.x + advance, y: start.y };
+  }
   context.state.tool.textTool.text = '';
 };
 

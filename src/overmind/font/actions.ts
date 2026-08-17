@@ -1,32 +1,23 @@
 import { Context } from '../../overmind';
 import { availableFontFamilies } from '../../domain/systemFonts';
-import { bundledOutlineFace, loadBundledFaces } from '../../domain/BitmapFont';
-import { snapSizeToGrid } from './state';
+import { bundledOutlineFace, loadBundledFaces } from '../../domain/BundledFonts';
+import { constrainSize, sizeRangeFor } from './state';
 
-// Picking a system family also leaves any bundled bitmap face: the two are
-// alternatives, and a list that highlighted one of each would be lying about
-// what the tool is about to paint.
 export const setFamily = (context: Context, family: string): void => {
   context.state.font.family = family;
-  context.state.font.faceId = null;
-  // A bundled face offers only multiples of its own grid, so a size carried
-  // over from another family may not be one of them.
-  const bundled = bundledOutlineFace(family);
-  if (bundled) {
-    context.state.font.size = snapSizeToGrid(context.state.font.size, bundled.gridSize);
-  }
-};
-
-export const setBundledFace = (context: Context, faceId: string): void => {
-  context.state.font.faceId = faceId;
-};
-
-export const setScale = (context: Context, scale: number): void => {
-  context.state.font.scale = scale;
+  // A bundled face steps by its own grid and a system face has a floor, so a
+  // size carried over from another family is often not one this one offers.
+  context.state.font.size = constrainSize(
+    context.state.font.size,
+    sizeRangeFor(bundledOutlineFace(family)?.gridSize)
+  );
 };
 
 export const setSize = (context: Context, size: number): void => {
-  context.state.font.size = size;
+  context.state.font.size = constrainSize(
+    size,
+    sizeRangeFor(bundledOutlineFace(context.state.font.family)?.gridSize)
+  );
 };
 
 export const setBold = (context: Context, bold: boolean): void => {
@@ -37,6 +28,10 @@ export const setItalic = (context: Context, italic: boolean): void => {
   context.state.font.italic = italic;
 };
 
+export const setUnderline = (context: Context, underline: boolean): void => {
+  context.state.font.underline = underline;
+};
+
 // Loads the family list once, on the first open. Where enumeration is
 // available this is what prompts for permission, so it is deliberately tied to
 // someone actually asking for the requester.
@@ -44,8 +39,8 @@ export const loadFamilies = async (context: Context): Promise<void> => {
   if (context.state.font.familiesLoaded) {
     return;
   }
-  // The bundled faces are a 772-byte fetch and are what the requester lists
-  // first, so they are awaited alongside the system list rather than after it.
+  // The bundled faces are what the requester lists first, so they are awaited
+  // alongside the system list rather than after it.
   const [{ families, source }] = await Promise.all([availableFontFamilies(), loadBundledFaces()]);
   context.state.font.families = families;
   context.state.font.familiesSource = source;
@@ -53,14 +48,19 @@ export const loadFamilies = async (context: Context): Promise<void> => {
   // The configured family may not be among them (a probe that missed it, or a
   // machine without it). Falling back to the first found keeps the list and the
   // selection agreeing, so the preview always shows what is highlighted.
-  if (families.length > 0 && !families.includes(context.state.font.family)) {
+  //
+  // A bundled face is never in this list — nothing installed it — so it has to
+  // be excused, or the first open of the requester would quietly replace the
+  // default with whatever the machine happens to list first.
+  const family = context.state.font.family;
+  if (families.length > 0 && !families.includes(family) && !bundledOutlineFace(family)) {
     context.state.font.family = families[0];
   }
 };
 
 export const openSettings = (context: Context): void => {
-  const { faceId, scale, family, size, bold, italic } = context.state.font;
-  context.state.font.settingsSnapshot = { faceId, scale, family, size, bold, italic };
+  const { family, size, bold, italic, underline } = context.state.font;
+  context.state.font.settingsSnapshot = { family, size, bold, italic, underline };
   context.state.font.settingsOpen = true;
   context.actions.font.loadFamilies();
 };
@@ -74,12 +74,11 @@ export const closeSettings = (context: Context): void => {
 export const cancelSettings = (context: Context): void => {
   const snapshot = context.state.font.settingsSnapshot;
   if (snapshot) {
-    context.state.font.faceId = snapshot.faceId;
-    context.state.font.scale = snapshot.scale;
     context.state.font.family = snapshot.family;
     context.state.font.size = snapshot.size;
     context.state.font.bold = snapshot.bold;
     context.state.font.italic = snapshot.italic;
+    context.state.font.underline = snapshot.underline;
   }
   context.actions.font.closeSettings();
 };

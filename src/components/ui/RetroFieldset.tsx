@@ -3,6 +3,16 @@ import './RetroFieldset.css';
 
 type Props = {
   legend: string;
+  // A readout for the legend to carry: the thing the group is currently set to,
+  // beside the word for what it sets. Small monospace, in the supporting
+  // register the app uses below 16px, centred on the legend rather than sharing
+  // its baseline — the bitmap face has next to no descenders, so a common
+  // baseline hangs the smaller text low instead of tying the two together.
+  // Same treatment as the palette editor's Color Cycling title row.
+  //
+  // Borderless groups only: a bordered legend straddles the border line and has
+  // to stay one short, nowrap run for the gap in that line to fit it.
+  detail?: ReactNode;
   children: ReactNode;
   // Lets a caller scope its own per-group content rules (e.g. styling the
   // RetroToggle segments inside) without reaching into this component's own
@@ -30,12 +40,19 @@ type Props = {
 // group instead.
 export function RetroFieldset({
   legend,
+  detail,
   children,
   className,
   bordered,
   as = 'fieldset',
 }: Props): JSX.Element {
   const rootClassName = ['retro-fieldset', bordered && 'retro-fieldset--bordered', className]
+    .filter(Boolean)
+    .join(' ');
+  const legendClassName = [
+    'retro-fieldset__legend',
+    detail !== undefined && 'retro-fieldset__legend--with-detail',
+  ]
     .filter(Boolean)
     .join(' ');
   if (as === 'div') {
@@ -54,7 +71,10 @@ export function RetroFieldset({
             <span className="retro-fieldset__legend-rule" aria-hidden="true" />
           </div>
         ) : (
-          <span className="retro-fieldset__legend">{legend}</span>
+          <span className={legendClassName}>
+            {legend}
+            {detail !== undefined && <span className="retro-fieldset__detail">{detail}</span>}
+          </span>
         )}
         {children}
       </div>
@@ -62,7 +82,10 @@ export function RetroFieldset({
   }
   return (
     <fieldset className={rootClassName}>
-      <legend className="retro-fieldset__legend">{legend}</legend>
+      <legend className={legendClassName}>
+        {legend}
+        {detail !== undefined && <span className="retro-fieldset__detail">{detail}</span>}
+      </legend>
       {children}
     </fieldset>
   );

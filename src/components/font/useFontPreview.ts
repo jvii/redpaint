@@ -1,5 +1,6 @@
 import { RefObject, useEffect } from 'react';
-import { TextFace, outlineRun, textRun } from '../../domain/PixelFont';
+import { FontSpec } from '../../algorithm/glyphRaster';
+import { outlineRun, runAdvance, textRun, underlineRun } from '../../domain/PixelFont';
 import { Color } from '../../types';
 import { colorToRGBString } from '../../algorithm/color';
 
@@ -14,9 +15,10 @@ import { colorToRGBString } from '../../algorithm/color';
 // canvas is wrong too.
 export function useFontPreview(
   canvasRef: RefObject<HTMLCanvasElement | null>,
-  face: TextFace,
+  spec: FontSpec,
   sample: string,
   outline: boolean,
+  underline: boolean,
   foreground: Color,
   background: Color,
   boxWidth: number,
@@ -35,21 +37,31 @@ export function useFontPreview(
     ctx.fillStyle = colorToRGBString(background);
     ctx.fillRect(0, 0, boxWidth, boxHeight);
 
-    const rasterized = textRun(face, sample);
-    const run = outline ? outlineRun(rasterized) : rasterized;
+    const rasterized = textRun(spec, sample);
+    // Same order the tool stamps in (TextTool.brushFor): underline first, so
+    // both on outlines the rule too.
+    const underlined = underline
+      ? underlineRun(rasterized, runAdvance(spec, sample), spec.size)
+      : rasterized;
+    const run = outline ? outlineRun(underlined) : underlined;
     if (run.width === 0 || run.height === 0) {
       return;
     }
 
-    // Whole-number zoom only, and never below 1: a fractional scale would
-    // resample the very pixel grid the preview exists to show. Small sizes get
-    // magnified so their broken stems are visible rather than merely small;
-    // large ones sit at 1:1 and are clipped by the box if they overrun, which
-    // is honest about the width they will take on the canvas.
-    const zoom = Math.max(1, Math.floor(Math.min(boxWidth / run.width, boxHeight / run.height)));
-    // Centred while it fits, pinned left once it does not: a sample too wide
-    // for the box and still centred loses its first letter as well as its
-    // last, which reads as a bug rather than as text running off the edge.
+    // 1:1 with the canvas. The buffer this draws into is sized to the box
+    // divided by the canvas's own displayScale (FontRequester.tsx), and the
+    // CSS box then scales it back up by exactly that — so a pixel here covers
+    // the same screen area as a pixel of the picture, and the sample is the
+    // size the text will actually be. The same window-into-the-canvas the fill
+    // style swatch is.
+    //
+    // Nothing is fitted to the box, deliberately. Scaling to fit made the
+    // preview magnify small sizes more than large ones, so the apparent size
+    // ran backwards against the size chosen — Arial showed 8px at 40 pixels
+    // tall and 24px at 24, and Press Start 2P showed 8 and 16 identically,
+    // making the control look inert. A big size overruns and is clipped, which
+    // is the truthful answer to how much room it takes.
+    const zoom = 1;
     const overruns = run.width * zoom > boxWidth;
     const originX = overruns ? 0 : Math.floor((boxWidth - run.width * zoom) / 2);
     const originY = Math.floor((boxHeight - run.height * zoom) / 2);
@@ -62,17 +74,8 @@ export function useFontPreview(
         }
       }
     }
-    // `face` is depended on by identity, so the caller memoizes it: built
+    // `spec` is depended on by identity, so the caller memoizes it: built
     // fresh each render it would repaint the preview on every unrelated
     // state change.
-  }, [
-    canvasRef,
-    face,
-    sample,
-    outline,
-    foreground,
-    background,
-    boxWidth,
-    boxHeight,
-  ]);
+  }, [canvasRef, spec, sample, outline, underline, foreground, background, boxWidth, boxHeight]);
 }

@@ -1,8 +1,15 @@
 import { Tool } from './Tool';
 import { getMousePos } from './util/util';
 import { overmind } from '../index';
-import { FontMetrics } from '../algorithm/glyphRaster';
-import { TextFace, metricsOf, outlineRun, runAdvance, textRun } from '../domain/PixelFont';
+import { FontMetrics, FontSpec, TextRun } from '../algorithm/glyphRaster';
+import {
+  faceKey,
+  metricsOf,
+  outlineRun,
+  runAdvance,
+  textRun,
+  underlineRun,
+} from '../domain/PixelFont';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
 import { CustomBrush } from '../brush/CustomBrush';
 import { DrawTarget } from '../canvas/CanvasController';
@@ -24,18 +31,12 @@ import { Point } from '../types';
 const CARET_BLINK_MS = 500;
 
 // A plain copy of the font settings, never the Overmind state object itself.
-// The face is a cache key and reaches ctx.font on every keystroke, and reading
+// The spec is a cache key and reaches ctx.font on every keystroke, and reading
 // it through Overmind's proxies would pay a get-trap per field per call for
 // nothing.
-function textFont(): TextFace {
+function textFont(): FontSpec {
   const font = overmind.state.font;
-  if (font.faceId) {
-    return { kind: 'bitmap', id: font.faceId, scale: font.scale };
-  }
-  return {
-    kind: 'outline',
-    spec: { family: font.family, size: font.size, bold: font.bold, italic: font.italic },
-  };
+  return { family: font.family, size: font.size, bold: font.bold, italic: font.italic };
 }
 
 // The caret is a box a nominal character wide, as DPaint's was (`InvTxtBox`
@@ -51,17 +52,41 @@ export class TextTool implements Tool {
 
   private caretVisible = true;
   private blinkTimer: ReturnType<typeof setInterval> | null = null;
+  // The line's brush, rebuilt only when the line, face or color changes. See
+  // brushFor.
+  private cachedStamp: { key: string; brush: CustomBrush; run: TextRun } | null = null;
 
+  // No reset here: the caret survives a change of tool on purpose (see onExit),
+  // and the click that places text is what starts a fresh line.
   public onInit(): void {
-    overmind.actions.tool.textToolReset();
     overmind.actions.tool.activeToolToFGFillStyle();
   }
 
   // Reached by every way out of the tool: picking another one from the toolbox,
   // and Escape, which GlobalHotkeyManager turns into exactly that.
+  //
+  // The caret is left where the committed line ended rather than put away.
+  // Leaving is not always leaving: the two halves of the Text gadget are
+  // separate tools, so choosing Outline mid-line comes through here, and so
+  // does every other change of mind about how to keep typing. Carrying the
+  // caret makes those continue the line instead of losing your place, and
+  // costs nothing when the tool really is being left — the overlay is cleared
+  // either way, and the next click moves the caret regardless.
   public onExit(): void {
     this.commitLine();
-    overmind.actions.tool.textToolReset();
+    // A finished line's brush is worth nothing to the next one, and the biggest
+    // are megabytes.
+    this.cachedStamp = null;
+  }
+
+  // The font requester is opening. A line already typed was typed in the font
+  // in force at the time, so it is finished here rather than left live: it
+  // renders from the current font on every repaint, and would otherwise change
+  // face and size under the requester as the settings are tried out. The caret
+  // stays at the end of it, so a new face carries on from where the old one
+  // stopped.
+  public onSettingsOpen(): void {
+    this.commitLine();
   }
 
   public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -145,7 +170,7 @@ export class TextTool implements Tool {
       overmind.actions.tool.textToolNewLine(metrics.lineHeight);
     } else if (event.key.length === 1) {
       overmind.actions.tool.textToolAppend(event.key);
-      this.wrapAtRightEdge(metrics);
+      this.placeTypedCharacter(metrics);
     } else {
       return;
     }
@@ -158,18 +183,43 @@ export class TextTool implements Tool {
     this.repaint();
   };
 
-  // DPaint wraps at the right edge of the page and restarts at the line's own
-  // left edge. The character that did not fit moves down with the wrap rather
-  // than being dropped.
-  private wrapAtRightEdge(metrics: FontMetrics): void {
-    const { start, text } = overmind.state.tool.textTool;
-    if (!start || text === '') {
+  // Decides where the character just typed can go. It stays where it is if the
+  // line still fits, wraps to a new line as DPaint's does, or — when the page
+  // has no room left for it anywhere — is taken back.
+  //
+  // Taking it back is the important case. A big font on a small page runs out
+  // of room within a couple of words, and anything placed past the edge is
+  // committed where it cannot be seen, taking the caret with it: you keep
+  // typing, nothing appears, the cursor is gone, and the tool reads as broken.
+  // Refusing the character instead leaves the last line on screen and the caret
+  // blinking at the end of it, which says "full" rather than "dead". Nothing is
+  // lost that was ever visible, and Backspace still works.
+  //
+  // DPaint's own answer was to scroll the page under the text; redpaint does
+  // not scroll, so the page really is the limit.
+  private placeTypedCharacter(metrics: FontMetrics): void {
+    const { start, lineStart, text } = overmind.state.tool.textTool;
+    if (!start || !lineStart || text === '') {
       return;
     }
-    if (start.x + runAdvance(textFont(), text) <= overmind.state.canvas.resolution.width) {
-      return;
+    const { width: pageWidth, height: pageHeight } = overmind.state.canvas.resolution;
+    if (start.x + runAdvance(textFont(), text) <= pageWidth) {
+      return; // still fits on this line
     }
+
+    // The whole next line has to fit, not just its top: one wrapped to where
+    // only its ascenders show is not somewhere anyone wanted the text. And a
+    // column too narrow for even a single character gains nothing by wrapping —
+    // it would spend a line per keystroke walking down the page.
     const carried = text.slice(-1);
+    const nextBaselineY = start.y + metrics.lineHeight;
+    const roomBelow = nextBaselineY + metrics.descent <= pageHeight;
+    const roomOnANewLine = lineStart.x + runAdvance(textFont(), carried) <= pageWidth;
+    if (!roomBelow || !roomOnANewLine) {
+      overmind.actions.tool.textToolBackspace();
+      return;
+    }
+
     overmind.actions.tool.textToolBackspace();
     this.commitLine();
     overmind.actions.tool.textToolNewLine(metrics.lineHeight);
@@ -183,6 +233,9 @@ export class TextTool implements Tool {
     }
     this.stampRun(start, text, paintingCanvasController);
     overmind.actions.undo.setUndoPoint();
+    // Measured with the font the line was typed in, which is still the current
+    // one: every caller commits before changing anything.
+    overmind.actions.tool.textToolCommitted(runAdvance(textFont(), text));
   }
 
   private repaint(): void {
@@ -223,10 +276,50 @@ export class TextTool implements Tool {
   // The run is rasterized around its pen position, so the bitmap's own origin
   // has to be taken back off to land the text on the point that was clicked.
   private stampRun(start: Point, text: string, target: DrawTarget): void {
-    const rasterized = textRun(textFont(), text);
-    const run = this.filled ? rasterized : outlineRun(rasterized);
-    if (run.width === 0 || run.height === 0) {
+    const stamp = this.brushFor(text);
+    if (!stamp) {
       return;
+    }
+    stamp.brush.stamp(
+      [{ x: start.x - stamp.run.originX, y: start.y - stamp.run.baseline }],
+      target
+    );
+  }
+
+  // The brush for a line, kept until the line changes.
+  //
+  // The run itself is already memoized (PixelFont), but everything built on top
+  // of it was not: a BrushColorIndex, a CustomBrush and its colorized copy were
+  // rebuilt on every repaint — and since each was a new instance with a new
+  // `lastChanged`, the renderer re-uploaded its texture too. The caret's blink
+  // repaints twice a second, so a line nobody had touched was costing that
+  // rebuild and a full texture upload every 500ms (~3ms and ~460KB for a
+  // full-width 128px line). Keystrokes pay it once, as they must.
+  //
+  // The foreground color is in the key because setFGColor bakes it into the
+  // bitmap. Only its identity, not the displayed color: an indexed brush stores
+  // the palette index and cycling is resolved in the shader, so a cycling
+  // palette does not stale this.
+  private brushFor(text: string): { brush: CustomBrush; run: TextRun } | null {
+    const spec = textFont();
+    const underline = overmind.state.font.underline;
+    const key =
+      `${faceKey(spec)}|${this.filled ? 'f' : 'o'}|${underline ? 'u' : ''}` +
+      `|${foregroundKey()}|${text}`;
+    if (this.cachedStamp?.key === key) {
+      return this.cachedStamp;
+    }
+
+    // Underline first, so with both on the rule is outlined along with the
+    // letters — which is what two independent toggles should give.
+    const rasterized = textRun(spec, text);
+    const underlined = underline
+      ? underlineRun(rasterized, runAdvance(spec, text), spec.size)
+      : rasterized;
+    const run = this.filled ? underlined : outlineRun(underlined);
+    if (run.width === 0 || run.height === 0) {
+      this.cachedStamp = null;
+      return null;
     }
     const brush = new CustomBrush(
       BrushColorIndex.fromTextRunBits(run.width, run.height, run.bits),
@@ -237,6 +330,15 @@ export class TextTool implements Tool {
     // no color of its own for Matte or Repl to show.
     brush.setFGColor();
     brush.toFGColor();
-    brush.stamp([{ x: start.x - run.originX, y: start.y - run.baseline }], target);
+
+    this.cachedStamp = { key, brush, run };
+    return this.cachedStamp;
   }
+}
+
+function foregroundKey(): string {
+  const color = overmind.state.palette.foregroundPaintColor;
+  return color.kind === 'index'
+    ? `i${color.colorNumber}`
+    : `r${color.color.r},${color.color.g},${color.color.b}`;
 }

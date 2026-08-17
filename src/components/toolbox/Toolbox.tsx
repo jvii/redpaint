@@ -118,7 +118,19 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'textFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textFilled')}
-        onRightClick={(): void => actions.font.openSettings()}
+        // Selects the half that was right-clicked first, as the fill-style
+        // gadgets do: the requester is about the tool, so opening it without
+        // arming the tool leaves the font you just chose with nothing to type
+        // in. It also settles which half the preview should show.
+        onRightClick={(_event, isLowerHalf): void => {
+          // Before anything else: a line still being typed was typed in the
+          // current font, and the requester is about to change it underneath.
+          // Right-clicking the *other* half would commit it anyway by switching
+          // tools; this makes the half you are already on behave the same.
+          state.toolbox.activeTool.onSettingsOpen?.();
+          actions.toolbox.setSelectedDrawingTool(isLowerHalf ? 'textFilled' : 'textNoFill');
+          actions.font.openSettings();
+        }}
       />
       <ToolboxToggleButton
         buttonClass="zoom"

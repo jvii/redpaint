@@ -103,12 +103,12 @@ ellipse both were. `S` and `Z` stay — nothing in the toolbox wants either.
 ## When hotkeys are off
 
 `hotkeysSuspended()` turns everything above off while a text field has focus, a
-dialog or requester is open, the palette editor or symmetry settings are up, a
-crop is armed, or a Text tool is active. `Tab` is exempt — cycling is
-display-only and the point of it is to toggle while tuning a range in the
-palette editor.
+dialog or requester is open, the palette editor, symmetry settings or font
+requester are up, a crop is armed, or a Text tool is active. `Tab` is exempt —
+cycling is display-only and the point of it is to toggle while tuning a range in
+the palette editor.
 
-Two consequences worth knowing:
+Three consequences worth knowing:
 
 - **`p` opens the palette editor but cannot close it**, because the editor is
   one of the things that suspends. Reaching past the guard to make one key
@@ -118,7 +118,8 @@ Two consequences worth knowing:
   Text tool suspends everything — without that, `t` is a keyboard trap with no
   key out, including the keys that would pick a different tool. Escape finishes
   the line being typed on the way out, as clicking away or picking another tool
-  does.
+  does. It is checked again for the font requester, though: that is a window
+  with OK and Cancel, and pulling the tool out from under it would be neither.
 - **Text inverts the case convention of the shape keys**, where the plain letter
   is the outline and the shifted one the filled shape. The manual gives Text
   only `t`, and its two halves are a style rather than a fill — DPaint kept

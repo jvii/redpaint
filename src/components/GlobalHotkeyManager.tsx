@@ -66,7 +66,7 @@ function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
   if (state.dialog.activeDialog !== '') {
     return true;
   }
-  if (state.paletteEditor.isOpen || state.symmetry.settingsOpen) {
+  if (state.paletteEditor.isOpen || state.symmetry.settingsOpen || state.font.settingsOpen) {
     return true;
   }
   // An armed crop owns the keyboard: the overlay takes Enter and Escape.
@@ -244,8 +244,14 @@ function useToolHotkeys(): void {
   function handleKey(event: KeyboardEvent): void {
     // Before the suspension check: a text tool suspends every key below,
     // including the ones that would pick another tool, so this is the keyboard's
-    // only way out of it.
-    if (event.key === 'Escape' && isTextTool(overmind.state.toolbox.activeToolId)) {
+    // only way out of it. Not while the font requester is up, though — that is
+    // a window with OK and Cancel, and leaving the tool out from under it would
+    // be neither.
+    if (
+      event.key === 'Escape' &&
+      isTextTool(overmind.state.toolbox.activeToolId) &&
+      !overmind.state.font.settingsOpen
+    ) {
       event.preventDefault();
       actions.toolbox.setSelectedDrawingTool('freeHand');
       return;

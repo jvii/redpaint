@@ -4,57 +4,62 @@ import { FontListSource } from '../../domain/systemFonts';
 // fillStyle module: a few settings plus the open flag and a snapshot so Cancel
 // can put back what the panel was opened with.
 
-// Sizes the requester offers, as DPaint's Font menu offered a fixed list
-// ("8 POINT, 10 POINT ... 16 POINT") rather than a free number. Extended
-// upward, since nothing here is limited to what fitted in an Amiga font
-// drawer. 8 and 10 are included and expected to look poor: outlines that small
-// have sub-pixel stems and no hinting survives the rasterizer, and the preview
-// is where that becomes visible rather than a surprise on the canvas.
-export const FONT_SIZES = [8, 10, 12, 14, 16, 20, 24, 32, 48, 64];
+// The size is set by a slider with no figure on it, because the figure was
+// never the thing being chosen: a px size is an em, not a height, so the same
+// number gives visibly different text in different faces, and reading "24" told
+// you nothing the preview does not show better. The preview draws at true
+// canvas scale (useFontPreview), so it *is* the readout.
 
-// The sizes offered for a face drawn on a pixel grid: the ones above that are
-// whole multiples of it. Between them the glyphs fall off their own grid and
-// the face stops being crisp, which is the only reason it is bundled.
-export function sizesForGrid(gridSize: number): number[] {
-  return FONT_SIZES.filter((size): boolean => size % gridSize === 0);
+export const SIZE_MAX = 128;
+
+// Below about 20px an outline face has no whole pixels to put its stems on and
+// breaks up under thresholding (glyphRaster.ts). Offering smaller sizes only
+// offered a result nobody would keep — the bundled pixel faces are the answer
+// down there, and they have their own floor below.
+export const SYSTEM_SIZE_MIN = 20;
+
+export type SizeRange = { min: number; max: number; step: number };
+
+// A face drawn on a pixel grid is crisp only at whole multiples of it, so its
+// slider steps by that grid and starts at it. An installed family has no grid
+// to respect and moves a pixel at a time, no lower than SYSTEM_SIZE_MIN.
+export function sizeRangeFor(gridSize: number | undefined): SizeRange {
+  return gridSize
+    ? { min: gridSize, max: SIZE_MAX, step: gridSize }
+    : { min: SYSTEM_SIZE_MIN, max: SIZE_MAX, step: 1 };
 }
 
-// The nearest offered size, for when the face changes under a size it does not
-// have. Snapping keeps state and the size control agreeing — an unsnapped size
-// would leave every segment unselected and no way to tell what is in force.
-export function snapSizeToGrid(size: number, gridSize: number): number {
-  return sizesForGrid(gridSize).reduce((best, candidate): number =>
-    Math.abs(candidate - size) < Math.abs(best - size) ? candidate : best
-  );
+// Brings a size into a range, for when the face changes under it: a bundled
+// face's grid and a system face's floor do not overlap, so a size carried
+// across is often not one the new face offers.
+export function constrainSize(size: number, range: SizeRange): number {
+  const stepped = Math.round((size - range.min) / range.step) * range.step + range.min;
+  return Math.max(range.min, Math.min(range.max, stepped));
 }
 
-export const DEFAULT_FAMILY = 'Arial';
-export const DEFAULT_SIZE = 16;
+// A bundled face, so a fresh session paints something crisp without anyone
+// having opened the requester — and it is already served for the UI
+// (index.html), so it renders from the first keystroke without waiting on
+// loadBundledFaces.
+export const DEFAULT_FAMILY = 'Press Start 2P';
+// A multiple of 8 as well as being above SYSTEM_SIZE_MIN, so it survives a
+// switch to either kind of face untouched.
+export const DEFAULT_SIZE = 24;
 
 type Snapshot = {
-  faceId: string | null;
-  scale: number;
   family: string;
   size: number;
   bold: boolean;
   italic: boolean;
+  underline: boolean;
 };
 
-// Whole-number scales a bundled bitmap face is offered at. A bitmap font has
-// exactly one size, and anything between these is a resample — which is how a
-// pixel face stops being one.
-export const BITMAP_SCALES = [1, 2, 3, 4];
-
 export type State = {
-  // Which kind of face the tool paints with. A bundled bitmap face is the only
-  // way to have text below about 12px at all (see BitmapFont.ts); an outline
-  // face is everything the machine has installed.
-  faceId: string | null; // a BUNDLED_FACES id, or null for the system family
-  scale: number; // bitmap faces only
   family: string;
   size: number;
   bold: boolean;
   italic: boolean;
+  underline: boolean;
   settingsOpen: boolean;
   settingsSnapshot: Snapshot | null;
   // Filled on first open, not at startup: enumeration prompts for permission
@@ -62,18 +67,18 @@ export type State = {
   // be a prompt with no visible cause.
   families: string[];
   // Whether `families` is the machine's real font list or a probe of guessed
-  // names (see domain/systemFonts.ts). The requester says which.
+  // names (see domain/systemFonts.ts). The requester says so when it is a
+  // probe, since a guessed list cannot be read as everything installed.
   familiesSource: FontListSource;
   familiesLoaded: boolean;
 };
 
 export const state: State = {
-  faceId: null,
-  scale: 1,
   family: DEFAULT_FAMILY,
   size: DEFAULT_SIZE,
   bold: false,
   italic: false,
+  underline: false,
   settingsOpen: false,
   settingsSnapshot: null,
   families: [],

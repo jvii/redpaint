@@ -1,32 +1,30 @@
-import { JSX, useMemo, useRef } from 'react';
+import { JSX, useEffect, useMemo, useRef } from 'react';
 import './FontRequester.css';
 import { useActions, useAppState } from '../../overmind';
-import { BITMAP_SCALES, FONT_SIZES, sizesForGrid } from '../../overmind/font/state';
-import { BUNDLED_FACES, BUNDLED_OUTLINE_FACES, bundledOutlineFace } from '../../domain/BitmapFont';
-import { TextFace } from '../../domain/PixelFont';
+import { sizeRangeFor } from '../../overmind/font/state';
+import { BUNDLED_OUTLINE_FACES, bundledOutlineFace } from '../../domain/BundledFonts';
+import { FontSpec } from '../../algorithm/glyphRaster';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
+import { RetroSlider } from '../ui/RetroSlider';
 import { RetroToggle } from '../ui/RetroToggle';
 import { useFontPreview } from './useFontPreview';
 
-// The sample. A pangram would not fit at the sizes worth inspecting, and what
-// matters here is stems, bowls, a descender and digits — "Hamburgefonstiv" is
-// the type-design standard for exactly that.
-const SAMPLE = 'Hamburgefonstiv 123';
+// The sample: a capital with diagonals, ascenders, a round lowercase with its
+// counter, and digits. Between them they show whether a face survived being
+// thresholded, which is the question this requester exists to answer. Short
+// because the preview draws at the size the text really is (useFontPreview)
+// and a long one spends the box on repeats of what the first few letters
+// already said.
+const SAMPLE = 'Abcd 123';
 
-// CSS px. Fixed, so the window never resizes because a different family or
-// size was picked (docs/style-guide.md, "A window never resizes because its
-// own content changed").
-const PREVIEW_WIDTH = 420;
-const PREVIEW_HEIGHT = 150;
-
-// The bundled list encodes both kinds of face into one value, since a
-// RetroToggle carries a single string.
-function splitOnce(value: string): [string, string] {
-  const at = value.indexOf(':');
-  return [value.slice(0, at), value.slice(at + 1)];
-}
+// The preview's box, in CSS px. Fixed, so the window never resizes because a
+// different family or size was picked (docs/style-guide.md, "A window never
+// resizes because its own content changed"). Its raw buffer is a different
+// figure entirely — see previewWidth/Height below.
+const PREVIEW_DISPLAY_WIDTH = 460;
+const PREVIEW_DISPLAY_HEIGHT = 236;
 
 // DPaint's Font menu, reached by right-clicking the Text gadget as PyDPainter
 // does. Family, size and style, over a preview that shows the real thing.
@@ -43,47 +41,67 @@ function FontRequesterOpen(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
   const previewRef = useRef<HTMLCanvasElement>(null);
+  const familyListRef = useRef<HTMLDivElement>(null);
+  // Once per open. Re-centring on every change would yank the list out from
+  // under the pointer the moment a family is clicked.
+  const centredOnOpen = useRef(false);
 
-  const isBitmap = state.font.faceId !== null;
+  // The chosen family can be hundreds of names down a list that opens at the
+  // top, where it is both invisible and unreachable without hunting. Centre it
+  // when the list arrives — the families load asynchronously, so this is the
+  // first render that has anything to scroll to.
+  useEffect((): void => {
+    const list = familyListRef.current;
+    const selected = list?.querySelector<HTMLElement>('.retro-toggle__segment--selected');
+    if (centredOnOpen.current || !list || !selected) {
+      return;
+    }
+    centredOnOpen.current = true;
+    // Measured rather than read off offsetTop, which is relative to the nearest
+    // positioned ancestor and so would depend on styling elsewhere.
+    const listBox = list.getBoundingClientRect();
+    const selectedBox = selected.getBoundingClientRect();
+    list.scrollTop += selectedBox.top - listBox.top - (listBox.height - selectedBox.height) / 2;
+  }, [state.font.families.length]);
 
   // Memoized because useFontPreview depends on it by identity, and because a
   // plain copy is what the rasterizer wants anyway (see TextTool's textFont).
-  const face: TextFace = useMemo(
-    (): TextFace =>
-      state.font.faceId
-        ? { kind: 'bitmap', id: state.font.faceId, scale: state.font.scale }
-        : {
-            kind: 'outline',
-            spec: {
-              family: state.font.family,
-              size: state.font.size,
-              bold: state.font.bold,
-              italic: state.font.italic,
-            },
-          },
-    [
-      state.font.faceId,
-      state.font.scale,
-      state.font.family,
-      state.font.size,
-      state.font.bold,
-      state.font.italic,
-    ]
+  const spec: FontSpec = useMemo(
+    (): FontSpec => ({
+      family: state.font.family,
+      size: state.font.size,
+      bold: state.font.bold,
+      italic: state.font.italic,
+    }),
+    [state.font.family, state.font.size, state.font.bold, state.font.italic]
   );
 
   // The preview shows what the selected half of the gadget will paint, so
   // outline text previews as outline.
   const outline = state.toolbox.activeToolId === 'textNoFill';
 
+  // The buffer's own pixel count, sized so the box is an equally-sized window
+  // into the real canvas: the fixed CSS size divided by MainCanvas's live
+  // displayScale, which already folds in devicePixelRatio, the screen format's
+  // pixel aspect and the window size. The CSS box then scales the buffer back
+  // up by exactly that, so text previews at the size it will actually be
+  // painted. Per axis, since a screen format's pixels need not be square — and
+  // the text tool does not correct for that (glyphRaster.ts), so neither does
+  // its preview. The same arrangement the fill style swatch uses.
+  const displayScale = state.canvas.displayScale;
+  const previewWidth = Math.round(PREVIEW_DISPLAY_WIDTH / displayScale.x);
+  const previewHeight = Math.round(PREVIEW_DISPLAY_HEIGHT / displayScale.y);
+
   useFontPreview(
     previewRef,
-    face,
+    spec,
     SAMPLE,
     outline,
+    state.font.underline,
     state.palette.displayForegroundColor,
     state.palette.displayBackgroundColor,
-    PREVIEW_WIDTH,
-    PREVIEW_HEIGHT
+    previewWidth,
+    previewHeight
   );
 
   const familyOptions = state.font.families.map((family): { value: string; label: string } => ({
@@ -91,63 +109,44 @@ function FontRequesterOpen(): JSX.Element {
     label: family,
   }));
 
-  // A bundled outline face is chosen as a family, so it lights up in the
+  // A bundled face is picked as a family like any other, so it lights up in the
   // bundled list rather than in the system one below — where it would not
   // appear anyway, since nothing installed it.
-  const bundledSelection = isBitmap
-    ? `bitmap:${state.font.faceId}`
-    : BUNDLED_OUTLINE_FACES.some((face): boolean => face.family === state.font.family)
-      ? `outline:${state.font.family}`
-      : '';
-  const systemSelection = bundledSelection === '' ? state.font.family : '';
+  const isBundled = bundledOutlineFace(state.font.family) !== undefined;
+  const bundledSelection = isBundled ? state.font.family : '';
+  const systemSelection = isBundled ? '' : state.font.family;
 
-  // A bundled face is drawn on a pixel grid and is only crisp at whole
-  // multiples of it, so those are the only sizes offered. An installed family
-  // has no such grid to respect and takes the full list.
-  const gridSize = bundledOutlineFace(state.font.family)?.gridSize;
-  const sizeOptions = gridSize ? sizesForGrid(gridSize) : FONT_SIZES;
-  // Whichever list it is, lay it out as full rows: a ragged last row reads as
-  // a missing option rather than as the end of the list.
-  const sizeColumns = [5, 4, 3].find((n): boolean => sizeOptions.length % n === 0) ?? 5;
+  const sizeRange = sizeRangeFor(bundledOutlineFace(state.font.family)?.gridSize);
+
+  const styleValues = [
+    ...(state.font.bold ? ['bold'] : []),
+    ...(state.font.italic ? ['italic'] : []),
+    ...(state.font.underline ? ['underline'] : []),
+  ];
 
   return (
-    <Modal header="Font" width={820}>
+    <Modal header="Font" width={900}>
       <div className="font-requester__body">
         <div className="font-requester__family-column">
-          {/* The bundled faces lead, above the machine's own. Every one of
-              them is drawn on a pixel grid, which is what this tool wants and
-              what the list below cannot promise — and they are the same on
-              every machine, where that list is not.
-
-              Both kinds sit together because the choice being made is "which
-              face", not "which rendering path". They differ only in what the
-              size control then offers, which is the control's business. */}
+          {/* The bundled faces lead, above the machine's own. Each is drawn
+              on a pixel grid, which is what this tool wants and what the list
+              below cannot promise — and they are the same on every machine,
+              where that list is not. */}
           <RetroFieldset legend="Bundled">
             <RetroToggle
               variant="column"
-              options={[
-                ...BUNDLED_FACES.map((bundled): { value: string; label: string } => ({
-                  value: `bitmap:${bundled.id}`,
-                  label: bundled.name,
-                })),
-                ...BUNDLED_OUTLINE_FACES.map((bundled): { value: string; label: string } => ({
-                  value: `outline:${bundled.family}`,
-                  label: bundled.family,
-                })),
-              ]}
+              options={BUNDLED_OUTLINE_FACES.map((bundled): { value: string; label: string } => ({
+                value: bundled.family,
+                label: bundled.family,
+              }))}
               value={bundledSelection}
-              onChange={(value): void => {
-                const [kind, id] = splitOnce(value);
-                if (kind === 'bitmap') {
-                  actions.font.setBundledFace(id);
-                } else {
-                  actions.font.setFamily(id);
-                }
-              }}
+              onChange={(value): void => actions.font.setFamily(value)}
             />
           </RetroFieldset>
-          <RetroFieldset legend="Font">
-            <div className="font-requester__family-list retro-scrollbar">
+          {/* Named for where they came from, not for being fonts — the list
+              above it is fonts too. */}
+          <RetroFieldset legend="System Fonts">
+            <div className="font-requester__family-list retro-scrollbar" ref={familyListRef}>
               {familyOptions.length > 0 ? (
                 <RetroToggle
                   variant="column"
@@ -159,92 +158,87 @@ function FontRequesterOpen(): JSX.Element {
                 <p className="font-requester__note">No fonts found.</p>
               )}
             </div>
-            {/* Where the list came from, because the two are not the same
-                thing and the short one must not read as "all you have".
-                See domain/systemFonts.ts. */}
-            <p className="font-requester__note">
-              {state.font.familiesSource === 'enumerated'
-                ? 'Fonts installed on this computer.'
-                : 'Common fonts found on this computer. Only this browser can list them all.'}
-            </p>
+            {/* Only where the list was guessed. A browser that can enumerate
+                shows what is actually installed and needs no caveat; one that
+                cannot is showing a probe of names picked in advance, and
+                anything installed under a name nobody guessed is simply absent
+                from it. Saying so beats letting a dozen entries read as "all
+                the fonts you have". See domain/systemFonts.ts. */}
+            {state.font.familiesSource === 'probed' && (
+              <p className="font-requester__note">
+                Common fonts, found by trying names — this browser will not list what is installed.
+              </p>
+            )}
           </RetroFieldset>
         </div>
 
         <div className="font-requester__settings-column">
-          {/* A bitmap face has exactly one size, so it takes whole-number
-              scales where an outline face takes point sizes. Two controls
-              rather than one disabled one: they are different quantities, and
-              4 meaning "four times" where 8 means "eight pixels" would be the
-              same gadget lying about which. */}
-          {isBitmap ? (
-            <RetroFieldset legend="Scale">
-              <RetroToggle
-                options={BITMAP_SCALES.map((scale): { value: string; label: string } => ({
-                  value: String(scale),
-                  label: `${scale}x`,
-                }))}
-                value={String(state.font.scale)}
-                onChange={(value): void => actions.font.setScale(Number(value))}
-              />
-            </RetroFieldset>
-          ) : (
-            <RetroFieldset legend="Size">
-              <RetroToggle
-                variant="grid"
-                columns={sizeColumns}
-                options={sizeOptions.map((size): { value: string; label: string } => ({
-                  value: String(size),
-                  label: String(size),
-                }))}
-                value={String(state.font.size)}
-                onChange={(value): void => actions.font.setSize(Number(value))}
-              />
-            </RetroFieldset>
-          )}
-
-          <RetroFieldset legend="Style">
-            <div className="font-requester__style-row">
-              <RetroToggle
-                options={[
-                  { value: 'off', label: 'Plain' },
-                  { value: 'on', label: 'Bold' },
-                ]}
-                value={state.font.bold ? 'on' : 'off'}
-                onChange={(value): void => actions.font.setBold(value === 'on')}
-                // A bitmap face is drawn, not generated: there is no bold or
-                // italic of it to switch to, and synthesizing one would smear
-                // the pixels it exists to keep.
-                disabled={isBitmap}
-              />
-              <RetroToggle
-                options={[
-                  { value: 'off', label: 'Upright' },
-                  { value: 'on', label: 'Italic' },
-                ]}
-                value={state.font.italic ? 'on' : 'off'}
-                onChange={(value): void => actions.font.setItalic(value === 'on')}
-                disabled={isBitmap}
+          <RetroFieldset legend="Size">
+            {/* No figure on it. A px size is an em rather than a height, so the
+                same number is a different size in every face and reading it
+                told you nothing — where the preview, which draws at true canvas
+                scale, tells you exactly. A bundled face steps by its own pixel
+                grid, an installed one by single pixels. */}
+            <div className="font-requester__size-slider">
+              <RetroSlider
+                value={state.font.size}
+                min={sizeRange.min}
+                max={sizeRange.max}
+                step={sizeRange.step}
+                onChange={(size): void => actions.font.setSize(size)}
               />
             </div>
           </RetroFieldset>
 
-          <RetroFieldset legend="Preview">
-            {/* Rendered through the tool's own rasterizer, not as DOM text:
-                see useFontPreview. Magnified at small sizes so a face that
-                falls apart there shows it here first. */}
+          {/* B and I, the letters every text editor uses, rather than a
+              Plain/Bold and Upright/Italic pair. Independently pressed, not
+              alternatives: text can be both, and neither has an "off" segment
+              because unpressed already says so. Titled, since a single letter
+              carries no more label than an icon does. */}
+          <RetroFieldset legend="Style">
+            <RetroToggle
+              options={[
+                {
+                  value: 'bold',
+                  label: <span className="font-requester__style-bold">B</span>,
+                  title: 'Bold',
+                },
+                {
+                  value: 'italic',
+                  label: <span className="font-requester__style-italic">I</span>,
+                  title: 'Italic',
+                },
+                {
+                  value: 'underline',
+                  label: <span className="font-requester__style-underline">U</span>,
+                  title: 'Underline',
+                },
+              ]}
+              selectedValues={styleValues}
+              onChange={(value): void => {
+                if (value === 'bold') {
+                  actions.font.setBold(!state.font.bold);
+                } else if (value === 'italic') {
+                  actions.font.setItalic(!state.font.italic);
+                } else {
+                  actions.font.setUnderline(!state.font.underline);
+                }
+              }}
+            />
+          </RetroFieldset>
+
+          <RetroFieldset legend="Preview" detail={state.font.family}>
+            {/* Rendered through the tool's own rasterizer, not as DOM text,
+                and 1:1 with the canvas — see useFontPreview. A face that falls
+                apart at a size shows it here first, at the size it will be. */}
             <div className="font-requester__preview-frame">
               <canvas
                 ref={previewRef}
-                width={PREVIEW_WIDTH}
-                height={PREVIEW_HEIGHT}
+                width={previewWidth}
+                height={previewHeight}
                 className="font-requester__preview"
               />
             </div>
-            <p className="font-requester__note">
-              {isBitmap
-                ? 'Drawn as pixels, so it stays sharp at every scale.'
-                : 'Every outline font has a size below which its stems have no whole pixels to sit on, and breaks up. Where that is differs per font — this is where it shows.'}
-            </p>
           </RetroFieldset>
         </div>
       </div>

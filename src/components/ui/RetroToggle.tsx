@@ -17,7 +17,15 @@ type Variant = 'row' | 'column' | 'grid';
 
 type Props = {
   options: Option[];
-  value: string;
+  // Single-select: the one selected value. Ignored when selectedValues is
+  // given.
+  value?: string;
+  // Multi-select: every value currently on. For a group whose options are not
+  // alternatives — Bold and Italic are independent, text can be both — where a
+  // single-select group would make choosing one silently unchoose the other.
+  // onChange still reports the segment that was clicked; the caller decides
+  // what toggling it means.
+  selectedValues?: readonly string[];
   onChange: (value: string) => void;
   variant?: Variant;
   // Number of columns for variant="grid" (ignored otherwise).
@@ -35,6 +43,7 @@ type Props = {
 export function RetroToggle({
   options,
   value,
+  selectedValues,
   onChange,
   variant = 'row',
   columns = 2,
@@ -45,6 +54,9 @@ export function RetroToggle({
   const cols = variant === 'grid' ? columns : variant === 'column' ? 1 : options.length;
 
   const style = variant === 'grid' ? { gridTemplateColumns: `repeat(${columns}, 1fr)` } : undefined;
+
+  const isSelected = (optionValue: string): boolean =>
+    selectedValues ? selectedValues.includes(optionValue) : optionValue === value;
 
   return (
     <div
@@ -66,7 +78,7 @@ export function RetroToggle({
             disabled={disabled || option.disabled}
             className={
               'retro-toggle__segment' +
-              (option.value === value ? ' retro-toggle__segment--selected' : '') +
+              (isSelected(option.value) ? ' retro-toggle__segment--selected' : '') +
               (option.disabled ? ' retro-toggle__segment--disabled' : '') +
               (collapseLeft ? ' retro-toggle__segment--collapse-left' : '') +
               (collapseTop ? ' retro-toggle__segment--collapse-top' : '')

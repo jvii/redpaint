@@ -6,57 +6,28 @@ import {
   measureAdvance,
   rasterizeRun,
 } from '../algorithm/glyphRaster';
-import { bitmapAdvance, bitmapMetrics, bitmapRun, loadedBitmapFont } from './BitmapFont';
 
 // The text tool's view of a font: the line it is typing, and the metrics that
-// position the caret around it.
-//
-// Two kinds of face reach the same TextRun, and everything downstream — the
-// tool, the requester's preview — is written against that rather than against
-// either one. An outline face is rasterized through canvas and thresholded on
-// coverage; a bitmap face is already pixels and is only scaled by whole
-// numbers.
-export type TextFace =
-  | { kind: 'outline'; spec: FontSpec }
-  | { kind: 'bitmap'; id: string; scale: number };
+// position the caret around it. Everything here is caching around
+// algorithm/glyphRaster.ts, which does the actual work.
 
-function faceKey(face: TextFace): string {
-  if (face.kind === 'bitmap') {
-    return `b|${face.id}|${face.scale}`;
-  }
-  const { family, size, bold, italic } = face.spec;
-  return `o|${family}|${size}|${bold ? 'b' : ''}|${italic ? 'i' : ''}`;
+// Identifies a font for caching. Exported because the text tool caches the
+// brush it builds from a run and has to key it on the same thing.
+export function faceKey(spec: FontSpec): string {
+  return `${spec.family}|${spec.size}|${spec.bold ? 'b' : ''}|${spec.italic ? 'i' : ''}`;
 }
-
-// A bitmap face whose asset has not arrived yet has no metrics and no glyphs.
-// Nothing selects one before loadBundledFaces has resolved (the font module
-// awaits it), so this is the torn-state guard rather than an expected path.
-const MISSING_METRICS: FontMetrics = { lineHeight: 0, ascent: 0, descent: 0 };
-const MISSING_RUN: TextRun = {
-  width: 0,
-  height: 0,
-  bits: new Uint8Array(0),
-  originX: 0,
-  baseline: 0,
-};
 
 // Metrics come from a measureText on a scratch canvas — cheap, but asked for on
 // every repaint, and they only change when the font does.
 const metricsCache = new Map<string, FontMetrics>();
 
-export function metricsOf(face: TextFace): FontMetrics {
-  if (face.kind === 'bitmap') {
-    const font = loadedBitmapFont(face.id);
-    // Not cached: reading a parsed header is cheaper than the map lookup that
-    // would guard it, unlike the outline path's measureText.
-    return font ? bitmapMetrics(font, face.scale) : MISSING_METRICS;
-  }
-  const key = faceKey(face);
+export function metricsOf(spec: FontSpec): FontMetrics {
+  const key = faceKey(spec);
   const cached = metricsCache.get(key);
   if (cached) {
     return cached;
   }
-  const metrics = fontMetrics(face.spec);
+  const metrics = fontMetrics(spec);
   metricsCache.set(key, metrics);
   return metrics;
 }
@@ -68,32 +39,52 @@ export function metricsOf(face: TextFace): FontMetrics {
 let lastKey: string | null = null;
 let lastRun: TextRun | null = null;
 
-export function textRun(face: TextFace, text: string): TextRun {
-  const key = `${faceKey(face)}|${text}`;
+export function textRun(spec: FontSpec, text: string): TextRun {
+  const key = `${faceKey(spec)}|${text}`;
   if (key === lastKey && lastRun) {
     return lastRun;
   }
-  lastRun = layOut(face, text);
+  lastRun = rasterizeRun(spec, text);
   lastKey = key;
   return lastRun;
 }
 
-function layOut(face: TextFace, text: string): TextRun {
-  if (face.kind === 'bitmap') {
-    const font = loadedBitmapFont(face.id);
-    return font ? bitmapRun(font, face.scale, text) : MISSING_RUN;
-  }
-  return rasterizeRun(face.spec, text);
-}
-
 // Where the caret sits, and what the tool measures against the right edge to
 // decide a wrap.
-export function runAdvance(face: TextFace, text: string): number {
-  if (face.kind === 'bitmap') {
-    const font = loadedBitmapFont(face.id);
-    return font ? bitmapAdvance(font, face.scale, text) : 0;
+export function runAdvance(spec: FontSpec, text: string): number {
+  return measureAdvance(spec, text);
+}
+
+// A rule under the line, DPaint's Font menu "Underline". Applied to the run
+// rather than asked of canvas, which has no text-decoration of any kind.
+//
+// Where and how thick is ours to choose: a font's underline position and
+// thickness live in its `post` table and measureText surfaces neither. Both
+// scale with the size instead of being a constant hairline — against Press
+// Start 2P at 24px, whose strokes are 3px, a single pixel reads as a rendering
+// fault rather than as a rule.
+//
+// The run grows to fit it. It is sized to the ink, so the rule falls below the
+// descent of text that has none, and it spans the whole advance, which is wider
+// than the ink whenever the line ends in a space.
+export function underlineRun(run: TextRun, advance: number, size: number): TextRun {
+  if (run.width === 0 || run.height === 0) {
+    return run;
   }
-  return measureAdvance(face.spec, text);
+  const thickness = Math.max(1, Math.round(size / 16));
+  const gap = Math.max(1, Math.round(size / 16));
+  const top = run.baseline + gap;
+
+  const width = Math.max(run.width, run.originX + advance);
+  const height = Math.max(run.height, top + thickness);
+  const bits = new Uint8Array(width * height);
+  for (let y = 0; y < run.height; y++) {
+    bits.set(run.bits.subarray(y * run.width, (y + 1) * run.width), y * width);
+  }
+  for (let y = top; y < top + thickness; y++) {
+    bits.fill(1, y * width + run.originX, y * width + run.originX + advance);
+  }
+  return { ...run, width, height, bits };
 }
 
 // The run's outline: every pixel orthogonally or diagonally touching the text
