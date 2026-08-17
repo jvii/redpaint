@@ -12,6 +12,22 @@ import { FontListSource } from '../../domain/systemFonts';
 // is where that becomes visible rather than a surprise on the canvas.
 export const FONT_SIZES = [8, 10, 12, 14, 16, 20, 24, 32, 48, 64];
 
+// The sizes offered for a face drawn on a pixel grid: the ones above that are
+// whole multiples of it. Between them the glyphs fall off their own grid and
+// the face stops being crisp, which is the only reason it is bundled.
+export function sizesForGrid(gridSize: number): number[] {
+  return FONT_SIZES.filter((size): boolean => size % gridSize === 0);
+}
+
+// The nearest offered size, for when the face changes under a size it does not
+// have. Snapping keeps state and the size control agreeing — an unsnapped size
+// would leave every segment unselected and no way to tell what is in force.
+export function snapSizeToGrid(size: number, gridSize: number): number {
+  return sizesForGrid(gridSize).reduce((best, candidate): number =>
+    Math.abs(candidate - size) < Math.abs(best - size) ? candidate : best
+  );
+}
+
 export const DEFAULT_FAMILY = 'Arial';
 export const DEFAULT_SIZE = 16;
 

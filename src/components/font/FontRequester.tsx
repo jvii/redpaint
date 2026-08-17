@@ -1,8 +1,8 @@
 import { JSX, useMemo, useRef } from 'react';
 import './FontRequester.css';
 import { useActions, useAppState } from '../../overmind';
-import { BITMAP_SCALES, FONT_SIZES } from '../../overmind/font/state';
-import { BUNDLED_FACES } from '../../domain/BitmapFont';
+import { BITMAP_SCALES, FONT_SIZES, sizesForGrid } from '../../overmind/font/state';
+import { BUNDLED_FACES, BUNDLED_OUTLINE_FACES, bundledOutlineFace } from '../../domain/BitmapFont';
 import { TextFace } from '../../domain/PixelFont';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
@@ -20,6 +20,13 @@ const SAMPLE = 'Hamburgefonstiv 123';
 // own content changed").
 const PREVIEW_WIDTH = 420;
 const PREVIEW_HEIGHT = 150;
+
+// The bundled list encodes both kinds of face into one value, since a
+// RetroToggle carries a single string.
+function splitOnce(value: string): [string, string] {
+  const at = value.indexOf(':');
+  return [value.slice(0, at), value.slice(at + 1)];
+}
 
 // DPaint's Font menu, reached by right-clicking the Text gadget as PyDPainter
 // does. Family, size and style, over a preview that shows the real thing.
@@ -84,22 +91,59 @@ function FontRequesterOpen(): JSX.Element {
     label: family,
   }));
 
+  // A bundled outline face is chosen as a family, so it lights up in the
+  // bundled list rather than in the system one below — where it would not
+  // appear anyway, since nothing installed it.
+  const bundledSelection = isBitmap
+    ? `bitmap:${state.font.faceId}`
+    : BUNDLED_OUTLINE_FACES.some((face): boolean => face.family === state.font.family)
+      ? `outline:${state.font.family}`
+      : '';
+  const systemSelection = bundledSelection === '' ? state.font.family : '';
+
+  // A bundled face is drawn on a pixel grid and is only crisp at whole
+  // multiples of it, so those are the only sizes offered. An installed family
+  // has no such grid to respect and takes the full list.
+  const gridSize = bundledOutlineFace(state.font.family)?.gridSize;
+  const sizeOptions = gridSize ? sizesForGrid(gridSize) : FONT_SIZES;
+  // Whichever list it is, lay it out as full rows: a ragged last row reads as
+  // a missing option rather than as the end of the list.
+  const sizeColumns = [5, 4, 3].find((n): boolean => sizeOptions.length % n === 0) ?? 5;
+
   return (
     <Modal header="Font" width={820}>
       <div className="font-requester__body">
         <div className="font-requester__family-column">
-          {/* The bundled pixel faces lead, above the machine's own. They are
-              the only way to have text below about 12px at all, and they are
-              the same on every machine — the list under them is not. */}
-          <RetroFieldset legend="Bitmap">
+          {/* The bundled faces lead, above the machine's own. Every one of
+              them is drawn on a pixel grid, which is what this tool wants and
+              what the list below cannot promise — and they are the same on
+              every machine, where that list is not.
+
+              Both kinds sit together because the choice being made is "which
+              face", not "which rendering path". They differ only in what the
+              size control then offers, which is the control's business. */}
+          <RetroFieldset legend="Bundled">
             <RetroToggle
               variant="column"
-              options={BUNDLED_FACES.map((bundled): { value: string; label: string } => ({
-                value: bundled.id,
-                label: bundled.name,
-              }))}
-              value={state.font.faceId ?? ''}
-              onChange={(value): void => actions.font.setBundledFace(value)}
+              options={[
+                ...BUNDLED_FACES.map((bundled): { value: string; label: string } => ({
+                  value: `bitmap:${bundled.id}`,
+                  label: bundled.name,
+                })),
+                ...BUNDLED_OUTLINE_FACES.map((bundled): { value: string; label: string } => ({
+                  value: `outline:${bundled.family}`,
+                  label: bundled.family,
+                })),
+              ]}
+              value={bundledSelection}
+              onChange={(value): void => {
+                const [kind, id] = splitOnce(value);
+                if (kind === 'bitmap') {
+                  actions.font.setBundledFace(id);
+                } else {
+                  actions.font.setFamily(id);
+                }
+              }}
             />
           </RetroFieldset>
           <RetroFieldset legend="Font">
@@ -108,7 +152,7 @@ function FontRequesterOpen(): JSX.Element {
                 <RetroToggle
                   variant="column"
                   options={familyOptions}
-                  value={isBitmap ? '' : state.font.family}
+                  value={systemSelection}
                   onChange={(value): void => actions.font.setFamily(value)}
                 />
               ) : (
@@ -147,8 +191,8 @@ function FontRequesterOpen(): JSX.Element {
             <RetroFieldset legend="Size">
               <RetroToggle
                 variant="grid"
-                columns={5}
-                options={FONT_SIZES.map((size): { value: string; label: string } => ({
+                columns={sizeColumns}
+                options={sizeOptions.map((size): { value: string; label: string } => ({
                   value: String(size),
                   label: String(size),
                 }))}
@@ -199,7 +243,7 @@ function FontRequesterOpen(): JSX.Element {
             <p className="font-requester__note">
               {isBitmap
                 ? 'Drawn as pixels, so it stays sharp at every scale.'
-                : 'Below 12px an outline font has no whole pixels to put its stems on, and breaks up.'}
+                : 'Every outline font has a size below which its stems have no whole pixels to sit on, and breaks up. Where that is differs per font — this is where it shows.'}
             </p>
           </RetroFieldset>
         </div>

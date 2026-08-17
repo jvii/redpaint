@@ -1,6 +1,7 @@
 import { Context } from '../../overmind';
 import { availableFontFamilies } from '../../domain/systemFonts';
-import { loadBundledFaces } from '../../domain/BitmapFont';
+import { bundledOutlineFace, loadBundledFaces } from '../../domain/BitmapFont';
+import { snapSizeToGrid } from './state';
 
 // Picking a system family also leaves any bundled bitmap face: the two are
 // alternatives, and a list that highlighted one of each would be lying about
@@ -8,6 +9,12 @@ import { loadBundledFaces } from '../../domain/BitmapFont';
 export const setFamily = (context: Context, family: string): void => {
   context.state.font.family = family;
   context.state.font.faceId = null;
+  // A bundled face offers only multiples of its own grid, so a size carried
+  // over from another family may not be one of them.
+  const bundled = bundledOutlineFace(family);
+  if (bundled) {
+    context.state.font.size = snapSizeToGrid(context.state.font.size, bundled.gridSize);
+  }
 };
 
 export const setBundledFace = (context: Context, faceId: string): void => {

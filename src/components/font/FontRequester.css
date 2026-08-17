@@ -36,7 +36,7 @@
 /* Shorter than it was: the bundled faces now sit above it in the same column,
    and the two together still end level with the settings column. */
 .font-requester__family-list {
-  height: 340px;
+  height: 300px;
   overflow-y: auto;
   /* room for the toggle group's own 4px drop shadow, which a flush overflow
      box would clip down its right edge */

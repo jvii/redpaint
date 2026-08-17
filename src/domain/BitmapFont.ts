@@ -124,6 +124,37 @@ export const BUNDLED_FACES: BundledFace[] = [
   { id: 'unscii-8', name: 'Unscii 8', url: '/fonts/unscii-8.rpbf' },
 ];
 
+// Bundled outline faces, all of them designed on a pixel grid.
+//
+// These need none of the machinery above. A pixel-gridded face is nothing but
+// axis-aligned rectangles, and the coverage threshold in glyphRaster.ts only
+// ever struggles with curves and diagonals — so they come out of the ordinary
+// outline path clean at every size, with no bitmap conversion and no special
+// case anywhere downstream. They are here rather than in a stylesheet so they
+// load the same way the bitmap faces do, and because @font-face gives no
+// signal for "ready", which the rasterizer needs before it measures anything.
+//
+// The family name is what reaches ctx.font, so it is also the id.
+//
+// gridSize is the face's own pixel grid, and only sizes that are whole
+// multiples of it are offered: between them the glyphs land off the grid they
+// were drawn on and the face stops being crisp, which is the entire reason to
+// bundle one. It is the same rule the bitmap faces follow through BITMAP_SCALES,
+// stated in pixels instead of multiples because these are still outline faces
+// measured in px.
+export type BundledOutlineFace = { family: string; url: string; gridSize: number };
+
+export const BUNDLED_OUTLINE_FACES: BundledOutlineFace[] = [
+  // Already served for the UI (index.html), so listing it costs no bytes.
+  { family: 'Press Start 2P', url: '/fonts/press-start-2p-latin.woff2', gridSize: 8 },
+  // Its lowercase is drawn as small caps; that is the face, not a fault.
+  { family: 'Silkscreen', url: '/fonts/silkscreen.woff2', gridSize: 8 },
+];
+
+export function bundledOutlineFace(family: string): BundledOutlineFace | undefined {
+  return BUNDLED_OUTLINE_FACES.find((face): boolean => face.family === family);
+}
+
 const loaded = new Map<string, BitmapFont>();
 
 export function loadedBitmapFont(id: string): BitmapFont | null {
@@ -135,8 +166,8 @@ export function loadedBitmapFont(id: string): BitmapFont | null {
 // GPL-licensed one (the Amiga conversions) sit beside a public-domain one
 // without the two meeting inside a build artifact. See public/fonts/README.txt.
 export async function loadBundledFaces(): Promise<void> {
-  await Promise.all(
-    BUNDLED_FACES.map(async (face): Promise<void> => {
+  await Promise.all([
+    ...BUNDLED_FACES.map(async (face): Promise<void> => {
       if (loaded.has(face.id)) {
         return;
       }
@@ -145,6 +176,34 @@ export async function loadBundledFaces(): Promise<void> {
         throw new Error(`${face.id}: ${response.status} fetching ${face.url}`);
       }
       loaded.set(face.id, parseBitmapFont(face.id, await response.arrayBuffer()));
-    })
-  );
+    }),
+    ...BUNDLED_OUTLINE_FACES.map(
+      async (face): Promise<void> => registerOutlineFace(face.family, face.url)
+    ),
+  ]);
 }
+
+// Registers an outline face by its bytes, which is all it takes for
+// ctx.font to reach it afterwards — no parsing of the font file at any point.
+// The same call is what a font the user supplies would go through, since a
+// dropped File gives the identical ArrayBuffer.
+export async function registerOutlineFace(
+  family: string,
+  source: string | ArrayBuffer
+): Promise<void> {
+  // Tracked here rather than asked of document.fonts. FontFaceSet.check()
+  // answers "would this render without waiting", and for a family nothing has
+  // registered that is *true* — there is nothing to load, so a system fallback
+  // is ready immediately. Used as a guard it skips every load and leaves every
+  // bundled face silently substituted by the fallback.
+  if (registeredOutlineFaces.has(family)) {
+    return;
+  }
+  registeredOutlineFaces.add(family);
+  const bytes = typeof source === 'string' ? await (await fetch(source)).arrayBuffer() : source;
+  const face = new FontFace(family, bytes);
+  await face.load();
+  document.fonts.add(face);
+}
+
+const registeredOutlineFaces = new Set<string>();

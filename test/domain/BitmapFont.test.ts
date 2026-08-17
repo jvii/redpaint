@@ -1,11 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import {
+  BUNDLED_OUTLINE_FACES,
   BitmapFont,
   bitmapAdvance,
   bitmapMetrics,
   bitmapRun,
+  bundledOutlineFace,
   parseBitmapFont,
 } from '../../src/domain/BitmapFont';
+import { sizesForGrid, snapSizeToGrid } from '../../src/overmind/font/state';
 
 // A two-glyph 4x4 face: a full block at the first codepoint and a single
 // top-left pixel at the second. Small enough to assert on pixel by pixel.
@@ -113,5 +116,45 @@ describe('bitmapRun', () => {
   test('characters outside the face fall back to its first glyph', () => {
     // 'Z' is past the two glyphs this face has; it draws as 'A'.
     expect(bitmapRun(FONT, 1, 'Z').bits).toEqual(bitmapRun(FONT, 1, 'A').bits);
+  });
+});
+
+// A bundled outline face is only crisp at whole multiples of the grid it was
+// drawn on, so those are the only sizes offered — and switching to one has to
+// bring the current size onto that grid, or the size control shows nothing
+// selected and there is no way to tell what is in force.
+describe('bundled outline faces', () => {
+  test('every bundled face declares its grid', () => {
+    for (const face of BUNDLED_OUTLINE_FACES) {
+      expect(face.gridSize).toBeGreaterThan(0);
+    }
+  });
+
+  test('offers only whole multiples of the grid', () => {
+    expect(sizesForGrid(8)).toEqual([8, 16, 24, 32, 48, 64]);
+    for (const size of sizesForGrid(8)) {
+      expect(size % 8).toBe(0);
+    }
+  });
+
+  test('snapping lands on an offered size', () => {
+    for (const size of [1, 9, 10, 13, 20, 40, 100]) {
+      expect(sizesForGrid(8)).toContain(snapSizeToGrid(size, 8));
+    }
+  });
+
+  test('snapping picks the nearest', () => {
+    expect(snapSizeToGrid(10, 8)).toBe(8);
+    expect(snapSizeToGrid(14, 8)).toBe(16);
+    expect(snapSizeToGrid(64, 8)).toBe(64);
+  });
+
+  test('a face already on the grid is left alone', () => {
+    expect(snapSizeToGrid(16, 8)).toBe(16);
+  });
+
+  test('lookup finds a bundled face and misses an installed one', () => {
+    expect(bundledOutlineFace('Silkscreen')?.gridSize).toBe(8);
+    expect(bundledOutlineFace('Arial')).toBeUndefined();
   });
 });
