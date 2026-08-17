@@ -1,3 +1,5 @@
+import { quoteFamily } from '../algorithm/glyphRaster';
+
 // Which font families this browser can actually offer the text tool.
 //
 // Three capabilities get conflated here and only the first is portable:
@@ -59,9 +61,13 @@ const FALLBACKS = ['monospace', 'serif', 'sans-serif'];
 const PROBE_TEXT = 'mmmmmmmmmmlliWWMMwi0O@';
 const PROBE_SIZE = 72;
 
+// Quoted for the same reason cssFont quotes: an unquoted family whose word
+// starts with a digit fails to parse, and the assignment is silently dropped —
+// here that would measure the previous candidate again and report this one
+// present or absent at random.
 function probeWidths(ctx: CanvasRenderingContext2D, family: string): number[] {
   return FALLBACKS.map((fallback): number => {
-    ctx.font = `${PROBE_SIZE}px ${family}, ${fallback}`;
+    ctx.font = `${PROBE_SIZE}px ${quoteFamily(family)}, ${fallback}`;
     return ctx.measureText(PROBE_TEXT).width;
   });
 }

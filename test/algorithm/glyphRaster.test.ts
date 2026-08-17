@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { thresholdCoverage } from '../../src/algorithm/glyphRaster';
+import { cssFont, quoteFamily, thresholdCoverage } from '../../src/algorithm/glyphRaster';
 
 // thresholdCoverage is the half of the rasterizer that decides pixels; the
 // other half needs a browser that actually draws text, and is exercised in the
@@ -73,5 +73,35 @@ describe('thresholdCoverage', () => {
       }
     }
     expect(Array.from(thresholdCoverage(data, width, 2, 1))).toEqual([0, 1]);
+  });
+});
+
+// A family name reaches ctx.font through the CSS font shorthand, where an
+// unquoted name must be a sequence of valid CSS identifiers. A word starting
+// with a digit is not one, so "Press Start 2P" and "Jersey 10" fail to parse —
+// and canvas drops the assignment silently, keeping the previous font. That
+// reads as one face reporting another's metrics, not as an error, so it is
+// worth a test rather than a comment.
+describe('cssFont', () => {
+  test('quotes the family', () => {
+    expect(cssFont({ family: 'Arial', size: 16, bold: false, italic: false }, 64)).toBe(
+      '64px "Arial"'
+    );
+  });
+
+  test('quotes a family whose word starts with a digit', () => {
+    expect(cssFont({ family: 'Press Start 2P', size: 8, bold: false, italic: false }, 32)).toBe(
+      '32px "Press Start 2P"'
+    );
+  });
+
+  test('carries style and weight before the size', () => {
+    expect(cssFont({ family: 'Jersey 10', size: 16, bold: true, italic: true }, 64)).toBe(
+      'italic bold 64px "Jersey 10"'
+    );
+  });
+
+  test('escapes a quote in the family name', () => {
+    expect(quoteFamily('mO\'sOul "Plus"')).toBe('"mO\'sOul \\"Plus\\""');
   });
 });

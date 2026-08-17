@@ -81,10 +81,20 @@ const SUPERSAMPLE = 4;
 // reaches past the pen (an italic's lean, a 'j' hooking left).
 const MARGIN = 1;
 
+// Quoting the family is not optional. ctx.font takes the CSS font shorthand,
+// an unquoted family name has to be a sequence of valid CSS identifiers, and a
+// word starting with a digit is not one — so "Press Start 2P" and "Jersey 10"
+// fail to parse. The assignment is then *silently dropped* and the context
+// keeps the font it had, which reads as one face's metrics being reported for
+// another rather than as an error.
+export function quoteFamily(family: string): string {
+  return `"${family.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+}
+
 export function cssFont(spec: FontSpec, sizePx: number): string {
   const style = spec.italic ? 'italic ' : '';
   const weight = spec.bold ? 'bold ' : '';
-  return `${style}${weight}${sizePx}px ${spec.family}`;
+  return `${style}${weight}${sizePx}px ${quoteFamily(spec.family)}`;
 }
 
 // One canvas, reused. Rasterizing happens on every keystroke, and allocating a
