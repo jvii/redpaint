@@ -47,7 +47,7 @@ convention, since that is what you would grep for.
 | `c` / `C` | Circle outline / filled | manual |
 | `e` / `E` | Ellipse outline / filled | manual |
 | `b` | Brush Selector | manual |
-| `t` | Text | manual |
+| `t` / `T` | Text solid / outline | manual (`t` only; see below) |
 | `Escape` | leave the Text tool, back to Freehand | manual ("Press ESC ... to exit Text mode") |
 | `m` | Magnify | manual |
 | `/` | Symmetry | manual |
@@ -116,4 +116,11 @@ Two consequences worth knowing:
   Cancel, and a key that means neither would have to pick one silently.
 - **`Escape` out of the Text tool is checked before the guard**, because the
   Text tool suspends everything — without that, `t` is a keyboard trap with no
-  key out, including the keys that would pick a different tool.
+  key out, including the keys that would pick a different tool. Escape finishes
+  the line being typed on the way out, as clicking away or picking another tool
+  does.
+- **Text inverts the case convention of the shape keys**, where the plain letter
+  is the outline and the shifted one the filled shape. The manual gives Text
+  only `t`, and its two halves are a style rather than a fill — DPaint kept
+  Outline in the Font menu — so the plain letter takes the plain text and `T`
+  takes the outline.

@@ -1,0 +1,101 @@
+/* Two columns, like Fill Style: the family list is a tall thing with nothing
+   to sit beside it in its own column, and the three settings that act on the
+   chosen family stack to its right. One long stack would run past a
+   125%-scaled 1080p screen while leaving the width next to the list empty. */
+.font-requester__body {
+  display: flex;
+  align-items: flex-start;
+  /* wider than the 24px between rows within a column, so the two columns read
+     as separate subjects rather than one loose grid */
+  gap: 44px;
+  padding: 24px 30px 28px 30px;
+  text-align: left;
+}
+
+.font-requester__family-column {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  gap: 24px;
+  width: 300px;
+}
+
+.font-requester__settings-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* The one part of this requester that scrolls. Fixed height rather than
+   content height: an enumerated list runs to hundreds of families and a probed
+   one to a dozen, and the window must not be a different size depending on
+   which browser it opened in. Measured so the column ends level with the
+   settings column beside it, which is the taller of the two and fixed. */
+/* Shorter than it was: the bundled faces now sit above it in the same column,
+   and the two together still end level with the settings column. */
+.font-requester__family-list {
+  height: 340px;
+  overflow-y: auto;
+  /* room for the toggle group's own 4px drop shadow, which a flush overflow
+     box would clip down its right edge */
+  padding: 0 6px 6px 0;
+}
+
+/* A family list is a column of names to read down, not a row of gadgets to
+   compare: left-aligned so the eye has one edge to follow, where a centred
+   RetroToggle segment leaves ragged both sides. */
+.font-requester__family-list .retro-toggle__segment {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.font-requester__style-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Same treatment as the frame around Fill Style's swatch: the chrome plus a
+   mat of paper inside it, so the black border always has something light to
+   be a frame against even when the preview's own ground is black. */
+.font-requester__preview-frame {
+  padding: 8px;
+  background-color: var(--paper);
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  width: max-content;
+}
+
+.font-requester__preview {
+  display: block;
+  /* 1:1 with the canvas attributes: the preview paints whole pixels at a
+     whole-number zoom (useFontPreview), and a CSS size that disagreed with
+     the buffer would resample exactly the grid it exists to show */
+  width: 420px;
+  height: 150px;
+  image-rendering: pixelated;
+}
+
+.font-requester__note {
+  margin: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* -webkit-font-smoothing: none is inherited from the modal's Press Start 2P
+     ground and has to be undone per element (docs/style-guide.md) */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+  /* narrower than the 64ch the other requesters' notes use: this column ends
+     flush with the window's padding, and a note measured in characters ran
+     the first line right up against the edge */
+  max-width: 44ch;
+  /* Two lines' worth, held whether the wording wraps or not: the source line
+     under the family list is one line on one browser and two on another, and a
+     window that changed height with the browser it opened in would be the same
+     fault as one that resizes while you type. */
+  min-height: 36px;
+}

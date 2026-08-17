@@ -95,20 +95,39 @@ export const polygonToolReset = (context: Context): void => {
 
 // text
 
+// Begins a paragraph: the clicked point is both where this line starts and
+// where every later line returns to.
 export const textToolStart = (context: Context, point: Point): void => {
   context.state.tool.textTool.start = point;
+  context.state.tool.textTool.lineStart = point;
+  context.state.tool.textTool.text = '';
 };
 
-export const textToolKey = (context: Context, key: string): void => {
-  if (key.length === 1) {
-    context.state.tool.textTool.text = context.state.tool.textTool.text + key;
-  } else if (key === 'Backspace') {
-    context.state.tool.textTool.text = context.state.tool.textTool.text.slice(0, -1);
+export const textToolAppend = (context: Context, characters: string): void => {
+  context.state.tool.textTool.text = context.state.tool.textTool.text + characters;
+};
+
+export const textToolBackspace = (context: Context): void => {
+  context.state.tool.textTool.text = context.state.tool.textTool.text.slice(0, -1);
+};
+
+// Starts a new line under the current one, aligned with the paragraph's left
+// edge rather than with wherever the previous line happened to end. Used by
+// both Return and the wrap at the right edge; the committing of the finished
+// line is the tool's business, not the state's.
+export const textToolNewLine = (context: Context, lineHeight: number): void => {
+  const lineStart = context.state.tool.textTool.lineStart;
+  if (!lineStart) {
+    return;
   }
+  const y = (context.state.tool.textTool.start?.y ?? lineStart.y) + lineHeight;
+  context.state.tool.textTool.start = { x: lineStart.x, y };
+  context.state.tool.textTool.text = '';
 };
 
 export const textToolReset = (context: Context): void => {
   context.state.tool.textTool.start = null;
+  context.state.tool.textTool.lineStart = null;
   context.state.tool.textTool.text = '';
 };
 

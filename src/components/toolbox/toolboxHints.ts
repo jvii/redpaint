@@ -88,8 +88,15 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   },
   text: {
     name: 'Text',
-    keys: ['t'],
-    use: 'Unfinished: it takes keystrokes but draws nothing yet.',
+    use: 'Click where the text should start, then type. Return begins a new line, Escape finishes.',
+    // Not shapeHalves(): the halves are a style, not a fill, so the plain
+    // letter is the plain text (see SHAPE_KEYS in GlobalHotkeyManager).
+    parts: [
+      { gesture: 'top half', does: 'Outline', keys: ['T'] },
+      { gesture: 'bottom half', does: 'Solid', keys: ['t'] },
+    ],
+    // Either half: the font is the same font whichever way it is drawn.
+    rightClick: 'Font',
   },
   zoom: {
     name: 'Magnify',

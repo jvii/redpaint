@@ -205,7 +205,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     return { x: point.x - this.width / 2, y: point.y - this.heigth / 2 }; // center handle to brush
   }
 
-  private stamp(points: Point[], canvas: DrawTarget): void {
+  // Public for the text tool, which stamps a laid-out line at its own corner
+  // rather than through one of the shape methods above (they all center the
+  // brush on the point via adjustHandle, and a line of text is placed by its
+  // baseline and pen). Routing it here rather than calling drawImage directly
+  // is what makes text obey the paint mode like every other stamp does.
+  public stamp(points: Point[], canvas: DrawTarget): void {
     if (usesEffectDraw(overmind.state.brush.mode)) {
       canvas.effectDraw(points, this, 0);
       canvas.flushEffectDraw();

@@ -230,7 +230,11 @@ const SHAPE_KEYS: { [key: string]: DrawingToolId } = {
   C: 'circleFilled',
   e: 'ellipseNoFill',
   E: 'ellipseFilled',
-  t: 'textNoFill',
+  // Text inverts the case convention above: DPaint's `t` enters plain text, and
+  // the gadget's halves are a style (Outline was a Font menu item, not a fill),
+  // so the plain letter takes the plain one.
+  t: 'textFilled',
+  T: 'textNoFill',
 };
 
 // Airbrush and Polygon are absent because DPaint gave them no key.

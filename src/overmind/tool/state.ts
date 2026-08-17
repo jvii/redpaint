@@ -29,9 +29,13 @@ export type State = {
   polygonTool: {
     vertices: Point[];
   };
+  // start = where the current line's text begins (null while nothing is being
+  // typed); lineStart = where Return returns to, which is the x of the click
+  // that began the paragraph and does not move as lines wrap
   textTool: {
     text: string;
     start: Point | null;
+    lineStart: Point | null;
   };
   brushSelectorTool: { start: Point | null };
   // anchor = the dragged brush's fixed top-left corner (null while not dragging)
@@ -67,7 +71,7 @@ export const state: State = {
     angle: 0,
   },
   polygonTool: { vertices: [] },
-  textTool: { text: '', start: null },
+  textTool: { text: '', start: null, lineStart: null },
   brushSelectorTool: { start: null },
   brushStretchTool: { anchor: null },
   sizeBuiltInBrushTool: { anchor: null },

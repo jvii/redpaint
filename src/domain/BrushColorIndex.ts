@@ -41,6 +41,26 @@ export class BrushColorIndex {
     return new BrushColorIndex(width, height, brushColorIndex);
   }
 
+  // Factory method for creating a BrushColorIndex from a laid-out text run
+  // (PixelFont.ts). Same shape as fromBuiltInBrushStringBitmap: the set pixels
+  // are marked opaque and their stored index left at 0, because a text run has
+  // no inherent color of its own and is always colorized to FG.
+  static fromTextRunBits(width: number, height: number, bits: Uint8Array): BrushColorIndex {
+    const stride = 4;
+    // initialize as all zeros (transparent: alpha tag 0)
+    const indexArray = new Uint8Array(width * height * 4).fill(0);
+    for (let y = 0; y < height; y++) {
+      // run rows are top-down while texture rows are bottom-up
+      const sourceRow = (height - y - 1) * width;
+      for (let x = 0; x < width; x++) {
+        if (bits[sourceRow + x]) {
+          indexArray[(y * width + x) * stride + 3] = ALPHA_INDEXED;
+        }
+      }
+    }
+    return new BrushColorIndex(width, height, indexArray);
+  }
+
   // Builds a brush from decoded image pixels: opaque pixels become true-color
   // pixels, (semi-)transparent image pixels become transparent brush pixels.
   // ImageData rows are top-down while texture rows are bottom-up, so rows are

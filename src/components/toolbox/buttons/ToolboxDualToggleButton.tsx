@@ -9,9 +9,13 @@ interface Props {
   isUpperHalfSelected: boolean;
   onUpperHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
   onLowerHalfClick: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
-  // Only the lower (filled) half opens a right-click menu today. The outline
-  // half has no per-tool settings of its own.
+  // For gadgets whose settings belong to the filled half alone: Fill Style is
+  // what a fill does, and the outline half does not fill.
   onLowerHalfRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
+  // For gadgets whose settings belong to both halves. Text's font is the same
+  // font whether it is drawn solid or outlined, so either half opens it, and
+  // right-clicking the half you are not on should not have to select it first.
+  onRightClick?: (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export function ToolboxDualToggleButton({
@@ -22,6 +26,7 @@ export function ToolboxDualToggleButton({
   onUpperHalfClick,
   onLowerHalfClick,
   onLowerHalfRightClick,
+  onRightClick,
 }: Props): JSX.Element {
   const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     if (isLowerHalfClick(event)) {
@@ -32,7 +37,9 @@ export function ToolboxDualToggleButton({
   };
 
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
-    if (onLowerHalfRightClick && isLowerHalfClick(event)) {
+    if (onRightClick) {
+      onRightClick(event);
+    } else if (onLowerHalfRightClick && isLowerHalfClick(event)) {
       onLowerHalfRightClick(event);
     }
     event.preventDefault();

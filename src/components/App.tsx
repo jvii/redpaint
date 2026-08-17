@@ -21,6 +21,7 @@ import { useDocumentAutosave } from './useDocumentAutosave';
 import { BrushLoadDialog } from './imageLoad/BrushLoadDialog';
 import { SymmetrySettings } from './symmetry/SymmetrySettings';
 import { FillStyleSettings } from './fillStyle/FillStyleSettings';
+import { FontRequester } from './font/FontRequester';
 import './App.css';
 
 function App(): JSX.Element {
@@ -68,6 +69,7 @@ function App(): JSX.Element {
       <BrushLoadDialog></BrushLoadDialog>
       <SymmetrySettings></SymmetrySettings>
       <FillStyleSettings></FillStyleSettings>
+      <FontRequester></FontRequester>
       <DialogManager></DialogManager>
       <GlobalHotKeyManager />
     </div>

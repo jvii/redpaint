@@ -118,6 +118,7 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'textFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textFilled')}
+        onRightClick={(): void => actions.font.openSettings()}
       />
       <ToolboxToggleButton
         buttonClass="zoom"
