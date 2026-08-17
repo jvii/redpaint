@@ -5,13 +5,11 @@ import { CustomBrush } from '../../brush/CustomBrush';
 import { isBuiltInBrush } from '../brush/state';
 
 export const setSelectedDrawingTool = (context: Context, toolId: DrawingToolId): void => {
-  context.actions.toolbox.setActiveToPreviousTool();
   context.state.toolbox.selectedDrawingToolId = toolId;
   context.state.toolbox.selectedSelectorToolId = null;
 };
 
 export const toggleZoomMode = (context: Context): void => {
-  context.actions.toolbox.setActiveToPreviousTool();
   context.actions.canvas.setZoomFocusPoint(null);
   // ZoomMode on => ZoomMode off
   if (context.state.toolbox.zoomModeOn) {
@@ -28,7 +26,6 @@ export const toggleZoomMode = (context: Context): void => {
 };
 
 export const toggleBrushSelectionMode = (context: Context): void => {
-  context.actions.toolbox.setActiveToPreviousTool();
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'brushSelectorTool';
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'brushSelectorTool';
 };
@@ -52,7 +49,6 @@ export const toggleBrushTransformMode = (context: Context, tool: BrushTransformT
   ) {
     return;
   }
-  context.actions.toolbox.setActiveToPreviousTool();
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : tool;
 };
 
@@ -68,9 +64,6 @@ export const enterSizeBuiltInBrushMode = (context: Context): void => {
   if (!(brushRecall.current instanceof CustomBrush) || !isBuiltInBrush(brushRecall.current)) {
     return;
   }
-  if (context.state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool') {
-    context.actions.toolbox.setActiveToPreviousTool();
-  }
   context.state.toolbox.selectedSelectorToolId = 'sizeBuiltInBrushTool';
 };
 
@@ -79,13 +72,11 @@ export const exitSizeBuiltInBrushMode = (context: Context): void => {
 };
 
 export const toggleForegroundColorSelectionMode = (context: Context): void => {
-  context.actions.toolbox.setActiveToPreviousTool();
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'foregroundColorSelectorTool';
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'foregroundColorSelectorTool';
 };
 
 export const toggleBackgroundColorSelectionMode = (context: Context): void => {
-  context.actions.toolbox.setActiveToPreviousTool();
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'backgroundColorSelectorTool';
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'backgroundColorSelectorTool';
 };
@@ -97,15 +88,10 @@ export const toggleSymmetryMode = (context: Context): void => {
 };
 
 export const toggleSymmetryCenterSelectionMode = (context: Context): void => {
-  context.actions.toolbox.setActiveToPreviousTool();
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'symmetryCenterSelectorTool';
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'symmetryCenterSelectorTool';
   if (!isSelected) {
     // Picking a center only makes sense with symmetry visible
     context.state.toolbox.symmetryModeOn = true;
   }
-};
-
-export const setActiveToPreviousTool = (context: Context): void => {
-  context.state.toolbox.previousToolId = context.state.toolbox.activeToolId;
 };

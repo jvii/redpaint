@@ -67,8 +67,6 @@ export type State = {
   selectedSelectorToolId: SelectorToolId | null;
   readonly activeToolId: DrawingToolId | SelectorToolId;
   readonly activeTool: Tool;
-  previousToolId: DrawingToolId | SelectorToolId | null;
-  readonly previousTool: Tool | null;
   zoomModeOn: boolean;
   symmetryModeOn: boolean;
 };
@@ -84,28 +82,6 @@ export const state: State = {
     return this.selectedSelectorToolId
       ? selectorTools[this.selectedSelectorToolId]
       : drawingTools[this.selectedDrawingToolId];
-  },
-  previousToolId: null,
-  get previousTool(): Tool | null {
-    if (!this.previousToolId) {
-      return null;
-    }
-    if (
-      this.previousToolId === 'zoomInitialPointSelectorTool' ||
-      this.previousToolId === 'symmetryCenterSelectorTool' ||
-      this.previousToolId === 'brushSelectorTool' ||
-      this.previousToolId === 'brushStretchTool' ||
-      this.previousToolId === 'sizeBuiltInBrushTool' ||
-      this.previousToolId === 'brushShearTool' ||
-      this.previousToolId === 'brushRotateTool' ||
-      this.previousToolId === 'brushBendHorizontalTool' ||
-      this.previousToolId === 'brushBendVerticalTool' ||
-      this.previousToolId === 'foregroundColorSelectorTool' ||
-      this.previousToolId === 'backgroundColorSelectorTool'
-    ) {
-      return selectorTools[this.previousToolId];
-    }
-    return drawingTools[this.previousToolId];
   },
   zoomModeOn: false,
   symmetryModeOn: false,
