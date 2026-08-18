@@ -23,7 +23,11 @@
    and Safari renders unsmoothed system text visibly thinner rather than
    crisper. */
 .font-toggle__specimen {
-  font-size: 16px;
+  /* 24, not something between: two of the faces on offer are themselves pixel
+     fonts, and a specimen of one off its 8px grid misrepresents the very thing
+     it is there to show. Names wrap sooner at this size, which is the trade —
+     the sample is what the list is scanned for. */
+  font-size: 24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Three letters, always on one line: the name beside it may wrap, the sample
