@@ -27,8 +27,19 @@ import { Point } from '../types';
 // the line editable and stamps it on the way out, which is the model here.
 //
 // A finished line is stamped as an ordinary brush, so it picks up whatever the
-// palette's foreground color is and would pick up a future anti-alias mode the
-// same way every other tool does.
+// palette's foreground color is — but through drawImage rather than
+// CustomBrush.stamp, so the paint modes do not reach it. DPaint's text ignored
+// them (TEXT.C blits JAM1 and consults no mode), and the ones that would reach
+// a single stamp here have little to say to one: Smear and Blend are defined by
+// being dragged, and Matte, Color and Repl are already indistinguishable for a
+// run whose bitmap is FG-colorized either way.
+//
+// This is also where an anti-alias mode was once expected to give text its
+// anti-aliasing for free. It is not the plan any more: later DPaint made
+// Antialias a setting beside the modes rather than one of them, and for text
+// specifically the better route is PyDPainter's — let the browser render the
+// glyphs anti-aliased and quantize that to the palette, or keep it as-is once
+// there are true-color pixels to keep it in.
 
 const CARET_BLINK_MS = 500;
 
@@ -219,7 +230,8 @@ export class TextTool implements Tool {
     const carried = text.slice(-1);
     const nextBaselineY = start.y + lineAdvance(textFont());
     const roomBelow = nextBaselineY + metrics.descent <= pageHeight;
-    const roomOnANewLine = lineStart.x + runAdvance(textFont(), carried, this.tracking()) <= pageWidth;
+    const roomOnANewLine =
+      lineStart.x + runAdvance(textFont(), carried, this.tracking()) <= pageWidth;
     if (!roomBelow || !roomOnANewLine) {
       overmind.actions.tool.textToolBackspace();
       return;
@@ -289,9 +301,11 @@ export class TextTool implements Tool {
     if (!stamp) {
       return;
     }
-    stamp.brush.stamp(
+    // drawImage, not CustomBrush.stamp: stamp routes the effect modes through
+    // effectDraw, and text takes no mode (see the note at the top).
+    target.drawImage(
       [{ x: start.x - stamp.run.originX, y: start.y - stamp.run.baseline }],
-      target
+      stamp.brush
     );
   }
 
