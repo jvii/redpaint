@@ -128,7 +128,7 @@ function FontRequesterOpen(): JSX.Element {
               on a pixel grid, which is what this tool wants and what the list
               below cannot promise — and they are the same on every machine,
               where that list is not. */}
-          <RetroFieldset legend="Bundled">
+          <RetroFieldset legend="Bundled Fonts">
             <FontToggle
               families={BUNDLED_OUTLINE_FACES.map((bundled): string => bundled.family)}
               value={bundledSelection}

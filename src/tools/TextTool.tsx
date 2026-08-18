@@ -89,6 +89,9 @@ export class TextTool implements Tool {
   // — which is what DPaint does, having committed each character as it went.
   public commitPending(): void {
     this.commitLine();
+    // The requester opens through here, and the caret has to be off the overlay
+    // before it does rather than a blink later.
+    this.repaint();
   }
 
   public onContextMenu(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
@@ -254,7 +257,11 @@ export class TextTool implements Tool {
     if (text !== '') {
       this.stampRun(start, text, overlayCanvasController);
     }
-    if (this.caretVisible) {
+    // Not while the font requester is over the canvas: a caret blinking behind
+    // it offers a line to type that the requester's own controls have the
+    // keyboard for. Where it sits is remembered either way, so it comes back on
+    // the same character when the requester closes.
+    if (this.caretVisible && !overmind.state.font.settingsOpen) {
       this.drawCaret({ x: start.x + runAdvance(textFont(), text, this.tracking()), y: start.y });
     }
   }
