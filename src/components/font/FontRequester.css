@@ -118,3 +118,12 @@
   display: flex;
   width: 460px;
 }
+
+/* Style and Filled/Unfilled on one line. Bottom-aligned rather than top: only
+   one of the two carries a legend, so aligning the tops would step the gadgets
+   themselves down by the height of that word. */
+.font-requester__style-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}

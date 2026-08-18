@@ -159,9 +159,7 @@ function FontRequesterOpen(): JSX.Element {
                    that there is nothing to report: enumeration is a fetch and
                    a permission prompt, and saying "none" in the meantime is a
                    wrong answer that corrects itself a second later. */
-                state.font.familiesLoaded && (
-                  <p className="font-requester__note">No fonts found.</p>
-                )
+                state.font.familiesLoaded && <p className="font-requester__note">No fonts found.</p>
               )}
             </div>
             {/* Only where the list was guessed. A browser that can enumerate
@@ -196,42 +194,59 @@ function FontRequesterOpen(): JSX.Element {
             </div>
           </RetroFieldset>
 
-          {/* B and I, the letters every text editor uses, rather than a
-              Plain/Bold and Upright/Italic pair. Independently pressed, not
-              alternatives: text can be both, and neither has an "off" segment
-              because unpressed already says so. Titled, since a single letter
-              carries no more label than an icon does. */}
-          <RetroFieldset legend="Style">
+          {/* Filled/Unfilled rides alongside Style rather than under a legend
+              of its own: its two segments say what they are, where B/I/U are
+              single letters that need heading. Aligned on the toggles, not the
+              tops, so the two groups' gadgets sit on one line. */}
+          <div className="font-requester__style-row">
+            <RetroFieldset legend="Style">
+              <RetroToggle
+                options={[
+                  {
+                    value: 'bold',
+                    label: <span className="font-requester__style-bold">B</span>,
+                    title: 'Bold',
+                  },
+                  {
+                    value: 'italic',
+                    label: <span className="font-requester__style-italic">I</span>,
+                    title: 'Italic',
+                  },
+                  {
+                    value: 'underline',
+                    label: <span className="font-requester__style-underline">U</span>,
+                    title: 'Underline',
+                  },
+                ]}
+                selectedValues={styleValues}
+                onChange={(value): void => {
+                  if (value === 'bold') {
+                    actions.font.setBold(!state.font.bold);
+                  } else if (value === 'italic') {
+                    actions.font.setItalic(!state.font.italic);
+                  } else {
+                    actions.font.setUnderline(!state.font.underline);
+                  }
+                }}
+              />
+            </RetroFieldset>
+
+            {/* The same choice as the gadget's two halves, and it sets the same
+                tool — so the preview follows it, and closing the requester
+                leaves that half armed. */}
             <RetroToggle
               options={[
-                {
-                  value: 'bold',
-                  label: <span className="font-requester__style-bold">B</span>,
-                  title: 'Bold',
-                },
-                {
-                  value: 'italic',
-                  label: <span className="font-requester__style-italic">I</span>,
-                  title: 'Italic',
-                },
-                {
-                  value: 'underline',
-                  label: <span className="font-requester__style-underline">U</span>,
-                  title: 'Underline',
-                },
+                { value: 'unfilled', label: 'Unfilled' },
+                { value: 'filled', label: 'Filled' },
               ]}
-              selectedValues={styleValues}
-              onChange={(value): void => {
-                if (value === 'bold') {
-                  actions.font.setBold(!state.font.bold);
-                } else if (value === 'italic') {
-                  actions.font.setItalic(!state.font.italic);
-                } else {
-                  actions.font.setUnderline(!state.font.underline);
-                }
-              }}
+              value={outline ? 'unfilled' : 'filled'}
+              onChange={(value): void =>
+                actions.toolbox.setSelectedDrawingTool(
+                  value === 'filled' ? 'textFilled' : 'textNoFill'
+                )
+              }
             />
-          </RetroFieldset>
+          </div>
 
           <RetroFieldset legend="Preview" detail={state.font.family}>
             {/* Rendered through the tool's own rasterizer, not as DOM text,

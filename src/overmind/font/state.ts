@@ -52,6 +52,10 @@ type Snapshot = {
   bold: boolean;
   italic: boolean;
   underline: boolean;
+  // Not a font setting, but the requester edits it (the Filled/Unfilled toggle
+  // picks the same tool the gadget's two halves do), so Cancel has to put it
+  // back with the rest.
+  filled: boolean;
 };
 
 export type State = {

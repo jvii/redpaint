@@ -60,7 +60,8 @@ export const loadFamilies = async (context: Context): Promise<void> => {
 
 export const openSettings = (context: Context): void => {
   const { family, size, bold, italic, underline } = context.state.font;
-  context.state.font.settingsSnapshot = { family, size, bold, italic, underline };
+  const filled = context.state.toolbox.selectedDrawingToolId === 'textFilled';
+  context.state.font.settingsSnapshot = { family, size, bold, italic, underline, filled };
   context.state.font.settingsOpen = true;
   context.actions.font.loadFamilies();
 };
@@ -79,6 +80,7 @@ export const cancelSettings = (context: Context): void => {
     context.state.font.bold = snapshot.bold;
     context.state.font.italic = snapshot.italic;
     context.state.font.underline = snapshot.underline;
+    context.actions.toolbox.setSelectedDrawingTool(snapshot.filled ? 'textFilled' : 'textNoFill');
   }
   context.actions.font.closeSettings();
 };
