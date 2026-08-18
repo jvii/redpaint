@@ -12,11 +12,20 @@
 // gridSize is the face's own pixel grid, and only sizes that are whole
 // multiples of it are offered (overmind/font/state.ts): between them the glyphs
 // land off the grid they were drawn on and the face stops being crisp.
-export type BundledOutlineFace = { family: string; url: string; gridSize: number };
+//
+// `url` is absent for a face index.html already declares. Registering a second
+// FontFace for a family the document provides does not replace those — it adds
+// one *more*, and one with no unicode-range, so it competes for every character
+// against the subset faces the stylesheet split the family into. The app's own
+// chrome is set in Press Start 2P, so that arrives as a late reflow of the very
+// modal doing the loading, which is what index.html's font-display: block and
+// preload were chosen to avoid.
+export type BundledOutlineFace = { family: string; url?: string; gridSize: number };
 
 export const BUNDLED_OUTLINE_FACES: BundledOutlineFace[] = [
-  // Already served for the UI (index.html), so listing it costs no bytes.
-  { family: 'Press Start 2P', url: '/fonts/press-start-2p-latin.woff2', gridSize: 8 },
+  // No url: index.html declares this one for the UI, so ctx.font already
+  // reaches it and there is nothing left to load.
+  { family: 'Press Start 2P', gridSize: 8 },
   // Its lowercase is drawn as small caps; that is the face, not a fault.
   { family: 'Silkscreen', url: '/fonts/silkscreen.woff2', gridSize: 8 },
 ];
@@ -32,8 +41,8 @@ export function bundledOutlineFace(family: string): BundledOutlineFace | undefin
 // public/fonts/README.txt.
 export async function loadBundledFaces(): Promise<void> {
   await Promise.all(
-    BUNDLED_OUTLINE_FACES.map(
-      async (face): Promise<void> => registerOutlineFace(face.family, face.url)
+    BUNDLED_OUTLINE_FACES.filter((face): boolean => face.url !== undefined).map(
+      async (face): Promise<void> => registerOutlineFace(face.family, face.url as string)
     )
   );
 }

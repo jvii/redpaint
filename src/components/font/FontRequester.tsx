@@ -155,7 +155,13 @@ function FontRequesterOpen(): JSX.Element {
                   onChange={(value): void => actions.font.setFamily(value)}
                 />
               ) : (
-                <p className="font-requester__note">No fonts found.</p>
+                /* Only once the list has actually been looked for. Before
+                   that there is nothing to report: enumeration is a fetch and
+                   a permission prompt, and saying "none" in the meantime is a
+                   wrong answer that corrects itself a second later. */
+                state.font.familiesLoaded && (
+                  <p className="font-requester__note">No fonts found.</p>
+                )
               )}
             </div>
             {/* Only where the list was guessed. A browser that can enumerate
