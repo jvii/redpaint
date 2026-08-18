@@ -23,15 +23,22 @@
    and Safari renders unsmoothed system text visibly thinner rather than
    crisper. */
 .font-toggle__specimen {
-  /* 24, not something between: two of the faces on offer are themselves pixel
-     fonts, and a specimen of one off its 8px grid misrepresents the very thing
-     it is there to show. Names wrap sooner at this size, which is the trade —
-     the sample is what the list is scanned for. */
-  font-size: 24px;
+  /* Fixed, not the 1.5 the segment inherits: FontToggle.tsx sizes a sample down
+     until its ink fits this box, and a box that shrank with the font would make
+     that circular and never converge. It also keeps every row one height,
+     whatever size a face ended up being set at. Matches SPECIMEN_BOX there. */
+  line-height: 36px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Three letters, always on one line: the name beside it may wrap, the sample
      wrapping would just look like a rendering fault. */
   white-space: nowrap;
   flex: none;
+}
+
+/* Backstop for the sizing in FontToggle.tsx: a face can still reach past its
+   row after being fitted vertically. Clipped at the segment rather than at the
+   sample's own line box, so the trim is as small as it can be. */
+.font-toggle .retro-toggle__segment {
+  overflow: hidden;
 }
