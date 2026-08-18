@@ -8,10 +8,10 @@ const FILL_STYLE = 'Fill Style settings';
 const FILL_STYLE_KEYS = ['F'];
 
 // Both halves of a shape gadget, with DPaint's pair of keys: the plain letter
-// picks the outline and the shifted one the filled shape. Passed the letter
-// rather than repeated four times, since the pattern is the point.
+// picks the unfilled shape and the shifted one the filled shape. Passed the
+// letter rather than repeated four times, since the pattern is the point.
 const shapeHalves = (letter: string): { gesture: string; does: string; keys: string[] }[] => [
-  { gesture: 'top half', does: 'Outline', keys: [letter] },
+  { gesture: 'top half', does: 'Unfilled', keys: [letter] },
   { gesture: 'bottom half', does: 'Filled', keys: [letter.toUpperCase()] },
 ];
 
@@ -75,7 +75,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     use: 'Click each corner. Right-click on the canvas, or click the first corner, to close.',
     // Spelled out rather than shapeHalves(): there is no letter, see Airbrush.
     parts: [
-      { gesture: 'top half', does: 'Outline' },
+      { gesture: 'top half', does: 'Unfilled' },
       { gesture: 'bottom half', does: 'Filled' },
     ],
     rightClick: FILL_STYLE,
@@ -89,11 +89,11 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   text: {
     name: 'Text',
     use: 'Click where the text should start, then type. Return begins a new line, Escape finishes.',
-    // Not shapeHalves(): the halves are a style, not a fill, so the plain
-    // letter is the plain text (see SHAPE_KEYS in GlobalHotkeyManager).
+    // Not shapeHalves(): the plain letter is the filled text here, the shifted
+    // one the unfilled (see SHAPE_KEYS in GlobalHotkeyManager).
     parts: [
-      { gesture: 'top half', does: 'Outline', keys: ['T'] },
-      { gesture: 'bottom half', does: 'Solid', keys: ['t'] },
+      { gesture: 'top half', does: 'Unfilled', keys: ['T'] },
+      { gesture: 'bottom half', does: 'Filled', keys: ['t'] },
     ],
     // Either half: the font is the same font whichever way it is drawn.
     rightClick: 'Font',
