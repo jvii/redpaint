@@ -203,6 +203,15 @@ laptop screens. Consequences for new UI:
   complaint is that wrapped rows are too close, not that every gadget should
   be taller. `RetroToggle`'s segment does this; an override that restates
   that padding has to restate the reduced number too.
+- **One exception to Press Start 2P, and it is a specimen.** The font
+  requester's family lists set three letters of each row in the family that
+  row offers (`FontToggle.tsx`), because a column of names says nothing
+  about what any of them look like. A sample of a face has to be in that
+  face or it is not a sample. It stays ordinary anti-aliased DOM text —
+  legibility at list size is the whole job, and the requester's canvas
+  preview is already on screen for the truthful 1-bit answer. Do not read
+  this as licence for a second UI face: it applies where the typeface
+  itself is the thing being chosen.
 - **`-webkit-font-smoothing: none` is inherited — every monospace-stack
   element needs its own `-webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;`, even if no ancestor sets `none`

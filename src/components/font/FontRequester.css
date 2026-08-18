@@ -41,14 +41,6 @@
   padding: 0 6px 6px 0;
 }
 
-/* A family list is a column of names to read down, not a row of gadgets to
-   compare: left-aligned so the eye has one edge to follow, where a centred
-   RetroToggle segment leaves ragged both sides. */
-.font-requester__family-list .retro-toggle__segment {
-  justify-content: flex-start;
-  text-align: left;
-}
-
 /* Same treatment as the frame around Fill Style's swatch: the chrome plus a
    mat of paper inside it, so the black border always has something light to
    be a frame against even when the preview's own ground is black. */

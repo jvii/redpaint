@@ -1,0 +1,33 @@
+/* Fills the segment so the two halves can be pushed apart, whatever the
+   segment's own justify-content is. */
+.font-toggle__row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  text-align: left;
+}
+
+.font-toggle__name {
+  min-width: 0;
+}
+
+/* The one place the app sets text in a face that is not Press Start 2P: the
+   specimen is the family being offered, so it has to be that family or it says
+   nothing. See the style guide's Typography note.
+
+   Both smoothing properties restated rather than inherited. The segment sets
+   -webkit-font-smoothing: none for the bitmap face, that declaration inherits,
+   and Safari renders unsmoothed system text visibly thinner rather than
+   crisper. */
+.font-toggle__specimen {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Three letters, always on one line: the name beside it may wrap, the sample
+     wrapping would just look like a rendering fault. */
+  white-space: nowrap;
+  flex: none;
+}

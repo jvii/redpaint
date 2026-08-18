@@ -9,6 +9,7 @@ import { RetroButton } from '../ui/RetroButton';
 import { RetroFieldset } from '../ui/RetroFieldset';
 import { RetroSlider } from '../ui/RetroSlider';
 import { RetroToggle } from '../ui/RetroToggle';
+import { FontToggle } from './FontToggle';
 import { useFontPreview } from './useFontPreview';
 
 // The sample: a capital with diagonals, ascenders, a round lowercase with its
@@ -104,11 +105,6 @@ function FontRequesterOpen(): JSX.Element {
     previewHeight
   );
 
-  const familyOptions = state.font.families.map((family): { value: string; label: string } => ({
-    value: family,
-    label: family,
-  }));
-
   // A bundled face is picked as a family like any other, so it lights up in the
   // bundled list rather than in the system one below — where it would not
   // appear anyway, since nothing installed it.
@@ -133,12 +129,8 @@ function FontRequesterOpen(): JSX.Element {
               below cannot promise — and they are the same on every machine,
               where that list is not. */}
           <RetroFieldset legend="Bundled">
-            <RetroToggle
-              variant="column"
-              options={BUNDLED_OUTLINE_FACES.map((bundled): { value: string; label: string } => ({
-                value: bundled.family,
-                label: bundled.family,
-              }))}
+            <FontToggle
+              families={BUNDLED_OUTLINE_FACES.map((bundled): string => bundled.family)}
               value={bundledSelection}
               onChange={(value): void => actions.font.setFamily(value)}
             />
@@ -147,10 +139,9 @@ function FontRequesterOpen(): JSX.Element {
               above it is fonts too. */}
           <RetroFieldset legend="System Fonts">
             <div className="font-requester__family-list retro-scrollbar" ref={familyListRef}>
-              {familyOptions.length > 0 ? (
-                <RetroToggle
-                  variant="column"
-                  options={familyOptions}
+              {state.font.families.length > 0 ? (
+                <FontToggle
+                  families={state.font.families}
                   value={systemSelection}
                   onChange={(value): void => actions.font.setFamily(value)}
                 />
