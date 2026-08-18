@@ -177,22 +177,30 @@ function glyphAdvance(spec: FontSpec, character: string): number {
 // only when it lays out a whole string. For a pixel-art tool that is a fair
 // trade for glyphs that never change shape, and arguably the more predictable
 // behaviour.
-function layOut(spec: FontSpec, text: string): { x: number; cell: TextRun }[] {
+// `tracking` widens every advance by the same whole number of pixels. The
+// outline style needs it: outlineRun grows each glyph a pixel on every side, so
+// a pair the font set two pixels apart comes out with its two rings touching
+// and the letters read as one shape.
+function layOut(
+  spec: FontSpec,
+  text: string,
+  tracking: number
+): { x: number; cell: TextRun }[] {
   const placed: { x: number; cell: TextRun }[] = [];
   let pen = 0;
   for (const character of text) {
     placed.push({ x: Math.round(pen), cell: glyphCell(spec, character) });
-    pen += glyphAdvance(spec, character);
+    pen += glyphAdvance(spec, character) + tracking;
   }
   return placed;
 }
 
 // Whole pixels from the start of a line to the pen after `text`. The same
 // rounding rule the layout uses, so the caret lands where the next glyph will.
-export function measureAdvance(spec: FontSpec, text: string): number {
+export function measureAdvance(spec: FontSpec, text: string, tracking = 0): number {
   let pen = 0;
   for (const character of text) {
-    pen += glyphAdvance(spec, character);
+    pen += glyphAdvance(spec, character) + tracking;
   }
   return Math.round(pen);
 }
@@ -249,12 +257,12 @@ function rasterizeAlone(spec: FontSpec, text: string): TextRun {
 }
 
 // A line: its glyphs blitted at whole-pixel pen positions.
-export function rasterizeRun(spec: FontSpec, text: string): TextRun {
+export function rasterizeRun(spec: FontSpec, text: string, tracking = 0): TextRun {
   if (text === '') {
     return emptyRun(spec);
   }
-  const placed = layOut(spec, text);
-  const advance = measureAdvance(spec, text);
+  const placed = layOut(spec, text, tracking);
+  const advance = measureAdvance(spec, text, tracking);
 
   // Extents relative to the first glyph's pen, which sits at 0. A glyph can
   // reach left of its own pen (an italic's lean, a 'j' hooking back) and the

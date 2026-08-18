@@ -39,21 +39,27 @@ export function metricsOf(spec: FontSpec): FontMetrics {
 let lastKey: string | null = null;
 let lastRun: TextRun | null = null;
 
-export function textRun(spec: FontSpec, text: string): TextRun {
-  const key = `${faceKey(spec)}|${text}`;
+export function textRun(spec: FontSpec, text: string, tracking = 0): TextRun {
+  const key = `${faceKey(spec)}|${tracking}|${text}`;
   if (key === lastKey && lastRun) {
     return lastRun;
   }
-  lastRun = rasterizeRun(spec, text);
+  lastRun = rasterizeRun(spec, text, tracking);
   lastKey = key;
   return lastRun;
 }
 
 // Where the caret sits, and what the tool measures against the right edge to
 // decide a wrap.
-export function runAdvance(spec: FontSpec, text: string): number {
-  return measureAdvance(spec, text);
+export function runAdvance(spec: FontSpec, text: string, tracking = 0): number {
+  return measureAdvance(spec, text, tracking);
 }
+
+// What the outline style adds to every advance: outlineRun grows a glyph by one
+// pixel on each side, so two pixels of extra room keeps neighbouring rings from
+// meeting. A constant, not a fraction of the size — the ring is one pixel thick
+// at every size.
+export const OUTLINE_TRACKING = 2;
 
 // A rule under the line, DPaint's Font menu "Underline". Applied to the run
 // rather than asked of canvas, which has no text-decoration of any kind.

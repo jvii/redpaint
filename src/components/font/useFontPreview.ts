@@ -1,6 +1,12 @@
 import { RefObject, useEffect } from 'react';
 import { FontSpec } from '../../algorithm/glyphRaster';
-import { outlineRun, runAdvance, textRun, underlineRun } from '../../domain/PixelFont';
+import {
+  OUTLINE_TRACKING,
+  outlineRun,
+  runAdvance,
+  textRun,
+  underlineRun,
+} from '../../domain/PixelFont';
 import { Color } from '../../types';
 import { colorToRGBString } from '../../algorithm/color';
 
@@ -37,11 +43,12 @@ export function useFontPreview(
     ctx.fillStyle = colorToRGBString(background);
     ctx.fillRect(0, 0, boxWidth, boxHeight);
 
-    const rasterized = textRun(spec, sample);
+    const tracking = outline ? OUTLINE_TRACKING : 0;
+    const rasterized = textRun(spec, sample, tracking);
     // Same order the tool stamps in (TextTool.brushFor): underline first, so
     // both on outlines the rule too.
     const underlined = underline
-      ? underlineRun(rasterized, runAdvance(spec, sample), spec.size)
+      ? underlineRun(rasterized, runAdvance(spec, sample, tracking), spec.size)
       : rasterized;
     const run = outline ? outlineRun(underlined) : underlined;
     if (run.width === 0 || run.height === 0) {

@@ -5,6 +5,7 @@ import { FontMetrics, FontSpec, TextRun } from '../algorithm/glyphRaster';
 import {
   faceKey,
   metricsOf,
+  OUTLINE_TRACKING,
   outlineRun,
   runAdvance,
   textRun,
@@ -203,7 +204,7 @@ export class TextTool implements Tool {
       return;
     }
     const { width: pageWidth, height: pageHeight } = overmind.state.canvas.resolution;
-    if (start.x + runAdvance(textFont(), text) <= pageWidth) {
+    if (start.x + runAdvance(textFont(), text, this.tracking()) <= pageWidth) {
       return; // still fits on this line
     }
 
@@ -214,7 +215,7 @@ export class TextTool implements Tool {
     const carried = text.slice(-1);
     const nextBaselineY = start.y + metrics.lineHeight;
     const roomBelow = nextBaselineY + metrics.descent <= pageHeight;
-    const roomOnANewLine = lineStart.x + runAdvance(textFont(), carried) <= pageWidth;
+    const roomOnANewLine = lineStart.x + runAdvance(textFont(), carried, this.tracking()) <= pageWidth;
     if (!roomBelow || !roomOnANewLine) {
       overmind.actions.tool.textToolBackspace();
       return;
@@ -235,7 +236,7 @@ export class TextTool implements Tool {
     overmind.actions.undo.setUndoPoint();
     // Measured with the font the line was typed in, which is still the current
     // one: every caller commits before changing anything.
-    overmind.actions.tool.textToolCommitted(runAdvance(textFont(), text));
+    overmind.actions.tool.textToolCommitted(runAdvance(textFont(), text, this.tracking()));
   }
 
   private repaint(): void {
@@ -253,7 +254,7 @@ export class TextTool implements Tool {
       this.stampRun(start, text, overlayCanvasController);
     }
     if (this.caretVisible) {
-      this.drawCaret({ x: start.x + runAdvance(textFont(), text), y: start.y });
+      this.drawCaret({ x: start.x + runAdvance(textFont(), text, this.tracking()), y: start.y });
     }
   }
 
@@ -267,7 +268,7 @@ export class TextTool implements Tool {
     overlayCanvasController.selectionBox(
       { x: pen.x, y: top },
       {
-        x: pen.x + runAdvance(textFont(), CARET_WIDTH_SAMPLE) - 1,
+        x: pen.x + runAdvance(textFont(), CARET_WIDTH_SAMPLE, this.tracking()) - 1,
         y: top + metrics.lineHeight - 1,
       }
     );
@@ -300,6 +301,12 @@ export class TextTool implements Tool {
   // bitmap. Only its identity, not the displayed color: an indexed brush stores
   // the palette index and cycling is resolved in the shader, so a cycling
   // palette does not stale this.
+  // The outline style is drawn a pixel outside the letters, so the letters have
+  // to be set a pixel further apart to leave room for it.
+  private tracking(): number {
+    return this.filled ? 0 : OUTLINE_TRACKING;
+  }
+
   private brushFor(text: string): { brush: CustomBrush; run: TextRun } | null {
     const spec = textFont();
     const underline = overmind.state.font.underline;
@@ -312,9 +319,9 @@ export class TextTool implements Tool {
 
     // Underline first, so with both on the rule is outlined along with the
     // letters — which is what two independent toggles should give.
-    const rasterized = textRun(spec, text);
+    const rasterized = textRun(spec, text, this.tracking());
     const underlined = underline
-      ? underlineRun(rasterized, runAdvance(spec, text), spec.size)
+      ? underlineRun(rasterized, runAdvance(spec, text, this.tracking()), spec.size)
       : rasterized;
     const run = this.filled ? underlined : outlineRun(underlined);
     if (run.width === 0 || run.height === 0) {
