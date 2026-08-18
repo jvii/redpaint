@@ -61,6 +61,13 @@ function clampColorReferences(context: Context, colors: number): void {
 }
 
 export const setForegroundColor = (context: Context, key: string): void => {
+  // Before the change lands: a line still being typed was typed in the colour
+  // in force at the time, and the text tool re-renders it from current state on
+  // every repaint, so it would otherwise recolour along its whole length.
+  // Committing here leaves it in the colour it was typed in and lets typing
+  // carry on in the new one — DPaint's own behaviour, which fell out of it
+  // committing each character as it went.
+  context.state.toolbox.activeTool.commitPending?.();
   context.state.palette.foregroundColorId = key;
   context.state.palette.foregroundRgb = null;
   context.actions.tool.activeToolToFGFillStyle();

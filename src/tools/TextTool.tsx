@@ -79,13 +79,13 @@ export class TextTool implements Tool {
     this.cachedStamp = null;
   }
 
-  // The font requester is opening. A line already typed was typed in the font
-  // in force at the time, so it is finished here rather than left live: it
-  // renders from the current font on every repaint, and would otherwise change
-  // face and size under the requester as the settings are tried out. The caret
-  // stays at the end of it, so a new face carries on from where the old one
-  // stopped.
-  public onSettingsOpen(): void {
+  // The font or the foreground color is about to change. A line already typed
+  // was typed in the old one, so it is finished here rather than left live: it
+  // re-renders from current state on every repaint, and would otherwise change
+  // face, size or color along its whole length. The caret stays at the end of
+  // it, so typing carries on in the new setting from where the old one stopped
+  // — which is what DPaint does, having committed each character as it went.
+  public commitPending(): void {
     this.commitLine();
   }
 

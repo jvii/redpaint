@@ -127,7 +127,7 @@ export function Toolbox(): JSX.Element {
           // current font, and the requester is about to change it underneath.
           // Right-clicking the *other* half would commit it anyway by switching
           // tools; this makes the half you are already on behave the same.
-          state.toolbox.activeTool.onSettingsOpen?.();
+          state.toolbox.activeTool.commitPending?.();
           actions.toolbox.setSelectedDrawingTool(isLowerHalf ? 'textFilled' : 'textNoFill');
           actions.font.openSettings();
         }}

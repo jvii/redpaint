@@ -1,10 +1,11 @@
 export interface Tool {
   onInit?(): void;
   onExit?(): void;
-  // A requester that edits this tool's own settings is about to open. Anything
-  // half-finished belongs to the settings it was started with, so it should be
-  // committed now rather than left to be reinterpreted under the new ones.
-  onSettingsOpen?(): void;
+  // A setting this tool's output depends on is about to change — its font, the
+  // foreground color. Anything half-finished was made under the old setting, so
+  // it is committed now rather than left to be reinterpreted under the new one.
+  // Called before the change lands, so the commit still sees the old value.
+  commitPending?(): void;
   onClick?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
   onContextMenu?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
   onMouseMove?(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void;
