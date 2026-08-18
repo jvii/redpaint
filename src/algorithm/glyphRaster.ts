@@ -13,12 +13,16 @@
 // render instead would inherit both the browser's anti-aliasing and its lack of
 // hinting.
 //
-// A whole line is drawn in one fillText rather than assembled from separately
-// rasterized glyphs. Per-glyph assembly has to round each advance to a whole
-// pixel before adding it up, and being a half pixel out on every gap in turn is
-// plainly visible as uneven rhythm even though the total width comes out right.
-// One fillText lets the browser place the glyphs at its own sub-pixel
-// precision, and only the finished line is reduced to pixels.
+// A line is assembled from separately rasterized glyphs, each blitted at a
+// whole-pixel pen position. Drawing the whole line in one fillText is the
+// obvious alternative and lets the browser place glyphs at its own sub-pixel
+// precision — but then a glyph meets the pixel grid at a different phase every
+// time it appears, and thresholding those phases gives different pixels: the
+// same 'g' comes out with a two-pixel stem in one word and a three-pixel stem
+// in the next. Measured across a line of ordinary text, a 24px Georgia produced
+// ten different 'g's. Sub-pixel placement is the right answer for anti-aliased
+// text and the wrong one here, where a glyph is a shape the user expects to
+// recognise. Rasterizing it once and stamping it is what makes it a shape.
 //
 // The size is in canvas pixels, and a screen format's pixel aspect is
 // deliberately not folded into it: text in Med-Res displays half as wide, the
@@ -125,13 +129,72 @@ export function fontMetrics(spec: FontSpec): FontMetrics {
   return { lineHeight: ascent + descent, ascent, descent };
 }
 
-// Whole pixels from the start of a line to the pen after `text`. Rounded once,
-// at the end, so it is the advance the rasterized line actually has.
-export function measureAdvance(spec: FontSpec, text: string): number {
-  if (text === '') {
-    return 0;
+// Each glyph, rasterized once and reused. A glyph is drawn alone at the pen, so
+// it always meets the pixel grid at the same phase and always comes out the same
+// pixels — which is the whole point of doing it this way.
+const glyphCache = new Map<string, TextRun>();
+// Its true advance, unrounded. Rounding these individually is what a naive
+// per-glyph layout gets wrong; see layOut below.
+const advanceCache = new Map<string, number>();
+
+function glyphKey(spec: FontSpec, character: string): string {
+  return `${cssFont(spec, spec.size)}|${character}`;
+}
+
+function glyphCell(spec: FontSpec, character: string): TextRun {
+  const key = glyphKey(spec, character);
+  const cached = glyphCache.get(key);
+  if (cached) {
+    return cached;
   }
-  return Math.round(scratchContext(spec).measureText(text).width / SUPERSAMPLE);
+  const cell = rasterizeAlone(spec, character);
+  glyphCache.set(key, cell);
+  return cell;
+}
+
+function glyphAdvance(spec: FontSpec, character: string): number {
+  const key = glyphKey(spec, character);
+  const cached = advanceCache.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const advance = scratchContext(spec).measureText(character).width / SUPERSAMPLE;
+  advanceCache.set(key, advance);
+  return advance;
+}
+
+// Where each glyph of a line sits, in whole pixels from the pen.
+//
+// The pen itself is kept fractional and only its *position* is rounded, never
+// the individual advances. Rounding each advance in turn accumulates: a face
+// whose 'n' is 8.4px wide would put every one of them at 8, and a word of them
+// ends up visibly short. Rounding the running total instead keeps the line
+// within half a pixel of the font's own metrics however long it gets, at the
+// cost of neighbouring gaps differing by a pixel — which is what whole-pixel
+// glyphs cost, and is not the same defect as drifting.
+//
+// Kerning is lost by measuring glyphs singly: the browser applies pair kerning
+// only when it lays out a whole string. For a pixel-art tool that is a fair
+// trade for glyphs that never change shape, and arguably the more predictable
+// behaviour.
+function layOut(spec: FontSpec, text: string): { x: number; cell: TextRun }[] {
+  const placed: { x: number; cell: TextRun }[] = [];
+  let pen = 0;
+  for (const character of text) {
+    placed.push({ x: Math.round(pen), cell: glyphCell(spec, character) });
+    pen += glyphAdvance(spec, character);
+  }
+  return placed;
+}
+
+// Whole pixels from the start of a line to the pen after `text`. The same
+// rounding rule the layout uses, so the caret lands where the next glyph will.
+export function measureAdvance(spec: FontSpec, text: string): number {
+  let pen = 0;
+  for (const character of text) {
+    pen += glyphAdvance(spec, character);
+  }
+  return Math.round(pen);
 }
 
 function emptyRun(spec: FontSpec): TextRun {
@@ -145,19 +208,16 @@ function emptyRun(spec: FontSpec): TextRun {
   };
 }
 
-export function rasterizeRun(spec: FontSpec, text: string): TextRun {
-  if (text === '') {
-    return emptyRun(spec);
-  }
-
+// One glyph (or any string) drawn at the pen with nothing before it. This is
+// the only place fillText is called, so it is the only place a sub-pixel phase
+// could enter — and the pen is a whole pixel here by construction.
+function rasterizeAlone(spec: FontSpec, text: string): TextRun {
   const measured = scratchContext(spec).measureText(text);
-  // Sized to the ink, not to the line box: a run of "acorn" needs no room for
-  // an ascender, and the baseline recorded below is what puts it back in the
-  // right place regardless.
+  // Sized to the ink, not to the line box: a glyph with no ascender needs no
+  // room for one, and the baseline recorded below puts it back in the right
+  // place regardless.
   const left = Math.max(0, Math.ceil(measured.actualBoundingBoxLeft / SUPERSAMPLE));
-  const right = Math.ceil(
-    Math.max(measured.actualBoundingBoxRight, measured.width) / SUPERSAMPLE
-  );
+  const right = Math.ceil(Math.max(measured.actualBoundingBoxRight, measured.width) / SUPERSAMPLE);
   const ascent = Math.ceil(measured.actualBoundingBoxAscent / SUPERSAMPLE);
   const descent = Math.ceil(measured.actualBoundingBoxDescent / SUPERSAMPLE);
 
@@ -165,7 +225,7 @@ export function rasterizeRun(spec: FontSpec, text: string): TextRun {
   const width = originX + right + MARGIN;
   const height = ascent + descent;
   if (width <= 0 || height <= 0) {
-    // All-whitespace: it advances the pen but marks nothing.
+    // Whitespace: it advances the pen but marks nothing.
     return { ...emptyRun(spec), originX, width };
   }
 
@@ -186,6 +246,62 @@ export function rasterizeRun(spec: FontSpec, text: string): TextRun {
     originX,
     baseline: ascent,
   };
+}
+
+// A line: its glyphs blitted at whole-pixel pen positions.
+export function rasterizeRun(spec: FontSpec, text: string): TextRun {
+  if (text === '') {
+    return emptyRun(spec);
+  }
+  const placed = layOut(spec, text);
+  const advance = measureAdvance(spec, text);
+
+  // Extents relative to the first glyph's pen, which sits at 0. A glyph can
+  // reach left of its own pen (an italic's lean, a 'j' hooking back) and the
+  // last can reach past the final advance, so both ends are measured rather
+  // than assumed.
+  let minX = 0;
+  let maxX = advance;
+  let ascent = 0;
+  let descent = 0;
+  for (const { x, cell } of placed) {
+    if (cell.width === 0 || cell.height === 0) {
+      continue;
+    }
+    minX = Math.min(minX, x - cell.originX);
+    maxX = Math.max(maxX, x - cell.originX + cell.width);
+    ascent = Math.max(ascent, cell.baseline);
+    descent = Math.max(descent, cell.height - cell.baseline);
+  }
+
+  const originX = -minX + MARGIN;
+  const width = originX + maxX + MARGIN;
+  const height = ascent + descent;
+  if (height === 0) {
+    // All whitespace.
+    return { ...emptyRun(spec), originX, width };
+  }
+
+  const bits = new Uint8Array(width * height);
+  for (const { x, cell } of placed) {
+    if (cell.width === 0 || cell.height === 0) {
+      continue;
+    }
+    const left = originX + x - cell.originX;
+    const top = ascent - cell.baseline;
+    for (let y = 0; y < cell.height; y++) {
+      const source = y * cell.width;
+      const target = (top + y) * width + left;
+      for (let cx = 0; cx < cell.width; cx++) {
+        // OR, not copy: glyphs overlap wherever one overhangs its advance.
+        if (cell.bits[source + cx]) {
+          bits[target + cx] = 1;
+        }
+      }
+    }
+  }
+
+  return { width, height, bits, originX, baseline: ascent };
 }
 
 // Reduces the supersampled render to 1-bit pixels: an output pixel is set when
