@@ -55,11 +55,28 @@ export function runAdvance(spec: FontSpec, text: string, tracking = 0): number {
   return measureAdvance(spec, text, tracking);
 }
 
-// What the outline style adds to every advance: outlineRun grows a glyph by one
-// pixel on each side, so two pixels of extra room keeps neighbouring rings from
-// meeting. A constant, not a fraction of the size — the ring is one pixel thick
-// at every size.
-export const OUTLINE_TRACKING = 2;
+// The room the outline style needs between one letter's ink and the next:
+// outlineRun grows a glyph by a pixel on every side, so two pixels — one for
+// each of the two rings that meet in a gap — keeps them from touching. A
+// constant, not a fraction of the size: the ring is one pixel thick at every
+// size.
+export const OUTLINE_ROOM = 2;
+
+// The distance from one line's baseline to the next: the font's line box, the
+// room for the two rings, and one row more.
+//
+// The extra row is what the horizontal direction gets for free. Letters carry
+// side bearings, so there is already a column of background between them to
+// spend on the rings; lines carry no such guarantee, and a face can set its
+// line box to exactly its ink height — Press Start 2P does, at every size — so
+// without it the rings of stacked lines meet along a continuous band.
+//
+// Added whichever style is selected, unlike the horizontal tracking. Line
+// spacing that changed with the style would reflow a paragraph typed half in
+// each, and switching halves would move lines already on the canvas.
+export function lineAdvance(spec: FontSpec): number {
+  return metricsOf(spec).lineHeight + OUTLINE_ROOM + 1;
+}
 
 // A rule under the line, DPaint's Font menu "Underline". Applied to the run
 // rather than asked of canvas, which has no text-decoration of any kind.

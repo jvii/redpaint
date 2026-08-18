@@ -5,7 +5,8 @@ import { FontMetrics, FontSpec, TextRun } from '../algorithm/glyphRaster';
 import {
   faceKey,
   metricsOf,
-  OUTLINE_TRACKING,
+  OUTLINE_ROOM,
+  lineAdvance,
   outlineRun,
   runAdvance,
   textRun,
@@ -168,7 +169,7 @@ export class TextTool implements Tool {
       overmind.actions.tool.textToolBackspace();
     } else if (event.key === 'Enter') {
       this.commitLine();
-      overmind.actions.tool.textToolNewLine(metrics.lineHeight);
+      overmind.actions.tool.textToolNewLine(lineAdvance(textFont()));
     } else if (event.key.length === 1) {
       overmind.actions.tool.textToolAppend(event.key);
       this.placeTypedCharacter(metrics);
@@ -213,7 +214,7 @@ export class TextTool implements Tool {
     // column too narrow for even a single character gains nothing by wrapping —
     // it would spend a line per keystroke walking down the page.
     const carried = text.slice(-1);
-    const nextBaselineY = start.y + metrics.lineHeight;
+    const nextBaselineY = start.y + lineAdvance(textFont());
     const roomBelow = nextBaselineY + metrics.descent <= pageHeight;
     const roomOnANewLine = lineStart.x + runAdvance(textFont(), carried, this.tracking()) <= pageWidth;
     if (!roomBelow || !roomOnANewLine) {
@@ -223,7 +224,7 @@ export class TextTool implements Tool {
 
     overmind.actions.tool.textToolBackspace();
     this.commitLine();
-    overmind.actions.tool.textToolNewLine(metrics.lineHeight);
+    overmind.actions.tool.textToolNewLine(lineAdvance(textFont()));
     overmind.actions.tool.textToolAppend(carried);
   }
 
@@ -304,7 +305,7 @@ export class TextTool implements Tool {
   // The outline style is drawn a pixel outside the letters, so the letters have
   // to be set a pixel further apart to leave room for it.
   private tracking(): number {
-    return this.filled ? 0 : OUTLINE_TRACKING;
+    return this.filled ? 0 : OUTLINE_ROOM;
   }
 
   private brushFor(text: string): { brush: CustomBrush; run: TextRun } | null {
