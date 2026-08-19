@@ -136,7 +136,7 @@ function CanvasSizeDialogOpen(): JSX.Element {
         {/* What the change does to the picture — stated as a consequence
             rather than as a question, since it is one Ctrl+Z away and undo
             carries the canvas size back with the pixels. */}
-        <p className="canvas-size__note">{note}</p>
+        <p className="supporting-text canvas-size__note">{note}</p>
       </div>
       <RetroButton variant="secondary" onClick={(): void => actions.dialog.close()}>
         Cancel

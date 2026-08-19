@@ -127,7 +127,7 @@ function FillStyleSettingsOpen(): JSX.Element {
             >
               From Brush
             </RetroButton>
-            <span className="fill-style-settings__hint">
+            <span className="supporting-text fill-style-settings__hint">
               {!state.fillStyle.hasPattern
                 ? 'No pattern captured yet — pick a brush, then click From Brush.'
                 : 'From Brush tiles the current brush across the fill.'}
@@ -154,7 +154,7 @@ function FillStyleSettingsOpen(): JSX.Element {
               onChange={(value): void => actions.fillStyle.setAxis(value as GradientAxis)}
               disabled={!isGradient}
             />
-            <span className="fill-style-settings__hint">
+            <span className="supporting-text fill-style-settings__hint">
               Use the palette to select a color from a Range to create a gradient. Ranges are set in
               the Palette Editor.
             </span>
@@ -167,7 +167,7 @@ function FillStyleSettingsOpen(): JSX.Element {
                 onChange={(value): void => actions.fillStyle.setDither(value)}
                 disabled={!isGradient}
               />
-              <span className="fill-style-settings__hint">
+              <span className="supporting-text fill-style-settings__hint">
                 How much adjacent bands randomly blend at their boundary. 0 = hard edges
               </span>
             </RetroFieldset>
@@ -180,7 +180,7 @@ function FillStyleSettingsOpen(): JSX.Element {
                 onChange={(value): void => actions.fillStyle.setJitter(value)}
                 disabled={!isGradient}
               />
-              <span className="fill-style-settings__hint">
+              <span className="supporting-text fill-style-settings__hint">
                 How far dither can push a pixel, as a % of a band's width.
               </span>
             </RetroFieldset>

@@ -178,7 +178,7 @@ function ImageLoadDialogOpen(): JSX.Element {
             body scrolls on a short window, and a notice you have to scroll to
             find is not a notice */}
         {undoLevels < ADVISE_BELOW_UNDO_LEVELS && (
-          <p className="image-load__advisory">
+          <p className="supporting-text image-load__advisory">
             {megapixels.toFixed(1)} megapixels. Painting will be slower at this size, and undo will
             hold about {undoLevels} steps instead of {MAX_UNDO_ENTRIES}.
           </p>

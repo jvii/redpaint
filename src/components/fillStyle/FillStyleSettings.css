@@ -85,21 +85,12 @@
   align-self: flex-start;
 }
 
-/* The same job as every other requester's supporting prose — a sentence under
-   a control saying what it does — so the same register: 12px, black at 0.65,
-   no weight of its own. It used to be 13px, full black and weight 500, which
-   made the loudest small text in the app out of the panel that has the most of
-   it: four of these compete with the Pattern/Gradient/Dither/Jitter legends
-   above them. 13px was also the only one in the app (Typography). */
+/* A sentence under a control saying what it does, in the shared supporting
+   register: four of these compete with the legends above them, so no weight or
+   size of their own. */
 .fill-style-settings__hint {
   display: block;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
   line-height: 1.5;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.65);
 }
 
 .fill-style-settings__dither .retro-labeled-slider {

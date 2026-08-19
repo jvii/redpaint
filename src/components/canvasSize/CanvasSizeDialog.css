@@ -40,13 +40,7 @@
   display: flex;
   align-items: center;
   margin: 0;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
   line-height: 1.5;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.65);
   max-width: 64ch;
 }
 

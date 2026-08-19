@@ -113,7 +113,7 @@ function SaveAsDialogOpen(): JSX.Element {
               a question anyone can answer without being told which keeps the
               palette. Height reserved for the longest of the three so the
               requester does not resize as the choice changes. */}
-          <p className="save-as__format-note">{saveFormats[format].note}</p>
+          <p className="supporting-text save-as__format-note">{saveFormats[format].note}</p>
           {/* Why two of them are greyed out, and how to un-grey them — beside
               the descriptions rather than in place of them, since what PNG is
               remains worth knowing while you are being told it is your only
@@ -159,7 +159,7 @@ function SaveAsDialogOpen(): JSX.Element {
             download", and sniffing the user agent to pick between them risks
             confidently giving the wrong instructions. */}
         {asksForName && (
-          <p className="save-as__note">
+          <p className="supporting-text save-as__note">
             <span>
               Saved as <b>{withExtension(valid ? cleaned : suggested, extension)}</b>. If your
               browser saves straight to the downloads folder, saving again adds a numbered copy —
