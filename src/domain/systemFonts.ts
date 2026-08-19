@@ -82,20 +82,14 @@ type WindowWithLocalFonts = Window & {
   queryLocalFonts?: () => Promise<FontData[]>;
 };
 
-// Latin-capable faces only: the tool types printable ASCII, and CJK or symbol
-// faces would swamp the list.
-function isUsableFamily(family: string): boolean {
-  return /^[\x20-\x7e]+$/.test(family);
-}
-
 export async function availableFontFamilies(): Promise<FontList> {
   const query = (window as WindowWithLocalFonts).queryLocalFonts;
   if (query) {
     try {
       const fonts = await query.call(window);
-      const families = Array.from(new Set<string>(fonts.map((font): string => font.family)))
-        .filter(isUsableFamily)
-        .sort((a, b): number => a.localeCompare(b));
+      const families = Array.from(new Set<string>(fonts.map((font): string => font.family))).sort(
+        (a, b): number => a.localeCompare(b)
+      );
       if (families.length > 0) {
         return { families, source: 'enumerated' };
       }
