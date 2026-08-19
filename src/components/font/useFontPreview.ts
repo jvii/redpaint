@@ -3,7 +3,7 @@ import { FontSpec } from '../../algorithm/glyphRaster';
 import {
   OUTLINE_ROOM,
   outlineRun,
-  runAdvance,
+  measureAdvance,
   textRun,
   underlineRun,
 } from '../../domain/PixelFont';
@@ -42,7 +42,13 @@ export function useFontPreview(
     // Same order the tool stamps in (TextTool.brushFor): underline first, so
     // both on outlines the rule too.
     const underlined = underline
-      ? underlineRun(rasterized, runAdvance(spec, sample, tracking), spec.size)
+      ? // Less the tracking after the last glyph: that is room for the next
+        // letter, not part of this line.
+        underlineRun(
+          rasterized,
+          Math.max(0, measureAdvance(spec, sample, tracking) - tracking),
+          spec.size
+        )
       : rasterized;
     const run = outline ? outlineRun(underlined) : underlined;
     if (run.width === 0 || run.height === 0) {

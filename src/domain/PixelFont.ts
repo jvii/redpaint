@@ -3,9 +3,12 @@ import {
   FontSpec,
   TextRun,
   fontMetrics,
-  measureAdvance,
   rasterizeRun,
 } from '../algorithm/glyphRaster';
+
+// Re-exported so the tool has one import site for its view of a font; there is
+// nothing to add to it.
+export { measureAdvance } from '../algorithm/glyphRaster';
 
 // Caching around algorithm/glyphRaster.ts, plus the underline and outline
 // passes. See docs/text-tool.md.
@@ -42,10 +45,6 @@ export function textRun(spec: FontSpec, text: string, tracking = 0): TextRun {
   lastRun = rasterizeRun(spec, text, tracking);
   lastKey = key;
   return lastRun;
-}
-
-export function runAdvance(spec: FontSpec, text: string, tracking = 0): number {
-  return measureAdvance(spec, text, tracking);
 }
 
 // Two pixels, one for each of the rings that meet in a gap. A constant: the

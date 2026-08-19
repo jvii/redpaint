@@ -80,6 +80,13 @@ const glyphCache = new Map<string, TextRun>();
 // Unrounded: rounding advances individually is what makes a line drift short.
 const advanceCache = new Map<string, number>();
 
+// Cells are keyed by size as well as face, so dragging the size slider caches
+// every size it passes through — about 2MB per face over its range, never asked
+// for again. Dropped wholesale rather than by age: one face at one size is the
+// whole working set, so there is nothing to thrash against.
+const CACHE_BUDGET_BYTES = 4 * 1024 * 1024;
+let cachedBytes = 0;
+
 function glyphKey(spec: FontSpec, character: string): string {
   return `${cssFont(spec, spec.size)}|${character}`;
 }
@@ -91,7 +98,13 @@ function glyphCell(spec: FontSpec, character: string): TextRun {
     return cached;
   }
   const cell = rasterizeAlone(spec, character);
+  if (cachedBytes + cell.bits.length > CACHE_BUDGET_BYTES) {
+    glyphCache.clear();
+    advanceCache.clear();
+    cachedBytes = 0;
+  }
   glyphCache.set(key, cell);
+  cachedBytes += cell.bits.length;
   return cell;
 }
 
@@ -110,24 +123,26 @@ function glyphAdvance(spec: FontSpec, character: string): number {
 // fractional and only its position is rounded, so the line tracks the font's
 // metrics instead of drifting. `tracking` widens every advance, which the
 // outline style needs. See docs/text-tool.md.
-function layOut(spec: FontSpec, text: string, tracking: number): { x: number; cell: TextRun }[] {
-  const placed: { x: number; cell: TextRun }[] = [];
+// Positions only, so measuring never rasterizes: the caret asks for the advance
+// on every blink.
+function penWalk(
+  spec: FontSpec,
+  text: string,
+  tracking: number
+): { xs: number[]; advance: number } {
+  const xs: number[] = [];
   let pen = 0;
   for (const character of text) {
-    placed.push({ x: Math.round(pen), cell: glyphCell(spec, character) });
+    xs.push(Math.round(pen));
     pen += glyphAdvance(spec, character) + tracking;
   }
-  return placed;
+  return { xs, advance: Math.round(pen) };
 }
 
-// The same rounding rule layOut uses, so the caret lands where the next glyph
-// will.
+// Where the caret sits, and where a line continued after a mid-line commit
+// picks up — so it counts the tracking after the last glyph too.
 export function measureAdvance(spec: FontSpec, text: string, tracking = 0): number {
-  let pen = 0;
-  for (const character of text) {
-    pen += glyphAdvance(spec, character) + tracking;
-  }
-  return Math.round(pen);
+  return penWalk(spec, text, tracking).advance;
 }
 
 function emptyRun(spec: FontSpec): TextRun {
@@ -183,8 +198,12 @@ export function rasterizeRun(spec: FontSpec, text: string, tracking = 0): TextRu
   if (text === '') {
     return emptyRun(spec);
   }
-  const placed = layOut(spec, text, tracking);
-  const advance = measureAdvance(spec, text, tracking);
+  const characters = [...text];
+  const { xs, advance } = penWalk(spec, text, tracking);
+  const placed = characters.map((character, i): { x: number; cell: TextRun } => ({
+    x: xs[i],
+    cell: glyphCell(spec, character),
+  }));
 
   // Relative to the first glyph's pen, at 0. A glyph can reach left of its own
   // pen (an italic's lean) and the last past the final advance.

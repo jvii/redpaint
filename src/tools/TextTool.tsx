@@ -8,7 +8,7 @@ import {
   OUTLINE_ROOM,
   lineAdvance,
   outlineRun,
-  runAdvance,
+  measureAdvance,
   textRun,
   underlineRun,
 } from '../domain/PixelFont';
@@ -193,7 +193,7 @@ export class TextTool implements Tool {
       return;
     }
     const { width: pageWidth, height: pageHeight } = overmind.state.canvas.resolution;
-    if (start.x + runAdvance(textFont(), text, this.tracking()) <= pageWidth) {
+    if (start.x + measureAdvance(textFont(), text, this.tracking()) <= pageWidth) {
       return; // still fits on this line
     }
 
@@ -205,7 +205,7 @@ export class TextTool implements Tool {
     const nextBaselineY = start.y + lineAdvance(textFont());
     const roomBelow = nextBaselineY + metrics.descent <= pageHeight;
     const roomOnANewLine =
-      lineStart.x + runAdvance(textFont(), carried, this.tracking()) <= pageWidth;
+      lineStart.x + measureAdvance(textFont(), carried, this.tracking()) <= pageWidth;
     if (!roomBelow || !roomOnANewLine) {
       overmind.actions.tool.textToolBackspace();
       return;
@@ -226,7 +226,7 @@ export class TextTool implements Tool {
     overmind.actions.undo.setUndoPoint();
     // Measured with the font the line was typed in, which is still the current
     // one: every caller commits before changing anything.
-    overmind.actions.tool.textToolCommitted(runAdvance(textFont(), text, this.tracking()));
+    overmind.actions.tool.textToolCommitted(measureAdvance(textFont(), text, this.tracking()));
   }
 
   private repaint(): void {
@@ -245,7 +245,10 @@ export class TextTool implements Tool {
     // Not behind the font requester, whose controls own the keyboard. The
     // position is kept, so it returns on the same character.
     if (this.caretVisible && !overmind.state.font.settingsOpen) {
-      this.drawCaret({ x: start.x + runAdvance(textFont(), text, this.tracking()), y: start.y });
+      this.drawCaret({
+        x: start.x + measureAdvance(textFont(), text, this.tracking()),
+        y: start.y,
+      });
     }
   }
 
@@ -259,7 +262,7 @@ export class TextTool implements Tool {
     overlayCanvasController.selectionBox(
       { x: pen.x, y: top },
       {
-        x: pen.x + runAdvance(textFont(), CARET_WIDTH_SAMPLE, this.tracking()) - 1,
+        x: pen.x + measureAdvance(textFont(), CARET_WIDTH_SAMPLE, this.tracking()) - 1,
         y: top + metrics.lineHeight - 1,
       }
     );
@@ -294,6 +297,12 @@ export class TextTool implements Tool {
   // bitmap. Only its identity, not the displayed color: an indexed brush stores
   // the palette index and cycling is resolved in the shader, so a cycling
   // palette does not stale this.
+  // The advance less the tracking after the last glyph, which is room for the
+  // next letter rather than part of this line.
+  private underlineSpan(spec: FontSpec, text: string): number {
+    return Math.max(0, measureAdvance(spec, text, this.tracking()) - this.tracking());
+  }
+
   // Room for the ring outlineRun draws outside each letter.
   private tracking(): number {
     return this.filled ? 0 : OUTLINE_ROOM;
@@ -313,7 +322,7 @@ export class TextTool implements Tool {
     // letters — which is what two independent toggles should give.
     const rasterized = textRun(spec, text, this.tracking());
     const underlined = underline
-      ? underlineRun(rasterized, runAdvance(spec, text, this.tracking()), spec.size)
+      ? underlineRun(rasterized, this.underlineSpan(spec, text), spec.size)
       : rasterized;
     const run = this.filled ? underlined : outlineRun(underlined);
     if (run.width === 0 || run.height === 0) {
