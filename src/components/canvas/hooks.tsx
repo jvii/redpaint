@@ -65,24 +65,9 @@ export function useContextLossRecovery(
 
 export function useInitTool(isZoomCanvas: boolean): void {
   const state = useAppState();
-  // One effect, so the tool being left is the one that gets torn down. React
-  // runs the cleanup against the value the effect was set up with, which is
-  // exactly "the tool that was active until now" — and it runs it once per
-  // setup, whatever the toolbox did to get here.
-  //
-  // Keying the teardown off `previousToolId` instead got this wrong in both
-  // directions, because that id is a record of what was selected rather than of
-  // what was left. Selecting a tool always writes it (setActiveToPreviousTool),
-  // so re-picking the active tool — right-clicking Text's gadget for the font
-  // requester, pressing `t` twice — made it change while `activeTool` did not,
-  // and the live tool was exited with nothing to set it up again. Then, having
-  // been written, it did *not* change when the tool really was left, and the
-  // outgoing tool was never exited at all: switching from Text to Magnify kept
-  // the caret blinking and left the typed line uncommitted.
-  //
-  // Both were invisible for every other tool, whose exit hooks have nothing to
-  // undo. The text tool holds a keydown listener, the caret's blink timer and
-  // an uncommitted line, and it noticed all of it.
+  // One effect, so the tool torn down is the one being left: React runs the
+  // cleanup against the value the effect was set up with, once per setup. Any
+  // id recording what was *selected* gets this wrong in both directions.
   useEffect((): (() => void) | undefined => {
     if (isZoomCanvas) {
       return undefined;

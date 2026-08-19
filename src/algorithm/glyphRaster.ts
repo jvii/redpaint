@@ -1,42 +1,6 @@
-// Turning an outline font into 1-bit text.
-//
-// No browser exposes an aliased text path: canvas anti-aliases in coverage, so
-// the edge pixel's alpha says how much of the glyph covered it whatever color
-// was asked for, and neither imageSmoothingEnabled (that governs image scaling)
-// nor the CSS font-smoothing properties (they don't reach fillText) change it.
-//
-// So the browser is used only as an outline rasterizer, at a size where its own
-// anti-aliasing no longer biases the shape, and the pixels are decided here:
-// draw at SUPERSAMPLE times the wanted size, then set an output pixel when at
-// least half of its SUPERSAMPLE x SUPERSAMPLE subsamples were covered. That is
-// area coverage, the rule an aliased rasterizer would apply. Thresholding a 1x
-// render instead would inherit both the browser's anti-aliasing and its lack of
-// hinting.
-//
-// A line is assembled from separately rasterized glyphs, each blitted at a
-// whole-pixel pen position. Drawing the whole line in one fillText is the
-// obvious alternative and lets the browser place glyphs at its own sub-pixel
-// precision — but then a glyph meets the pixel grid at a different phase every
-// time it appears, and thresholding those phases gives different pixels: the
-// same 'g' comes out with a two-pixel stem in one word and a three-pixel stem
-// in the next. Measured across a line of ordinary text, a 24px Georgia produced
-// ten different 'g's. Sub-pixel placement is the right answer for anti-aliased
-// text and the wrong one here, where a glyph is a shape the user expects to
-// recognise. Rasterizing it once and stamping it is what makes it a shape.
-//
-// The size is in canvas pixels, and a screen format's pixel aspect is
-// deliberately not folded into it: text in Med-Res displays half as wide, the
-// way everything else drawn here does. DPaint's own text never consulted the
-// screen mode (TEXT.C's mDispChar is a 1:1 blit, and `aspect` appears in that
-// source only in the ILBM header code), and no tool in this app does either —
-// a circle drawn in Med-Res is a pixel-circle that displays as an ellipse.
-// PyDPainter does correct for it, but only because it swapped the bitmap font
-// for a scalable one and so had to choose a ppem.
-//
-// Below roughly 12px this stops being enough: outlines that small have
-// sub-pixel stem widths and canvas grid-fits nothing, so stems thin and break
-// no matter how finely they are sampled. That is missing information, not a
-// sampling error, and it is why a real bitmap font still has a place.
+// Turning an outline font into 1-bit text: the browser rasterizes the outline
+// at SUPERSAMPLE x the wanted size, and coverage decides the pixels here. See
+// docs/text-tool.md.
 
 export type FontSpec = {
   family: string;
@@ -64,33 +28,16 @@ export type FontMetrics = {
   descent: number;
 };
 
-// Subsamples per axis. 4 gives each output pixel 16 coverage levels, which is
-// finer than the difference between any two plausible fill rules; 8 was
-// measured as visually identical and seven times slower.
-//
-// Three other ways to sharpen the result were measured and are not worth
-// retrying:
-//   - Choosing the sub-pixel baseline phase that best fits the outline to the
-//     grid, as a stand-in for the hinting skipped below. Best case was 0.6%
-//     fewer undecided pixels at 12px, and at 16px phase 0 already won.
-//   - Counting each subsample as covered/not before summing, to be immune to
-//     any gamma in the browser's text alpha. Indistinguishable, which says the
-//     alpha is near enough to linear coverage to ignore.
-//   - Moving the threshold. Swept 0.35 to 0.60 at 11px: below 0.45 counters
-//     close up, above 0.50 bowls break, and half is already the value the rule
-//     asks for.
+// 8 was measured as visually identical and seven times slower.
 const SUPERSAMPLE = 4;
 
 // One column of clearance on each side of the line, for glyphs whose ink
 // reaches past the pen (an italic's lean, a 'j' hooking left).
 const MARGIN = 1;
 
-// Quoting the family is not optional. ctx.font takes the CSS font shorthand,
-// an unquoted family name has to be a sequence of valid CSS identifiers, and a
-// word starting with a digit is not one — so "Press Start 2P" and "Jersey 10"
-// fail to parse. The assignment is then *silently dropped* and the context
-// keeps the font it had, which reads as one face's metrics being reported for
-// another rather than as an error.
+// Not optional: an unquoted family name must be a sequence of valid CSS
+// identifiers, so "Press Start 2P" fails to parse and ctx.font silently keeps
+// the font it had.
 export function quoteFamily(family: string): string {
   return `"${family.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
 }
@@ -109,10 +56,8 @@ function scratchContext(spec: FontSpec): CanvasRenderingContext2D {
   if (!scratch) {
     scratch = document.createElement('canvas');
   }
-  // alpha: true deliberately. An opaque context can get subpixel (LCD)
-  // anti-aliasing in some browsers, whose colored fringes would corrupt the
-  // coverage reading that the whole approach rests on. willReadFrequently asks
-  // for a software backing store, which is what getImageData wants.
+  // alpha: true deliberately — an opaque context can get subpixel (LCD)
+  // anti-aliasing, whose colored fringes would corrupt the coverage reading.
   const ctx = scratch.getContext('2d', { alpha: true, willReadFrequently: true });
   if (!ctx) {
     throw new Error('No 2d context available for glyph rasterization');
@@ -129,12 +74,10 @@ export function fontMetrics(spec: FontSpec): FontMetrics {
   return { lineHeight: ascent + descent, ascent, descent };
 }
 
-// Each glyph, rasterized once and reused. A glyph is drawn alone at the pen, so
-// it always meets the pixel grid at the same phase and always comes out the same
-// pixels — which is the whole point of doing it this way.
+// A glyph drawn alone always meets the pixel grid at the same phase, so it
+// always comes out the same pixels.
 const glyphCache = new Map<string, TextRun>();
-// Its true advance, unrounded. Rounding these individually is what a naive
-// per-glyph layout gets wrong; see layOut below.
+// Unrounded: rounding advances individually is what makes a line drift short.
 const advanceCache = new Map<string, number>();
 
 function glyphKey(spec: FontSpec, character: string): string {
@@ -163,29 +106,11 @@ function glyphAdvance(spec: FontSpec, character: string): number {
   return advance;
 }
 
-// Where each glyph of a line sits, in whole pixels from the pen.
-//
-// The pen itself is kept fractional and only its *position* is rounded, never
-// the individual advances. Rounding each advance in turn accumulates: a face
-// whose 'n' is 8.4px wide would put every one of them at 8, and a word of them
-// ends up visibly short. Rounding the running total instead keeps the line
-// within half a pixel of the font's own metrics however long it gets, at the
-// cost of neighbouring gaps differing by a pixel — which is what whole-pixel
-// glyphs cost, and is not the same defect as drifting.
-//
-// Kerning is lost by measuring glyphs singly: the browser applies pair kerning
-// only when it lays out a whole string. For a pixel-art tool that is a fair
-// trade for glyphs that never change shape, and arguably the more predictable
-// behaviour.
-// `tracking` widens every advance by the same whole number of pixels. The
-// outline style needs it: outlineRun grows each glyph a pixel on every side, so
-// a pair the font set two pixels apart comes out with its two rings touching
-// and the letters read as one shape.
-function layOut(
-  spec: FontSpec,
-  text: string,
-  tracking: number
-): { x: number; cell: TextRun }[] {
+// Where each glyph sits, in whole pixels from the pen. The pen stays
+// fractional and only its position is rounded, so the line tracks the font's
+// metrics instead of drifting. `tracking` widens every advance, which the
+// outline style needs. See docs/text-tool.md.
+function layOut(spec: FontSpec, text: string, tracking: number): { x: number; cell: TextRun }[] {
   const placed: { x: number; cell: TextRun }[] = [];
   let pen = 0;
   for (const character of text) {
@@ -195,8 +120,8 @@ function layOut(
   return placed;
 }
 
-// Whole pixels from the start of a line to the pen after `text`. The same
-// rounding rule the layout uses, so the caret lands where the next glyph will.
+// The same rounding rule layOut uses, so the caret lands where the next glyph
+// will.
 export function measureAdvance(spec: FontSpec, text: string, tracking = 0): number {
   let pen = 0;
   for (const character of text) {
@@ -216,14 +141,12 @@ function emptyRun(spec: FontSpec): TextRun {
   };
 }
 
-// One glyph (or any string) drawn at the pen with nothing before it. This is
-// the only place fillText is called, so it is the only place a sub-pixel phase
-// could enter — and the pen is a whole pixel here by construction.
+// The only place fillText is called, and the pen is a whole pixel here by
+// construction.
 function rasterizeAlone(spec: FontSpec, text: string): TextRun {
   const measured = scratchContext(spec).measureText(text);
-  // Sized to the ink, not to the line box: a glyph with no ascender needs no
-  // room for one, and the baseline recorded below puts it back in the right
-  // place regardless.
+  // Sized to the ink, not the line box; the baseline recorded below is what
+  // puts it back in place.
   const left = Math.max(0, Math.ceil(measured.actualBoundingBoxLeft / SUPERSAMPLE));
   const right = Math.ceil(Math.max(measured.actualBoundingBoxRight, measured.width) / SUPERSAMPLE);
   const ascent = Math.ceil(measured.actualBoundingBoxAscent / SUPERSAMPLE);
@@ -240,8 +163,7 @@ function rasterizeAlone(spec: FontSpec, text: string): TextRun {
   const canvas = scratch as HTMLCanvasElement;
   canvas.width = width * SUPERSAMPLE;
   canvas.height = height * SUPERSAMPLE;
-  // Sizing the canvas resets the context, so the font has to be set again after
-  // it rather than once alongside the measuring above.
+  // Sizing the canvas resets the context, so the font is set again after it.
   const ctx = scratchContext(spec);
   ctx.fillStyle = '#fff';
   ctx.fillText(text, originX * SUPERSAMPLE, ascent * SUPERSAMPLE);
@@ -264,10 +186,8 @@ export function rasterizeRun(spec: FontSpec, text: string, tracking = 0): TextRu
   const placed = layOut(spec, text, tracking);
   const advance = measureAdvance(spec, text, tracking);
 
-  // Extents relative to the first glyph's pen, which sits at 0. A glyph can
-  // reach left of its own pen (an italic's lean, a 'j' hooking back) and the
-  // last can reach past the final advance, so both ends are measured rather
-  // than assumed.
+  // Relative to the first glyph's pen, at 0. A glyph can reach left of its own
+  // pen (an italic's lean) and the last past the final advance.
   let minX = 0;
   let maxX = advance;
   let ascent = 0;
@@ -312,12 +232,8 @@ export function rasterizeRun(spec: FontSpec, text: string, tracking = 0): TextRu
   return { width, height, bits, originX, baseline: ascent };
 }
 
-// Reduces the supersampled render to 1-bit pixels: an output pixel is set when
-// at least half of its subsamples were covered.
-//
-// Exported for testing, which is why it takes raw RGBA rather than the canvas:
-// the rasterizing pass above needs a browser that actually draws text, this
-// does not.
+// An output pixel is set when at least half its subsamples were covered.
+// Takes raw RGBA rather than the canvas so it can be tested without one.
 export function thresholdCoverage(
   data: Uint8ClampedArray,
   imageWidth: number,

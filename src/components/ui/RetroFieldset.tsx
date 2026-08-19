@@ -3,15 +3,9 @@ import './RetroFieldset.css';
 
 type Props = {
   legend: string;
-  // A readout for the legend to carry: the thing the group is currently set to,
-  // beside the word for what it sets. Small monospace, in the supporting
-  // register the app uses below 16px, centred on the legend rather than sharing
-  // its baseline — the bitmap face has next to no descenders, so a common
-  // baseline hangs the smaller text low instead of tying the two together.
-  // Same treatment as the palette editor's Color Cycling title row.
-  //
-  // Borderless groups only: a bordered legend straddles the border line and has
-  // to stay one short, nowrap run for the gap in that line to fit it.
+  // A readout for the legend to carry, beside the word for what it sets. Small
+  // monospace, centred on the legend rather than sharing its baseline — the
+  // bitmap face has next to no descenders. Borderless groups only.
   detail?: ReactNode;
   children: ReactNode;
   // Lets a caller scope its own per-group content rules (e.g. styling the

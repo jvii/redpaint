@@ -20,11 +20,8 @@ type Props = {
   // Single-select: the one selected value. Ignored when selectedValues is
   // given.
   value?: string;
-  // Multi-select: every value currently on. For a group whose options are not
-  // alternatives — Bold and Italic are independent, text can be both — where a
-  // single-select group would make choosing one silently unchoose the other.
-  // onChange still reports the segment that was clicked; the caller decides
-  // what toggling it means.
+  // Multi-select: every value currently on, for options that are not
+  // alternatives. onChange still reports the segment clicked.
   selectedValues?: readonly string[];
   onChange: (value: string) => void;
   variant?: Variant;

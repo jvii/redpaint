@@ -7,18 +7,15 @@ import {
   rasterizeRun,
 } from '../algorithm/glyphRaster';
 
-// The text tool's view of a font: the line it is typing, and the metrics that
-// position the caret around it. Everything here is caching around
-// algorithm/glyphRaster.ts, which does the actual work.
+// Caching around algorithm/glyphRaster.ts, plus the underline and outline
+// passes. See docs/text-tool.md.
 
-// Identifies a font for caching. Exported because the text tool caches the
-// brush it builds from a run and has to key it on the same thing.
+// Exported because the text tool keys its brush cache on the same thing.
 export function faceKey(spec: FontSpec): string {
   return `${spec.family}|${spec.size}|${spec.bold ? 'b' : ''}|${spec.italic ? 'i' : ''}`;
 }
 
-// Metrics come from a measureText on a scratch canvas — cheap, but asked for on
-// every repaint, and they only change when the font does.
+// Asked for on every repaint; only change when the font does.
 const metricsCache = new Map<string, FontMetrics>();
 
 export function metricsOf(spec: FontSpec): FontMetrics {
@@ -32,10 +29,8 @@ export function metricsOf(spec: FontSpec): FontMetrics {
   return metrics;
 }
 
-// Only the current line is worth remembering: each keystroke asks for a
-// different string, so a map of them would grow forever and never be read
-// twice. One entry is enough to keep the caret's twice-a-second blink from
-// re-rasterizing text that has not changed.
+// One entry: each keystroke asks for a different string, so a map would grow
+// forever. Enough to keep the caret's blink from re-rasterizing.
 let lastKey: string | null = null;
 let lastRun: TextRun | null = null;
 
@@ -49,47 +44,24 @@ export function textRun(spec: FontSpec, text: string, tracking = 0): TextRun {
   return lastRun;
 }
 
-// Where the caret sits, and what the tool measures against the right edge to
-// decide a wrap.
 export function runAdvance(spec: FontSpec, text: string, tracking = 0): number {
   return measureAdvance(spec, text, tracking);
 }
 
-// The room the outline style needs between one letter's ink and the next:
-// outlineRun grows a glyph by a pixel on every side, so two pixels — one for
-// each of the two rings that meet in a gap — keeps them from touching. A
-// constant, not a fraction of the size: the ring is one pixel thick at every
-// size.
+// Two pixels, one for each of the rings that meet in a gap. A constant: the
+// ring is one pixel thick at every size.
 export const OUTLINE_ROOM = 2;
 
-// The distance from one line's baseline to the next: the font's line box, the
-// room for the two rings, and one row more.
-//
-// The extra row is what the horizontal direction gets for free. Letters carry
-// side bearings, so there is already a column of background between them to
-// spend on the rings; lines carry no such guarantee, and a face can set its
-// line box to exactly its ink height — Press Start 2P does, at every size — so
-// without it the rings of stacked lines meet along a continuous band.
-//
-// Added whichever style is selected, unlike the horizontal tracking. Line
-// spacing that changed with the style would reflow a paragraph typed half in
-// each, and switching halves would move lines already on the canvas.
+// The line box, room for the two rings, and one row more that the horizontal
+// direction gets free from side bearings. Added whichever style is selected —
+// spacing that changed with it would reflow a paragraph typed half in each.
 export function lineAdvance(spec: FontSpec): number {
   return metricsOf(spec).lineHeight + OUTLINE_ROOM + 1;
 }
 
-// A rule under the line, DPaint's Font menu "Underline". Applied to the run
-// rather than asked of canvas, which has no text-decoration of any kind.
-//
-// Where and how thick is ours to choose: a font's underline position and
-// thickness live in its `post` table and measureText surfaces neither. Both
-// scale with the size instead of being a constant hairline — against Press
-// Start 2P at 24px, whose strokes are 3px, a single pixel reads as a rendering
-// fault rather than as a rule.
-//
-// The run grows to fit it. It is sized to the ink, so the rule falls below the
-// descent of text that has none, and it spans the whole advance, which is wider
-// than the ink whenever the line ends in a space.
+// DPaint's Font menu "Underline". Canvas has no text-decoration, and
+// measureText surfaces neither the position nor the thickness a font declares,
+// so both are chosen here and scale with the size. The run grows to fit.
 export function underlineRun(run: TextRun, advance: number, size: number): TextRun {
   if (run.width === 0 || run.height === 0) {
     return run;
@@ -110,12 +82,8 @@ export function underlineRun(run: TextRun, advance: number, size: number): TextR
   return { ...run, width, height, bits };
 }
 
-// The run's outline: every pixel orthogonally or diagonally touching the text
-// but not part of it. DPaint's Font menu "Outline" style, which is what the
-// text gadget's upper half selects.
-//
-// The run grows by a pixel on every side to make room for it, so an outline is
-// never clipped by the bitmap that was sized for the text alone.
+// Every pixel touching the text but not part of it. The run grows by a pixel
+// on every side so the ring is never clipped.
 export function outlineRun(run: TextRun): TextRun {
   if (run.width === 0 || run.height === 0) {
     return run;

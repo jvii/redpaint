@@ -21,32 +21,16 @@ import { Point } from '../types';
 
 // DPaint's Text tool. Click to set where the text begins, then type: the line
 // stays live on the overlay and only reaches the picture when it is finished,
-// which is what makes Backspace an edit rather than a second mark. DPaint I
-// committed each character as it was typed (TEXT.C, `mDispChar`) and so had to
-// erase to the background color to take one back; PyDPainter's `DoText` keeps
-// the line editable and stamps it on the way out, which is the model here.
+// which is what makes Backspace an edit rather than a second mark.
 //
-// A finished line is stamped as an ordinary brush, so it picks up whatever the
-// palette's foreground color is — but through drawImage rather than
-// CustomBrush.stamp, so the paint modes do not reach it. DPaint's text ignored
-// them (TEXT.C blits JAM1 and consults no mode), and the ones that would reach
-// a single stamp here have little to say to one: Smear and Blend are defined by
-// being dragged, and Matte, Color and Repl are already indistinguishable for a
-// run whose bitmap is FG-colorized either way.
-//
-// This is also where an anti-alias mode was once expected to give text its
-// anti-aliasing for free. It is not the plan any more: later DPaint made
-// Antialias a setting beside the modes rather than one of them, and for text
-// specifically the better route is PyDPainter's — let the browser render the
-// glyphs anti-aliased and quantize that to the palette, or keep it as-is once
-// there are true-color pixels to keep it in.
+// A finished line is stamped as an ordinary brush, but through drawImage rather
+// than CustomBrush.stamp, so the paint modes do not reach it. See
+// docs/text-tool.md.
 
 const CARET_BLINK_MS = 500;
 
-// A plain copy of the font settings, never the Overmind state object itself.
-// The spec is a cache key and reaches ctx.font on every keystroke, and reading
-// it through Overmind's proxies would pay a get-trap per field per call for
-// nothing.
+// A plain copy, never the Overmind state object: this reaches ctx.font on every
+// keystroke and would pay a proxy get-trap per field per call.
 function textFont(): FontSpec {
   const font = overmind.state.font;
   return { family: font.family, size: font.size, bold: font.bold, italic: font.italic };
@@ -75,16 +59,9 @@ export class TextTool implements Tool {
     overmind.actions.tool.activeToolToFGFillStyle();
   }
 
-  // Reached by every way out of the tool: picking another one from the toolbox,
-  // and Escape, which GlobalHotkeyManager turns into exactly that.
-  //
-  // The caret is left where the committed line ended rather than put away.
-  // Leaving is not always leaving: the two halves of the Text gadget are
-  // separate tools, so choosing Outline mid-line comes through here, and so
-  // does every other change of mind about how to keep typing. Carrying the
-  // caret makes those continue the line instead of losing your place, and
-  // costs nothing when the tool really is being left — the overlay is cleared
-  // either way, and the next click moves the caret regardless.
+  // The caret is left where the committed line ended: the gadget's two halves
+  // are separate tools, so changing fill style mid-line comes through here and
+  // should continue the line rather than lose the place.
   public onExit(): void {
     this.commitLine();
     // A finished line's brush is worth nothing to the next one, and the biggest
@@ -92,16 +69,13 @@ export class TextTool implements Tool {
     this.cachedStamp = null;
   }
 
-  // The font or the foreground color is about to change. A line already typed
-  // was typed in the old one, so it is finished here rather than left live: it
-  // re-renders from current state on every repaint, and would otherwise change
-  // face, size or color along its whole length. The caret stays at the end of
-  // it, so typing carries on in the new setting from where the old one stopped
-  // — which is what DPaint does, having committed each character as it went.
+  // A live line re-renders from current state on every repaint, so it would
+  // otherwise change face, size or color along its whole length. The caret
+  // stays at the end, and typing carries on in the new setting.
   public commitPending(): void {
     this.commitLine();
-    // The requester opens through here, and the caret has to be off the overlay
-    // before it does rather than a blink later.
+    // The requester opens through here; the caret has to be off the overlay
+    // before it does.
     this.repaint();
   }
 
@@ -256,9 +230,8 @@ export class TextTool implements Tool {
   }
 
   private repaint(): void {
-    // The overlay does not preserve its drawing buffer, so a repaint from the
-    // blink timer composites as a whole fresh frame: everything the overlay
-    // should show has to be re-issued here, not just the part that changed.
+    // preserveDrawingBuffer: false — a blink-timer repaint composites a whole
+    // fresh frame, so everything the overlay shows is re-issued here.
     overlayCanvasController.beginFrame();
     overlayCanvasController.clear();
 
@@ -269,10 +242,8 @@ export class TextTool implements Tool {
     if (text !== '') {
       this.stampRun(start, text, overlayCanvasController);
     }
-    // Not while the font requester is over the canvas: a caret blinking behind
-    // it offers a line to type that the requester's own controls have the
-    // keyboard for. Where it sits is remembered either way, so it comes back on
-    // the same character when the requester closes.
+    // Not behind the font requester, whose controls own the keyboard. The
+    // position is kept, so it returns on the same character.
     if (this.caretVisible && !overmind.state.font.settingsOpen) {
       this.drawCaret({ x: start.x + runAdvance(textFont(), text, this.tracking()), y: start.y });
     }
@@ -302,7 +273,7 @@ export class TextTool implements Tool {
       return;
     }
     // drawImage, not CustomBrush.stamp: stamp routes the effect modes through
-    // effectDraw, and text takes no mode (see the note at the top).
+    // effectDraw, and text takes no mode.
     target.drawImage(
       [{ x: start.x - stamp.run.originX, y: start.y - stamp.run.baseline }],
       stamp.brush
@@ -323,8 +294,7 @@ export class TextTool implements Tool {
   // bitmap. Only its identity, not the displayed color: an indexed brush stores
   // the palette index and cycling is resolved in the shader, so a cycling
   // palette does not stale this.
-  // The outline style is drawn a pixel outside the letters, so the letters have
-  // to be set a pixel further apart to leave room for it.
+  // Room for the ring outlineRun draws outside each letter.
   private tracking(): number {
     return this.filled ? 0 : OUTLINE_ROOM;
   }

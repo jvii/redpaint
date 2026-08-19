@@ -4,18 +4,13 @@ import { FontListSource } from '../../domain/systemFonts';
 // fillStyle module: a few settings plus the open flag and a snapshot so Cancel
 // can put back what the panel was opened with.
 
-// The size is set by a slider with no figure on it, because the figure was
-// never the thing being chosen: a px size is an em, not a height, so the same
-// number gives visibly different text in different faces, and reading "24" told
-// you nothing the preview does not show better. The preview draws at true
-// canvas scale (useFontPreview), so it *is* the readout.
+// A slider with no figure on it: a px size is an em, not a height, so the same
+// number gives different text in different faces. The preview is the readout.
 
 export const SIZE_MAX = 128;
 
-// Below about 20px an outline face has no whole pixels to put its stems on and
-// breaks up under thresholding (glyphRaster.ts). Offering smaller sizes only
-// offered a result nobody would keep — the bundled pixel faces are the answer
-// down there, and they have their own floor below.
+// Below about 20px an outline face breaks up under thresholding; the bundled
+// pixel faces are the answer down there.
 export const SYSTEM_SIZE_MIN = 20;
 
 export type SizeRange = { min: number; max: number; step: number };
@@ -37,10 +32,8 @@ export function constrainSize(size: number, range: SizeRange): number {
   return Math.max(range.min, Math.min(range.max, stepped));
 }
 
-// A bundled face, so a fresh session paints something crisp without anyone
-// having opened the requester — and it is already served for the UI
-// (index.html), so it renders from the first keystroke without waiting on
-// loadBundledFaces.
+// A bundled face, already served for the UI, so a fresh session paints
+// something crisp from the first keystroke.
 export const DEFAULT_FAMILY = 'Press Start 2P';
 // A multiple of 8 as well as being above SYSTEM_SIZE_MIN, so it survives a
 // switch to either kind of face untouched.

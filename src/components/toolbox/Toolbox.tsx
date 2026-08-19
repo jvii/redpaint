@@ -118,17 +118,13 @@ export function Toolbox(): JSX.Element {
         isLowerHalfSelected={state.toolbox.activeToolId === 'textFilled'}
         onUpperHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textNoFill')}
         onLowerHalfClick={(): void => actions.toolbox.setSelectedDrawingTool('textFilled')}
-        // Unlike the fill-style gadgets, neither half is picked by the
-        // right-click itself: which half the pointer happened to be over is not
-        // a choice about fill, and the requester carries its own Filled/
-        // Unfilled toggle to make that one deliberately.
+        // Neither half is picked by the right-click itself; the requester
+        // carries its own Filled/Unfilled toggle.
         onRightClick={(): void => {
-          // Before anything else: a line still being typed was typed in the
-          // current font, and the requester is about to change it underneath.
+          // A line still being typed was typed in the current font.
           state.toolbox.activeTool.commitPending?.();
-          // Still arms the tool when it is not the one selected — the requester
-          // is about the tool, and opening it otherwise leaves the font just
-          // chosen with nothing to type in. Filled is DPaint's plain `t`.
+          // Still arms the tool when it is not selected, or the font just
+          // chosen has nothing to type in.
           if (
             state.toolbox.selectedDrawingToolId !== 'textFilled' &&
             state.toolbox.selectedDrawingToolId !== 'textNoFill'

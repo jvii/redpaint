@@ -1,20 +1,12 @@
 import { quoteFamily } from '../algorithm/glyphRaster';
 
-// Which font families this browser can actually offer the text tool.
+// Which font families this browser can offer the text tool.
 //
-// Three capabilities get conflated here and only the first is portable:
-// *rendering* with an installed family by name works everywhere and needs no
-// permission, which is why the text tool works in every browser; *enumerating*
-// what is installed is queryLocalFonts(), which is Chrome and Edge only (not
-// other Chromium browsers, not Baseline, opposed by Safari and Firefox on
-// fingerprinting grounds) and permission-gated where it exists; reading a
-// font's raw bytes is gated the same way.
-//
-// So there are two lists, and they are not the same thing. Where enumeration
-// works, this is the machine's real font list. Where it does not, it is a probe
-// of names guessed in advance — a family whose name is not in CANDIDATES cannot
-// be found at all, however well installed it is. The requester says which one
-// it is showing rather than implying the short list is everything installed.
+// Rendering with an installed family by name works everywhere; *enumerating*
+// what is installed is queryLocalFonts(), Chrome and Edge only and
+// permission-gated. So there are two lists: the machine's real one, or a probe
+// of names guessed in advance, which cannot find a family not in CANDIDATES.
+// See docs/text-tool.md.
 
 // How the list was obtained, so the requester can be honest about it.
 export type FontListSource = 'enumerated' | 'probed';
@@ -50,10 +42,9 @@ const CANDIDATES = [
   'Comic Sans MS',
 ];
 
-// The generic families a probe measures against. A candidate that is not
-// installed falls back to one of these and measures identically to it; one that
-// differs from all three is present. Three rather than one because a candidate
-// can coincidentally match a single fallback's metrics.
+// A candidate not installed falls back to one of these and measures
+// identically. Three rather than one, since a candidate can coincidentally
+// match a single fallback's metrics.
 const FALLBACKS = ['monospace', 'serif', 'sans-serif'];
 
 // Long and mixed enough that two genuinely different faces will not agree on
@@ -61,10 +52,8 @@ const FALLBACKS = ['monospace', 'serif', 'sans-serif'];
 const PROBE_TEXT = 'mmmmmmmmmmlliWWMMwi0O@';
 const PROBE_SIZE = 72;
 
-// Quoted for the same reason cssFont quotes: an unquoted family whose word
-// starts with a digit fails to parse, and the assignment is silently dropped —
-// here that would measure the previous candidate again and report this one
-// present or absent at random.
+// Quoted, or a digit-leading name is silently dropped and this measures the
+// previous candidate again.
 function probeWidths(ctx: CanvasRenderingContext2D, family: string): number[] {
   return FALLBACKS.map((fallback): number => {
     ctx.font = `${PROBE_SIZE}px ${quoteFamily(family)}, ${fallback}`;
@@ -93,9 +82,8 @@ type WindowWithLocalFonts = Window & {
   queryLocalFonts?: () => Promise<FontData[]>;
 };
 
-// Latin-capable faces only. A text tool that can type printable ASCII has
-// nothing to do with a CJK or symbol face, and on a machine with many of them
-// installed they would swamp the list.
+// Latin-capable faces only: the tool types printable ASCII, and CJK or symbol
+// faces would swamp the list.
 function isUsableFamily(family: string): boolean {
   return /^[\x20-\x7e]+$/.test(family);
 }
@@ -112,9 +100,8 @@ export async function availableFontFamilies(): Promise<FontList> {
         return { families, source: 'enumerated' };
       }
     } catch {
-      // Denied, dismissed, or unavailable in this context. The probe below is
-      // the same answer every other browser gets, so there is nothing to
-      // report — falling through is the whole handling.
+      // Denied or unavailable: the probe below is what every other browser
+      // gets anyway.
     }
   }
   return { families: probeInstalledFamilies(), source: 'probed' };

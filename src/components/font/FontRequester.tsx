@@ -12,18 +12,13 @@ import { RetroToggle } from '../ui/RetroToggle';
 import { FontToggle } from './FontToggle';
 import { useFontPreview } from './useFontPreview';
 
-// The sample: a capital with diagonals, ascenders, a round lowercase with its
-// counter, and digits. Between them they show whether a face survived being
-// thresholded, which is the question this requester exists to answer. Short
-// because the preview draws at the size the text really is (useFontPreview)
-// and a long one spends the box on repeats of what the first few letters
-// already said.
+// A capital with diagonals, ascenders, a round lowercase with its counter, and
+// digits — between them they show whether a face survived thresholding.
 const SAMPLE = 'Abcd 123';
 
 // The preview's box, in CSS px. Fixed, so the window never resizes because a
-// different family or size was picked (docs/style-guide.md, "A window never
-// resizes because its own content changed"). Its raw buffer is a different
-// figure entirely — see previewWidth/Height below.
+// different family or size was picked (docs/style-guide.md). Its raw buffer is
+// a different figure — see previewWidth/Height below.
 const PREVIEW_DISPLAY_WIDTH = 460;
 const PREVIEW_DISPLAY_HEIGHT = 236;
 
@@ -47,10 +42,8 @@ function FontRequesterOpen(): JSX.Element {
   // under the pointer the moment a family is clicked.
   const centredOnOpen = useRef(false);
 
-  // The chosen family can be hundreds of names down a list that opens at the
-  // top, where it is both invisible and unreachable without hunting. Centre it
-  // when the list arrives — the families load asynchronously, so this is the
-  // first render that has anything to scroll to.
+  // Centre the chosen family when the list arrives: it loads asynchronously,
+  // so this is the first render with anything to scroll to.
   useEffect((): void => {
     const list = familyListRef.current;
     const selected = list?.querySelector<HTMLElement>('.retro-toggle__segment--selected');
@@ -81,14 +74,10 @@ function FontRequesterOpen(): JSX.Element {
   // outline text previews as outline.
   const outline = state.toolbox.activeToolId === 'textNoFill';
 
-  // The buffer's own pixel count, sized so the box is an equally-sized window
-  // into the real canvas: the fixed CSS size divided by MainCanvas's live
-  // displayScale, which already folds in devicePixelRatio, the screen format's
-  // pixel aspect and the window size. The CSS box then scales the buffer back
-  // up by exactly that, so text previews at the size it will actually be
-  // painted. Per axis, since a screen format's pixels need not be square — and
-  // the text tool does not correct for that (glyphRaster.ts), so neither does
-  // its preview. The same arrangement the fill style swatch uses.
+  // Sized so the box is an equally-sized window into the real canvas: the CSS
+  // size divided by MainCanvas's live displayScale, which the CSS box then
+  // scales back up by exactly that. Per axis, since a screen format's pixels
+  // need not be square.
   const displayScale = state.canvas.displayScale;
   const previewWidth = Math.round(PREVIEW_DISPLAY_WIDTH / displayScale.x);
   const previewHeight = Math.round(PREVIEW_DISPLAY_HEIGHT / displayScale.y);

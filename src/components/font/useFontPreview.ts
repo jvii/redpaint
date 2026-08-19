@@ -10,15 +10,9 @@ import {
 import { Color } from '../../types';
 import { colorToRGBString } from '../../algorithm/color';
 
-// Paints the font preview: the sample string put through the same rasterizer
-// the canvas gets, one bit per pixel, blown up by a whole-number zoom.
-//
-// Deliberately not CSS text in the chosen family. The question at this
-// requester is whether a face survives being thresholded at a given size, and
-// a smoothly-rendered DOM sample answers a different one — it would look good
-// at 8px where the tool cannot, which is exactly the size someone needs
-// warning about. Rasterizing here means the preview is wrong only if the
-// canvas is wrong too.
+// The sample put through the same rasterizer the canvas gets. Deliberately not
+// CSS text: a smooth DOM sample would look good at sizes the tool cannot
+// manage, which is exactly where someone needs warning.
 export function useFontPreview(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   spec: FontSpec,
@@ -55,19 +49,13 @@ export function useFontPreview(
       return;
     }
 
-    // 1:1 with the canvas. The buffer this draws into is sized to the box
-    // divided by the canvas's own displayScale (FontRequester.tsx), and the
-    // CSS box then scales it back up by exactly that — so a pixel here covers
-    // the same screen area as a pixel of the picture, and the sample is the
-    // size the text will actually be. The same window-into-the-canvas the fill
-    // style swatch is.
+    // 1:1 with the canvas, the same window into it the fill style swatch is:
+    // the buffer is sized to the box divided by displayScale
+    // (FontRequester.tsx) and the CSS box scales it back by exactly that.
     //
-    // Nothing is fitted to the box, deliberately. Scaling to fit made the
-    // preview magnify small sizes more than large ones, so the apparent size
-    // ran backwards against the size chosen — Arial showed 8px at 40 pixels
-    // tall and 24px at 24, and Press Start 2P showed 8 and 16 identically,
-    // making the control look inert. A big size overruns and is clipped, which
-    // is the truthful answer to how much room it takes.
+    // Nothing is fitted to the box. Scaling to fit magnified small sizes more
+    // than large ones, so apparent size ran backwards against the size chosen.
+    // A big size overruns and is clipped, which is the truthful answer.
     const zoom = 1;
     const overruns = run.width * zoom > boxWidth;
     const originX = overruns ? 0 : Math.floor((boxWidth - run.width * zoom) / 2);
@@ -81,8 +69,6 @@ export function useFontPreview(
         }
       }
     }
-    // `spec` is depended on by identity, so the caller memoizes it: built
-    // fresh each render it would repaint the preview on every unrelated
-    // state change.
+    // Depended on by identity, so the caller memoizes it.
   }, [canvasRef, spec, sample, outline, underline, foreground, background, boxWidth, boxHeight]);
 }
