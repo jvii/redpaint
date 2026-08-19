@@ -41,20 +41,6 @@
    right and bottom edges instead of reading as a square. A light band inside
    the border means the black frame always has something to be a frame
    against, whatever color the swatch is. */
-.fill-style-settings__preview-frame {
-  /* the mat: enough to read as a deliberate margin at a glance, not so much
-     that it eats into the 260px the swatch itself is worth */
-  padding: 8px;
-  background-color: var(--paper);
-  border: 2px solid black;
-  box-shadow: 4px 4px 0 0 black;
-  /* shrink-wrapped rather than filling its fieldset: today the swatch is the
-     widest thing in this column so it makes no difference, but a wider
-     sibling (a longer Fill label) would otherwise stretch the frame and
-     leave the mat thick on one side and thin on the other */
-  width: max-content;
-}
-
 /* live preview of the current fill style, on a filled-circle swatch so the
    Horizontal Line axis's per-row "3-D" look is visible, not just named. The
    box itself is a fixed square regardless of screen format (its raw pixel

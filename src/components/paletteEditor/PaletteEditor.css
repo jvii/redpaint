@@ -122,47 +122,12 @@
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
-  margin-top: 8px;
+  /* Not margin: .retro-fieldset resets that, and a caller's own is dropped. */
   /* the fieldset's other children (align-items: flex-start) size to their
      own content, so without an explicit self-stretch this block would too —
      collapsing the Speed row's width down to whatever "Color cycling" or
      On/Off happen to measure, and crushing the slider track with it */
   align-self: stretch;
-}
-
-/* extra margin top/bottom (beyond the parent's own gap) so the title
-   doesn't crowd the Clear row above or the On/Off row below — which range
-   these settings belong to is the bordered box's own legend now (see
-   PaletteEditor.tsx), not a subtitle repeated in here too. */
-.palette-editor__range-cycling-title-row {
-  margin: 6px 0;
-  /* Centred rather than baseline-aligned. A shared baseline is right when two
-     runs of text read as one sentence, but this is a label and an aside beside
-     it at very different sizes — and the keycap makes the aside a block with a
-     height of its own, which a baseline leaves hanging low against the 16px
-     bitmap title. Centring lines the cap up with the title's own middle. */
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* The supporting register the rest of the app uses below 16px: the plain
-   monospace stack with its own smoothing, because the bitmap face's
-   `-webkit-font-smoothing: none` is inherited from the title beside it and
-   makes system text visibly thinner in Safari (docs/style-guide.md). */
-.palette-editor__range-cycling-hint {
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  /* Black at reduced alpha, the register every other requester's supporting
-     prose uses (Load Picture, Canvas Size, Save As). Not --dim-label: that is
-     documented as the disabled-label color and is what a dead control looks
-     like, so prose wearing it reads as switched off rather than as an aside.
-     The keycap inherits this, ink and border both. */
-  color: rgba(0, 0, 0, 0.65);
 }
 
 /* The shared 16px cap, stepped down to the size of the line it sits in. Not as
@@ -186,13 +151,10 @@
   vertical-align: middle;
 }
 
-/* matches .retro-labeled-slider__label (Speed, below) so the On/Off row's
-   label reads as a pair with it */
-.palette-editor__range-cycling-label {
-  font-family: 'Press Start 2P';
-  -webkit-font-smoothing: none;
-  font-size: 16px;
-  color: black;
+/* Room above the title, which the legend's own padding only gives below it: at
+   the parent's gap alone it crowds the range slots above. */
+.palette-editor__range-cycling .retro-fieldset__legend {
+  padding-top: 14px;
 }
 
 .palette-editor__range-cycling-row {

@@ -98,17 +98,3 @@ div.retro-fieldset--bordered {
   gap: 10px;
   flex-wrap: wrap;
 }
-
-/* The supporting register the rest of the app uses below 16px: the plain
-   monospace stack, with its own smoothing because the bitmap face's
-   `none` is inherited otherwise (docs/style-guide.md). Black at reduced alpha,
-   as every other requester's supporting prose is — not --dim-label, which is
-   the disabled-label color and would read as switched off. */
-.retro-fieldset__detail {
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.65);
-}

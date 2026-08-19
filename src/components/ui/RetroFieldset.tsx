@@ -67,7 +67,7 @@ export function RetroFieldset({
         ) : (
           <span className={legendClassName}>
             {legend}
-            {detail !== undefined && <span className="retro-fieldset__detail">{detail}</span>}
+            {detail !== undefined && <span className="supporting-text">{detail}</span>}
           </span>
         )}
         {children}
@@ -78,7 +78,7 @@ export function RetroFieldset({
     <fieldset className={rootClassName}>
       <legend className={legendClassName}>
         {legend}
-        {detail !== undefined && <span className="retro-fieldset__detail">{detail}</span>}
+        {detail !== undefined && <span className="supporting-text">{detail}</span>}
       </legend>
       {children}
     </fieldset>

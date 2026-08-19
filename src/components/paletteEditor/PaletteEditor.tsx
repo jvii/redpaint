@@ -200,18 +200,21 @@ export function PaletteEditor(): JSX.Element | null {
             then speed (steps/second, stored as raw CRNG units for lossless
             IFF round-trip) gets its own row — a horizontal slider needs the
             width, or its track is too cramped to drag precisely. */}
-        <div className="palette-editor__range-cycling">
-          <div className="palette-editor__range-cycling-title-row">
-            <span className="palette-editor__range-cycling-label">Color Cycling</span>
-            {/* True from in here specifically: the Tab hotkey is the one
-                deliberately left outside hotkeysSuspended (GlobalHotkeyManager),
-                so that cycling can be started and stopped while a range is being
-                tuned — which is exactly when you want to see it run. */}
-            <span className="palette-editor__range-cycling-hint">
+        <RetroFieldset
+          as="div"
+          className="palette-editor__range-cycling"
+          legend="Color Cycling"
+          /* True from in here specifically: the Tab hotkey is the one
+             deliberately left outside hotkeysSuspended (GlobalHotkeyManager),
+             so cycling can be started and stopped while a range is being
+             tuned. */
+          detail={
+            <>
               <kbd className="wb-gadget__keycap palette-editor__range-cycling-key">TAB</kbd> to
               start or stop
-            </span>
-          </div>
+            </>
+          }
+        >
           <div className="palette-editor__range-cycling-row">
             <RetroToggle
               options={[
@@ -243,7 +246,7 @@ export function PaletteEditor(): JSX.Element | null {
               onChange={(value): void => updateActiveRange({ rate: stepsPerSecondToRate(value) })}
             />
           </div>
-        </div>
+        </RetroFieldset>
       </RetroFieldset>
 
       <RetroButton variant="secondary" onClick={handleCancel}>

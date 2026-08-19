@@ -139,7 +139,9 @@ function FontRequesterOpen(): JSX.Element {
                    that there is nothing to report: enumeration is a fetch and
                    a permission prompt, and saying "none" in the meantime is a
                    wrong answer that corrects itself a second later. */
-                state.font.familiesLoaded && <p className="font-requester__note">No fonts found.</p>
+                state.font.familiesLoaded && (
+                  <p className="supporting-text font-requester__note">No fonts found.</p>
+                )
               )}
             </div>
             {/* Only where the list was guessed. A browser that can enumerate
@@ -149,7 +151,7 @@ function FontRequesterOpen(): JSX.Element {
                 from it. Saying so beats letting a dozen entries read as "all
                 the fonts you have". See domain/systemFonts.ts. */}
             {state.font.familiesSource === 'probed' && (
-              <p className="font-requester__note">
+              <p className="supporting-text font-requester__note">
                 Common fonts, found by trying names — this browser will not list what is installed.
               </p>
             )}
@@ -232,7 +234,7 @@ function FontRequesterOpen(): JSX.Element {
             {/* Rendered through the tool's own rasterizer, not as DOM text,
                 and 1:1 with the canvas — see useFontPreview. A face that falls
                 apart at a size shows it here first, at the size it will be. */}
-            <div className="font-requester__preview-frame">
+            <div className="retro-frame">
               <canvas
                 ref={previewRef}
                 width={previewWidth}

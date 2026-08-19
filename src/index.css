@@ -163,6 +163,40 @@ body {
 
    Defined once here because two requesters wanted it and a third will: the
    first time it was written out twice, the two copies had already drifted. */
+/* The supporting register: everything the app sets below 16px, where Press
+   Start 2P has no crisp size — requester notes, readouts beside a legend, the
+   aside on a title row. Black at reduced alpha, not --dim-label, which is the
+   disabled-label color and reads as switched off.
+
+   Its own smoothing, because the bitmap face's `none` is inherited from
+   whatever it sits under and Safari renders unsmoothed system text visibly
+   thinner (docs/style-guide.md).
+
+   Defined once here for the reason .retro-input is: written out per component
+   it had already drifted into a dozen near-copies. Callers own line-height,
+   margin and width — how much room a note takes is the caller's business. */
+.supporting-text {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* Chrome around something that is not itself chrome — a preview of the picture,
+   whose own ground may be any color in the palette. The black border always has
+   the paper mat to be a frame against, so it never disappears into a dark
+   swatch. Shrink-wrapped, so a wider sibling in the same column cannot stretch
+   it and leave the mat thick on one side; callers own the size inside it. */
+.retro-frame {
+  padding: 8px;
+  background-color: var(--paper);
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  width: max-content;
+}
+
 .toggle-detail {
   white-space: nowrap;
   opacity: 0.75;

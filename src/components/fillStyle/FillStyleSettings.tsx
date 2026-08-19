@@ -100,7 +100,7 @@ function FillStyleSettingsOpen(): JSX.Element {
                 differently from the same fill on paper. displayBackgroundColor,
                 not backgroundColor, so it follows color cycling the way the
                 palette's own indicator does. */}
-            <div className="fill-style-settings__preview-frame">
+            <div className="retro-frame">
               <canvas
                 ref={previewRef}
                 width={previewWidth}

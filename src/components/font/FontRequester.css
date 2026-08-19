@@ -41,17 +41,6 @@
   padding: 0 6px 6px 0;
 }
 
-/* Same treatment as the frame around Fill Style's swatch: the chrome plus a
-   mat of paper inside it, so the black border always has something light to
-   be a frame against even when the preview's own ground is black. */
-.font-requester__preview-frame {
-  padding: 8px;
-  background-color: var(--paper);
-  border: 2px solid black;
-  box-shadow: 4px 4px 0 0 black;
-  width: max-content;
-}
-
 .font-requester__preview {
   display: block; /* canvas defaults to inline; cheap insurance against the
     baseline gap replaced elements get under inline layout */
@@ -69,15 +58,7 @@
 
 .font-requester__note {
   margin: 0;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  /* -webkit-font-smoothing: none is inherited from the modal's Press Start 2P
-     ground and has to be undone per element (docs/style-guide.md) */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
   line-height: 1.5;
-  letter-spacing: 0.04em;
-  color: rgba(0, 0, 0, 0.65);
   /* narrower than the 64ch the other requesters' notes use: this sits in the
      300px family column, not across the window */
   max-width: 44ch;
