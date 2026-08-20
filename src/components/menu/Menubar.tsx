@@ -119,7 +119,7 @@ export function Menubar(): JSX.Element {
           {armedMode?.value && <span className="menubar__mode-value">{armedMode.value}</span>}
         </span>
         {armedHint && (
-          <span className="menubar__hint">
+          <span className="supporting-text menubar__hint">
             {armedHint.map((hint) => (
               <span className="menubar__hint-item" key={hint.text}>
                 {hint.key && <kbd className="wb-gadget__keycap menubar__hint-key">{hint.key}</kbd>}

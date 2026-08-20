@@ -85,21 +85,13 @@
   color: var(--wb-blue);
 }
 
-/* What an armed mode lets you do. The supporting-text register (style guide:
-   Press Start 2P has a 16px floor, so anything smaller is the monospace
-   stack) at the dim-label ink, so it reads as a caption to the mode name
-   rather than competing with the orange it sits beside. Sentence case, since
-   it reads as a sentence and not a title. */
+/* What an armed mode lets you do: a caption to the mode name, not a rival to
+   the orange it sits beside. Sentence case, since it reads as a sentence and
+   not a title. The keycap takes its ink and border from here. */
 .menubar__hint {
   display: flex;
   align-items: center;
   gap: 18px;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 12px;
-  letter-spacing: 0.04em;
-  color: var(--dim-label);
   white-space: nowrap;
 }
 
