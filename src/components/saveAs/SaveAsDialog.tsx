@@ -125,7 +125,7 @@ function SaveAsDialogOpen(): JSX.Element {
               serving is that a requester must not resize *while you are looking
               at it*, and nothing here can make it. Holding four empty lines
               open on every ordinary save buys nothing. */}
-          {!indexed && <p className="save-as__true-color-note">{TRUE_COLOR_NOTE}</p>}
+          {!indexed && <p className="supporting-text save-as__true-color-note">{TRUE_COLOR_NOTE}</p>}
         </div>
 
         {asksForName && (
