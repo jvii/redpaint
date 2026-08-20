@@ -51,22 +51,6 @@
   pointer-events: none;
 }
 
-.canvas-hover-brush {
-  /* The hover brush preview as a DOM element instead of an overlay-canvas
-     draw — per-mousemove WebGL commits present a frame-plus late on Windows
-     (docs/dom-hover-preview.md), while a composited element tracks like the
-     native cursor. Moved via transform through a ref, exactly like
-     .canvas-cursor above; the backing store is the brush bitmap at 1:1 and
-     CSS scales it to the canvas's on-screen pixel size. */
-  will-change: transform;
-  position: fixed;
-  left: 0;
-  top: 0;
-  visibility: hidden;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
 .canvas-resize-cursor {
   /* Offset from the actual pointer (Canvas.tsx: RESIZE_CURSOR_OFFSET), not
      centered on it like .canvas-cursor — a Stretch/SizeBuiltInBrushTool drag

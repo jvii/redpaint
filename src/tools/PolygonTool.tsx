@@ -3,7 +3,6 @@ import { getMousePos, isRightMouseButton, pointEquals } from './util/util';
 import { overmind } from '../index';
 import { PixelBrush } from '../brush/PixelBrush';
 import { symmetryBrush, SymmetryBrush } from '../brush/SymmetryBrush';
-import { drawHoverBrushStamp } from '../canvas/hoverBrushPreview';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -106,7 +105,7 @@ export class PolygonTool implements Tool {
         // leave no cursor feedback at all before the first vertex).
         pixelSymmetryBrush.drawPoints([mousePos], overlayCanvasController);
       } else {
-        drawHoverBrushStamp(mousePos);
+        symmetryBrush.drawPoints([mousePos], overlayCanvasController);
       }
       return;
     }

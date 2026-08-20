@@ -2,7 +2,6 @@ import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { symmetryBrush } from '../brush/SymmetryBrush';
-import { drawHoverBrushStamp } from '../canvas/hoverBrushPreview';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -57,7 +56,7 @@ export class CurveTool implements Tool {
 
     const startPoint = overmind.state.tool.curveTool.start;
     if (!startPoint) {
-      drawHoverBrushStamp(mousePos);
+      symmetryBrush.drawPoints([mousePos], overlayCanvasController);
       return;
     }
 

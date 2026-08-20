@@ -119,12 +119,14 @@ is scheduled. Design details live in the linked docs where they exist.
       immediate and legible rather than a promise about future behaviour. If a
       toggle is ever built anyway, it must delete the existing record, not
       merely stop writing new ones.
-- [x] **DOM hover preview** — hovering no longer commits to the overlay
-      canvas: on the Windows test machine any per-mousemove WebGL commit
-      presents a frame-plus late (all browsers), which was the real cause of
-      the pointer lag 74b53c1 mis-attributed to the cursor div. Design, full
-      bisection record, and the still-open painting-throughput findings for
-      that machine: docs/dom-hover-preview.md.
+- [x] **DOM hover preview** — built, then reverted 2026-08-20. On the Windows
+      test machine any per-mousemove WebGL commit presents a frame-plus late
+      (all browsers), which was the real cause of the pointer lag 74b53c1
+      mis-attributed to the cursor div. Measured elsewhere it saved 0.09ms a
+      move — about 1% of a frame — for a second rendering path of the same
+      visual across five tools. The bisection record and the still-open
+      painting-throughput findings for that machine remain worth keeping:
+      docs/dom-hover-preview.md.
 
 ## Performance
 

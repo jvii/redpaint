@@ -1,13 +1,37 @@
-# DOM hover preview — design
+# DOM hover preview — design (reverted)
 
-Status: designed and implemented 2026-08-06 in the same live bisection
-session on the affected Windows machine; hover verified smooth there for
-both brush kinds (the PixelBrush default and CustomBrush bitmaps). Fixes the
-hovering pointer/brush preview visibly trailing the mouse on Windows — in
-Chrome, Edge *and* Firefox — by taking the overlay canvas out of the hover
-path entirely. The machine-side mystery is solved too: the flat
-per-present cost came from the external monitor hanging off a USB-C dock's
-indirect display path — see "Painting: still slow there" at the end.
+**Reverted 2026-08-20.** The hover stamp is an overlay-canvas draw again;
+`hoverBrushPreview.ts` and its integration points are gone. The record below
+stands — the bisection is still the explanation of what that machine does —
+but the fix is not worth carrying.
+
+Measured on macOS, both paths driven identically with a 64x64 custom brush and
+the overlay's own GL queue drained per sample (reading back from the painting
+canvas's context measures nothing about the overlay's):
+
+| path | per hover update |
+| --- | --- |
+| DOM element | 0.018 – 0.023 ms |
+| overlay WebGL commit | 0.101 – 0.115 ms |
+
+Five times cheaper, and about 1% of a 120Hz frame in absolute terms — nothing
+anyone can see. Both are flat with brush size, so the cost is the full-canvas
+clear-and-render, not the stamp. The latency the DOM path actually avoided is
+in the *present* path and is invisible to any measurement taken here, which is
+why the original bisection had to run on the affected machine.
+
+Against that: 192 lines and a second rendering path for the same visual, five
+tools routed through it, registration and teardown in `Canvas.tsx`, a refresh
+hook in `CycleDriver`, a `contentOnScreen` flag on `OverlayCanvasController`
+whose only consumer it was, a `toDisplayImageData` on `CustomBrush` likewise,
+and its own bitmap and layout caches. It also had to be taught things the
+overlay gets for free: it was drawn over the menubar and through the toolbox
+until it was given a clip-path, because a `position: fixed` element is bounded
+by nothing.
+
+If the docked-Windows case ever needs solving again, the thing to reach for is
+in "Painting: still slow there" below — the same machine is slow while painting,
+which this never addressed.
 
 ## The problem, and what it is not
 

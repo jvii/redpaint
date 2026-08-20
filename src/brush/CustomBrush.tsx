@@ -280,41 +280,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.lastChanged = Date.now();
   }
 
-  // The stamp as currently displayed: the active mode variant, resolved through
-  // the *display* palette so a hover preview animates under Tab-cycling exactly
-  // as stamped pixels do. Texture rows are bottom-up and ImageData rows
-  // top-down, so rows are flipped back here. Contrast toImageData below, which
-  // reads the pristine matte bitmap through the base palette, for saving.
-  public toDisplayImageData(): ImageData {
-    const source = this.brushColorIndex.indexArray;
-    const palette = overmind.state.palette.displayPalette;
-    const data = new Uint8ClampedArray(this.width * this.heigth * 4);
-    for (let y = 0; y < this.heigth; y++) {
-      const sourceRow = (this.heigth - y - 1) * this.width * 4;
-      const targetRow = y * this.width * 4;
-      for (let x = 0; x < this.width; x++) {
-        const s = sourceRow + x * 4;
-        const t = targetRow + x * 4;
-        const tag = source[s + 3];
-        if (tag === ALPHA_TRUECOLOR) {
-          data[t] = source[s];
-          data[t + 1] = source[s + 1];
-          data[t + 2] = source[s + 2];
-          data[t + 3] = 255;
-        } else if (tag === ALPHA_INDEXED) {
-          const color = palette[String(source[s] + 1)];
-          if (color) {
-            data[t] = color.r;
-            data[t + 1] = color.g;
-            data[t + 2] = color.b;
-            data[t + 3] = 255;
-          }
-        }
-        // transparent pixels stay all-zero (alpha 0)
-      }
-    }
-    return new ImageData(data, this.width, this.heigth);
-  }
 
   public toImageData(): ImageData {
     const source = this.brushColorIndexMatte.indexArray;

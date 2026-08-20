@@ -38,20 +38,7 @@ class OverlayCanvasController implements CanvasController {
   // frameDraws (each draw method records unconditionally otherwise).
   private replayingForCycling = false;
 
-  // Whether the last composited overlay frame shows anything. The composited
-  // frame outlives the (preserveDrawingBuffer: false) buffer, so "is there
-  // something on screen" can't be asked of GL, tracked here instead, set by
-  // every draw (replayed ones included) and cleared by clear(). The DOM hover
-  // preview (hoverBrushPreview.ts) uses it to clear a stale canvas stamp
-  // exactly once when it takes over, not on every mousemove.
-  private contentOnScreen = false;
-
-  hasContentOnScreen(): boolean {
-    return this.contentOnScreen;
-  }
-
   private recordFrameDraw(replay: () => void): void {
-    this.contentOnScreen = true;
     if (!this.replayingForCycling) {
       this.frameDraws.push(replay);
     }
@@ -179,7 +166,6 @@ class OverlayCanvasController implements CanvasController {
     }
   }
   clear(): void {
-    this.contentOnScreen = false;
     this.frameDraws = [];
     this.mainCanvasRenderer?.clear();
     this.zoomCanvasRenderer?.clear();

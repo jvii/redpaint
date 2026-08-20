@@ -2,7 +2,6 @@ import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
 import { symmetryBrush } from '../brush/SymmetryBrush';
-import { drawHoverBrushStamp } from '../canvas/hoverBrushPreview';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -60,7 +59,7 @@ export class DottedFreehandTool implements Tool {
       return;
     }
     const mousePos = getMousePos(event);
-    drawHoverBrushStamp(mousePos);
+    symmetryBrush.drawPoints([mousePos], overlayCanvasController);
   }
 
   public onMouseDownOverlay(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {

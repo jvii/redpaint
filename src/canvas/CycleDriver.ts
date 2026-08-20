@@ -2,7 +2,6 @@ import { overmind } from '..';
 import { advanceCycleSteps, cycleOffsetsOf } from '../algorithm/cycle';
 import { paintingCanvasController } from './paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from './overlayCanvas/OverlayCanvasController';
-import { hoverBrushPreview } from './hoverBrushPreview';
 
 // Drives color cycling (docs/color-cycling.md): one requestAnimationFrame loop
 // advancing per-range fractional step accumulators, and (only when a range
@@ -97,9 +96,6 @@ export function refreshCyclePalettes(): void {
   // on mouse events). Replay whatever's currently shown (brush cursor,
   // in-progress shape) so it cycles too, like DPaint's did.
   overlayCanvasController.redrawForCycling();
-  // ...and the DOM hover ghost re-renders its bitmap through the freshly
-  // rotated display palette, so it animates while the mouse rests too.
-  hoverBrushPreview.refresh();
 }
 
 export const cycleDriver = new CycleDriver();

@@ -2,7 +2,6 @@ import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftMouseButton } from './util/util';
 import { overmind } from '../index';
 import { symmetryBrush } from '../brush/SymmetryBrush';
-import { drawHoverBrushStamp } from '../canvas/hoverBrushPreview';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -57,7 +56,7 @@ export class LineTool implements Tool {
       symmetryBrush.drawLine(start, end, overlayCanvasController);
       symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     } else {
-      drawHoverBrushStamp(mousePos);
+      symmetryBrush.drawPoints([mousePos], overlayCanvasController);
     }
   }
 
