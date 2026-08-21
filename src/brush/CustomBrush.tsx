@@ -241,7 +241,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public setFGColor(): void {
     // always colorize from the pristine matte bitmap so recoloring never
     // compounds on a previously colorized array
-    this.brushColorIndexColorFG = new BrushColorIndex(
+    this.brushColorIndexColorFG = this.brushColorIndexMatte.derive(
       this.width,
       this.heigth,
       colorizeTexture(
@@ -255,7 +255,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   public setBGColor(): void {
-    this.brushColorIndexColorBG = new BrushColorIndex(
+    this.brushColorIndexColorBG = this.brushColorIndexMatte.derive(
       this.width,
       this.heigth,
       colorizeTexture(

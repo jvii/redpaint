@@ -5,6 +5,14 @@ export class BrushColorIndex {
   height: number;
   indexArray: Uint8Array;
 
+  // Which palette color the transparent pixels were made from, 1-based, when
+  // this bitmap has one. Kept because addTransparency zeroes the pixels it
+  // tags, so the number is unrecoverable afterwards and the background may
+  // have moved on since — and writing an IFF brush has to declare it
+  // (docs/brush-save.md). Undefined for a bitmap whose transparency came from
+  // a source's alpha rather than from a color: nothing was chosen there.
+  transparentColorNumber?: number;
+
   constructor(
     width: number,
     height: number,
@@ -14,9 +22,21 @@ export class BrushColorIndex {
     this.width = width;
     this.height = height;
     this.indexArray = indexArray;
+    // A color number is 1-based, so 0 means "none" here rather than "index 0".
     if (transparentColorNumber) {
       this.indexArray = this.addTransparency(indexArray, transparentColorNumber);
+      this.transparentColorNumber = transparentColorNumber;
     }
+  }
+
+  // A bitmap derived from this one — reshaped, recolored — is the same brush
+  // and keeps the same transparent color. Its pixels are already tagged, so
+  // the constructor must not re-apply it: that would tag every pixel *now*
+  // holding the color, including ones the transform brought in.
+  public derive(width: number, height: number, indexArray: Uint8Array): BrushColorIndex {
+    const derived = new BrushColorIndex(width, height, indexArray);
+    derived.transparentColorNumber = this.transparentColorNumber;
+    return derived;
   }
 
   // Factory method for creating a BrushColorIndex from builtInBrushStringBitmap

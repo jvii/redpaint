@@ -233,3 +233,45 @@ test('transforms move true-color pixels intact', () => {
   const flipped = flipHorizontal(brush);
   expect(Array.from(flipped.indexArray)).toEqual([0, 0, 0, 0, 10, 20, 30, ALPHA_TRUECOLOR]);
 });
+
+describe('transparent color', () => {
+  test('survives every transform, so a reshaped brush still knows its holes', () => {
+    const source = new BrushColorIndex(
+      2,
+      2,
+      new Uint8Array([
+        0,
+        0,
+        0,
+        ALPHA_INDEXED,
+        1,
+        0,
+        0,
+        ALPHA_INDEXED,
+        1,
+        0,
+        0,
+        ALPHA_INDEXED,
+        0,
+        0,
+        0,
+        ALPHA_INDEXED,
+      ]),
+      2
+    );
+    expect(source.transparentColorNumber).toBe(2);
+    const transformed = [
+      flipHorizontal(source),
+      flipVertical(source),
+      rotate90(source),
+      rotate(source, Math.PI / 4),
+      resize(source, 4, 4),
+      shearHorizontal(source, 1),
+      bendHorizontal(source, { start: 0, middle: 1, middleAt: 1, end: 0 }),
+      bendVertical(source, { start: 0, middle: 1, middleAt: 1, end: 0 }),
+    ];
+    expect(transformed.map((b): number | undefined => b.transparentColorNumber)).toEqual(
+      transformed.map((): number => 2)
+    );
+  });
+});

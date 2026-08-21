@@ -36,7 +36,7 @@ export function flipHorizontal(brush: BrushColorIndex): BrushColorIndex {
       copyPixel(indexArray, row + x * STRIDE, result, row + (width - x - 1) * STRIDE);
     }
   }
-  return new BrushColorIndex(width, height, result);
+  return brush.derive(width, height, result);
 }
 
 // Mirror top-bottom.
@@ -47,7 +47,7 @@ export function flipVertical(brush: BrushColorIndex): BrushColorIndex {
   for (let y = 0; y < height; y++) {
     result.set(indexArray.subarray(y * rowBytes, (y + 1) * rowBytes), (height - y - 1) * rowBytes);
   }
-  return new BrushColorIndex(width, height, result);
+  return brush.derive(width, height, result);
 }
 
 // Rotate 90 degrees clockwise (visually); width and height swap.
@@ -63,7 +63,7 @@ export function rotate90(brush: BrushColorIndex): BrushColorIndex {
       copyPixel(indexArray, sourceOffset, result, (y * height + x) * STRIDE);
     }
   }
-  return new BrushColorIndex(height, width, result);
+  return brush.derive(height, width, result);
 }
 
 // Rotate by any angle, degrees clockwise (visually): rotate(b, 90) matches
@@ -96,7 +96,7 @@ export function rotate(brush: BrushColorIndex, degrees: number): BrushColorIndex
       copyPixel(indexArray, sourceOffset, result, (targetRow + vx) * STRIDE);
     }
   }
-  return new BrushColorIndex(newWidth, newHeight, result);
+  return brush.derive(newWidth, newHeight, result);
 }
 
 // Horizontal shear, a direct port of DPaint's BMShearX (SHEAR.C): the visual
@@ -108,7 +108,7 @@ export function shearHorizontal(brush: BrushColorIndex, dx: number): BrushColorI
   const { width, height, indexArray } = brush;
   const shift = Math.trunc(Math.abs(dx));
   if (shift === 0) {
-    return new BrushColorIndex(width, height, new Uint8Array(indexArray));
+    return brush.derive(width, height, new Uint8Array(indexArray));
   }
   const newWidth = width + shift;
   const result = new Uint8Array(newWidth * height * STRIDE);
@@ -131,7 +131,7 @@ export function shearHorizontal(brush: BrushColorIndex, dx: number): BrushColorI
       sum -= height;
     }
   }
-  return new BrushColorIndex(newWidth, height, result);
+  return brush.derive(newWidth, height, result);
 }
 
 // A bend's control offsets: one quadratic Bezier from `start` (offset of the
@@ -194,7 +194,7 @@ export function bendHorizontal(brush: BrushColorIndex, bend: BendControls): Brus
       (y * newWidth + offsets[v] - minOffset) * STRIDE
     );
   }
-  return new BrushColorIndex(newWidth, height, result);
+  return brush.derive(newWidth, height, result);
 }
 
 // Bend vertically (BMBendV), the transpose: every column shifts up or down
@@ -215,7 +215,7 @@ export function bendVertical(brush: BrushColorIndex, bend: BendControls): BrushC
       copyPixel(indexArray, (y * width + x) * STRIDE, result, (targetY * width + x) * STRIDE);
     }
   }
-  return new BrushColorIndex(width, newHeight, result);
+  return brush.derive(width, newHeight, result);
 }
 
 // Nearest-neighbor resize (no filtering: pixel art). Both dimensions are
@@ -239,5 +239,5 @@ export function resize(
       copyPixel(indexArray, sourceRow + sourceX * STRIDE, result, targetRow + x * STRIDE);
     }
   }
-  return new BrushColorIndex(newWidth, newHeight, result);
+  return brush.derive(newWidth, newHeight, result);
 }
