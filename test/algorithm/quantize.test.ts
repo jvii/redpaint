@@ -136,6 +136,33 @@ describe('remapColorsGreedy', () => {
     expect(assigned[0]).not.toBe(assigned[1]);
   });
 
+  test('shares a claimed slot rather than taking a much worse free one', () => {
+    // Both source grays are nearest to p0. The free slot is three times as far
+    // for the second one, which is not worth having to itself.
+    const p0 = { r: 100, g: 100, b: 100 };
+    const p1 = { r: 140, g: 140, b: 140 };
+    const colors = [
+      { color: { r: 100, g: 100, b: 100 }, count: 10 },
+      { color: { r: 110, g: 110, b: 110 }, count: 1 },
+    ];
+    const assigned = remapColorsGreedy(colors, [p0, p1]);
+    expect(assigned[0]).toBe(0);
+    expect(assigned[1]).toBe(0); // shares, rather than jumping to p1
+  });
+
+  test('still takes a free slot when it is no worse, so colors stay distinct', () => {
+    // Equidistant this time: having one to itself costs nothing.
+    const p0 = { r: 100, g: 100, b: 100 };
+    const p1 = { r: 140, g: 140, b: 140 };
+    const colors = [
+      { color: { r: 100, g: 100, b: 100 }, count: 10 },
+      { color: { r: 120, g: 120, b: 120 }, count: 1 },
+    ];
+    const assigned = remapColorsGreedy(colors, [p0, p1]);
+    expect(assigned[0]).toBe(0);
+    expect(assigned[1]).toBe(1);
+  });
+
   test('returns assignments in the same order as the input colors, not frequency order', () => {
     const colors = [
       { color: { r: 245, g: 245, b: 245 }, count: 1 }, // least frequent, listed first

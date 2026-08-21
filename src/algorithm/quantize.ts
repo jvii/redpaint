@@ -332,14 +332,31 @@ export function mapToPalette(data: Uint8ClampedArray, palette: Color[]): Uint8Ar
   return indices;
 }
 
-// DPaint's brush-to-palette remap (REMAP.C: BMRemapCols/BrRemapCols),
-// ported. A brush typically has few distinct colors, so unlike mapToPalette's
-// independent per-pixel nearest search, this assigns colors globally and
+// DPaint's brush-to-palette remap (REMAP.C: BMRemapCols/BrRemapCols), with one
+// change. A brush typically has few distinct colors, so unlike mapToPalette's
+// independent per-pixel nearest search, this assigns them globally and
 // greedily: the most frequent color first claims its nearest still-unclaimed
-// palette slot, and so on down in frequency order, so two brush colors don't
-// collapse onto the same slot while room remains. Once every slot is
-// claimed, remaining colors fall back to nearest-any (slots become shared).
+// palette slot, and so on down in frequency order, so two brush colors do not
+// collapse onto one slot while room remains.
+//
+// Spreading them is only worth it while the alternative is comparable, which
+// is why claiming is guarded. DPaint's `used` mask was a ULONG over at most 32
+// destination slots, and against a scarce palette taking the second-best slot
+// costs little and keeps a gradient from banding. Against 256 it does not hold
+// up: a color whose nearest slot is taken can be pushed somewhere far worse
+// while the taken slot would have suited both. Measured on a DPaint brush
+// against a 256-color palette, unguarded claiming put one color 96 away from a
+// slot 54 away, for two collisions avoided out of 21 colors.
+//
+// So a claimed nearest is only given up when an unclaimed slot is within
+// SPREAD_TOLERANCE of it; otherwise the slot is shared, which is what
+// PyDPainter's convert8 does for every color unconditionally.
+//
 // Returns the assigned palette index per input color, same order as `colors`.
+// How much worse than its nearest slot a color will accept in order to have
+// one to itself: half again the distance. Squared, since the distances are.
+const SPREAD_TOLERANCE_SQUARED = 1.5 * 1.5;
+
 export function remapColorsGreedy(
   colors: { color: Color; count: number }[],
   palette: Color[]
@@ -360,26 +377,27 @@ export function remapColorsGreedy(
 
   for (const i of byFrequencyDesc) {
     const color = colors[i].color;
-    let best = -1;
-    let bestDist = Infinity;
+    let nearest = 0;
+    let nearestDist = Infinity;
+    let unclaimed = -1;
+    let unclaimedDist = Infinity;
     for (let j = 0; j < palette.length; j++) {
-      if (claimed[j]) continue;
       const dist = distSquared(color, palette[j]);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = j;
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = j;
+      }
+      if (!claimed[j] && dist < unclaimedDist) {
+        unclaimedDist = dist;
+        unclaimed = j;
       }
     }
-    if (best < 0) {
-      // every slot already claimed: nearest of any, now shared
-      for (let j = 0; j < palette.length; j++) {
-        const dist = distSquared(color, palette[j]);
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = j;
-        }
-      }
-    }
+    // Distances are squared, so the tolerance is too. An exact match falls out
+    // of this on its own: nothing is within a multiple of zero but zero.
+    const best =
+      unclaimed >= 0 && unclaimedDist <= nearestDist * SPREAD_TOLERANCE_SQUARED
+        ? unclaimed
+        : nearest;
     claimed[best] = true;
     assigned[i] = best;
   }
