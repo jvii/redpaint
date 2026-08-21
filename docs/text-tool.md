@@ -35,10 +35,15 @@ to sharpen the result were measured and are not worth retrying:
 - Moving the threshold. Swept 0.35–0.60 at 11px: below 0.45 counters close up,
   above 0.50 bowls break.
 
-**The floor.** Below roughly 12px this stops being enough. Outlines that small
-have sub-pixel stem widths and canvas grid-fits nothing, so stems thin and break
-however finely they are sampled. That is missing information, not a sampling
-error, and it is why the bundled pixel faces earn their place.
+**The floor.** Below roughly 12px this stops working at all: outlines that
+small have sub-pixel stem widths and canvas grid-fits nothing, so stems thin
+and break however finely they are sampled. That is missing information, not a
+sampling error, and it is why the bundled pixel faces earn their place.
+
+The requester's own floor is higher — `SYSTEM_SIZE_MIN` is 20 — because the
+band between them is legible but visibly uneven: stems land at 1 or 2 pixels
+depending on where a glyph falls, and an 'H' can come out with one of each.
+12px is where the method fails, 20px is where it stops being worth offering.
 
 ## Whole-pixel glyphs
 
@@ -83,7 +88,7 @@ carry side bearings — there is already a column of background to spend on the
 rings — while lines carry no such guarantee. Press Start 2P sets its line box to
 exactly its ink height at every size, which leaves nothing to spend.
 
-## What text does not take
+## What text does not take (drawing)
 
 - **Paint modes.** DPaint's text ignored them (`TEXT.C` blits JAM1 and consults
   no mode). Here they had nothing useful to say to a single stamp either: Smear,
@@ -100,15 +105,7 @@ exactly its ink height at every size, which leaves nothing to spend.
   because it swapped the bitmap font for a scalable one and had to choose a
   ppem.
 
-## Anti-aliasing, if it is ever wanted
-
-Not as a paint mode. Later DPaint made Antialias a setting beside the modes
-rather than one of them, and for text specifically the better route is
-PyDPainter's: let the browser render the glyphs anti-aliased and quantize that
-to the palette — or keep it as it is, once there are true-color pixels to keep
-it in (`docs/true-color-mode.md`).
-
-## What it does not take (input)
+## What text does not take (input)
 
 - **IME composition.** A keystroke is taken only when `event.key` is a single
   character, and during composition it is `Process`, so CJK input does nothing.
@@ -119,6 +116,60 @@ it in (`docs/true-color-mode.md`).
   where the font would place it. Keyboard input is composed, so this is
   currently unreachable; anything that pastes into the line would reach it, and
   the fix is `Intl.Segmenter` at grapheme granularity in place of the `for..of`.
+
+## Getting past the floor
+
+Hinting is discarded by construction. Rendering at SUPERSAMPLE times the size
+means the platform grid-fits at 48-96px ppem, where it does nothing for a
+12-24px target grid, and no threshold tuning recovers it — the sweeps above
+are that result. Two ways past it have been looked at.
+
+**Stem darkening: measured, rejected.** FreeType's answer for unhinted
+rendering is to fatten everything slightly before quantizing, which here is one
+strokeText after the fillText with `lineWidth = k * SUPERSAMPLE`. Swept k at
+0, 0.25 and 0.4 against Arial and Verdana at 12 and 16px:
+
+```
+Verdana 12px    k=0            k=0.25         k=0.4
+'H'             ...#.....#..   ...##....#..   ...##...##..
+'a'             ...#..##....   ...##.##....   ...#####....
+```
+
+The strength that squares up H's stems is the strength that closes a's
+counter, and there is no window between them. k=0.25 *introduces* asymmetry in
+Verdana's H where k=0 had none, and on Arial at 12px it adds a stray pixel
+above e and a while leaving the H asymmetry untouched. Fattening is not
+grid-fitting, which is the whole reason it does not help.
+
+**FreeType via WASM: the real answer, and not yet worth it.** `FontData.blob()`
+returns the font file's bytes on the same Chromium-only, permission-gated
+surface the enumeration already uses, and FreeType with FT_LOAD_TARGET_MONO
+gives true hinted 1-bit output with no threshold involved at all. The web-safe
+faces carry hand-tuned hinting written for aliased screens, so this is what
+would put SYSTEM_SIZE_MIN into single digits. Nothing that only parses outlines
+(opentype.js, fontkit) substitutes for it: they ignore the bytecode and so
+reproduce what canvas already gives.
+
+Against that, today: about 1MB of WASM against an app that builds to under
+700K; it reaches only Chromium desktop with a granted permission, leaving the
+browsers that are already on the guessed candidate list exactly where they are;
+it does not make two machines agree, since Windows Arial and macOS Arial are
+different files; and FreeType's licence carries an attribution clause, which is
+not a thing to take on before this app has a licence of its own.
+
+The case changes with **user-supplied fonts**. A dropped .ttf hands over the
+same ArrayBuffer in every browser, so that path is cross-browser and is a
+feature rather than a fidelity tweak — and one rasterizer then serves both it
+and the enumeration path. Until then the bundled pixel faces are the answer
+below the floor: 4KB each, identical on every machine, no permission needed.
+
+## Anti-aliasing, if it is ever wanted
+
+Not as a paint mode. Later DPaint made Antialias a setting beside the modes
+rather than one of them, and for text specifically the better route is
+PyDPainter's: let the browser render the glyphs anti-aliased and quantize that
+to the palette — or keep it as it is, once there are true-color pixels to keep
+it in (`docs/true-color-mode.md`).
 
 ## Fonts
 
