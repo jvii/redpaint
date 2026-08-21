@@ -106,6 +106,18 @@ is scheduled. Design details live in the linked docs where they exist.
       Rockwell and Bahnschrift are the obvious Windows additions. Worth a pass
       for Linux (DejaVu, Liberation, Ubuntu) at the same time.
 
+- [ ] **Brush Save As, with IFF.** The Brush menu's Save gadget writes
+      `brush.png` with no requester and no choice. Give it the picture's
+      treatment — a name and a format — and add the Amiga one: a DPaint brush
+      is an ordinary ILBM carrying `masking = 2`, a transparent colour in the
+      BMHD, and a `GRAB` chunk for the handle.
+
+      Two things make it more than an encoder change. The transparent colour
+      has to be *chosen*, since our transparency is a per-pixel tag rather than
+      an index, and brush loading decodes through an `<img>` element today, so
+      nothing would read the files back. Design, and what DPaint's own writer
+      did: docs/brush-save.md.
+
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
       either steps twice as far. Not done with the rest (`docs/keyboard.md`)
