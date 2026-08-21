@@ -39,19 +39,29 @@ Two details from `DPIFF.C`: the BODY is left **uncompressed when the brush is
 `transparentColor = 0`. Both need to become inputs, and `IlbmImage` needs the
 fields. `writeForm` is generic, so GRAB is a chunk like any other.
 
-**A transparent colour has to be chosen.** This is the real design question.
-Our transparency is per-pixel — a tag in the alpha byte, `ALPHA_TRANSPARENT`
-against `ALPHA_INDEXED` — while ILBM's is "index N means transparent". So the
-writer has to pick an N that the brush's own opaque pixels do not use. Suggested
-rule, which mirrors how `pictureIsIndexed()` already handles the impossible
-case: prefer 0, since that is what DPaint's own brushes almost always carry;
-otherwise the lowest index the brush does not use; and if a brush genuinely
-uses all of them, disable IFF in the requester with that as the reason.
+**The transparent colour is the background colour, and it needs remembering.**
+A captured brush already works DPaint's way: `getBrushColorIndexFromArea` passes
+`palette.backgroundColorId` as the transparent colour number, and
+`BrushColorIndex.addTransparency` tags every pixel holding it. So there is
+nothing to choose, and no collision to fear either — *every* pixel of that
+colour became transparent, so no opaque pixel can still carry the index.
+
+What is missing is the index itself. `addTransparency` zeroes the pixel as well
+as tagging it, so a captured brush no longer knows which colour it was made
+transparent by, and the current background may have changed since. Keep the
+number on `BrushColorIndex` at construction; the writer then emits it for every
+transparent pixel and declares it in the BMHD.
+
+Only a brush that came from a file rather than a capture has no such number:
+`fromImageData` takes its transparency from the source's alpha, and its opaque
+pixels can include any index. Falling back to the current background is the
+faithful answer — it is what a capture would have used — and it is worth
+writing down that this is the one path where an opaque pixel could collide with
+the transparent index and be read back as a hole.
 
 **IFF is disabled for a brush with true-color pixels**, the same constraint the
 picture has (`pictureIsIndexed`), and `toImageData` shows both kinds are
-possible. That and "every index is in use" are the two independent reasons the
-format is greyed out, each with its own reason shown.
+possible. That is the one reason the format is greyed out.
 
 **There is no handle to write.** `CustomBrush.adjustHandle` is
 `point - size/2`: the handle is always the centre, never stored and not

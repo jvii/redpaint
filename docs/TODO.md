@@ -121,11 +121,11 @@ is scheduled. Design details live in the linked docs where they exist.
       is an ordinary ILBM carrying `masking = 2`, a transparent colour in the
       BMHD, and a `GRAB` chunk for the handle.
 
-      Two things make it more than an encoder change. The transparent colour
-      has to be *chosen*, since our transparency is a per-pixel tag rather than
-      an index, and brush loading decodes through an `<img>` element today, so
-      nothing would read the files back. Design, and what DPaint's own writer
-      did: docs/brush-save.md.
+      The transparent colour is the background colour, as it is in DPaint —
+      a capture tags every pixel holding it — but the index is thrown away
+      once tagged, so it has to be kept. And brush loading decodes through an
+      `<img>` element today, so nothing would read the files back. Design, and
+      what DPaint's own writer did: docs/brush-save.md.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
