@@ -92,7 +92,10 @@ export function Menu(): JSX.Element {
   // wherever they visually belong (each drawer's own File cluster, via the
   // `open` passed down to PictureMenu/BrushMenu).
   const imageOpener = useFileOpener(handleImageFileOpen, 'image/*,.iff,.ilbm,.lbm');
-  const brushOpener = useFileOpener(handleBrushFileOpen, 'image/*,.iff,.ilbm,.lbm');
+  // .brush as well as the picture list: an Amiga brush often carries it, and
+  // the accept list only decides what the picker offers — what a file actually
+  // is still comes from its first twelve bytes (sniffFormat).
+  const brushOpener = useFileOpener(handleBrushFileOpen, 'image/*,.iff,.ilbm,.lbm,.brush');
 
   // for disabling Matte mode selection when using a built-in brush
   const usingBuiltInBrush = state.brush.usingBuiltInBrush;
