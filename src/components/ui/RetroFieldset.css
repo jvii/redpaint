@@ -2,6 +2,12 @@
   border: none;
   margin: 0;
   padding: 0;
+  /* A fieldset's UA min-inline-size is min-content, so one row too wide to fit
+     grows the whole group past whatever column it was given — the font
+     requester's family list pushed into the gap before the preview that way,
+     on a machine whose installed faces happened to be wider. Nothing here
+     wants that: a group is as wide as it is put. */
+  min-inline-size: 0;
 }
 
 .retro-fieldset__legend {

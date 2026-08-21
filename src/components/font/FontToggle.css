@@ -11,6 +11,9 @@
 }
 
 .font-toggle__name {
+  /* Takes the squeeze when a row is tight: the name can wrap, the sample is
+     the thing the row exists to show. */
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -22,7 +25,12 @@
    -webkit-font-smoothing: none for the bitmap face, that declaration inherits,
    and Safari renders unsmoothed system text visibly thinner rather than
    crisper. */
+/* Shrinkable and clipped, as a backstop to the sizing in FontToggle.tsx: a
+   sample that still would not fit must give way rather than widen the row,
+   which the column it sits in cannot absorb. */
 .font-toggle__specimen {
+  min-width: 0;
+  overflow: hidden;
   /* Fixed, not the 1.5 the segment inherits: FontToggle.tsx sizes a sample down
      until its ink fits this box, and a box that shrank with the font would make
      that circular and never converge. It also keeps every row one height,
@@ -34,6 +42,15 @@
      wrapping would just look like a rendering fault. */
   white-space: nowrap;
   flex: none;
+}
+
+/* The group is as wide as it is given, not as wide as its widest row: left to
+   size itself it would set every row to the widest one's width and slide them
+   under the scrollbar. */
+.font-toggle,
+.font-toggle .retro-toggle {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Backstop for the sizing in FontToggle.tsx: a face can still reach past its

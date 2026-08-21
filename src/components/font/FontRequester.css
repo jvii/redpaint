@@ -34,6 +34,11 @@
    which browser it opened in. Measured so this column, with the bundled faces
    above it, ends level with the settings column beside it. */
 .font-requester__family-list {
+  /* Pinned to the column: a row it cannot fit must scroll or be clipped, never
+     widen the list into the gap before the preview. */
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   height: 300px;
   overflow-y: auto;
   /* room for the toggle group's own 4px drop shadow, which a flush overflow

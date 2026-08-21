@@ -12,6 +12,10 @@ const SPECIMEN = 'Abc';
 // The size a sample is set at, and the fixed line box it must fit.
 const SPECIMEN_SIZE = 24;
 const SPECIMEN_BOX = 36;
+// And the width it has to fit. The row gives the name whatever is left, so a
+// face wide enough to ignore this pushes the list out of its own column and
+// into the gap before the preview.
+const SPECIMEN_MAX_WIDTH = 110;
 // Below this a sample has stopped being a sample.
 const SPECIMEN_MIN = 12;
 
@@ -23,9 +27,9 @@ const specimens = new Map<string, Specimen>();
 // How this family's sample has to be set to sit inside its row.
 //
 // A display face can hang far more ink around the baseline than its size
-// suggests — Zapfino's 'Abc' at 24px stands 46px tall — so it is set smaller
-// until the whole letterform fits rather than clipped. Only outliers shrink,
-// which keeps the bundled pixel faces on their 8px grid.
+// suggests — Zapfino's 'Abc' at 24px stands 46px tall — or run far wider, so it
+// is set smaller until the whole letterform fits rather than clipped. Only
+// outliers shrink, which keeps the bundled pixel faces on their 8px grid.
 //
 // The offset then centres the ink: CSS centres a line box by the font's
 // declared ascent and descent, which for such a face says little about where
@@ -52,10 +56,13 @@ function measureSpecimen(family: string): Specimen {
   scratch.font = `${SPECIMEN_SIZE}px ${quoteFamily(family)}`;
   const at24 = scratch.measureText(SPECIMEN);
   const ink = at24.actualBoundingBoxAscent + at24.actualBoundingBoxDescent;
+  // Whichever axis is tighter decides.
+  const scale = Math.min(
+    ink > SPECIMEN_BOX ? SPECIMEN_BOX / ink : 1,
+    at24.width > SPECIMEN_MAX_WIDTH ? SPECIMEN_MAX_WIDTH / at24.width : 1
+  );
   const size =
-    ink > SPECIMEN_BOX
-      ? Math.max(SPECIMEN_MIN, Math.floor((SPECIMEN_SIZE * SPECIMEN_BOX) / ink))
-      : SPECIMEN_SIZE;
+    scale < 1 ? Math.max(SPECIMEN_MIN, Math.floor(SPECIMEN_SIZE * scale)) : SPECIMEN_SIZE;
 
   // Measured again at the size actually used: none of this scales linearly.
   scratch.font = `${size}px ${quoteFamily(family)}`;
