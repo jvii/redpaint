@@ -117,13 +117,15 @@ export function clearGlyphCaches(): void {
 }
 
 function glyphCell(spec: FontSpec, character: string): TextRun {
-  watchFontLoads();
-  void document.fonts?.load(cssFont(spec, spec.size), character);
   const key = glyphKey(spec, character);
   const cached = glyphCache.get(key);
   if (cached) {
     return cached;
   }
+  // Only on the miss: this is the moment the face matters, and a cache hit
+  // happens for every glyph of every keystroke.
+  watchFontLoads();
+  void document.fonts?.load(cssFont(spec, spec.size), character);
   const cell = rasterizeAlone(spec, character);
   if (cachedBytes + cell.bits.length > CACHE_BUDGET_BYTES) {
     glyphCache.clear();
