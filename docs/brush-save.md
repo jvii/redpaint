@@ -119,15 +119,37 @@ without asking (`beginImageLoad` calls `replacePalette`), because a picture
 arrives self-describing and replaces everything anyway. A brush does not: it is
 dropped into a picture that already exists, and silently repainting every colour
 because someone picked up a brush is a far bigger side effect. DPaint agrees —
-"the picture palette will remain in effect" — but answers it with three menu
-commands found after the fact. The brush load dialog already asks about colour,
-so the question belongs there, with three answers:
+"the picture palette will remain in effect" — but answers it with menu commands
+found after the fact. The brush load dialog already asks about colour, so the
+question belongs there.
 
-- **use the brush's palette** — `replacePalette`, indices kept as they are
-- **remap to the current palette** — nearest colour per pixel, carrying the
+**The answers depend on whether the file brought a palette**, which today means
+IFF against everything else: PNG and GIF arrive through an `<img>` element as
+RGBA with nothing recovered, even though a GIF has a palette of its own.
+
+Without one, the two the dialog already offers:
+
+- **True Color (Original)** — every pixel a true-color pixel
+- **Remap To Current Palette** — nearest colour per pixel
+
+With one, those two become DPaint's pair, and True Color drops off:
+
+- **Use the brush's palette** — `replacePalette`, indices kept as they are
+- **Remap to the current palette** — nearest colour per pixel, carrying the
   transparent colour across as `BMRemapCols` does
-- **keep as true color** — each index resolved through the brush's CMAP, as the
-  dialog's existing 'true' mode does for a PNG
+
+True Color is not an option for a brush that came with a palette, and not only
+because adopting the palette already reproduces it exactly. It would convert an
+indexed brush into an unindexed one, and true-color pixels are what
+`pictureIsIndexed()` tests: a picture holding them cannot be written as IFF or
+GIF at all. Loading an Amiga brush and thereby losing the ability to save the
+picture as Amiga IFF is the wrong trade to offer, let alone to label
+"Original".
+
+Remap is the better default of the two. Adopting the brush's palette repaints
+every colour in the picture, and the manual's own advice to "select Use Brush
+Palette whenever you load a brush" was written for a program where the
+alternative was looking at the wrong colours.
 
 **The handle comes after this.** GRAB is written as `(w/2, h/2)` until there is
 a real handle, which is true today rather than a placeholder, and read back only

@@ -129,8 +129,9 @@ is scheduled. Design details live in the linked docs where they exist.
       Reading one back brings its palette with it, which is the larger half:
       an IFF brush carries the CMAP that was in effect when it was saved. The
       brush load dialog already asks about colour, so it asks about this too —
-      use the brush's palette, remap to the current one, or keep it as true
-      color. Saving always asks as well, since a brush has no remembered file
+      use the brush's palette, or remap to the current one. True Color drops
+      off for a brush that brought a palette: it would unindex the brush, and
+      a picture holding true-color pixels cannot be saved as IFF at all. Saving always asks as well, since a brush has no remembered file
       to write back to. Design, the decisions, and what DPaint's own writer
       did: docs/brush-save.md. The handle comes after
       (docs/brush-handle.md): GRAB is written as the centre until there is
