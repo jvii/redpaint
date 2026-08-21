@@ -77,6 +77,35 @@ stop, so the two belong in one change: sniff with `isIlbmHeader` as the picture
 load already does, surface the transparent index from the decoder, and map it
 back to `ALPHA_TRANSPARENT`.
 
+## A loaded brush brings a palette with it
+
+"When you load a saved brush, it comes equipped with its own palette, the one
+that was in effect when the brush was first saved" (DP2 manual). That is the
+part an IFF brush adds over a PNG one: a CMAP, whose indices mean nothing
+against the picture's own palette. DPaint's answer is three Color-menu
+commands, and on load it applies none of them — the picture's palette stays and
+the brush may simply look wrong until you choose:
+
+- **Use Brush Palette** (`CURBRUSH.C:30`) — keeps the current palette in
+  `prevColors` and loads the brush's over it. Only with a custom brush held.
+- **Restore Palette** (`PRISM.C:331`) — puts `prevColors` back.
+- **Remap Brush** (`REMAP.C:159`) — rewrites the brush's pixels from its own
+  palette to the current one, then adopts the current palette as the brush's.
+
+Two things to take from `BrRemapCols` in particular. It **returns a new
+transparent colour index** (`BMRemapCols` -> `curbr.xpcolor`), so a remap has to
+carry that colour across like any other; and it bails when there is no custom
+brush rather than acting on a built-in.
+
+Half of this exists already, and in a better place: `BrushLoadDialog` offers
+"keep true color" against remapping to the current palette
+(`fromRemappedImageData` + `remapToIndexByColor`), asked at load rather than
+left for the user to notice afterwards. What is missing is the brush *carrying*
+a palette at all — without that there is no Use Brush Palette and nothing for
+Restore Palette to undo. So: `CustomBrush` holds the CMAP a file brought with
+it, the load dialog gains a third choice for adopting it, and Restore is what
+the picture's own palette history already ought to give.
+
 ## Suggested shape
 
 1. **`IlbmImage` and `encodeIlbm` take masking, transparent colour and an
@@ -87,7 +116,8 @@ back to `ALPHA_TRANSPARENT`.
    as-is if the formats and the "why this one is unavailable" predicate are
    passed in rather than imported.
 3. **Extend `decodeIlbm` and route brush loading through it**, so a brush
-   written here opens here.
+   written here opens here — and carry its CMAP onto the brush, which is what
+   makes the palette choices above possible.
 4. Optional, for period fidelity: skip compression at 64 pixels and under, as
    DPaint did.
 

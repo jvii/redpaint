@@ -124,8 +124,14 @@ is scheduled. Design details live in the linked docs where they exist.
       The transparent colour is the background colour, as it is in DPaint —
       a capture tags every pixel holding it — but the index is thrown away
       once tagged, so it has to be kept. And brush loading decodes through an
-      `<img>` element today, so nothing would read the files back. Design, and
-      what DPaint's own writer did: docs/brush-save.md.
+      `<img>` element today, so nothing would read the files back.
+
+      Reading one back brings its palette with it, which is the larger half:
+      an IFF brush carries the CMAP that was in effect when it was saved, and
+      DPaint answers that with Use Brush Palette, Restore Palette and Remap
+      Brush. The remap half exists here already, as a choice in the brush load
+      dialog; what is missing is the brush carrying a palette at all. Design,
+      and what DPaint's own writer did: docs/brush-save.md.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
