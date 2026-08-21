@@ -132,6 +132,42 @@ export class BrushColorIndex {
     return new BrushColorIndex(width, height, indexArray);
   }
 
+  // The brush as one byte per pixel, rows top-down, for an indexed encoder.
+  // Null when any pixel is true-color, which no indexed format can hold.
+  //
+  // Transparent pixels are written as the color they were made from, not as
+  // the 0 addTransparency left in them: a file says "index N is the hole", so
+  // the holes have to actually hold N. A brush with holes but no color to name
+  // them by — one loaded from a PNG's alpha — is given `transparentColor`,
+  // which the caller picks (docs/brush-save.md).
+  toIndexedPixels(transparentColor?: number): {
+    pixels: Uint8Array;
+    transparentColor?: number;
+  } | null {
+    const hole = (this.transparentColorNumber ?? 0) - 1;
+    const holeIndex = hole >= 0 ? hole : transparentColor;
+    const out = new Uint8Array(this.width * this.height);
+    for (let y = 0; y < this.height; y++) {
+      const sourceRow = (this.height - 1 - y) * this.width * 4; // stored bottom-up
+      const targetRow = y * this.width;
+      for (let x = 0; x < this.width; x++) {
+        const tag = this.indexArray[sourceRow + x * 4 + 3];
+        if (tag === ALPHA_TRUECOLOR) {
+          return null;
+        }
+        if (tag === ALPHA_TRANSPARENT) {
+          if (holeIndex === undefined) {
+            return null;
+          }
+          out[targetRow + x] = holeIndex;
+        } else {
+          out[targetRow + x] = this.indexArray[sourceRow + x * 4];
+        }
+      }
+    }
+    return { pixels: out, transparentColor: holeIndex };
+  }
+
   // Marks the pixels whose indexed color equals the transparent color number
   // (1-based palette id) as transparent (alpha tag 0). True-color pixels are
   // never transparent.

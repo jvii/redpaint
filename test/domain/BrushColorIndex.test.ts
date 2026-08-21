@@ -76,3 +76,65 @@ describe('derive', () => {
     expect(tagsOf(derived)).toEqual([ALPHA_INDEXED, ALPHA_INDEXED]);
   });
 });
+
+describe('toIndexedPixels', () => {
+  // rows are stored bottom-up, so this builds them in that order
+  const brushFrom = (rows: [number, number][][], transparent?: number): BrushColorIndex =>
+    new BrushColorIndex(
+      rows[0].length,
+      rows.length,
+      pixels(rows.slice().reverse().flat()),
+      transparent
+    );
+
+  test('reads rows top-down, whatever order they are stored in', () => {
+    const brush = brushFrom([
+      [
+        [1, ALPHA_INDEXED],
+        [2, ALPHA_INDEXED],
+      ],
+      [
+        [3, ALPHA_INDEXED],
+        [4, ALPHA_INDEXED],
+      ],
+    ]);
+    expect(Array.from(brush.toIndexedPixels()!.pixels)).toEqual([1, 2, 3, 4]);
+  });
+
+  test('writes holes as the color they were made from, not the zero left in them', () => {
+    // color number 3 -> stored index 2; the middle pixel becomes a hole
+    const brush = brushFrom(
+      [
+        [
+          [1, ALPHA_INDEXED],
+          [2, ALPHA_INDEXED],
+          [5, ALPHA_INDEXED],
+        ],
+      ],
+      3
+    );
+    const indexed = brush.toIndexedPixels()!;
+    expect(Array.from(indexed.pixels)).toEqual([1, 2, 5]);
+    expect(indexed.transparentColor).toBe(2);
+  });
+
+  test('refuses a brush with true-color pixels', () => {
+    expect(brushFrom([[[1, ALPHA_TRUECOLOR]]]).toIndexedPixels()).toBeNull();
+  });
+
+  test('takes a transparent index for a brush whose holes came from alpha', () => {
+    const brush = brushFrom([
+      [
+        [0, ALPHA_TRANSPARENT],
+        [1, ALPHA_INDEXED],
+      ],
+    ]);
+    expect(Array.from(brush.toIndexedPixels(7)!.pixels)).toEqual([7, 1]);
+    expect(brush.toIndexedPixels(7)!.transparentColor).toBe(7);
+  });
+
+  test('refuses holes it has no index for', () => {
+    const brush = brushFrom([[[0, ALPHA_TRANSPARENT]]]);
+    expect(brush.toIndexedPixels()).toBeNull();
+  });
+});
