@@ -106,6 +106,15 @@ is scheduled. Design details live in the linked docs where they exist.
       Rockwell and Bahnschrift are the obvious Windows additions. Worth a pass
       for Linux (DejaVu, Liberation, Ubuntu) at the same time.
 
+- [ ] **Brush handle.** The handle is always the centre today
+      (`CustomBrush.adjustHandle`). DPaint had a Brush Handle toggle: centre, or
+      the corner the pickup drag ended at — and in DPaint II toggling it moves
+      the handle on the brush already in hand, falling back to the lower right
+      when there is no drag to consult. That makes it derived from a mode plus a
+      capture corner rather than a stored offset. Every brush transform then
+      needs a rule; DPaint re-centres for rotate and bend and says so in a
+      comment. Design: docs/brush-handle.md.
+
 - [ ] **Brush Save As, with IFF.** The Brush menu's Save gadget writes
       `brush.png` with no requester and no choice. Give it the picture's
       treatment — a name and a format — and add the Amiga one: a DPaint brush

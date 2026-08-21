@@ -48,15 +48,16 @@ case: prefer 0, since that is what DPaint's own brushes almost always carry;
 otherwise the lowest index the brush does not use; and if a brush genuinely
 uses all of them, disable IFF in the requester with that as the reason.
 
-**A brush with true-color pixels cannot be written as IFF at all**, the same
-constraint the picture has, and `toImageData` already shows both kinds are
-possible.
+**IFF is disabled for a brush with true-color pixels**, the same constraint the
+picture has (`pictureIsIndexed`), and `toImageData` shows both kinds are
+possible. That and "every index is in use" are the two independent reasons the
+format is greyed out, each with its own reason shown.
 
 **There is no handle to write.** `CustomBrush.adjustHandle` is
 `point - size/2`: the handle is always the centre, never stored and not
-settable. So GRAB gets `(w/2, h/2)`, which is truthful rather than a
-placeholder — it is where the brush actually stamps. Reading a non-centre GRAB
-back is a different feature, and needs a real handle first (DPaint had one).
+settable. So GRAB gets `(w/2, h/2)` until there is one — truthful rather than a
+placeholder, since it is where the brush actually stamps. Reading a non-centre
+GRAB back needs the handle itself: docs/brush-handle.md.
 
 **Nothing can read these files back.** `beginBrushLoad` (`app/actions.ts`)
 decodes through an `<img>` element, so it takes PNG and GIF and not IFF; only
