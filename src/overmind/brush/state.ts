@@ -7,6 +7,7 @@ import type { Mode } from './mode';
 export type { Mode } from './mode';
 export { usesEffectDraw } from './mode';
 export type BuiltInBrushId = keyof typeof builtInBrushes;
+export type HandleMode = 'center' | 'corner';
 
 export const builtInBrushes = {
   1: new PixelBrush(),
@@ -58,11 +59,11 @@ export type State = {
   // mirror of brushRecall.previousBrush (docs/brush-slots.md): the
   // automatically-managed companion to the curated slots above
   previousSlot: BrushSlotState;
-  // DPaint's Brush Handle: off holds a brush by its centre, on by the corner
-  // its pickup drag ended at (docs/brush-handle.md). One flag for the app, not
-  // per brush, so flipping it moves the brush already in hand — which is the
+  // DPaint's Brush Handle: where a brush is held. 'center', or the corner its
+  // pickup drag ended at (docs/brush-handle.md). One setting for the app, not
+  // per brush, so changing it moves the brush already in hand — which is the
   // DPaint II behaviour, where DPaint I only read the flag at the next pickup.
-  cornerHandle: boolean;
+  handleMode: HandleMode;
 };
 
 export const state: State = {
@@ -76,5 +77,5 @@ export const state: State = {
     size: null,
   })),
   previousSlot: { occupied: false, thumbnail: null, size: null },
-  cornerHandle: false,
+  handleMode: 'center',
 };

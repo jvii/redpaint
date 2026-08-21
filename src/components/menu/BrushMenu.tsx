@@ -1,9 +1,10 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { shortcutCap } from '../ui/shortcutCap';
+import { RetroToggle } from '../ui/RetroToggle';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushRecall } from '../../brush/BrushRecall';
-import { isBuiltInBrush } from '../../overmind/brush/state';
+import { isBuiltInBrush, HandleMode } from '../../overmind/brush/state';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { BrushTransformToolId } from '../../overmind/toolbox/actions';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
@@ -22,7 +23,6 @@ import {
   BendHIcon,
   BendVIcon,
   RestoreIcon,
-  HandleIcon,
 } from './transformIcons';
 import { saveFileAs } from './saveAsPng';
 import { beginSaveAsPrompt } from './pendingSaveAs';
@@ -276,23 +276,29 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
         </GadgetCluster>
         {/* a mode rather than an action, and the only one in this row — it
             changes where the brush sits under the cursor, not what the brush
-            is. Never disabled: it is app-wide, so it can be set with a
-            built-in in hand and takes effect at the next pickup, which is
-            where DPaint kept it too (a Prefs item there). */}
-        <GadgetCluster>
-          <Gadget
-            icon={<HandleIcon />}
-            label="Handle"
-            stacked
-            title={
-              usingBuiltInBrush
-                ? 'Hold a brush by its corner (built-in brushes are always held by the centre)'
-                : 'Hold the brush by the corner its pickup ended at, not its centre'
-            }
-            on={state.brush.cornerHandle}
-            onClick={instant(actions.brush.toggleBrushHandle)}
+            is. Two named options rather than a pressed gadget: "on" does not
+            say which of two places the brush is held, and there is no third.
+            Never disabled: it is app-wide, so it can be set with a built-in in
+            hand and takes effect at the next pickup, which is where DPaint kept
+            it too (a Prefs item there). */}
+        <div className="wb-cluster">
+          <div className="wb-cluster__subhead">Handle</div>
+          <RetroToggle
+            variant="row"
+            value={state.brush.handleMode}
+            onChange={(value): void => {
+              actions.brush.setHandleMode(value as HandleMode);
+              actions.app.closeMenu();
+              // the handle moves the brush under a cursor that otherwise won't
+              // repaint until the mouse does (see instant() above)
+              setTimeout(refreshBrushPreview, 150);
+            }}
+            options={[
+              { value: 'center', label: 'Center' },
+              { value: 'corner', label: 'Corner' },
+            ]}
           />
-        </GadgetCluster>
+        </div>
       </div>
       {/* the deliberate stash (docs/brush-slots.md), its own row below the
           transforms — recall isn't a transform, and a click here should

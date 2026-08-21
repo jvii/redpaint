@@ -93,8 +93,11 @@ middle. Consistent with the lower-right default the toggle falls back on.
    behaviour — with no recomputation anywhere.
 2. ✅ `BrushSelector` records the corner the drag ended at, by DPaint's own
    `MAX(0, mx - sx)`.
-3. ✅ A Handle toggle in the Brush drawer. Never disabled: it is app-wide, so
-   it can be set with a built-in in hand and takes effect at the next pickup.
+3. ✅ A Handle setting in the Brush drawer, Center or Corner, as a two-option
+   RetroToggle rather than a pressed gadget — "on" does not say which of two
+   places a brush is held, and there is no third. Never disabled: it is
+   app-wide, so it can be set with a built-in in hand and takes effect at the
+   next pickup.
 4. ✅ Flip, rotate 90 and stretch/halve/double carry the corner through
    (`CornerMove` in `algorithm/brushTransform.ts`); shear, bend and free
    rotation drop it and the lower-right fallback takes over. That last part is

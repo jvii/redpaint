@@ -247,7 +247,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // corner; the centre is the one that keeps the preview inside the box.)
   public handle(): Point {
     const centred =
-      !overmind.state.brush.cornerHandle ||
+      overmind.state.brush.handleMode === 'center' ||
       this.builtInFamily !== undefined ||
       isBrushTransformTool(overmind.state.toolbox.selectedSelectorToolId);
     if (centred) {

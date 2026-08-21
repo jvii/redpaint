@@ -1,5 +1,5 @@
 import { Context } from '../../overmind';
-import { Mode, BuiltInBrushId, builtInBrushes, isBuiltInBrush } from './state';
+import { Mode, BuiltInBrushId, HandleMode, builtInBrushes, isBuiltInBrush } from './state';
 import { usesColorizedBrush } from './mode';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { createSizedBuiltInBrush } from '../../brush/BuiltInBrushFactory';
@@ -82,8 +82,8 @@ export const clearBuiltInBrushSelection = (context: Context): void => {
   context.state.brush.hasOriginalBrush = false;
 };
 
-export const toggleBrushHandle = (context: Context): void => {
-  context.state.brush.cornerHandle = !context.state.brush.cornerHandle;
+export const setHandleMode = (context: Context, mode: HandleMode): void => {
+  context.state.brush.handleMode = mode;
 };
 
 export const setMode = (context: Context, mode: Mode): void => {
