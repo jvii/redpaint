@@ -65,6 +65,13 @@ handle to the lower right while the drag is live (`IMStrBrush`, `IMShrBrush`,
 is drag geometry, not a handle rule — the corner is what the rubber-band is
 anchored by.
 
+**Here that drag-time handle is the centre, not the lower right.** Same
+reasoning, different corner: these tools place the preview and the bounds box
+from the drag anchor, so the preview has to sit where its own geometry says or
+it slides out of the box it is being sized inside. The centre is the one that
+keeps it there. The handle goes back to the corner when the drag commits, so
+this is invisible except as the preview lining up.
+
 redpaint has stretch, shear, rotate, bend horizontal and bend vertical as modal
 tools, plus flip and halve/double as instant ones, so each needs an answer.
 Re-centring is a legitimate one where DPaint re-centred: it is what the original
@@ -88,8 +95,10 @@ middle. Consistent with the lower-right default the toggle falls back on.
    `MAX(0, mx - sx)`.
 3. ✅ A Handle toggle in the Brush drawer. Never disabled: it is app-wide, so
    it can be set with a built-in in hand and takes effect at the next pickup.
-4. Each transform gets its rule, DPaint's where DPaint has one. Until then a
-   transform drops the corner and the fallback applies, which is the lower
-   right — DPaint's answer for four of the seven, but wrong for flip, rotate 90
-   and stretch.
+4. ✅ Flip, rotate 90 and stretch/halve/double carry the corner through
+   (`CornerMove` in `algorithm/brushTransform.ts`); shear, bend and free
+   rotation drop it and the lower-right fallback takes over. That last part is
+   a deliberate divergence: DPaint re-centred there, but Handle should keep
+   meaning "a corner". A modal drag holds the brush by the centre throughout
+   and returns to the corner on commit, as above.
 5. Only then is `GRAB` worth reading back on load.

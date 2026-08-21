@@ -3,6 +3,7 @@ import { DrawingToolId } from './state';
 import { brushRecall } from '../../brush/BrushRecall';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { isBuiltInBrush } from '../brush/state';
+import type { BrushTransformToolId } from './brushTransformTools';
 
 export const setSelectedDrawingTool = (context: Context, toolId: DrawingToolId): void => {
   context.state.toolbox.selectedDrawingToolId = toolId;
@@ -34,12 +35,7 @@ export const toggleBrushSelectionMode = (context: Context): void => {
 // on the canvas, so they ride the selector-tool slot like brush selection
 // does. Custom brushes only, like every transform. Toggling one while the
 // other is armed switches directly.
-export type BrushTransformToolId =
-  | 'brushStretchTool'
-  | 'brushShearTool'
-  | 'brushRotateTool'
-  | 'brushBendHorizontalTool'
-  | 'brushBendVerticalTool';
+export type { BrushTransformToolId };
 
 export const toggleBrushTransformMode = (context: Context, tool: BrushTransformToolId): void => {
   const isSelected = context.state.toolbox.selectedSelectorToolId === tool;

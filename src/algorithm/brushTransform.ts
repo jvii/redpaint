@@ -1,4 +1,5 @@
 import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { Point } from '../types';
 
 // Brush transformations (see docs/brush-transforms.md): pure functions
 // reshaping a brush bitmap, ported from DPaint's Brush menu (reference source
@@ -241,3 +242,45 @@ export function resize(
   }
   return brush.derive(newWidth, newHeight, result);
 }
+
+// Where a brush's capture corner (docs/brush-handle.md) lands when the bitmap
+// is reshaped under it. Corners are in visual (top-down) coordinates, the space
+// the pickup drag was measured in, not the bottom-up one the pixels are stored
+// in.
+//
+// Only these three: DPaint carried its handle through flip, rotate 90 and
+// stretch and gave up on the rest, re-centring after a shear, a bend or a
+// free rotation. Here a transform with no rule drops the corner instead, and
+// the fallback takes over — so Handle keeps meaning "a corner" rather than
+// silently reverting to the centre.
+export type CornerMove = (
+  corner: Point,
+  from: { width: number; height: number },
+  to: { width: number; height: number }
+) => Point;
+
+export const mirrorCornerX: CornerMove = (corner, from) => ({
+  x: from.width - 1 - corner.x,
+  y: corner.y,
+});
+
+export const mirrorCornerY: CornerMove = (corner, from) => ({
+  x: corner.x,
+  y: from.height - 1 - corner.y,
+});
+
+// Matches rotate90's visual clockwise mapping: the old top-left corner becomes
+// the new top-right one.
+export const rotateCorner90: CornerMove = (corner, from) => ({
+  x: from.height - 1 - corner.y,
+  y: corner.x,
+});
+
+// The handle is a position within the picture, so scaling the picture scales
+// it — DPaint's MulDiv in STRETCH.C's FixOffs. Clamped because shrinking rounds
+// the far corner past the last pixel: 9 of 10 into a width of 3 is 2.7, and 3
+// is off the end.
+export const scaleCorner: CornerMove = (corner, from, to) => ({
+  x: Math.min(to.width - 1, Math.round((corner.x * to.width) / from.width)),
+  y: Math.min(to.height - 1, Math.round((corner.y * to.height) / from.height)),
+});

@@ -17,10 +17,12 @@ import { Mode, usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { CornerMove } from '../algorithm/brushTransform';
 import { BuiltInFamily } from '../algorithm/builtInBrushShapes';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { drawStyledFilledShape } from './fillStyleDraw';
+import { isBrushTransformTool } from '../overmind/toolbox/brushTransformTools';
 
 interface CustomBrushFeatures {
   setFGColor(color: Color): void;
@@ -209,9 +211,22 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // in via brushRecall.setTransformed, which keeps lastChanged-based texture
   // caching correct and the pre-transform original recallable. Transforms
   // always read the matte (source-of-truth) bitmap, never a colorized variant.
-  public transform(fn: (index: BrushColorIndex) => BrushColorIndex): CustomBrush {
+  public transform(
+    fn: (index: BrushColorIndex) => BrushColorIndex,
+    moveCorner?: CornerMove
+  ): CustomBrush {
     const transformed = fn(this.brushColorIndexMatte);
-    return new CustomBrush(transformed, transformed.width, transformed.height);
+    const brush = new CustomBrush(transformed, transformed.width, transformed.height);
+    // Without a rule the corner is dropped and the lower-right fallback takes
+    // over, which is what DPaint's re-centring transforms amount to here.
+    if (this.captureCorner && moveCorner) {
+      brush.captureCorner = moveCorner(
+        this.captureCorner,
+        { width: this.width, height: this.heigth },
+        { width: transformed.width, height: transformed.height }
+      );
+    }
+    return brush;
   }
 
   // Where in its own pixels the brush is held. Derived rather than stored: the
@@ -223,8 +238,19 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (CURBRUSH.C:47) and never consult midHandle. They have no pickup drag to
   // derive a corner from anyway, and the point of the small ones is that the
   // pixel under the cursor is the one that gets painted.
+  // A transform drag holds the brush by the centre whatever the toggle says,
+  // and it goes back to the corner once the drag commits. The drag positions
+  // the brush by its own geometry — the bounds box and the preview are placed
+  // from the anchor — so an off-centre handle would slide the preview out of
+  // the box it is being sized inside. (DPaint anchored those drags at the
+  // lower right instead, which is the same reasoning reaching a different
+  // corner; the centre is the one that keeps the preview inside the box.)
   public handle(): Point {
-    if (!overmind.state.brush.cornerHandle || this.builtInFamily !== undefined) {
+    const centred =
+      !overmind.state.brush.cornerHandle ||
+      this.builtInFamily !== undefined ||
+      isBrushTransformTool(overmind.state.toolbox.selectedSelectorToolId);
+    if (centred) {
       return { x: this.width / 2, y: this.heigth / 2 };
     }
     return this.captureCorner ?? { x: this.width - 1, y: this.heigth - 1 };
