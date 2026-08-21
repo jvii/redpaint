@@ -115,8 +115,15 @@ export function createPalette(colors: number): {
   // Sorted before they are laid down, purely so the grid can be read. The set
   // is the same either way and so is every remap against it — but generated in
   // lattice order the swatches are a wall of noise, blue stepping fastest
-  // against a grid eight wide. Grays first, continuing the ramp DPaint's own 32
-  // end on, then by hue and lightness, which reads as a spectrum.
+  // against a grid eight wide.
+  //
+  // Grays first, continuing the ramp DPaint's own 32 end on. Then bands a
+  // twelfth of the wheel wide, each ramping dark to light. Sorting by hue
+  // itself was tried first and is barely better than not sorting: a lattice
+  // gives almost every color its own hue to a fraction of a degree, so the
+  // lightness never gets to break a tie and each band comes out mottled.
+  // Wider bands were tried too and read muddy, a whole band being more than
+  // one recognizable color.
   fill.sort((a, b): number => {
     const x = hslOf(a);
     const y = hslOf(b);
@@ -126,28 +133,47 @@ export function createPalette(colors: number): {
     if (x.gray) {
       return x.lightness - y.lightness;
     }
-    return x.hue - y.hue || x.lightness - y.lightness;
+    return (
+      Math.floor(x.hue / HUE_BAND) - Math.floor(y.hue / HUE_BAND) ||
+      x.lightness - y.lightness ||
+      x.saturation - y.saturation
+    );
   });
   fill.forEach(add);
 
   return palette;
 }
 
+// How wide a band of hue reads as one color. A twelfth of the wheel: red,
+// orange, yellow and so on each get their own.
+const HUE_BAND = 30;
+
 // Enough of HSL to order swatches by: which are gray, and where the rest sit
-// around the wheel and up the lightness scale.
-function hslOf(color: Color): { gray: boolean; hue: number; lightness: number } {
+// around the wheel, up the lightness scale and out from it.
+function hslOf(color: Color): {
+  gray: boolean;
+  hue: number;
+  lightness: number;
+  saturation: number;
+} {
   const r = color.r / 255;
   const g = color.g / 255;
   const b = color.b / 255;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const chroma = max - min;
+  const lightness = (max + min) / 2;
   if (chroma === 0) {
-    return { gray: true, hue: 0, lightness: (max + min) / 2 };
+    return { gray: true, hue: 0, lightness, saturation: 0 };
   }
   const sixth =
     max === r ? ((g - b) / chroma) % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
-  return { gray: false, hue: (sixth * 60 + 360) % 360, lightness: (max + min) / 2 };
+  return {
+    gray: false,
+    hue: (sixth * 60 + 360) % 360,
+    lightness,
+    saturation: chroma / (1 - Math.abs(2 * lightness - 1)),
+  };
 }
 
 // The most even RGB lattice that fits in `slots`. Even is measured as the
