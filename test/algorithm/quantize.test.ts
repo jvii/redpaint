@@ -345,6 +345,31 @@ describe('createPalette beyond DPaint depths', () => {
     expect(Object.values(createPalette(size)).slice(0, 32)).toEqual(dpaint);
   });
 
+  test('lays the generated slots out to be read: grays, then a spectrum', () => {
+    // Order changes nothing about which colors are there, only whether the
+    // grid is legible. Generated in lattice order it is a wall of noise.
+    const fill = Object.values(createPalette(256)).slice(32);
+    const gray = (c: { r: number; g: number; b: number }): boolean => c.r === c.g && c.g === c.b;
+    const grays = fill.filter(gray);
+    expect(fill.slice(0, grays.length).every(gray)).toBe(true);
+    // grays ascend, and the colors after them never step backwards in hue
+    const lightness = grays.map((c) => c.r);
+    expect(lightness).toEqual([...lightness].sort((a, b) => a - b));
+    const hues = fill.slice(grays.length).map((c) => {
+      const max = Math.max(c.r, c.g, c.b);
+      const min = Math.min(c.r, c.g, c.b);
+      const d = max - min;
+      const sixth =
+        max === c.r
+          ? ((c.g - c.b) / d) % 6
+          : max === c.g
+            ? (c.b - c.r) / d + 2
+            : (c.r - c.g) / d + 4;
+      return (sixth * 60 + 360) % 360;
+    });
+    expect(hues).toEqual([...hues].sort((a, b) => a - b));
+  });
+
   test('covers the color cube, rather than one line through it', () => {
     // A dark desaturated magenta: on no hue sweep at full saturation, and the
     // color a real DPaint brush was landing 70 away from.

@@ -76,10 +76,22 @@ export function createPalette(colors: number): {
   DPAINT_DEFAULTS[32].forEach((rgb12): void => add(amigaRgbToColor(rgb12)));
 
   const [reds, greens, blues] = latticeDimensions(colors - 32);
+  // Candidates for the slots after DPaint's, gathered before being placed so
+  // they can be sorted. Skips anything already in the palette or already
+  // offered, so the count below is a count of colors that will actually land.
+  const fill: Color[] = [];
+  const offered = new Set<number>();
+  const offer = (color: Color): void => {
+    const key = (color.r << 16) | (color.g << 8) | color.b;
+    if (!seen.has(key) && !offered.has(key)) {
+      offered.add(key);
+      fill.push(color);
+    }
+  };
   for (let r = 0; r < reds; r++) {
     for (let g = 0; g < greens; g++) {
       for (let b = 0; b < blues; b++) {
-        add({
+        offer({
           r: Math.round((r * 255) / (reds - 1)),
           g: Math.round((g * 255) / (greens - 1)),
           b: Math.round((b * 255) / (blues - 1)),
@@ -92,13 +104,50 @@ export function createPalette(colors: number): {
   // few more. Both go to grays, where an eye notices banding first. Each pass
   // halves the spacing, so the ones that land between existing grays are the
   // ones that get added.
-  for (let levels = Math.max(2, colors + 1 - next); next <= colors && levels <= 256; levels *= 2) {
-    for (let i = 0; i < levels && next <= colors; i++) {
-      add(createGrayscaleColor(levels - 1, i));
+  const wanted = colors - 32;
+  for (let levels = Math.max(2, wanted - fill.length); fill.length < wanted && levels <= 256; ) {
+    for (let i = 0; i < levels && fill.length < wanted; i++) {
+      offer(createGrayscaleColor(levels - 1, i));
     }
+    levels *= 2;
   }
 
+  // Sorted before they are laid down, purely so the grid can be read. The set
+  // is the same either way and so is every remap against it — but generated in
+  // lattice order the swatches are a wall of noise, blue stepping fastest
+  // against a grid eight wide. Grays first, continuing the ramp DPaint's own 32
+  // end on, then by hue and lightness, which reads as a spectrum.
+  fill.sort((a, b): number => {
+    const x = hslOf(a);
+    const y = hslOf(b);
+    if (x.gray !== y.gray) {
+      return x.gray ? -1 : 1;
+    }
+    if (x.gray) {
+      return x.lightness - y.lightness;
+    }
+    return x.hue - y.hue || x.lightness - y.lightness;
+  });
+  fill.forEach(add);
+
   return palette;
+}
+
+// Enough of HSL to order swatches by: which are gray, and where the rest sit
+// around the wheel and up the lightness scale.
+function hslOf(color: Color): { gray: boolean; hue: number; lightness: number } {
+  const r = color.r / 255;
+  const g = color.g / 255;
+  const b = color.b / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const chroma = max - min;
+  if (chroma === 0) {
+    return { gray: true, hue: 0, lightness: (max + min) / 2 };
+  }
+  const sixth =
+    max === r ? ((g - b) / chroma) % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
+  return { gray: false, hue: (sixth * 60 + 360) % 360, lightness: (max + min) / 2 };
 }
 
 // The most even RGB lattice that fits in `slots`. Even is measured as the
