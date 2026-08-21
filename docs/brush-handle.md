@@ -1,9 +1,9 @@
 # Brush handle — design
 
-Status: steps 1–3 built (the toggle, the capture corner, and `adjustHandle`
-reading them). Steps 4 and 5 — a rule per transform, and reading `GRAB` back on
-load — are not. Wanted for its own sake, and the reason a `GRAB` chunk would
-have anything to carry (docs/brush-save.md).
+Status: steps 1–4 built — the setting, the capture corner, `adjustHandle`
+reading them, and a rule per transform. Step 5, reading `GRAB` back on load, is
+not. Wanted for its own sake, and the reason a `GRAB` chunk would have anything
+to carry (docs/brush-save.md).
 
 Before it, the handle was always the centre: `CustomBrush.adjustHandle` was
 `point - size/2`, computed on the spot and stored nowhere.
@@ -88,7 +88,7 @@ middle. Consistent with the lower-right default the toggle falls back on.
 
 1. ✅ `CustomBrush` carries the capture corner and `handle()` derives from it
    and the mode; `adjustHandle` reads that instead of halving the size. The
-   mode is one app-wide flag (`brush.cornerHandle`) rather than per-brush,
+   mode is one app-wide setting (`brush.handleMode`) rather than per-brush,
    which is what makes it live on the brush already in hand — DPaint II's
    behaviour — with no recomputation anywhere.
 2. ✅ `BrushSelector` records the corner the drag ended at, by DPaint's own
