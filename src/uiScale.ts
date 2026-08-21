@@ -33,6 +33,15 @@ export const UI_SCALES = [1, 0.8, 0.75, 0.67] as const;
 const DEFAULT_UI_SCALE = 1;
 const STORAGE_KEY = 'redpaint.uiScale';
 
+// A preview canvas in a requester is a window into the picture: one buffer
+// pixel has to cover the screen area one canvas pixel does, or it shows text
+// and fills at a size they will not be painted at. Both scales apply, and they
+// pull opposite ways — the canvas stack is not zoomed (see above), the chrome
+// around these previews is.
+export function previewBufferSize(cssSize: number, displayScale: number, uiScale: number): number {
+  return Math.max(1, Math.round((cssSize * uiScale) / displayScale));
+}
+
 export function loadUiScale(): number {
   try {
     const stored = Number(window.localStorage.getItem(STORAGE_KEY));

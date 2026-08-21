@@ -1,6 +1,7 @@
 import { JSX, useRef } from 'react';
 import './FillStyleSettings.css';
 import { useActions, useAppState } from '../../overmind';
+import { previewBufferSize } from '../../uiScale';
 import { colorToRGBString } from '../../algorithm/color';
 import { GradientAxis } from '../../algorithm/gradientFill';
 import { FillMode } from '../../overmind/fillStyle/state';
@@ -60,8 +61,8 @@ function FillStyleSettingsOpen(): JSX.Element {
   // the buffer's aspect and wasting the dialog's width. Computed here, not in
   // the hook, so the hook and the JSX canvas attributes agree.
   const displayScale = state.canvas.displayScale;
-  const previewWidth = Math.round(PREVIEW_DISPLAY_SIZE / displayScale.x);
-  const previewHeight = Math.round(PREVIEW_DISPLAY_SIZE / displayScale.y);
+  const previewWidth = previewBufferSize(PREVIEW_DISPLAY_SIZE, displayScale.x, state.app.uiScale);
+  const previewHeight = previewBufferSize(PREVIEW_DISPLAY_SIZE, displayScale.y, state.app.uiScale);
 
   const previewRef = useRef<HTMLCanvasElement>(null);
   useFillStylePreview(previewRef, previewWidth, previewHeight, displayScale, PREVIEW_DISPLAY_SIZE);

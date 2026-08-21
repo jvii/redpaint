@@ -2,6 +2,7 @@ import { JSX, useEffect, useMemo, useRef } from 'react';
 import './FontRequester.css';
 import { useActions, useAppState } from '../../overmind';
 import { sizeRangeFor } from '../../overmind/font/state';
+import { previewBufferSize } from '../../uiScale';
 import { BUNDLED_OUTLINE_FACES, bundledOutlineFace } from '../../domain/BundledFonts';
 import { FontSpec } from '../../algorithm/glyphRaster';
 import { Modal } from '../modal/Modal';
@@ -79,8 +80,12 @@ function FontRequesterOpen(): JSX.Element {
   // scales back up by exactly that. Per axis, since a screen format's pixels
   // need not be square.
   const displayScale = state.canvas.displayScale;
-  const previewWidth = Math.round(PREVIEW_DISPLAY_WIDTH / displayScale.x);
-  const previewHeight = Math.round(PREVIEW_DISPLAY_HEIGHT / displayScale.y);
+  const previewWidth = previewBufferSize(PREVIEW_DISPLAY_WIDTH, displayScale.x, state.app.uiScale);
+  const previewHeight = previewBufferSize(
+    PREVIEW_DISPLAY_HEIGHT,
+    displayScale.y,
+    state.app.uiScale
+  );
 
   useFontPreview(
     previewRef,
