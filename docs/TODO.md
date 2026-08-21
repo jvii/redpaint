@@ -66,13 +66,22 @@ is scheduled. Design details live in the linked docs where they exist.
       for a face already covered. It is in the history if a face ever ships only
       as `.raw`.
 
-- [ ] **Text tool: more bundled faces.** Anything pixel-gridded with a clean
-      licence drops straight in — a `BUNDLED_OUTLINE_FACES` entry, the woff2,
-      and its copyright line in `public/fonts/README.txt`. Worth checking each
-      candidate in the requester's preview first: a face that is pixel-*styled*
-      rather than pixel-gridded (Pixelify Sans) has real curves and behaves like
-      any other outline, and one drawn on a larger grid (VT323, Jersey 10)
-      breaks up below roughly 15 and 20px. All three were tried and dropped.
+- [ ] **Text tool: more bundled faces.** The highest-value text work left, and
+      the cheapest: two faces ship today, both sans on an 8px grid, so there is
+      nothing at all for a smaller grid or another flavour. They are also the
+      only faces that render identically on every machine — measured, Windows
+      and macOS agree on them to the pixel, where the same nominal system face
+      does not — and the only clean answer below `SYSTEM_SIZE_MIN`
+      (docs/text-tool.md, "Getting past the floor"). A 5px or 6px grid face and
+      a serif-flavoured one are the obvious gaps.
+
+      Anything pixel-gridded with a clean licence drops straight in — a
+      `BUNDLED_OUTLINE_FACES` entry, the woff2, and its copyright line in
+      `public/fonts/README.txt`. Worth checking each candidate in the
+      requester's preview first: a face that is pixel-*styled* rather than
+      pixel-gridded (Pixelify Sans) has real curves and behaves like any other
+      outline, and one drawn on a larger grid (VT323, Jersey 10) breaks up below
+      roughly 15 and 20px. All three were tried and dropped.
 
       **Topaz and the Amiga faces** (P0T-NOoDLE, MicroKnight, mO'sOul, from
       `rewtnull/amigafonts`) ship TrueType versions, so they would arrive the
@@ -82,6 +91,20 @@ is scheduled. Design details live in the linked docs where they exist.
       GPL text and dMG's notices, and means redpaint having a licence of its own
       to reason from (it has none today). Worth doing deliberately or not at
       all.
+
+- [ ] **Text tool: widen the probed font list.** `CANDIDATES` in
+      `src/domain/systemFonts.ts` is 21 web-safe names and leans macOS — eight
+      Mac faces against two Windows ones, and no Segoe UI, which is Windows'
+      own UI font. It is only reached where `queryLocalFonts()` is not, so this
+      is exactly the Safari and Firefox experience, and a family whose name is
+      not in the list cannot be found however well installed it is.
+
+      Cheap and safe to extend: each name is confirmed by measuring it against
+      three generic fallbacks, so one that is not installed simply does not
+      appear, and the cost is three `measureText` calls per candidate at first
+      open. Calibri, Cambria, Candara, Corbel, Franklin Gothic, Century Gothic,
+      Rockwell and Bahnschrift are the obvious Windows additions. Worth a pass
+      for Linux (DejaVu, Liberation, Ubuntu) at the same time.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
