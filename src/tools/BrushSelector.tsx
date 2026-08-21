@@ -32,7 +32,16 @@ export class BrushSelector implements Tool {
     const width = Math.abs(mousePos.x - start.x) + 1;
     const height = Math.abs(mousePos.y - start.y) + 1;
 
-    const customBrush = CustomBrush.fromCanvasArea(topLeft, width, height);
+    // The corner the drag ended at, in the brush's own pixels — what Brush
+    // Handle holds the brush by (docs/brush-handle.md). DPaint's own rule,
+    // MAX(0, mx - sx) in MODES.C's DoSelBr: dragging right or down gives the
+    // far edge, and the MAX is what collapses the other direction to zero.
+    const captureCorner = {
+      x: Math.max(0, mousePos.x - start.x),
+      y: Math.max(0, mousePos.y - start.y),
+    };
+
+    const customBrush = CustomBrush.fromCanvasArea(topLeft, width, height, captureCorner);
     brushRecall.setCustom(customBrush);
     overmind.actions.brush.clearBuiltInBrushSelection();
     overmind.actions.brush.setMode('Matte');

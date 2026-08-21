@@ -22,6 +22,7 @@ import {
   BendHIcon,
   BendVIcon,
   RestoreIcon,
+  HandleIcon,
 } from './transformIcons';
 import { saveFileAs } from './saveAsPng';
 import { beginSaveAsPrompt } from './pendingSaveAs';
@@ -271,6 +272,25 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             shortcut={shortcutCap('B')}
             disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
             onClick={instant(actions.brush.restoreOriginalBrush)}
+          />
+        </GadgetCluster>
+        {/* a mode rather than an action, and the only one in this row — it
+            changes where the brush sits under the cursor, not what the brush
+            is. Never disabled: it is app-wide, so it can be set with a
+            built-in in hand and takes effect at the next pickup, which is
+            where DPaint kept it too (a Prefs item there). */}
+        <GadgetCluster>
+          <Gadget
+            icon={<HandleIcon />}
+            label="Handle"
+            stacked
+            title={
+              usingBuiltInBrush
+                ? 'Hold a brush by its corner (built-in brushes are always held by the centre)'
+                : 'Hold the brush by the corner its pickup ended at, not its centre'
+            }
+            on={state.brush.cornerHandle}
+            onClick={instant(actions.brush.toggleBrushHandle)}
           />
         </GadgetCluster>
       </div>

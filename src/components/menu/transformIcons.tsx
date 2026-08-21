@@ -304,3 +304,18 @@ export function CropIcon({ size = 24 }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+// Not a transform but a mode, and the one glyph in here that has to say
+// *where* rather than *what*: the brush as a box, and the crosshair that marks
+// where it is held sitting on the box's corner. Pressed means the corner; the
+// unpressed reading is the centre, which needs no second glyph because the
+// gadget's own state carries it.
+export function HandleIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="3" y="3" width="14" height="14" />
+      <line x1="13" y1="17" x2="21" y2="17" />
+      <line x1="17" y1="13" x2="17" y2="21" />
+    </svg>
+  );
+}

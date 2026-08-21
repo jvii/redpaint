@@ -41,6 +41,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (no Matte/Repl, never banked to Previous) even though it's a fresh object,
   // not one of the fixed registry singletons.
   public builtInFamily?: BuiltInFamily;
+  // Where the pickup drag ended, in the brush's own pixels — what the Brush
+  // Handle toggle holds the brush by when it is on (docs/brush-handle.md).
+  // Undefined for a brush with no drag to consult: one loaded from a file, or
+  // produced by a transform. Those fall back to the lower right, as DPaint's
+  // own loader does.
+  public captureCorner?: Point;
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
   private brushColorIndexColorBG: BrushColorIndex;
@@ -62,7 +68,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   // Factory method for extracting a brush from canvas
-  public static fromCanvasArea(start: Point, width: number, height: number): CustomBrush {
+  public static fromCanvasArea(
+    start: Point,
+    width: number,
+    height: number,
+    captureCorner?: Point
+  ): CustomBrush {
     const brushColorIndex = paintingCanvasController.getBrushColorIndexFromArea(
       start,
       width,
@@ -71,7 +82,9 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     if (!brushColorIndex) {
       throw new Error('Failed to get brush color index from area');
     }
-    return new CustomBrush(brushColorIndex, width, height);
+    const brush = new CustomBrush(brushColorIndex, width, height);
+    brush.captureCorner = captureCorner;
+    return brush;
   }
 
   // Factory method for decoding a brush from an image URL (opened file or
@@ -201,8 +214,25 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     return new CustomBrush(transformed, transformed.width, transformed.height);
   }
 
+  // Where in its own pixels the brush is held. Derived rather than stored: the
+  // toggle has to be able to answer "which corner" for a brush it did not
+  // capture, and storing an absolute offset could not.
+  //
+  // Built-in brushes are always held by the centre, whatever the toggle says —
+  // DPaint's pens set their own offset unconditionally in FixUpPen
+  // (CURBRUSH.C:47) and never consult midHandle. They have no pickup drag to
+  // derive a corner from anyway, and the point of the small ones is that the
+  // pixel under the cursor is the one that gets painted.
+  public handle(): Point {
+    if (!overmind.state.brush.cornerHandle || this.builtInFamily !== undefined) {
+      return { x: this.width / 2, y: this.heigth / 2 };
+    }
+    return this.captureCorner ?? { x: this.width - 1, y: this.heigth - 1 };
+  }
+
   private adjustHandle(point: Point): Point {
-    return { x: point.x - this.width / 2, y: point.y - this.heigth / 2 }; // center handle to brush
+    const handle = this.handle();
+    return { x: point.x - handle.x, y: point.y - handle.y };
   }
 
   private stamp(points: Point[], canvas: DrawTarget): void {

@@ -77,6 +77,10 @@ export const clearBuiltInBrushSelection = (context: Context): void => {
   context.state.brush.hasOriginalBrush = false;
 };
 
+export const toggleBrushHandle = (context: Context): void => {
+  context.state.brush.cornerHandle = !context.state.brush.cornerHandle;
+};
+
 export const setMode = (context: Context, mode: Mode): void => {
   context.state.brush.mode = mode;
   const brush = brushRecall.current;
