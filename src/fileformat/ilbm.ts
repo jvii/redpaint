@@ -25,6 +25,12 @@ export interface IlbmImage {
   palette: Color[]; // padded to 2^nPlanes entries so every index resolves
   pixels: Uint8Array; // width*height 0-based palette positions, rows top-down
   cycleRanges: IlbmCycleRange[];
+  // 0-based palette position that stands for "nothing here", present only when
+  // BMHD's masking says so. A brush carries one; a picture does not.
+  transparentColor?: number;
+  // The brush handle: where the pointer holds the bitmap, in its own pixels.
+  // DPaint writes it for brushes (docs/brush-save.md) and nothing else.
+  grab?: { x: number; y: number };
 }
 
 export class IlbmError extends Error {
@@ -106,6 +112,17 @@ export function decodeIlbm(bytes: Uint8Array): IlbmImage {
       ? decodePbmBody(bodyChunk.data, width, height, compression)
       : decodeIlbmBody(bodyChunk.data, width, height, nPlanes, masking, compression);
 
+  // masking 2 is mskHasTransparentColor. 1 is a mask plane, already handled in
+  // the body reader, and says nothing about which color is the hole.
+  const transparentColor = masking === 2 ? header.getUint16(12) : undefined;
+
+  const grabChunk = chunk('GRAB');
+  let grab: { x: number; y: number } | undefined;
+  if (grabChunk && grabChunk.data.length >= 4) {
+    const v = new DataView(grabChunk.data.buffer, grabChunk.data.byteOffset);
+    grab = { x: v.getInt16(0), y: v.getInt16(2) };
+  }
+
   const cycleRanges = form.chunks
     .filter((c) => c.id === 'CRNG' && c.data.length >= 8)
     .map((c): IlbmCycleRange => {
@@ -120,7 +137,7 @@ export function decodeIlbm(bytes: Uint8Array): IlbmImage {
       };
     });
 
-  return { width, height, palette, pixels, cycleRanges };
+  return { width, height, palette, pixels, cycleRanges, transparentColor, grab };
 }
 
 // CMAP: 3 bytes RGB per register. Pre-AGA writers stored 4-bit color values
@@ -203,7 +220,7 @@ function decodePbmBody(
 export function encodeIlbm(
   image: Omit<IlbmImage, 'cycleRanges'> & { cycleRanges?: IlbmCycleRange[] }
 ): Uint8Array {
-  const { width, height, palette, pixels } = image;
+  const { width, height, palette, pixels, transparentColor, grab } = image;
   let maxIndex = 0;
   for (let i = 0; i < pixels.length; i++) {
     if (pixels[i] > maxIndex) {
@@ -218,13 +235,24 @@ export function encodeIlbm(
   header.setUint16(0, width);
   header.setUint16(2, height);
   bmhd[8] = nPlanes;
-  bmhd[9] = 0; // no mask
+  // 2 is mskHasTransparentColor: the hole is a palette position, not a plane.
+  bmhd[9] = transparentColor === undefined ? 0 : 2;
   bmhd[10] = 1; // ByteRun1
-  header.setUint16(12, 0); // transparentColor
+  header.setUint16(12, transparentColor ?? 0);
   bmhd[14] = 1; // xAspect — square pixels (no screen-mode simulation on export)
   bmhd[15] = 1; // yAspect
   header.setInt16(16, width); // pageWidth/Height: the image is its own page
   header.setInt16(18, height);
+
+  // After CMAP and before BODY, where DPaint writes it (DPIFF.C).
+  const grabChunk: IffChunk[] = [];
+  if (grab) {
+    const data = new Uint8Array(4);
+    const view = new DataView(data.buffer);
+    view.setInt16(0, grab.x);
+    view.setInt16(2, grab.y);
+    grabChunk.push({ id: 'GRAB', data });
+  }
 
   const cmap = new Uint8Array(3 * (1 << nPlanes)); // pad to full registers, black
   palette.forEach((color, i) => {
@@ -252,10 +280,7 @@ export function encodeIlbm(
     offset += row.length;
   }
 
-  const chunks: IffChunk[] = [
-    { id: 'BMHD', data: bmhd },
-    { id: 'CMAP', data: cmap },
-  ];
+  const chunks: IffChunk[] = [{ id: 'BMHD', data: bmhd }, { id: 'CMAP', data: cmap }, ...grabChunk];
   for (const range of image.cycleRanges ?? []) {
     const crng = new Uint8Array(8);
     const v = new DataView(crng.buffer);

@@ -1,10 +1,14 @@
 import { describe, expect, test } from 'vitest';
 import { decodeIlbm, encodeIlbm, IlbmError, isIlbmHeader } from '../../src/fileformat/ilbm';
-import { writeForm, IffChunk } from '../../src/fileformat/iff';
+import { readForm, writeForm, IffChunk } from '../../src/fileformat/iff';
 
 // BMHD builder: only the fields the tests vary
 function bmhd(opts: {
-  w: number; h: number; nPlanes: number; masking?: number; compression?: number;
+  w: number;
+  h: number;
+  nPlanes: number;
+  masking?: number;
+  compression?: number;
 }): IffChunk {
   const data = new Uint8Array(20);
   const v = new DataView(data.buffer);
@@ -66,7 +70,12 @@ describe('decodeIlbm', () => {
     const body: IffChunk = { id: 'BODY', data: new Uint8Array([0x50, 0, 0x30, 0]) };
     const bytes = writeForm('ILBM', [
       bmhd({ w: 4, h: 1, nPlanes: 2 }),
-      cmap([[0, 0, 0], [255, 255, 255], [255, 0, 0], [0, 0, 255]]),
+      cmap([
+        [0, 0, 0],
+        [255, 255, 255],
+        [255, 0, 0],
+        [0, 0, 255],
+      ]),
       body,
     ]);
     const image = decodeIlbm(bytes);
@@ -82,7 +91,10 @@ describe('decodeIlbm', () => {
     const body: IffChunk = { id: 'BODY', data: new Uint8Array([0x50, 0]) };
     const bytes = writeForm('ILBM', [
       bmhd({ w: 4, h: 1, nPlanes: 1 }),
-      cmap([[0x00, 0x70, 0xf0], [0x20, 0x00, 0x90]]),
+      cmap([
+        [0x00, 0x70, 0xf0],
+        [0x20, 0x00, 0x90],
+      ]),
       body,
     ]);
     const image = decodeIlbm(bytes);
@@ -111,7 +123,10 @@ describe('decodeIlbm', () => {
     const body: IffChunk = { id: 'BODY', data: new Uint8Array([0x50, 0, 0xff, 0xff]) };
     const bytes = writeForm('ILBM', [
       bmhd({ w: 4, h: 1, nPlanes: 1, masking: 1 }),
-      cmap([[0, 0, 0], [255, 255, 255]]),
+      cmap([
+        [0, 0, 0],
+        [255, 255, 255],
+      ]),
       body,
     ]);
     expect([...decodeIlbm(bytes).pixels]).toEqual([0, 1, 0, 1]);
@@ -121,7 +136,11 @@ describe('decodeIlbm', () => {
     const body: IffChunk = { id: 'BODY', data: new Uint8Array([0, 1, 2, 0]) }; // width 3 + pad
     const bytes = writeForm('PBM ', [
       bmhd({ w: 3, h: 1, nPlanes: 8 }),
-      cmap([[1, 1, 1], [255, 255, 255], [255, 0, 0]]),
+      cmap([
+        [1, 1, 1],
+        [255, 255, 255],
+        [255, 0, 0],
+      ]),
       body,
     ]);
     expect([...decodeIlbm(bytes).pixels]).toEqual([0, 1, 2]);
@@ -137,7 +156,10 @@ describe('decodeIlbm', () => {
     const body: IffChunk = { id: 'BODY', data: new Uint8Array([0x50, 0]) };
     const bytes = writeForm('ILBM', [
       bmhd({ w: 4, h: 1, nPlanes: 1 }),
-      cmap([[1, 1, 1], [255, 255, 255]]),
+      cmap([
+        [1, 1, 1],
+        [255, 255, 255],
+      ]),
       { id: 'CRNG', data: crng },
       body,
     ]);
@@ -185,6 +207,83 @@ describe('encodeIlbm', () => {
     expect([...decoded.pixels]).toEqual([...pixels]);
     expect(decoded.palette).toEqual(palette); // 32 colors = 5 planes = no padding needed
     expect(decoded.cycleRanges).toEqual(cycleRanges);
+  });
+
+  test('round-trips a transparent color', () => {
+    const bytes = encodeIlbm({
+      width: 2,
+      height: 1,
+      palette: [
+        { r: 0, g: 0, b: 0 },
+        { r: 255, g: 0, b: 0 },
+      ],
+      pixels: new Uint8Array([0, 1]),
+      transparentColor: 1,
+    });
+    const decoded = decodeIlbm(bytes);
+    expect(decoded.transparentColor).toBe(1);
+    expect(Array.from(decoded.pixels)).toEqual([0, 1]);
+  });
+
+  test('leaves masking off when no transparent color is given', () => {
+    const bytes = encodeIlbm({
+      width: 2,
+      height: 1,
+      palette: [{ r: 0, g: 0, b: 0 }],
+      pixels: new Uint8Array([0, 0]),
+    });
+    expect(decodeIlbm(bytes).transparentColor).toBeUndefined();
+  });
+
+  test('index 0 is a transparent color like any other, not "unset"', () => {
+    const bytes = encodeIlbm({
+      width: 2,
+      height: 1,
+      palette: [
+        { r: 0, g: 0, b: 0 },
+        { r: 255, g: 0, b: 0 },
+      ],
+      pixels: new Uint8Array([0, 1]),
+      transparentColor: 0,
+    });
+    expect(decodeIlbm(bytes).transparentColor).toBe(0);
+  });
+
+  test('round-trips a grab point', () => {
+    const bytes = encodeIlbm({
+      width: 2,
+      height: 1,
+      palette: [{ r: 0, g: 0, b: 0 }],
+      pixels: new Uint8Array([0, 0]),
+      grab: { x: 5, y: 7 },
+    });
+    expect(decodeIlbm(bytes).grab).toEqual({ x: 5, y: 7 });
+  });
+
+  test('writes no GRAB when there is no handle to write', () => {
+    const bytes = encodeIlbm({
+      width: 2,
+      height: 1,
+      palette: [{ r: 0, g: 0, b: 0 }],
+      pixels: new Uint8Array([0, 0]),
+    });
+    expect(decodeIlbm(bytes).grab).toBeUndefined();
+  });
+
+  test('writes GRAB after CMAP and before BODY, where DPaint puts it', () => {
+    const bytes = encodeIlbm({
+      width: 2,
+      height: 1,
+      palette: [{ r: 0, g: 0, b: 0 }],
+      pixels: new Uint8Array([0, 0]),
+      grab: { x: 1, y: 2 },
+    });
+    expect(readForm(bytes).chunks.map((c): string => c.id)).toEqual([
+      'BMHD',
+      'CMAP',
+      'GRAB',
+      'BODY',
+    ]);
   });
 
   test('sizes the plane count to the highest pixel index, not just the palette', () => {
