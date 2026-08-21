@@ -115,27 +115,28 @@ is scheduled. Design details live in the linked docs where they exist.
       needs a rule; DPaint re-centres for rotate and bend and says so in a
       comment. Design: docs/brush-handle.md.
 
-- [ ] **Brush Save As, with IFF.** The Brush menu's Save gadget writes
-      `brush.png` with no requester and no choice. Give it the picture's
-      treatment — a name and a format — and add the Amiga one: a DPaint brush
-      is an ordinary ILBM carrying `masking = 2`, a transparent colour in the
-      BMHD, and a `GRAB` chunk for the handle.
+- [x] **Brush Save As, with IFF** — done. Saving asks every time, since a brush
+      has no remembered file to write back to, and offers PNG or the Amiga one:
+      an ordinary ILBM carrying `masking = 2`, a transparent colour in the BMHD
+      and a `GRAB` chunk. Not GIF — nothing reads one back.
 
-      The transparent colour is the background colour, as it is in DPaint —
-      a capture tags every pixel holding it — but the index is thrown away
-      once tagged, so it has to be kept. And brush loading decodes through an
-      `<img>` element today, so nothing would read the files back.
+      The transparent colour is the background colour, as it is in DPaint, but
+      a capture zeroes the pixels it tags, so `BrushColorIndex` keeps the number
+      it was made transparent by (`derive()` exists so a transform cannot
+      re-apply the tag and punch fresh holes wherever it happened to produce
+      that colour). A true-colour brush is refused rather than quantized.
 
-      Reading one back brings its palette with it, which is the larger half:
-      an IFF brush carries the CMAP that was in effect when it was saved. The
-      brush load dialog already asks about colour, so it asks about this too —
-      use the brush's palette, or remap to the current one. True Color drops
-      off for a brush that brought a palette: it would unindex the brush, and
-      a picture holding true-color pixels cannot be saved as IFF at all. Saving always asks as well, since a brush has no remembered file
-      to write back to. Design, the decisions, and what DPaint's own writer
-      did: docs/brush-save.md. The handle comes after
-      (docs/brush-handle.md): GRAB is written as the centre until there is
-      one.
+      Reading one back was the larger half: `.brush` in the picker, sniffed by
+      its first twelve bytes, and the load dialog asking what to do with the
+      CMAP it brings — use the brush's palette, or remap to the current one.
+      True Color is not offered there: it would unindex the brush. Adopting a
+      palette has to push it to the GL textures by hand (they do not watch
+      Overmind), which is what made an adopted palette render wrong at first.
+
+      Design, the decisions, and what DPaint's own writer did:
+      docs/brush-save.md. One optional step is unbuilt: `DPIFF.C` leaves the
+      BODY uncompressed at 64 pixels wide and under, which is fidelity only.
+      GRAB is the centre until the handle lands (docs/brush-handle.md).
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
@@ -217,6 +218,25 @@ Effects design and status: docs/effects.md — the full DPaint II Mode set
       palette range over time, independent of painting. See docs/color-cycling.md.
 
 ## Images and palettes
+
+- [x] **Generated palettes beyond DPaint's depths** — 64/128/256 have no
+      original to copy, so DPaint's 32 lead and the rest is filled with ramps of
+      eight, one per row of the palette grid. Half hold a hue and climb, a
+      quarter do the same muted, and a quarter turn through a 100° arc as they
+      climb, which is what a sunset or a fire is.
+
+      Ramps rather than an even lattice because these slots are painted with as
+      well as matched against: a range is what cycling animates and what shading
+      a shape needs, and colours merely near each other in the palette give none
+      of that. It costs accuracy — measured against a real DPaint brush, remap
+      mean error 9.8 against a lattice's 8.8 — because ramps are spokes and an
+      arbitrary colour can land between them. Whichever is wanted, the palette
+      is per-document and can be replaced.
+
+      Remapping was also over-eager about spreading a picture across distinct
+      slots (DPaint's `REMAP.C` assigns exclusively): it now takes a second-best
+      slot only within a tolerance of the nearest, so two genuinely close
+      colours stop being pushed apart.
 
 - [ ] **Strict indexed mode** as a writer constraint (picker quantizes, image
       open remaps, effects resolve to palette) — storage/shaders/undo stay
