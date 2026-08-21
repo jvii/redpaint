@@ -8,6 +8,7 @@ import {
   medianCutPalette,
   remapColorsGreedy,
 } from '../../src/algorithm/quantize';
+import { createPalette } from '../../src/components/palette/util';
 
 function pixels(colors: [number, number, number][]): Uint8ClampedArray {
   const data = new Uint8ClampedArray(colors.length * 4);
@@ -324,5 +325,36 @@ describe('createNearestMapper', () => {
     ) {
       expect(backward(probes[i], probes[i + 1], probes[i + 2])).toBe(results[k]);
     }
+  });
+});
+
+// The generated palettes the requester offers beyond DPaint's own depths.
+// Kept here beside the remap they exist to be matched against.
+describe('createPalette beyond DPaint depths', () => {
+  const distinctColors = (palette: { r: number; g: number; b: number }[]): number =>
+    new Set(palette.map((c) => `${c.r},${c.g},${c.b}`)).size;
+
+  test.each([2, 4, 8, 16, 32, 64, 128, 256])('%i colors are %i distinct colors', (size) => {
+    const palette = Object.values(createPalette(size));
+    expect(palette).toHaveLength(size);
+    expect(distinctColors(palette)).toBe(size);
+  });
+
+  test.each([64, 128, 256])("%i keeps DPaint's 32 in the first slots", (size) => {
+    const dpaint = Object.values(createPalette(32));
+    expect(Object.values(createPalette(size)).slice(0, 32)).toEqual(dpaint);
+  });
+
+  test('covers the color cube, rather than one line through it', () => {
+    // A dark desaturated magenta: on no hue sweep at full saturation, and the
+    // color a real DPaint brush was landing 70 away from.
+    const palette = Object.values(createPalette(256));
+    const target = { r: 0x88, g: 0, b: 0x88 };
+    const nearest = Math.min(
+      ...palette.map((c) =>
+        Math.sqrt((c.r - target.r) ** 2 + (c.g - target.g) ** 2 + (c.b - target.b) ** 2)
+      )
+    );
+    expect(nearest).toBeLessThan(30);
   });
 });
