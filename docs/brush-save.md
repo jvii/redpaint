@@ -106,20 +106,46 @@ Restore Palette to undo. So: `CustomBrush` holds the CMAP a file brought with
 it, the load dialog gains a third choice for adopting it, and Restore is what
 the picture's own palette history already ought to give.
 
-## Suggested shape
+## Decisions
+
+**Saving always asks.** A brush has no remembered file the way a picture does —
+`SaveAsDialog`'s Save/Save As pair exists because a picture can be written back
+where it came from, and nothing here can. So the Brush menu keeps its one
+gadget, and it opens a requester for name and format every time. That the
+gadget still reads "Save" is accurate rather than a shortening of "Save As".
+
+**Loading asks too.** Our own IFF *picture* load takes the file's palette
+without asking (`beginImageLoad` calls `replacePalette`), because a picture
+arrives self-describing and replaces everything anyway. A brush does not: it is
+dropped into a picture that already exists, and silently repainting every colour
+because someone picked up a brush is a far bigger side effect. DPaint agrees —
+"the picture palette will remain in effect" — but answers it with three menu
+commands found after the fact. The brush load dialog already asks about colour,
+so the question belongs there, with three answers:
+
+- **use the brush's palette** — `replacePalette`, indices kept as they are
+- **remap to the current palette** — nearest colour per pixel, carrying the
+  transparent colour across as `BMRemapCols` does
+- **keep as true color** — each index resolved through the brush's CMAP, as the
+  dialog's existing 'true' mode does for a PNG
+
+**The handle comes after this.** GRAB is written as `(w/2, h/2)` until there is
+a real handle, which is true today rather than a placeholder, and read back only
+once there is somewhere to put it (docs/brush-handle.md).
+
+## Shape
 
 1. **`IlbmImage` and `encodeIlbm` take masking, transparent colour and an
    optional grab.** Mechanical, and testable without a browser in
    `test/fileformat/` alongside the existing round-trips.
-2. **A brush format table beside `saveFormats.ts`.** PNG keeps real alpha and
-   is the lossless choice; IFF is the Amiga one. `SaveAsDialog` can be reused
-   as-is if the formats and the "why this one is unavailable" predicate are
-   passed in rather than imported.
-3. **Extend `decodeIlbm` and route brush loading through it**, so a brush
-   written here opens here — and carry its CMAP onto the brush, which is what
-   makes the palette choices above possible.
-4. Optional, for period fidelity: skip compression at 64 pixels and under, as
+2. **`BrushColorIndex` keeps the transparent colour number** it was built with,
+   instead of only tagging the pixels and discarding it.
+3. **A brush format table beside `saveFormats.ts`.** PNG keeps real alpha and
+   is the lossless choice; IFF is the Amiga one, unavailable for a brush with
+   true-color pixels. `SaveAsDialog` can be reused as-is if the formats and the
+   "why this one is unavailable" predicate are passed in rather than imported.
+4. **Extend `decodeIlbm` and route brush loading through it**, so a brush
+   written here opens here — carrying its CMAP onto the brush, which is what
+   gives the load dialog its third answer.
+5. Optional, for period fidelity: skip compression at 64 pixels and under, as
    DPaint did.
-
-Deliberately not in scope: a settable brush handle, which GRAB would otherwise
-be the reason to build.

@@ -127,11 +127,14 @@ is scheduled. Design details live in the linked docs where they exist.
       `<img>` element today, so nothing would read the files back.
 
       Reading one back brings its palette with it, which is the larger half:
-      an IFF brush carries the CMAP that was in effect when it was saved, and
-      DPaint answers that with Use Brush Palette, Restore Palette and Remap
-      Brush. The remap half exists here already, as a choice in the brush load
-      dialog; what is missing is the brush carrying a palette at all. Design,
-      and what DPaint's own writer did: docs/brush-save.md.
+      an IFF brush carries the CMAP that was in effect when it was saved. The
+      brush load dialog already asks about colour, so it asks about this too —
+      use the brush's palette, remap to the current one, or keep it as true
+      color. Saving always asks as well, since a brush has no remembered file
+      to write back to. Design, the decisions, and what DPaint's own writer
+      did: docs/brush-save.md. The handle comes after
+      (docs/brush-handle.md): GRAB is written as the centre until there is
+      one.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
