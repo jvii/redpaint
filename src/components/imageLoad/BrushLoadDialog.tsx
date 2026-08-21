@@ -4,6 +4,8 @@ import { useActions, useAppState } from '../../overmind';
 import { peekPendingBrush, takePendingBrush } from '../../canvas/pendingBrush';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { pendingBrushPalette } from '../../canvas/pendingBrush';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { distinctOpaqueColorsByFrequency, plainPalette } from '../../algorithm/imageColors';
 import { remapColorsGreedy } from '../../algorithm/quantize';
 import { CustomBrush } from '../../brush/CustomBrush';
@@ -113,6 +115,12 @@ function BrushLoadDialogOpen(): JSX.Element {
     if (mode === 'brush' && fromPalette) {
       // The file's own indices, kept as they are, under the file's own palette.
       actions.palette.replacePalette(fromPalette.palette);
+      // The GL palette textures don't watch Overmind, so the picture would go
+      // on resolving indices through the old palette — the brush would preview
+      // right (that is a 2d canvas) and paint wrong. Same push beginIlbmLoad
+      // does after replacing a picture's palette.
+      paintingCanvasController.updatePalette();
+      overlayCanvasController.updatePalette();
       colorIndex = BrushColorIndex.fromIndexedPixels(
         image.width,
         image.height,
