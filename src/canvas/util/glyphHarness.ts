@@ -1,4 +1,4 @@
-import { FontSpec, cssFont, quoteFamily } from '../../algorithm/glyphRaster';
+import { FontSpec, SUPERSAMPLE, cssFont, quoteFamily } from '../../algorithm/glyphRaster';
 import { textRun } from '../../domain/PixelFont';
 import { loadBundledFaces } from '../../domain/BundledFonts';
 
@@ -20,10 +20,6 @@ import { loadBundledFaces } from '../../domain/BundledFonts';
 const DEFAULT_FAMILIES = ['Press Start 2P', 'Silkscreen', 'Arial'];
 const DEFAULT_SIZES = [16, 24];
 const DEFAULT_GLYPHS = 'gH';
-
-// Mirrors glyphRaster's own constants; the histogram has to sample the same
-// render the threshold sees.
-const SUPERSAMPLE = 4;
 
 async function glyphDump(
   families: string[] = DEFAULT_FAMILIES,

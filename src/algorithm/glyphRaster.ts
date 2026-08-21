@@ -29,7 +29,7 @@ export type FontMetrics = {
 };
 
 // 8 was measured as visually identical and seven times slower.
-const SUPERSAMPLE = 4;
+export const SUPERSAMPLE = 4;
 
 // One column of clearance on each side of the line, for glyphs whose ink
 // reaches past the pen (an italic's lean, a 'j' hooking left).
@@ -91,7 +91,34 @@ function glyphKey(spec: FontSpec, character: string): string {
   return `${cssFont(spec, spec.size)}|${character}`;
 }
 
+// Canvas does not trigger CSS font loading — only DOM text does. A face split
+// into unicode-range subsets (index.html does this for Press Start 2P) can
+// therefore be missing the very subset a character needs, and thresholding the
+// fallback would cache those pixels under this family's key for good. Asking
+// for the load is fire-and-forget; the listener drops whatever was rasterized
+// before it arrived, so the next repaint gets the real face.
+//
+// Registered on first use rather than at import: this module is otherwise
+// callable without a document, which is what lets the threshold be tested.
+let watchingFontLoads = false;
+
+function watchFontLoads(): void {
+  if (watchingFontLoads || typeof document === 'undefined' || !document.fonts) {
+    return;
+  }
+  watchingFontLoads = true;
+  document.fonts.addEventListener('loadingdone', clearGlyphCaches);
+}
+
+export function clearGlyphCaches(): void {
+  glyphCache.clear();
+  advanceCache.clear();
+  cachedBytes = 0;
+}
+
 function glyphCell(spec: FontSpec, character: string): TextRun {
+  watchFontLoads();
+  void document.fonts?.load(cssFont(spec, spec.size), character);
   const key = glyphKey(spec, character);
   const cached = glyphCache.get(key);
   if (cached) {

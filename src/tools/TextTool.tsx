@@ -201,7 +201,7 @@ export class TextTool implements Tool {
     // only its ascenders show is not somewhere anyone wanted the text. And a
     // column too narrow for even a single character gains nothing by wrapping —
     // it would spend a line per keystroke walking down the page.
-    const carried = text.slice(-1);
+    const carried = [...text].pop() ?? '';
     const nextBaselineY = start.y + lineAdvance(textFont());
     const roomBelow = nextBaselineY + metrics.descent <= pageHeight;
     const roomOnANewLine =

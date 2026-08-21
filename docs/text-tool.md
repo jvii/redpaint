@@ -108,6 +108,18 @@ PyDPainter's: let the browser render the glyphs anti-aliased and quantize that
 to the palette — or keep it as it is, once there are true-color pixels to keep
 it in (`docs/true-color-mode.md`).
 
+## What it does not take (input)
+
+- **IME composition.** A keystroke is taken only when `event.key` is a single
+  character, and during composition it is `Process`, so CJK input does nothing.
+  A decision rather than an oversight: handling it means a `compositionend`
+  path and a live pre-edit shown somewhere, and the tool has no room for one.
+- **Combining marks.** The line is iterated by code point, so a decomposed
+  `e` + U+0301 rasterizes the mark as its own glyph at the pen rather than
+  where the font would place it. Keyboard input is composed, so this is
+  currently unreachable; anything that pastes into the line would reach it, and
+  the fix is `Intl.Segmenter` at grapheme granularity in place of the `for..of`.
+
 ## Fonts
 
 Two sources, both reaching `ctx.font` the same way:
@@ -131,6 +143,14 @@ Two traps, both of which have already been paid for once:
   UI. Adding a `FontFace` for that family does not replace them — it joins them,
   with no `unicode-range`, competing for every character, and the app's chrome
   relaid out mid-session. Bundled faces the document provides carry no `url`.
+- **Canvas does not trigger font loading.** Only DOM text does, so a face
+  split into `unicode-range` subsets can be missing the subset a character
+  needs — Press Start 2P's latin-ext is not loaded by any UI text, and `ā`
+  measured against the fallback rather than the face. Thresholding that would
+  cache the fallback's pixels under the family's own key for good, so
+  glyphCell asks for the load and both caches are dropped on `loadingdone`.
+  (`ä` and `ö` are U+00E4/U+00F6, inside the latin subset the chrome already
+  loads, so they were never affected.)
 - **`document.fonts.check()` is not a load guard.** It answers "would this
   render without waiting", which is *true* for a family nothing has registered —
   there is nothing to load, so a fallback is ready immediately. Used as a guard

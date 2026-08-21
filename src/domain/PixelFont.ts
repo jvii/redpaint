@@ -37,6 +37,16 @@ export function metricsOf(spec: FontSpec): FontMetrics {
 let lastKey: string | null = null;
 let lastRun: TextRun | null = null;
 
+// Dropped with glyphRaster's own when a font subset arrives late, or these
+// would hand back the fallback that was rasterized before it (see there).
+if (typeof document !== 'undefined' && document.fonts) {
+  document.fonts.addEventListener('loadingdone', (): void => {
+    lastKey = null;
+    lastRun = null;
+    metricsCache.clear();
+  });
+}
+
 export function textRun(spec: FontSpec, text: string, tracking = 0): TextRun {
   const key = `${faceKey(spec)}|${tracking}|${text}`;
   if (key === lastKey && lastRun) {
