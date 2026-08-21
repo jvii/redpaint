@@ -1,8 +1,11 @@
 import { JSX, useState } from 'react';
 import './SaveAsDialog.css';
 import { useActions, useAppState } from '../../overmind';
-import { settleSaveAsPrompt } from '../menu/pendingSaveAs';
+import { saveAsSubject, settleSaveAsPrompt } from '../menu/pendingSaveAs';
 import { pictureIsIndexed, SaveFormat, SAVE_FORMATS, saveFormats } from '../menu/saveFormats';
+import { brushIsIndexed, BRUSH_SAVE_FORMATS, brushSaveFormats } from '../menu/brushSaveFormats';
+import { brushRecall } from '../../brush/BrushRecall';
+import { CustomBrush } from '../../brush/CustomBrush';
 import { sanitizeFileName, withExtension, hasSaveFilePicker } from '../menu/saveAsPng';
 import { Modal } from '../modal/Modal';
 import { RetroButton } from '../ui/RetroButton';
@@ -27,6 +30,47 @@ const TRUE_COLOR_NOTE =
   'Only PNG: this picture has True Color pixels, which an indexed format (IFF and GIF) cannot ' +
   'store. Turn True Color off in Set Screen Format to convert to an indexed palette.';
 
+// A brush's version of both. There is no switch to send anyone to: a brush has
+// true-color pixels because of what it was captured from or loaded as, and the
+// way out is the format rather than a setting.
+const BRUSH_TRUE_COLOR_TITLE = 'The brush has True Color pixels, which this format cannot store.';
+const BRUSH_TRUE_COLOR_NOTE = 'Only PNG: this brush has True Color pixels, which IFF cannot store.';
+
+// Which formats are on offer and what rules one out. The only two things that
+// differ between saving a picture and saving a brush.
+function subjectOf(subject: 'picture' | 'brush'): {
+  header: string;
+  formats: readonly SaveFormat[];
+  spec: (format: SaveFormat) => { label: string; note: string };
+  indexed: () => boolean;
+  disabledTitle: string;
+  disabledNote: string;
+} {
+  if (subject === 'brush') {
+    return {
+      header: 'Save Brush As',
+      formats: BRUSH_SAVE_FORMATS,
+      spec: (format) => brushSaveFormats[format as 'png' | 'iff'],
+      // Safe to read directly: a modal is up, so the brush cannot change under
+      // it — the same reasoning BrushMenu's own readout relies on.
+      indexed: (): boolean => {
+        const brush = brushRecall.current;
+        return brush instanceof CustomBrush ? brushIsIndexed(brush) : true;
+      },
+      disabledTitle: BRUSH_TRUE_COLOR_TITLE,
+      disabledNote: BRUSH_TRUE_COLOR_NOTE,
+    };
+  }
+  return {
+    header: 'Save As',
+    formats: SAVE_FORMATS,
+    spec: (format) => saveFormats[format],
+    indexed: pictureIsIndexed,
+    disabledTitle: TRUE_COLOR_TITLE,
+    disabledNote: TRUE_COLOR_NOTE,
+  };
+}
+
 // The one requester Save As goes through, on every browser.
 //
 // It asks the format always (the three differ in the thing this program is
@@ -47,23 +91,29 @@ function SaveAsDialogOpen(): JSX.Element {
   const state = useAppState();
   const actions = useActions();
   const suggested = state.app.saveAsPrompt as string;
+  const [subject] = useState(saveAsSubject);
+  const of = subjectOf(subject);
 
-  // Scanned once per prompt rather than per render: it reads the canvas back,
-  // and the answer cannot change while a modal is up.
-  const [indexed] = useState(pictureIsIndexed);
+  // Scanned once per prompt rather than per render: it reads the canvas or the
+  // brush back, and the answer cannot change while a modal is up.
+  const [indexed] = useState(of.indexed);
 
   // The last format used, so repeating a save is one click and changing one is
   // a deliberate act. Unless that format cannot hold what is now on the canvas,
   // in which case the only one that can is already selected rather than the
   // requester opening on a disabled option.
+  const remembered = subject === 'brush' ? state.app.brushSaveFormat : state.app.saveFormat;
   const [format, setFormat] = useState<SaveFormat>(
-    indexed || state.app.saveFormat === 'png' ? state.app.saveFormat : 'png'
+    indexed || remembered === 'png' ? remembered : 'png'
   );
   const [name, setName] = useState(suggested);
 
   // The extension follows the format rather than the name. Picking GIF after
   // typing "harbour" offers harbour.gif, and the name field never carries one.
-  const extension = saveFormats[format].fileType.extension;
+  const extension =
+    subject === 'brush'
+      ? brushSaveFormats[format as 'png' | 'iff'].fileType.extension
+      : saveFormats[format].fileType.extension;
 
   // Sanitized here rather than only on the way out, so the name previewed below
   // is the name that lands on disk. Doing it in saveFile alone meant typing
@@ -89,11 +139,11 @@ function SaveAsDialogOpen(): JSX.Element {
   };
 
   return (
-    <Modal header="Save As" width={520}>
+    <Modal header={of.header} width={520}>
       <div className="save-as__body">
         <div className="save-as__formats">
           <RetroToggle
-            options={SAVE_FORMATS.map((id) => {
+            options={of.formats.map((id) => {
               // An indexed format cannot hold true-color pixels. Disabled here
               // rather than refused after the fact, and the tooltip goes on the
               // segments that are actually out: hung off all three, it told you
@@ -101,9 +151,9 @@ function SaveAsDialogOpen(): JSX.Element {
               const unavailable = !indexed && id !== 'png';
               return {
                 value: id,
-                label: saveFormats[id].label,
+                label: of.spec(id).label,
                 disabled: unavailable,
-                title: unavailable ? TRUE_COLOR_TITLE : undefined,
+                title: unavailable ? of.disabledTitle : undefined,
               };
             })}
             value={format}
@@ -113,7 +163,7 @@ function SaveAsDialogOpen(): JSX.Element {
               a question anyone can answer without being told which keeps the
               palette. Height reserved for the longest of the three so the
               requester does not resize as the choice changes. */}
-          <p className="supporting-text save-as__format-note">{saveFormats[format].note}</p>
+          <p className="supporting-text save-as__format-note">{of.spec(format).note}</p>
           {/* Why two of them are greyed out, and how to un-grey them — beside
               the descriptions rather than in place of them, since what PNG is
               remains worth knowing while you are being told it is your only
@@ -125,7 +175,9 @@ function SaveAsDialogOpen(): JSX.Element {
               serving is that a requester must not resize *while you are looking
               at it*, and nothing here can make it. Holding four empty lines
               open on every ordinary save buys nothing. */}
-          {!indexed && <p className="supporting-text save-as__true-color-note">{TRUE_COLOR_NOTE}</p>}
+          {!indexed && (
+            <p className="supporting-text save-as__true-color-note">{of.disabledNote}</p>
+          )}
         </div>
 
         {asksForName && (

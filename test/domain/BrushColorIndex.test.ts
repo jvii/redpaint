@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { BrushColorIndex } from '../../src/domain/BrushColorIndex';
+import { decodeIlbm, encodeIlbm } from '../../src/fileformat/ilbm';
 import {
   ALPHA_INDEXED,
   ALPHA_TRANSPARENT,
@@ -136,5 +137,41 @@ describe('toIndexedPixels', () => {
   test('refuses holes it has no index for', () => {
     const brush = brushFrom([[[0, ALPHA_TRANSPARENT]]]);
     expect(brush.toIndexedPixels()).toBeNull();
+  });
+});
+
+// The composition brushBlobMakerFor performs, without the DOM it needs to run:
+// a brush's holes have to come back as holes through a real ILBM.
+describe('through an ILBM', () => {
+  test('a hole written as its color reads back as the transparent color', () => {
+    // color 3 -> stored index 2. Middle pixel is the hole.
+    const brush = new BrushColorIndex(
+      3,
+      1,
+      pixels([
+        [0, ALPHA_INDEXED],
+        [2, ALPHA_INDEXED],
+        [4, ALPHA_INDEXED],
+      ]),
+      3
+    );
+    const indexed = brush.toIndexedPixels()!;
+    const decoded = decodeIlbm(
+      encodeIlbm({
+        width: 3,
+        height: 1,
+        palette: Array.from({ length: 8 }, (): { r: number; g: number; b: number } => ({
+          r: 0,
+          g: 0,
+          b: 0,
+        })),
+        pixels: indexed.pixels,
+        transparentColor: indexed.transparentColor,
+      })
+    );
+    expect(decoded.transparentColor).toBe(2);
+    // the hole holds the index the file calls transparent, not a stray 0
+    expect(Array.from(decoded.pixels)).toEqual([0, 2, 4]);
+    expect(decoded.pixels[1]).toBe(decoded.transparentColor);
   });
 });

@@ -17,9 +17,21 @@ export type SaveAsChoice = {
 // PictureMenu awaits the promise; SaveAsDialog settles it, with the choice on
 // Save, or null on Cancel. Only one can be open at a time (it is a modal), so
 // one slot is enough.
-let resolver: ((choice: SaveAsChoice | null) => void) | null = null;
+// Picture or brush: the two differ in which formats they offer and what makes
+// one unavailable, and nothing else. Held here beside the resolver rather than
+// in Overmind for the same reason — it belongs to the in-flight prompt, not to
+// the document.
+export type SaveAsSubject = 'picture' | 'brush';
 
-export function beginSaveAsPrompt(): Promise<SaveAsChoice | null> {
+let resolver: ((choice: SaveAsChoice | null) => void) | null = null;
+let subject: SaveAsSubject = 'picture';
+
+export function saveAsSubject(): SaveAsSubject {
+  return subject;
+}
+
+export function beginSaveAsPrompt(of: SaveAsSubject = 'picture'): Promise<SaveAsChoice | null> {
+  subject = of;
   // A prompt already waiting means a previous one was never answered; settle it
   // as cancelled rather than leaving its caller hanging forever.
   settleSaveAsPrompt(null);

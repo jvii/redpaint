@@ -23,11 +23,17 @@ import {
   BendVIcon,
   RestoreIcon,
 } from './transformIcons';
-import { saveCanvasAsPng } from './saveAsPng';
+import { saveFileAs } from './saveAsPng';
+import { beginSaveAsPrompt } from './pendingSaveAs';
+import { brushBlobMakerFor, BrushSaveFormat, brushSaveFormats } from './brushSaveFormats';
 import './DrawerMenu.css';
 
 // Only captured or loaded brushes can be saved. The pixel brush has no bitmap
 // and the built-in brushes are not the user's work.
+// A brush is not a document and has no name of its own; this is only what the
+// requester offers, the way displayName is for a picture.
+const BRUSH_BASE_NAME = 'brush';
+
 function isSaveableBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && !isBuiltInBrush(brush);
 }
@@ -65,17 +71,34 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   const transformTitle = (enabledTitle: string): string =>
     usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
 
+  // Always through the requester, unlike a picture's Save: a brush has no file
+  // it came from, so there is never an answer to repeat (docs/brush-save.md).
   const handleBrushSave = (): void => {
     const brush = brushRecall.current;
     if (!isSaveableBrush(brush) || !(brush instanceof CustomBrush)) {
       return;
     }
-    const imageData = brush.toImageData();
-    const brushCanvas = document.createElement('canvas');
-    brushCanvas.width = imageData.width;
-    brushCanvas.height = imageData.height;
-    brushCanvas.getContext('2d')?.putImageData(imageData, 0, 0);
-    saveCanvasAsPng(brushCanvas, 'brush.png');
+    actions.app.closeMenu();
+    actions.app.openSaveAsPrompt(BRUSH_BASE_NAME);
+    void (async (): Promise<void> => {
+      const choice = await beginSaveAsPrompt('brush');
+      if (!choice) {
+        return; // cancelled
+      }
+      const format = choice.format as BrushSaveFormat;
+      const makeBlob = brushBlobMakerFor(brush, format, Object.values(state.palette.palette));
+      if (!makeBlob) {
+        return; // the format cannot hold this brush; brushBlobMakerFor said so
+      }
+      const { fileType } = brushSaveFormats[format];
+      await saveFileAs(
+        makeBlob,
+        `${BRUSH_BASE_NAME}${fileType.extension}`,
+        fileType,
+        choice.name === null ? undefined : async (): Promise<string> => choice.name as string
+      );
+      actions.app.setBrushSaveFormat(format);
+    })();
   };
 
   // gadget click helpers: an instant transform applies and closes the menu; a

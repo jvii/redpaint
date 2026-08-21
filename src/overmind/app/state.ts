@@ -2,6 +2,7 @@ import { derived } from 'overmind';
 import { OvermindState } from '..';
 import { loadUiScale } from '../../uiScale';
 import { SaveFormat } from '../../components/menu/saveFormats';
+import { BrushSaveFormat } from '../../components/menu/brushSaveFormats';
 
 // What a document with no name of its own is called: in the tab title, and as
 // the name a save offers. One spelling, so the title and the save requester
@@ -38,6 +39,9 @@ export type State = {
   // remembered, so the choice is a property of how you are working rather than
   // something to re-answer every save.
   saveFormat: SaveFormat;
+  // Remembered separately from the picture's: someone can perfectly well keep
+  // pictures as PNG and brushes as IFF.
+  brushSaveFormat: BrushSaveFormat;
   // The suggested base name while the Save As requester is up, or null. It asks
   // for the format always and for the name only where the browser has no picker
   // of its own: see SaveAsDialog.
@@ -79,6 +83,7 @@ export const state: State = {
   documentName: '',
   displayName: derived((state: State) => state.documentName || UNTITLED_DOCUMENT),
   saveFormat: 'png',
+  brushSaveFormat: 'png',
   saveAsPrompt: null,
   lastCleanTime: 0,
   documentModified: derived(

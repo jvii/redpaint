@@ -27,6 +27,7 @@ import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
 import { Drawer } from './state';
 import { SaveFormat } from '../../components/menu/saveFormats';
+import { BrushSaveFormat } from '../../components/menu/brushSaveFormats';
 
 export const imageFileToPasteBuffer = (context: Context, imageFile: File): void => {
   context.state.app.pasteBufferImageObjectURL = URL.createObjectURL(imageFile);
@@ -309,6 +310,12 @@ export const newPicture = (context: Context): void => {
 // Remembered from Save As, repeated by Save.
 export const setSaveFormat = (context: Context, format: SaveFormat): void => {
   context.state.app.saveFormat = format;
+};
+
+// A brush has nothing to repeat — it is never written back to a file it came
+// from — so this is only what the requester opens on next time.
+export const setBrushSaveFormat = (context: Context, format: BrushSaveFormat): void => {
+  context.state.app.brushSaveFormat = format;
 };
 
 export const setDocumentName = (context: Context, name: string): void => {

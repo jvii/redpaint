@@ -281,6 +281,13 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
 
+  // The bitmap a save reads: the pristine matte one, never a colorized
+  // variant, which is the same choice toImageData makes and for the same
+  // reason.
+  public brushColorIndexForSaving(): BrushColorIndex {
+    return this.brushColorIndexMatte;
+  }
+
   public toImageData(): ImageData {
     const source = this.brushColorIndexMatte.indexArray;
     const data = new Uint8ClampedArray(this.width * this.heigth * 4);
