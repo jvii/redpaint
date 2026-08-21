@@ -359,6 +359,37 @@ describe('createPalette beyond DPaint depths', () => {
     }
   });
 
+  test('holds the hue on most ramps and crosses it on the last of them', () => {
+    // What makes a sunset or a fire a gradient rather than a shading ramp: the
+    // hue turns as the value climbs. A quarter of the ramps do this.
+    const hue = (c: { r: number; g: number; b: number }): number => {
+      const max = Math.max(c.r, c.g, c.b);
+      const min = Math.min(c.r, c.g, c.b);
+      if (max === min) {
+        return 0;
+      }
+      const h =
+        max === c.r
+          ? (60 * (c.g - c.b)) / (max - min)
+          : max === c.g
+            ? 60 * (2 + (c.b - c.r) / (max - min))
+            : 60 * (4 + (c.r - c.g) / (max - min));
+      return (h + 360) % 360;
+    };
+    const sweep = (ramp: number): number => {
+      const steps = Object.values(createPalette(256))
+        .slice(32)
+        .slice(ramp * 8, ramp * 8 + 8);
+      const turn = hue(steps[7]) - hue(steps[0]);
+      return Math.abs(turn > 180 ? turn - 360 : turn < -180 ? turn + 360 : turn);
+    };
+    // ramps 0-13 hold their hue, 14-20 the same muted, 21-27 cross
+    expect(sweep(0)).toBeLessThan(10);
+    expect(sweep(14)).toBeLessThan(10);
+    expect(sweep(21)).toBeGreaterThan(80);
+    expect(sweep(27)).toBeGreaterThan(80);
+  });
+
   test('every color sits on the 4-bit channels an Amiga palette uses', () => {
     for (const size of [64, 128, 256]) {
       Object.values(createPalette(size))

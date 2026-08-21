@@ -50,9 +50,9 @@ export function createPalette(colors: number): {
   }
 
   // Beyond DPaint's depths (64/128/256) there is no original to draw from, so
-  // its 32 lead and the rest is filled with ramps: runs of one hue from dark to
-  // light, each exactly RAMP_LENGTH long and each starting a fresh row of the
-  // palette grid, which is eight wide above 64 colors (Palette.tsx).
+  // its 32 lead and the rest is filled with ramps: runs from dark to light, each
+  // exactly RAMP_LENGTH long and each starting a fresh row of the palette grid,
+  // which is eight wide above 64 colors (Palette.tsx).
   //
   // Ramps rather than an even lattice because these slots are painted with as
   // well as matched against. A range is what cycling animates, what a gradient
@@ -62,7 +62,7 @@ export function createPalette(colors: number): {
   // carries a hand-built sunset ramp and a gray one in its last twelve slots.
   //
   // It costs accuracy when an outside picture is remapped in — measured against
-  // that brush, mean error 11.5 against a lattice's 8.8, worst 48 against 24 —
+  // that brush, mean error 9.8 against a lattice's 8.8, worst 34 against 24 —
   // because ramps are spokes and an arbitrary color can land between them.
   // Whichever is wanted, the palette is per-document and can be replaced.
   // Placed one at a time, skipping anything already there: n colors should be
@@ -80,18 +80,28 @@ export function createPalette(colors: number): {
 
   DPAINT_DEFAULTS[32].forEach((rgb12): void => add(amigaRgbToColor(rgb12)));
 
+  // Three kinds of ramp, once there are enough to spare. Half hold one hue and
+  // climb, which is what shading a shape needs. A quarter do the same muted,
+  // for everything that is not a primary color — skin, stone, haze. The last
+  // quarter cross hues as they climb, which is the gradient a sunset or a fire
+  // is: Dolphin's own palette carries exactly one of these, running dark purple
+  // up through crimson and orange to bright yellow, and it is what its sky is
+  // painted with.
   const ramps = Math.floor((colors - 32) / RAMP_LENGTH);
-  // Two tiers of saturation once there are hues enough to spare for it: a
-  // vivid set and a muted one, which is what most pictures actually need.
-  const saturations = ramps >= 8 ? [1, 0.5] : [1];
-  const hues = Math.ceil(ramps / saturations.length);
-  for (const saturation of saturations) {
-    for (let hue = 0; hue < hues; hue++) {
+  const vivid = ramps >= 8 ? Math.ceil(ramps / 2) : ramps;
+  const muted = Math.floor((ramps - vivid) / 2);
+  const crossing = ramps - vivid - muted;
+  const tier = (count: number, saturation: number, sweep: number): void => {
+    for (let i = 0; i < count; i++) {
+      const hue = (i * 360) / count;
       for (let step = 0; step < RAMP_LENGTH; step++) {
-        add(rampColor((hue * 360) / hues, saturation, step, seen));
+        add(rampColor(hue - sweep, hue, saturation, step, seen));
       }
     }
-  }
+  };
+  tier(vivid, 1, 0);
+  tier(muted, 0.5, 0);
+  tier(crossing, 1, CROSS_SWEEP);
 
   // What the ramps left: slots freed where a ramp would have repeated a color,
   // and whatever does not divide into RAMP_LENGTH. Filled with the colors the
@@ -145,17 +155,41 @@ export function createPalette(colors: number): {
 // above 64 colors. Eight, so a ramp is exactly a row and can be read as one.
 const RAMP_LENGTH = 8;
 
-// One step of a ramp: the hue at a value climbing from dark to light, on the
-// 4-bit channels every Amiga palette uses.
+// How far a crossing ramp turns as it climbs. Roughly the arc from purple to
+// yellow, which is the one Dolphin's sunset covers.
+const CROSS_SWEEP = 100;
+
+// One step of a ramp: a hue at a value climbing from dark to light, on the
+// 4-bit channels every Amiga palette uses. `hueFrom` is the dark end and
+// `hueTo` the light one; they are equal for a ramp that holds its hue.
+//
+// Every ramp climbs, crossing or not, so a row is always dark on the left. That
+// is the opposite of how Dolphin stores its sunset, which starts bright — but a
+// range reads and cycles either way, and rows that disagree about which end is
+// dark are a grid nobody can scan.
 //
 // Nudged within its own step when it would repeat a color already placed —
 // different hues collapse onto the same dark color once rounded to 4 bits, and
 // without this a 256-color palette comes out with only 239 distinct colors in
 // it. The nudge stays inside the step's own share of the value range, so a
 // ramp still climbs.
-function rampColor(hue: number, saturation: number, step: number, seen: Set<number>): Color {
+function rampColor(
+  hueFrom: number,
+  hueTo: number,
+  saturation: number,
+  step: number,
+  seen: Set<number>
+): Color {
   const band = 100 / RAMP_LENGTH;
   const base = (step + 1) * band;
+  let sweep = hueTo - hueFrom;
+  if (sweep > 180) {
+    sweep -= 360;
+  }
+  if (sweep < -180) {
+    sweep += 360;
+  }
+  const hue = (((hueFrom + (sweep * step) / (RAMP_LENGTH - 1)) % 360) + 360) % 360;
   for (let nudge = 0; nudge <= 5; nudge++) {
     for (const direction of [-1, 1]) {
       const value = base + direction * nudge * (band / 6);
@@ -206,7 +240,6 @@ function latticeDimensions(slots: number): [number, number, number] {
   }
   return best;
 }
-
 
 // expected hue range: [0, 360)
 // expected saturation range: [0, 1]
