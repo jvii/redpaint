@@ -188,6 +188,50 @@ export const beginGifLoad = async (context: Context, file: File): Promise<void> 
 // Same as beginImageLoad, for brushes: Brush > Open... and "Paste as brush"
 // both come through this. colorCount excludes transparent pixels (see
 // distinctOpaqueColorsByFrequency) since they never occupy a palette slot.
+// An IFF brush, which unlike a PNG one arrives indexed and carrying the palette
+// it was saved under. Decoded here rather than through an <img>, which is what
+// recovers the palette and the transparent color at all (docs/brush-save.md).
+//
+// The pixels are resolved to RGBA for the requester's preview, and the indexed
+// form is kept beside them: which of the two the requester ends up using is the
+// question it asks.
+export const beginBrushIlbmLoad = async (context: Context, file: File): Promise<void> => {
+  context.actions.app.setLoading(true);
+  try {
+    const image = decodeIlbm(new Uint8Array(await file.arrayBuffer()));
+    const rgba = new Uint8ClampedArray(image.width * image.height * 4);
+    for (let i = 0; i < image.pixels.length; i++) {
+      const index = image.pixels[i];
+      // A hole is transparent in the preview too, so it reads as a brush
+      // rather than as a rectangle of background color.
+      if (index === image.transparentColor) {
+        continue;
+      }
+      const color = image.palette[index] ?? { r: 0, g: 0, b: 0 };
+      rgba[i * 4] = color.r;
+      rgba[i * 4 + 1] = color.g;
+      rgba[i * 4 + 2] = color.b;
+      rgba[i * 4 + 3] = 255;
+    }
+    const imageData = new ImageData(rgba, image.width, image.height);
+    setPendingBrush(imageData, {
+      palette: image.palette,
+      pixels: image.pixels,
+      transparentColor: image.transparentColor,
+    });
+    context.state.app.brushLoadInfo = {
+      width: image.width,
+      height: image.height,
+      colorCount: distinctOpaqueColorsByFrequency(imageData.data).length,
+    };
+    context.actions.dialog.open('BRUSH_LOAD');
+  } catch (error) {
+    alert(error instanceof IlbmError ? error.message : 'Could not read that brush file.');
+  } finally {
+    context.actions.app.setLoading(false);
+  }
+};
+
 export const beginBrushLoad = async (context: Context, url: string): Promise<void> => {
   context.actions.app.setLoading(true);
   try {

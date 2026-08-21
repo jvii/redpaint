@@ -175,3 +175,25 @@ describe('through an ILBM', () => {
     expect(decoded.pixels[1]).toBe(decoded.transparentColor);
   });
 });
+
+describe('fromIndexedPixels', () => {
+  test('round-trips with toIndexedPixels, holes and all', () => {
+    // 2x2, top-down; index 1 is the hole, so color number 2
+    const brush = BrushColorIndex.fromIndexedPixels(2, 2, new Uint8Array([0, 1, 1, 3]), 2);
+    expect(brush.transparentColorNumber).toBe(2);
+    const indexed = brush.toIndexedPixels()!;
+    expect(Array.from(indexed.pixels)).toEqual([0, 1, 1, 3]);
+    expect(indexed.transparentColor).toBe(1);
+  });
+
+  test('tags the holes rather than leaving them opaque', () => {
+    const brush = BrushColorIndex.fromIndexedPixels(2, 1, new Uint8Array([0, 1]), 2);
+    expect(tagsOf(brush)).toEqual([ALPHA_INDEXED, ALPHA_TRANSPARENT]);
+  });
+
+  test('has no holes when the file named no transparent color', () => {
+    const brush = BrushColorIndex.fromIndexedPixels(2, 1, new Uint8Array([0, 1]));
+    expect(tagsOf(brush)).toEqual([ALPHA_INDEXED, ALPHA_INDEXED]);
+    expect(brush.transparentColorNumber).toBeUndefined();
+  });
+});

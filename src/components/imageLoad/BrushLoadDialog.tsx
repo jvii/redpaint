@@ -3,6 +3,7 @@ import './BrushLoadDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { peekPendingBrush, takePendingBrush } from '../../canvas/pendingBrush';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
+import { pendingBrushPalette } from '../../canvas/pendingBrush';
 import { distinctOpaqueColorsByFrequency, plainPalette } from '../../algorithm/imageColors';
 import { remapColorsGreedy } from '../../algorithm/quantize';
 import { CustomBrush } from '../../brush/CustomBrush';
@@ -37,7 +38,11 @@ function remapToIndexByColor(image: ImageData, palette: Color[]): Map<number, nu
 //               per-pixel nearest-color search, since a brush usually has few
 //               distinct colors, so they're worth keeping distinct on the
 //               palette instead of collapsing onto the same nearest slot
-type ColorMode = 'true' | 'current';
+// 'brush' only exists for a file that brought a palette. True Color is not
+// offered for one: adopting its palette already reproduces it exactly, and
+// unindexing the brush would cost the *picture* its own IFF and GIF saves
+// (docs/brush-save.md).
+type ColorMode = 'true' | 'current' | 'brush';
 
 export function BrushLoadDialog(): JSX.Element | null {
   const state = useAppState();
@@ -57,16 +62,23 @@ function BrushLoadDialogOpen(): JSX.Element {
   const info = state.app.brushLoadInfo as NonNullable<typeof state.app.brushLoadInfo>;
   const fitsPalette = info.colorCount <= state.palette.paletteArray.length;
 
-  const [mode, setMode] = useState<ColorMode>('true');
+  // Read once: the requester is modal, so what is pending cannot change under
+  // it. Remap is the default even when a palette came with the file — adopting
+  // it repaints every color in the picture, which is not what an unattended
+  // Return should do.
+  const [fromPalette] = useState(pendingBrushPalette);
+  const [mode, setMode] = useState<ColorMode>(fromPalette ? 'current' : 'true');
 
   // One preview showing the brush as the draft treatment would load it,
-  // re-rendered when the mode changes (True Color shows the original).
-  // Transparent pixels stay transparent regardless of mode. The checker
-  // background shows through, same idiom as the image load preview.
+  // re-rendered when the mode changes. Two of the three show the brush's own
+  // colors — True Color keeps them, and adopting the brush's palette makes
+  // them the picture's — so only Remap redraws. Transparent pixels stay
+  // transparent regardless of mode. The checker background shows through,
+  // same idiom as the image load preview.
   const previewRef = useRef<HTMLCanvasElement>(null);
   useEffect((): void => {
     const image = peekPendingBrush();
-    if (mode === 'true') {
+    if (mode === 'true' || mode === 'brush') {
       drawLoadPreview(previewRef.current, image);
       return;
     }
@@ -98,7 +110,17 @@ function BrushLoadDialogOpen(): JSX.Element {
     }
 
     let colorIndex: BrushColorIndex;
-    if (mode === 'true') {
+    if (mode === 'brush' && fromPalette) {
+      // The file's own indices, kept as they are, under the file's own palette.
+      actions.palette.replacePalette(fromPalette.palette);
+      colorIndex = BrushColorIndex.fromIndexedPixels(
+        image.width,
+        image.height,
+        fromPalette.pixels,
+        // stored 0-based in the file, 1-based here
+        fromPalette.transparentColor === undefined ? undefined : fromPalette.transparentColor + 1
+      );
+    } else if (mode === 'true') {
       colorIndex = BrushColorIndex.fromImageData(image);
     } else {
       const palette = plainPalette(state.palette.paletteArray);
@@ -135,7 +157,12 @@ function BrushLoadDialogOpen(): JSX.Element {
           <RetroToggle
             variant="column"
             options={[
-              { value: 'true', label: 'True Color (Original)' },
+              fromPalette
+                ? {
+                    value: 'brush',
+                    label: `Use Brush Palette (${fromPalette.palette.length})`,
+                  }
+                : { value: 'true', label: 'True Color (Original)' },
               {
                 value: 'current',
                 label: `Remap To Current Palette (${state.palette.paletteArray.length})`,

@@ -132,6 +132,30 @@ export class BrushColorIndex {
     return new BrushColorIndex(width, height, indexArray);
   }
 
+  // The inverse of toIndexedPixels: an indexed image, rows top-down, becoming
+  // a brush. What a decoded ILBM hands over (docs/brush-save.md).
+  //
+  // `transparentColorNumber` is 1-based, as everywhere else here, so a file's
+  // 0-based transparent index arrives incremented. Without one the brush has
+  // no holes at all, which is what an ILBM with masking off means.
+  static fromIndexedPixels(
+    width: number,
+    height: number,
+    pixels: Uint8Array,
+    transparentColorNumber?: number
+  ): BrushColorIndex {
+    const indexArray = new Uint8Array(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      const sourceRow = y * width;
+      const targetRow = (height - 1 - y) * width * 4; // stored bottom-up
+      for (let x = 0; x < width; x++) {
+        indexArray[targetRow + x * 4] = pixels[sourceRow + x];
+        indexArray[targetRow + x * 4 + 3] = ALPHA_INDEXED;
+      }
+    }
+    return new BrushColorIndex(width, height, indexArray, transparentColorNumber);
+  }
+
   // The brush as one byte per pixel, rows top-down, for an indexed encoder.
   // Null when any pixel is true-color, which no indexed format can hold.
   //

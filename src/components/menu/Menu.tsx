@@ -74,8 +74,17 @@ export function Menu(): JSX.Element {
       return;
     }
     actions.app.closeMenu();
-    // decodes, then opens the load requester (color treatment)
-    actions.app.beginBrushLoad(URL.createObjectURL(file));
+    void (async (): Promise<void> => {
+      // Unlike a picture, an IFF brush still goes through the requester: it
+      // brings a palette, and whether to adopt it is exactly what there is to
+      // decide (docs/brush-save.md).
+      if ((await sniffFormat(file)) === 'iff') {
+        actions.app.beginBrushIlbmLoad(file);
+        return;
+      }
+      // decodes, then opens the load requester (color treatment)
+      actions.app.beginBrushLoad(URL.createObjectURL(file));
+    })();
   };
 
   // Both file inputs render once below, outside the menu's collapsible content
@@ -83,7 +92,7 @@ export function Menu(): JSX.Element {
   // wherever they visually belong (each drawer's own File cluster, via the
   // `open` passed down to PictureMenu/BrushMenu).
   const imageOpener = useFileOpener(handleImageFileOpen, 'image/*,.iff,.ilbm,.lbm');
-  const brushOpener = useFileOpener(handleBrushFileOpen);
+  const brushOpener = useFileOpener(handleBrushFileOpen, 'image/*,.iff,.ilbm,.lbm');
 
   // for disabling Matte mode selection when using a built-in brush
   const usingBuiltInBrush = state.brush.usingBuiltInBrush;
