@@ -345,38 +345,30 @@ describe('createPalette beyond DPaint depths', () => {
     expect(Object.values(createPalette(size)).slice(0, 32)).toEqual(dpaint);
   });
 
-  test('lays the generated slots out to be read: grays, then bands that ramp', () => {
-    // Order changes nothing about which colors are there, only whether the
-    // grid is legible. Generated in lattice order it is a wall of noise.
+  test("fills the slots after DPaint's with ramps, one per row of the grid", () => {
+    // Eight is the palette grid's width above 64 colors, so a ramp is a row.
     const fill = Object.values(createPalette(256)).slice(32);
-    const gray = (c: { r: number; g: number; b: number }): boolean => c.r === c.g && c.g === c.b;
-    const grays = fill.filter(gray);
-    expect(fill.slice(0, grays.length).every(gray)).toBe(true);
+    const value = (c: { r: number; g: number; b: number }): number => Math.max(c.r, c.g, c.b);
+    // the ramps come first, the coverage backfill after them
+    for (let ramp = 0; ramp < 20; ramp++) {
+      const steps = fill.slice(ramp * 8, ramp * 8 + 8);
+      const values = steps.map(value);
+      expect(values).toEqual([...values].sort((a, b) => a - b));
+      // and it is a ramp, not a flat run
+      expect(values[7]).toBeGreaterThan(values[0]);
+    }
+  });
 
-    const lightness = grays.map((c) => c.r);
-    expect(lightness).toEqual([...lightness].sort((a, b) => a - b));
-
-    const hsl = (c: { r: number; g: number; b: number }): { band: number; light: number } => {
-      const max = Math.max(c.r, c.g, c.b);
-      const min = Math.min(c.r, c.g, c.b);
-      const d = max - min;
-      const sixth =
-        max === c.r
-          ? ((c.g - c.b) / d) % 6
-          : max === c.g
-            ? (c.b - c.r) / d + 2
-            : (c.r - c.g) / d + 4;
-      return { band: Math.floor(((sixth * 60 + 360) % 360) / 30), light: (max + min) / 2 };
-    };
-    const colored = fill.slice(grays.length).map(hsl);
-    // bands come in order, and inside one the colors ramp from dark to light
-    const bands = colored.map((c) => c.band);
-    expect(bands).toEqual([...bands].sort((a, b) => a - b));
-    colored.forEach((c, i) => {
-      if (i > 0 && colored[i - 1].band === c.band) {
-        expect(c.light).toBeGreaterThanOrEqual(colored[i - 1].light);
-      }
-    });
+  test('every color sits on the 4-bit channels an Amiga palette uses', () => {
+    for (const size of [64, 128, 256]) {
+      Object.values(createPalette(size))
+        .slice(32)
+        .forEach((c) => {
+          expect(c.r % 17).toBe(0);
+          expect(c.g % 17).toBe(0);
+          expect(c.b % 17).toBe(0);
+        });
+    }
   });
 
   test('covers the color cube, rather than one line through it', () => {

@@ -1,4 +1,5 @@
 import { Color } from '../../types';
+import { hsvToRgb } from '../../algorithm/color';
 
 // DPaint's actual default palettes per color depth. 2/4/8/16 are DPaint I's
 // (PRISM.C: default1..4, the only source we have, exact, byte-for-byte). The
@@ -49,19 +50,23 @@ export function createPalette(colors: number): {
   }
 
   // Beyond DPaint's depths (64/128/256) there is no original to draw from, so
-  // its 32 lead and the rest is filled to cover the color cube evenly.
+  // its 32 lead and the rest is filled with ramps: runs of one hue from dark to
+  // light, each exactly RAMP_LENGTH long and each starting a fresh row of the
+  // palette grid, which is eight wide above 64 colors (Palette.tsx).
   //
-  // Evenly matters more than it sounds. These slots exist to be *matched
-  // against* — an image or a brush arriving in colors the palette does not
-  // have is remapped to the nearest it does (remapColorsGreedy) — and a sweep
-  // along any one line through the cube leaves most of it unreachable. A hue
-  // sweep at full saturation and mid lightness was tried and is exactly that:
-  // measured against a DPaint brush, 256 of those colors were barely better
-  // than 32, because the brush is mostly dark and desaturated and the sweep
-  // holds neither. A lattice halves the mean error and thirds the worst.
-  // Added one at a time, skipping anything already there: n colors should be n
-  // *usable* colors, and the lattice's own black, white and grays are DPaint's
-  // too — thirteen of the 256 were repeats before this.
+  // Ramps rather than an even lattice because these slots are painted with as
+  // well as matched against. A range is what cycling animates, what a gradient
+  // fill walks and what shading a shape needs, and none of that can be done
+  // with colors that are merely near each other in the palette. It is also what
+  // a real DPaint palette looks like: the Dolphin brush that prompted this
+  // carries a hand-built sunset ramp and a gray one in its last twelve slots.
+  //
+  // It costs accuracy when an outside picture is remapped in — measured against
+  // that brush, mean error 11.5 against a lattice's 8.8, worst 48 against 24 —
+  // because ramps are spokes and an arbitrary color can land between them.
+  // Whichever is wanted, the palette is per-document and can be replaced.
+  // Placed one at a time, skipping anything already there: n colors should be
+  // n *usable* colors.
   let next = 1;
   const seen = new Set<number>();
   const add = (color: Color): void => {
@@ -75,23 +80,28 @@ export function createPalette(colors: number): {
 
   DPAINT_DEFAULTS[32].forEach((rgb12): void => add(amigaRgbToColor(rgb12)));
 
-  const [reds, greens, blues] = latticeDimensions(colors - 32);
-  // Candidates for the slots after DPaint's, gathered before being placed so
-  // they can be sorted. Skips anything already in the palette or already
-  // offered, so the count below is a count of colors that will actually land.
-  const fill: Color[] = [];
-  const offered = new Set<number>();
-  const offer = (color: Color): void => {
-    const key = (color.r << 16) | (color.g << 8) | color.b;
-    if (!seen.has(key) && !offered.has(key)) {
-      offered.add(key);
-      fill.push(color);
+  const ramps = Math.floor((colors - 32) / RAMP_LENGTH);
+  // Two tiers of saturation once there are hues enough to spare for it: a
+  // vivid set and a muted one, which is what most pictures actually need.
+  const saturations = ramps >= 8 ? [1, 0.5] : [1];
+  const hues = Math.ceil(ramps / saturations.length);
+  for (const saturation of saturations) {
+    for (let hue = 0; hue < hues; hue++) {
+      for (let step = 0; step < RAMP_LENGTH; step++) {
+        add(rampColor((hue * 360) / hues, saturation, step, seen));
+      }
     }
-  };
+  }
+
+  // What the ramps left: slots freed where a ramp would have repeated a color,
+  // and whatever does not divide into RAMP_LENGTH. Filled with the colors the
+  // ramps sit furthest from, so the gaps between spokes are the ones covered.
+  const [reds, greens, blues] = latticeDimensions(216);
+  const candidates: Color[] = [];
   for (let r = 0; r < reds; r++) {
     for (let g = 0; g < greens; g++) {
       for (let b = 0; b < blues; b++) {
-        offer({
+        candidates.push({
           r: Math.round((r * 255) / (reds - 1)),
           g: Math.round((g * 255) / (greens - 1)),
           b: Math.round((b * 255) / (blues - 1)),
@@ -99,80 +109,72 @@ export function createPalette(colors: number): {
       }
     }
   }
-
-  // A lattice rarely divides the slots exactly, and skipping repeats frees a
-  // few more. Both go to grays, where an eye notices banding first. Each pass
-  // halves the spacing, so the ones that land between existing grays are the
-  // ones that get added.
-  const wanted = colors - 32;
-  for (let levels = Math.max(2, wanted - fill.length); fill.length < wanted && levels <= 256; ) {
-    for (let i = 0; i < levels && fill.length < wanted; i++) {
-      offer(createGrayscaleColor(levels - 1, i));
+  while (next <= colors) {
+    const placed = Object.values(palette);
+    let furthest: Color | null = null;
+    let furthestDistance = -1;
+    for (const candidate of candidates) {
+      if (seen.has((candidate.r << 16) | (candidate.g << 8) | candidate.b)) {
+        continue;
+      }
+      let nearest = Infinity;
+      for (const color of placed) {
+        const distance =
+          (candidate.r - color.r) ** 2 +
+          (candidate.g - color.g) ** 2 +
+          (candidate.b - color.b) ** 2;
+        if (distance < nearest) {
+          nearest = distance;
+        }
+      }
+      if (nearest > furthestDistance) {
+        furthestDistance = nearest;
+        furthest = candidate;
+      }
     }
-    levels *= 2;
+    if (!furthest) {
+      break;
+    }
+    add(furthest);
   }
-
-  // Sorted before they are laid down, purely so the grid can be read. The set
-  // is the same either way and so is every remap against it — but generated in
-  // lattice order the swatches are a wall of noise, blue stepping fastest
-  // against a grid eight wide.
-  //
-  // Grays first, continuing the ramp DPaint's own 32 end on. Then bands a
-  // twelfth of the wheel wide, each ramping dark to light. Sorting by hue
-  // itself was tried first and is barely better than not sorting: a lattice
-  // gives almost every color its own hue to a fraction of a degree, so the
-  // lightness never gets to break a tie and each band comes out mottled.
-  // Wider bands were tried too and read muddy, a whole band being more than
-  // one recognizable color.
-  fill.sort((a, b): number => {
-    const x = hslOf(a);
-    const y = hslOf(b);
-    if (x.gray !== y.gray) {
-      return x.gray ? -1 : 1;
-    }
-    if (x.gray) {
-      return x.lightness - y.lightness;
-    }
-    return (
-      Math.floor(x.hue / HUE_BAND) - Math.floor(y.hue / HUE_BAND) ||
-      x.lightness - y.lightness ||
-      x.saturation - y.saturation
-    );
-  });
-  fill.forEach(add);
 
   return palette;
 }
 
-// How wide a band of hue reads as one color. A twelfth of the wheel: red,
-// orange, yellow and so on each get their own.
-const HUE_BAND = 30;
+// How long one ramp is, and so how many slots a row of the palette grid holds
+// above 64 colors. Eight, so a ramp is exactly a row and can be read as one.
+const RAMP_LENGTH = 8;
 
-// Enough of HSL to order swatches by: which are gray, and where the rest sit
-// around the wheel, up the lightness scale and out from it.
-function hslOf(color: Color): {
-  gray: boolean;
-  hue: number;
-  lightness: number;
-  saturation: number;
-} {
-  const r = color.r / 255;
-  const g = color.g / 255;
-  const b = color.b / 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const chroma = max - min;
-  const lightness = (max + min) / 2;
-  if (chroma === 0) {
-    return { gray: true, hue: 0, lightness, saturation: 0 };
+// One step of a ramp: the hue at a value climbing from dark to light, on the
+// 4-bit channels every Amiga palette uses.
+//
+// Nudged within its own step when it would repeat a color already placed —
+// different hues collapse onto the same dark color once rounded to 4 bits, and
+// without this a 256-color palette comes out with only 239 distinct colors in
+// it. The nudge stays inside the step's own share of the value range, so a
+// ramp still climbs.
+function rampColor(hue: number, saturation: number, step: number, seen: Set<number>): Color {
+  const band = 100 / RAMP_LENGTH;
+  const base = (step + 1) * band;
+  for (let nudge = 0; nudge <= 5; nudge++) {
+    for (const direction of [-1, 1]) {
+      const value = base + direction * nudge * (band / 6);
+      const color = amigaQuantized(hsvToRgb({ h: hue, s: saturation * 100, v: value }));
+      if (!seen.has((color.r << 16) | (color.g << 8) | color.b)) {
+        return color;
+      }
+    }
   }
-  const sixth =
-    max === r ? ((g - b) / chroma) % 6 : max === g ? (b - r) / chroma + 2 : (r - g) / chroma + 4;
+  return amigaQuantized(hsvToRgb({ h: hue, s: saturation * 100, v: base }));
+}
+
+// Every DPaint palette is 4 bits per channel; a ramp built off that grid would
+// have steps the format cannot hold.
+function amigaQuantized(color: Color): Color {
   return {
-    gray: false,
-    hue: (sixth * 60 + 360) % 360,
-    lightness,
-    saturation: chroma / (1 - Math.abs(2 * lightness - 1)),
+    r: Math.round(color.r / 17) * 17,
+    g: Math.round(color.g / 17) * 17,
+    b: Math.round(color.b / 17) * 17,
   };
 }
 
@@ -205,14 +207,6 @@ function latticeDimensions(slots: number): [number, number, number] {
   return best;
 }
 
-function createGrayscaleColor(range: number, value: number): Color {
-  const percent = value / range;
-  return {
-    r: Math.round(percent * 255),
-    g: Math.round(percent * 255),
-    b: Math.round(percent * 255),
-  };
-}
 
 // expected hue range: [0, 360)
 // expected saturation range: [0, 1]
