@@ -6,6 +6,7 @@ import { Provider } from 'overmind-react';
 import { config } from './overmind/';
 import * as serviceWorker from './serviceWorker';
 import './canvas/util/benchmark';
+import './canvas/util/glyphHarness';
 import './canvas/util/effectHarness';
 import './index.css';
 import { autosaveState } from './persistence/documentAutosave';
