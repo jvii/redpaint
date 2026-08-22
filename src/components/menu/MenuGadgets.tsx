@@ -58,18 +58,25 @@ export function Gadget({
         // painted over whatever is there now. Clearing the attribute forces it
         // to hide immediately.
         //
-        // Restored on the way out rather than on a timer. A frame later is
-        // still while the file dialog is up and the cursor is parked on the
-        // button, so the title came back, armed a fresh tooltip the moment the
-        // dialog closed, and that one surfaced over the requester the file had
-        // just opened. Nothing can arm while the pointer has not moved off.
+        // Restored only once the pointer really moves over this button again.
+        // Neither of the obvious moments works: a frame later (rAF) is still
+        // while the file dialog is up, and mouseleave *is* the dialog opening,
+        // since the picker takes the cursor off-page (see useFileOpener below).
+        // Both put the title back while the cursor was parked on the button, so
+        // it armed a fresh tooltip the instant the dialog closed — and that one
+        // surfaced over the requester the chosen file had just opened.
+        //
+        // A mousemove cannot happen in that window: the cursor comes back from
+        // the picker where it left, and the button unmounts with the menu
+        // before anything moves. When the pointer does move here, the user is
+        // deliberately hovering and should get the tooltip.
         const button = event.currentTarget;
         button.removeAttribute('title');
         const restore = (): void => {
           button.setAttribute('title', title);
-          button.removeEventListener('mouseleave', restore);
+          button.removeEventListener('mousemove', restore);
         };
-        button.addEventListener('mouseleave', restore);
+        button.addEventListener('mousemove', restore);
         onClick?.();
       }}
       disabled={disabled}
