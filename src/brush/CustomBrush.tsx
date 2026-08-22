@@ -17,7 +17,6 @@ import { Mode, usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
-import { HandleMove } from '../algorithm/brushTransform';
 import { BuiltInFamily } from '../algorithm/builtInBrushShapes';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -43,12 +42,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (no Matte/Repl, never banked to Previous) even though it's a fresh object,
   // not one of the fixed registry singletons.
   public builtInFamily?: BuiltInFamily;
-  // Where this brush wants to be held, in its own pixels, when the Handle
-  // setting is Corner (docs/brush-handle.md): the corner its pickup drag ended
-  // at, or the GRAB point a file recorded. A file's can be any point, not only
-  // a corner. Undefined for a brush with neither — one from a PNG, or one a
-  // transform reshaped past its rule — and those fall back to the lower right.
-  public handlePoint?: Point;
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
   private brushColorIndexColorBG: BrushColorIndex;
@@ -70,12 +63,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   }
 
   // Factory method for extracting a brush from canvas
-  public static fromCanvasArea(
-    start: Point,
-    width: number,
-    height: number,
-    handlePoint?: Point
-  ): CustomBrush {
+  public static fromCanvasArea(start: Point, width: number, height: number): CustomBrush {
     const brushColorIndex = paintingCanvasController.getBrushColorIndexFromArea(
       start,
       width,
@@ -84,9 +72,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     if (!brushColorIndex) {
       throw new Error('Failed to get brush color index from area');
     }
-    const brush = new CustomBrush(brushColorIndex, width, height);
-    brush.handlePoint = handlePoint;
-    return brush;
+    return new CustomBrush(brushColorIndex, width, height);
   }
 
   // Factory method for decoding a brush from an image URL (opened file or
@@ -211,33 +197,9 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // in via brushRecall.setTransformed, which keeps lastChanged-based texture
   // caching correct and the pre-transform original recallable. Transforms
   // always read the matte (source-of-truth) bitmap, never a colorized variant.
-  // An independent copy: same pixels, same handle. A clone has not reshaped
-  // anything, so unlike a transform with no rule it keeps the held point rather
-  // than dropping it — recalling a brush from a slot must give back the brush
-  // that was stored, handle included (docs/brush-handle.md).
-  public clone(): CustomBrush {
-    return this.transform(
-      (matte) => matte,
-      (point) => point
-    );
-  }
-
-  public transform(
-    fn: (index: BrushColorIndex) => BrushColorIndex,
-    moveCorner?: HandleMove
-  ): CustomBrush {
+  public transform(fn: (index: BrushColorIndex) => BrushColorIndex): CustomBrush {
     const transformed = fn(this.brushColorIndexMatte);
-    const brush = new CustomBrush(transformed, transformed.width, transformed.height);
-    // Without a rule the corner is dropped and the lower-right fallback takes
-    // over, which is what DPaint's re-centring transforms amount to here.
-    if (this.handlePoint && moveCorner) {
-      brush.handlePoint = moveCorner(
-        this.handlePoint,
-        { width: this.width, height: this.heigth },
-        { width: transformed.width, height: transformed.height }
-      );
-    }
-    return brush;
+    return new CustomBrush(transformed, transformed.width, transformed.height);
   }
 
   // Where in its own pixels the brush is held. Derived rather than stored: the
@@ -249,13 +211,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (CURBRUSH.C:47) and never consult midHandle. They have no pickup drag to
   // derive a corner from anyway, and the point of the small ones is that the
   // pixel under the cursor is the one that gets painted.
-  // Whether a point is this brush's centre as a file would have recorded it —
-  // GRAB is whole pixels, so a centred handle was floored on the way out
-  // (brushSaveFormats). What tells a loaded handle's two cases apart.
-  public isCentreHandle(point: Point): boolean {
-    return point.x === Math.floor(this.width / 2) && point.y === Math.floor(this.heigth / 2);
-  }
-
   // Where the brush is held when nothing is reshaping it. This is the handle
   // in its own right — what a file's GRAB records — as against handle() below,
   // which also answers for the middle of a transform drag.
@@ -266,10 +221,9 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // anyway, and the point of the small ones is that the pixel under the cursor
   // is the one that gets painted.
   public restingHandle(): Point {
-    if (overmind.state.brush.handleMode === 'center' || this.builtInFamily !== undefined) {
-      return { x: this.width / 2, y: this.heigth / 2 };
-    }
-    return this.handlePoint ?? { x: this.width - 1, y: this.heigth - 1 };
+    return overmind.state.brush.handleMode === 'center' || this.builtInFamily !== undefined
+      ? { x: this.width / 2, y: this.heigth / 2 }
+      : { x: this.width - 1, y: this.heigth - 1 };
   }
 
   // A transform drag holds the brush by the centre whatever the setting says,

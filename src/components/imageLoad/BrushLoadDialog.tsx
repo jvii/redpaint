@@ -3,7 +3,7 @@ import './BrushLoadDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { peekPendingBrush, takePendingBrush } from '../../canvas/pendingBrush';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
-import { pendingBrushHandle, pendingBrushPalette } from '../../canvas/pendingBrush';
+import { pendingBrushPalette } from '../../canvas/pendingBrush';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { distinctOpaqueColorsByFrequency, plainPalette } from '../../algorithm/imageColors';
@@ -138,20 +138,7 @@ function BrushLoadDialogOpen(): JSX.Element {
       );
     }
 
-    const brush = new CustomBrush(colorIndex, image.width, image.height);
-    // Where the file says the brush is held (docs/brush-handle.md), which wins:
-    // a file that recorded a handle is answering exactly this question, and
-    // DPaint applied its GRAB with no reference to the Brush Handle flag
-    // (DPIO.C:304). So the setting follows the file rather than filtering it,
-    // and the toggle goes on showing where the brush is really held. One click
-    // still overrides. A file with no GRAB — a PNG, an ILBM written without one
-    // — says nothing, so nothing changes.
-    const fileHandle = pendingBrushHandle();
-    if (fileHandle) {
-      brush.handlePoint = fileHandle;
-      actions.brush.setHandleMode(brush.isCentreHandle(fileHandle) ? 'center' : 'corner');
-    }
-    brushRecall.setCustom(brush);
+    brushRecall.setCustom(new CustomBrush(colorIndex, image.width, image.height));
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
     actions.brush.refreshPreviousBrushSlot();

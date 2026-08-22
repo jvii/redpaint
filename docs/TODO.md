@@ -107,19 +107,21 @@ is scheduled. Design details live in the linked docs where they exist.
       for Linux (DejaVu, Liberation, Ubuntu) at the same time.
 
 - [x] **Brush handle** — done. A Handle setting in the Brush drawer, Center or
-      Corner, where Corner means the point the brush holds: the corner its
-      pickup drag ended at, or the GRAB a file recorded. Derived at draw time
-      from the setting plus that point rather than stored as an offset, which
-      is what makes changing it move the brush already in hand — DPaint II's
-      behaviour, where DPaint I only read its flag at the next pickup.
+      Corner, where Corner is the lower right. Computed from the brush's size at
+      draw time rather than stored, so changing it moves the brush already in
+      hand — DPaint II's behaviour, where DPaint I only read its flag at the
+      next pickup.
 
-      Flip, rotate 90 and the resizes carry the point through; shear, bend and
-      free rotation drop it and the lower-right fallback takes over. DPaint
-      re-centred for those, but then Corner would quietly stop meaning corner.
-      Built-in brushes stay centred throughout, as DPaint's pens did. A modal
-      transform drag holds the brush by the centre and returns to the resting
-      handle on commit — those tools place the preview from the drag anchor, so
-      an off-centre handle slid it out of its own bounds box.
+      A larger version remembering *which* corner each brush was picked up by,
+      and carrying that through transforms, slots and the IFF GRAB chunk, was
+      built and then removed as not worth its ~200 lines: a corner that can be
+      computed never needs carrying. GRAB is still written so other programs
+      know where the brush was held, but not read back.
+
+      Built-in brushes stay centred throughout, as DPaint's pens did, and a
+      modal transform drag holds the brush by the centre and returns to the
+      resting handle on commit — those tools place the preview from the drag
+      anchor, so an off-centre handle slid it out of its own bounds box.
       Design, and what the DPaint source says at each point: docs/brush-handle.md.
 
 - [x] **Brush Save As, with IFF** — done. Saving asks every time, since a brush

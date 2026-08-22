@@ -14,10 +14,13 @@ class BrushSlots {
     this.slots[index] = brush;
   }
 
-  // A copy, independent of what's stored: transforming a recalled brush must
-  // not mutate the slot.
+  // A copy, independent of what's stored. Transforming a recalled brush must
+  // not mutate the slot. transform() always allocates a new backing array and
+  // never touches `this`, so handing it the identity function is a cheap, safe
+  // clone.
   recall(index: number): CustomBrush | null {
-    return this.slots[index]?.clone() ?? null;
+    const stored = this.slots[index];
+    return stored ? stored.transform((matte) => matte) : null;
   }
 
   clear(index: number): void {

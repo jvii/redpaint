@@ -18,11 +18,6 @@ import {
   bendHorizontal,
   bendVertical,
   BendControls,
-  HandleMove,
-  mirrorHandleX,
-  mirrorHandleY,
-  rotateHandle90,
-  scaleHandle,
 } from '../../algorithm/brushTransform';
 
 // DPaint switches away to (dotted) freehand when a built-in brush is picked
@@ -124,15 +119,14 @@ const MAX_BRUSH_DIMENSION = 4096;
 
 const transformBrush = (
   context: Context,
-  fn: (index: BrushColorIndex) => BrushColorIndex,
-  moveCorner?: HandleMove
+  fn: (index: BrushColorIndex) => BrushColorIndex
 ): void => {
   const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush) || isBuiltInBrush(brush)) {
     return;
   }
   // setTransformed keeps the pre-transform original for Restore / Shift-B
-  brushRecall.setTransformed(brush.transform(fn, moveCorner));
+  brushRecall.setTransformed(brush.transform(fn));
   context.state.brush.hasOriginalBrush = true;
   // re-derive the new brush's colorized variants and resting bitmap
   context.actions.brush.setMode(context.state.brush.mode);
@@ -153,23 +147,20 @@ export const restoreOriginalBrush = (context: Context): void => {
   context.actions.brush.setMode(context.state.brush.mode);
 };
 
-// The three transforms DPaint carried its handle through get a rule for the
-// capture corner (docs/brush-handle.md); shear, bend and free rotation do not,
-// and drop it.
 export const flipBrushHorizontal = (context: Context): void => {
-  transformBrush(context, flipHorizontal, mirrorHandleX);
+  transformBrush(context, flipHorizontal);
 };
 
 export const flipBrushVertical = (context: Context): void => {
-  transformBrush(context, flipVertical, mirrorHandleY);
+  transformBrush(context, flipVertical);
 };
 
 export const rotateBrush90 = (context: Context): void => {
-  transformBrush(context, rotate90, rotateHandle90);
+  transformBrush(context, rotate90);
 };
 
 export const halveBrush = (context: Context): void => {
-  transformBrush(context, (b) => resize(b, b.width / 2, b.height / 2), scaleHandle);
+  transformBrush(context, (b) => resize(b, b.width / 2, b.height / 2));
 };
 
 const doubleBrushBy = (context: Context, scaleX: number, scaleY: number): void => {
@@ -180,7 +171,7 @@ const doubleBrushBy = (context: Context, scaleX: number, scaleY: number): void =
   if (brush.width * scaleX > MAX_BRUSH_DIMENSION || brush.heigth * scaleY > MAX_BRUSH_DIMENSION) {
     return;
   }
-  transformBrush(context, (b) => resize(b, b.width * scaleX, b.height * scaleY), scaleHandle);
+  transformBrush(context, (b) => resize(b, b.width * scaleX, b.height * scaleY));
 };
 
 export const doubleBrush = (context: Context): void => {
@@ -198,7 +189,7 @@ export const doubleBrushVertical = (context: Context): void => {
 // Commits of the interactive drags (Stretch/ShearBrushTool): the preview
 // frames were temporary brushes, so these are the drags' only real transform.
 export const stretchBrushTo = (context: Context, size: { width: number; height: number }): void => {
-  transformBrush(context, (b) => resize(b, size.width, size.height), scaleHandle);
+  transformBrush(context, (b) => resize(b, size.width, size.height));
 };
 
 // Commits the right-click drag-resize of a built-in brush
@@ -303,7 +294,7 @@ export const recallPreviousBrush = (context: Context): void => {
   // A copy, independent of the stored reference, as BrushSlots.recall.
   // setCustom then banks the brush this replaces, so Previous is a two-way
   // swap.
-  const brush = previous.clone();
+  const brush = previous.transform((matte) => matte);
   activateCustomBrush(context, brush);
 };
 

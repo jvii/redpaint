@@ -1,4 +1,4 @@
-import { Color, Point } from '../types';
+import { Color } from '../types';
 
 // The decoded pixels of a just-opened brush image, held while the brush load
 // requester is up. Mirrors pendingImage.ts: decoding happens before the
@@ -18,16 +18,9 @@ export type PendingBrushPalette = {
 
 let pending: ImageData | null = null;
 let pendingPalette: PendingBrushPalette | null = null;
-let pendingHandle: Point | null = null;
-
-export function setPendingBrush(
-  image: ImageData,
-  withPalette?: PendingBrushPalette,
-  handle?: Point
-): void {
+export function setPendingBrush(image: ImageData, withPalette?: PendingBrushPalette): void {
   pending = image;
   pendingPalette = withPalette ?? null;
-  pendingHandle = handle ?? null;
 }
 
 export function takePendingBrush(): ImageData | null {
@@ -39,12 +32,6 @@ export function takePendingBrush(): ImageData | null {
 // Read alongside takePendingBrush, which is what clears it.
 export function pendingBrushPalette(): PendingBrushPalette | null {
   return pendingPalette;
-}
-
-// The GRAB point an IFF brush recorded, if it had one (docs/brush-handle.md).
-// Read alongside takePendingBrush, as the palette above is.
-export function pendingBrushHandle(): Point | null {
-  return pendingHandle;
 }
 
 // For the requester's preview: look without consuming.

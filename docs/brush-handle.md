@@ -1,7 +1,8 @@
 # Brush handle — design
 
-Status: built. The setting, the held point, `adjustHandle` reading them, a rule
-per transform, and `GRAB` written and read back (docs/brush-save.md).
+Status: built, and deliberately smaller than what is described below. A Handle
+setting of Center or Corner, where Corner is the lower right — no per-brush
+handle is remembered. See "What is actually built".
 
 Before it, the handle was always the centre: `CustomBrush.adjustHandle` was
 `point - size/2`, computed on the spot and stored nowhere.
@@ -38,9 +39,53 @@ the toggle only ever moved a picked-up brush. That is the right rule anyway:
 a pen has no capture drag to derive a corner from, and the whole point of the
 small ones is that the pixel under the cursor is the one that gets painted.
 
-## What every transform has to say about it
+## What is actually built
 
-DPaint carries the handle through each one, and twice gives up:
+**The mode, and nothing per brush.** Corner means the lower right, computed
+from the brush's current size. `CustomBrush.restingHandle()` is the whole of
+it:
+
+```ts
+mode === 'center' || builtInFamily ? { x: w / 2, y: h / 2 } : { x: w - 1, y: h - 1 }
+```
+
+The version this document originally described also remembered *which* corner
+each brush's pickup drag ended at, and carried that point through transforms,
+slots and the `GRAB` chunk. It was built, measured at about 200 lines including
+tests, and removed: a corner that can be computed never needs carrying, so the
+per-transform rules, the clone-versus-transform distinction, the slot question
+and reading `GRAB` back all existed only to move a number that the brush's own
+size already answers.
+
+What that costs is the DP2 nicety of holding a brush by the corner you happened
+to drag to. Thin even in the original: DPaint I read `midHandle` only at pickup,
+and DP2's own tutorial describes the result as "the lower right corner of the
+brush", which is what is built here.
+
+Two pieces survive from that work and are worth keeping:
+
+- **A transform drag holds the brush by the centre**, whatever the setting says,
+  and returns to the resting handle on commit. Those tools place the preview and
+  the bounds box from the drag anchor, so an off-centre handle slides the preview
+  out of the box it is being sized inside. DPaint anchored those drags at the
+  lower right instead (`IMStrBrush`, `IMShrBrush`, `ROTATE.C:197`, `BEND.C:169`)
+  — the same reasoning reaching a different corner. Hence `handle()` beside
+  `restingHandle()`.
+- **`GRAB` is still written**, from `restingHandle()` floored, as DPaint wrote
+  `curbr.xoffs` (`DPIO.C:250`). It costs nothing and tells DPaint or PyDPainter
+  where the brush was held. It is not read back: with no per-brush handle there
+  is nowhere to put an arbitrary point, and a brush comes back held by whatever
+  the setting says.
+
+**Built-in brushes are exempt** and always centred. DPaint's pens set their own
+offset to `w/2` unconditionally in `FixUpPen` (`CURBRUSH.C:47`) and never read
+`midHandle`. That is the right rule regardless: the point of the small ones is
+that the pixel under the cursor is the one that gets painted.
+
+## If it ever comes back
+
+The per-brush version is in the history, and DPaint's own rules for it are worth
+keeping here rather than re-deriving:
 
 | transform | rule | source |
 | --- | --- | --- |
@@ -52,88 +97,14 @@ DPaint carries the handle through each one, and twice gives up:
 | Bend | back to `w/2`, keeping the unbent axis | `BEND.C:155` |
 | Rotate any angle | back to `w/2`, commented `/* not correct but ... */` | `ROTATE.C:171` |
 
-Stretch is the only one that carries a *meaningful* handle through, and it is
-the obvious rule once seen: the handle is a position within the picture, so
-scaling the picture scales it. Everything harder than that gives up and
-re-centres.
+Stretch is the only one carrying a *meaningful* handle through, and the rule is
+obvious once seen: the handle is a position within the picture, so scaling the
+picture scales it. Everything harder gives up and re-centres.
 
-Worth knowing when reading those sources: each modal transform *also* slams the
-handle to the lower right while the drag is live (`IMStrBrush`, `IMShrBrush`,
-`ROTATE.C:197`, `BEND.C:169`) and restores a real one when the drag ends. That
-is drag geometry, not a handle rule — the corner is what the rubber-band is
-anchored by.
-
-**Here that drag-time handle is the centre, not the lower right.** Same
-reasoning, different corner: these tools place the preview and the bounds box
-from the drag anchor, so the preview has to sit where its own geometry says or
-it slides out of the box it is being sized inside. The centre is the one that
-keeps it there. The handle goes back to the corner when the drag commits, so
-this is invisible except as the preview lining up.
-
-redpaint has stretch, shear, rotate, bend horizontal and bend vertical as modal
-tools, plus flip and halve/double as instant ones, so each needs an answer.
-Re-centring is a legitimate one where DPaint re-centred: it is what the original
-does, and the apology in `ROTATE.C` says why nothing better was obvious.
-
-## Loading
-
-A brush read from a file has no capture drag to derive from. DPaint I takes the
-`GRAB` chunk when there is one, and otherwise `xoffs = BytesPerRow*4`,
-`yoffs = Rows/2` (`DPIO.C:307`) — the right edge, vertically centred, not the
-middle. Consistent with the lower-right default the toggle falls back on, which
-is what is used here for a file with no GRAB at all (a PNG, or an ILBM written
-without one).
-
-**A loaded GRAB wins over the setting**, as it does in DPaint —
-`curbr.xoffs = mbm.grab.x` runs with no reference to `midHandle` at all. A file
-that recorded a handle is answering exactly the question the setting asks, so
-it would be strange to write one and then ignore it; and with Center the
-default, filtering it through the setting meant ignoring it on almost every
-load, which makes writing it pointless.
-
-The setting therefore *follows* the file rather than filtering it: loading
-moves it to Center or Corner to match where the brush is now held, so the
-toggle keeps telling the truth, and one click still overrides. That is the
-price of a derived handle — DPaint had no such setting to contradict, because
-its handle was a stored offset and `midHandle` was only ever read at pickup.
-
-A brush kept in a slot, or in Previous, keeps its held **point** — recall
-clones rather than transforms, and a clone has reshaped nothing, so unlike a
-transform with no rule it carries the point over. What a slot does *not* keep
-is the **mode**: Center/Corner is one app-wide setting, so recalling a brush
-holds it whichever way the setting stands at the time.
-
-**Capturing from the canvas puts it back to Center.** A capture has no opinion
-about centre-versus-corner — it records which corner, not whether to use one —
-so it should not inherit a setting that a loaded file may have imposed rather
-than anyone having chosen. The captured corner is kept regardless, so Corner
-stays one click away. DPaint did not reset (`midHandle` simply persisted), but
-DPaint's flag was never moved by a file in the first place.
-
-## Shape
-
-1. ✅ `CustomBrush` carries the capture corner and `handle()` derives from it
-   and the mode; `adjustHandle` reads that instead of halving the size. The
-   mode is one app-wide setting (`brush.handleMode`) rather than per-brush,
-   which is what makes it live on the brush already in hand — DPaint II's
-   behaviour — with no recomputation anywhere.
-2. ✅ `BrushSelector` records the corner the drag ended at, by DPaint's own
-   `MAX(0, mx - sx)`.
-3. ✅ A Handle setting in the Brush drawer, Center or Corner, as a two-option
-   RetroToggle rather than a pressed gadget — "on" does not say which of two
-   places a brush is held, and there is no third. Never disabled: it is
-   app-wide, so it can be set with a built-in in hand and takes effect at the
-   next pickup.
-4. ✅ Flip, rotate 90 and stretch/halve/double carry the corner through
-   (`CornerMove` in `algorithm/brushTransform.ts`); shear, bend and free
-   rotation drop it and the lower-right fallback takes over. That last part is
-   a deliberate divergence: DPaint re-centred there, but Handle should keep
-   meaning "a corner". A modal drag holds the brush by the centre throughout
-   and returns to the corner on commit, as above.
-5. ✅ `GRAB` carries the handle between sessions. Saving writes
-   `restingHandle()` floored — the resting one, so saving while a transform
-   tool is armed records the brush rather than the drag, and floored because
-   GRAB is whole pixels and a centred handle is a half. Loading takes it as the
-   brush's held point and moves the setting to match, so the round trip
-   actually round-trips (see Loading). That a file can record any pixel is why
-   the field is a held point and not a corner.
+On loading, DPaint takes the `GRAB` chunk when there is one and otherwise
+`xoffs = BytesPerRow*4`, `yoffs = Rows/2` (`DPIO.C:307`) — the right edge,
+vertically centred. It applies that with no reference to `midHandle`
+(`DPIO.C:304`), because its handle was a stored offset and the flag was only
+ever read at pickup. Any future per-brush version has to answer that: a file
+recording a handle is answering exactly the question the setting asks, and the
+two will contradict each other.
