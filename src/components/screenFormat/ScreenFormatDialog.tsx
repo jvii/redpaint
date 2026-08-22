@@ -92,12 +92,14 @@ function ScreenFormatDialogOpen(): JSX.Element {
   // too. An option named Current Palette must not be able to invent colors.
   const [paletteSource, setPaletteSource] = useState<PaletteSource>('image');
 
-  // Whether the picture survives the change, DPaint-style: choosing a screen
-  // was a way of starting a picture, not of converting the one you had. No by
-  // default for that reason, and because conforming a picture to a screen it
-  // was not drawn for is the more deliberate of the two acts, so it is the one
-  // worth asking for. Either way it is a single undo away.
-  const [retainPicture, setRetainPicture] = useState(false);
+  // Whether the picture survives the change. Yes by default: of the two, losing
+  // a picture is the answer nobody wants by accident, and the one that reads as
+  // destructive even though it is a single undo away. DPaint defaulted the other
+  // way — choosing a screen there was a way of starting a picture rather than of
+  // converting the one you had, and its SetFormat reloads the default palette
+  // and drops the raster outright — but it also asked from a menu nobody
+  // wandered into mid-drawing.
+  const [retainPicture, setRetainPicture] = useState(true);
 
   // The two controls keep each other honest instead of one greying the other
   // out: choosing a size that is not the palette's moves the remap to the image

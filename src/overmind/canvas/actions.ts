@@ -12,6 +12,7 @@ import {
   medianCutPalette,
 } from '../../algorithm/quantize';
 import { countDistinctColors } from '../../algorithm/imageColors';
+import { createPalette } from '../../components/palette/util';
 import { CropRect } from '../crop/state';
 import { Color } from '../../types';
 import { Point } from '../../types';
@@ -283,9 +284,17 @@ export const applyScreenFormat = (
           (raster): Uint8ClampedArray => raster.resolveToRGBA(oldPalette)
         )
       );
+      // Spare slots go to the colors already to hand rather than to black: a
+      // two-color picture conformed to sixteen should leave a palette somebody
+      // can go on painting with. The current palette first, since those are the
+      // colors this document chose, then the depth's own default to make up any
+      // shortfall when the palette is growing.
       rebuilt =
         countDistinctColors(rgba) <= colors
-          ? extractExactPalette(rgba, colors)
+          ? extractExactPalette(rgba, colors, [
+              ...oldPalette,
+              ...Object.values(createPalette(colors)),
+            ])
           : medianCutPalette(rgba, colors);
     }
   }

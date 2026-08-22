@@ -224,16 +224,27 @@ export function medianCutPalette(data: Uint8ClampedArray, n: number): Color[] {
 // The image's own distinct colors, in first-appearance order, padded with
 // black to exactly n entries. Only valid when distinct colors <= n; indexing
 // against this palette reproduces the image exactly.
-export function extractExactPalette(data: Uint8ClampedArray, n: number): Color[] {
+export function extractExactPalette(data: Uint8ClampedArray, n: number, fill: Color[] = []): Color[] {
   const seen = new Set<number>();
   const palette: Color[] = [];
-  for (let i = 0; i < data.length; i += 4) {
-    const rgb = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
-    if (!seen.has(rgb)) {
+  const add = (color: Color): void => {
+    const rgb = (color.r << 16) | (color.g << 8) | color.b;
+    if (!seen.has(rgb) && palette.length < n) {
       seen.add(rgb);
-      palette.push({ r: data[i], g: data[i + 1], b: data[i + 2] });
+      palette.push(color);
     }
+  };
+  for (let i = 0; i < data.length; i += 4) {
+    add({ r: data[i], g: data[i + 1], b: data[i + 2] });
   }
+  // A picture using two colors in sixteen slots leaves fourteen over, and they
+  // have to hold something. `fill` is what: the colors already to hand, so a
+  // two-color picture conformed to sixteen keeps a usable palette instead of
+  // fourteen blacks. DPaint reached the same place from the other side — its
+  // SetFormat ends in DefaultPalette (DPINIT.C:433), loading the whole default
+  // palette for the new depth, because a palette's spare slots are worth
+  // filling with colors somebody might paint with.
+  fill.forEach(add);
   while (palette.length < n) palette.push({ r: 0, g: 0, b: 0 });
   return palette;
 }

@@ -34,6 +34,32 @@ describe('extractExactPalette', () => {
   });
 });
 
+describe('extractExactPalette with fill colors', () => {
+  test('fills the slots the image left over, in order, skipping duplicates', () => {
+    const data = pixels([
+      [10, 20, 30],
+      [40, 50, 60],
+    ]);
+    const fill = [
+      { r: 40, g: 50, b: 60 }, // already in the image: not placed twice
+      { r: 1, g: 1, b: 1 },
+      { r: 2, g: 2, b: 2 },
+    ];
+    expect(extractExactPalette(data, 5, fill)).toEqual([
+      { r: 10, g: 20, b: 30 },
+      { r: 40, g: 50, b: 60 },
+      { r: 1, g: 1, b: 1 },
+      { r: 2, g: 2, b: 2 },
+      { r: 0, g: 0, b: 0 }, // fill ran out before the palette did
+    ]);
+  });
+
+  test('never grows past n, however much fill is offered', () => {
+    const fill = Array.from({ length: 40 }, (_, i) => ({ r: i + 1, g: 0, b: 0 }));
+    expect(extractExactPalette(pixels([[10, 20, 30]]), 4, fill)).toHaveLength(4);
+  });
+});
+
 describe('mapToPaletteExact', () => {
   test('maps every pixel back to its own exact palette entry', () => {
     const data = pixels([
