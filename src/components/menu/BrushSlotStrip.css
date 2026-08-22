@@ -34,7 +34,7 @@
 
 /* An occupied cell carries the shared .transparency-checker class (index.css,
    applied in the JSX), re-tinted to the current background color
-   (checkerTint.ts), only once a brush is stored: transparency in the brush
+   (ui/checkerTint.ts), only once a brush is stored: transparency in the brush
    itself needs to read against something other than flat white, or a
    transparent-background brush looks identical to the (also white) empty
    slot. An empty slot stays plain white — the checker is specifically the

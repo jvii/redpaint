@@ -1,4 +1,6 @@
 import { JSX, RefObject } from 'react';
+import { Color } from '../../types';
+import { checkerTint } from '../ui/checkerTint';
 import './LoadPreview.css';
 
 const PREVIEW_MAX_W = 680;
@@ -12,6 +14,10 @@ type Props = {
   // Shown after the color count when set (e.g. "fits a palette exactly");
   // omitted entirely otherwise.
   exactNote?: string;
+  // Tints the transparency checker to this color (ui/checkerTint.ts). Set for a
+  // brush, whose holes are the background showing through once it is stamped;
+  // left off for an image, which becomes the picture rather than sitting on it.
+  ground?: Color;
   canvasRef: RefObject<HTMLCanvasElement | null>;
 };
 
@@ -27,6 +33,7 @@ export function LoadPreview({
   height,
   colorCount,
   exactNote,
+  ground,
   canvasRef,
 }: Props): JSX.Element {
   let previewScale = Math.min(PREVIEW_MAX_W / width, PREVIEW_MAX_H / height);
@@ -36,6 +43,7 @@ export function LoadPreview({
   const previewStyle = {
     width: Math.round(width * previewScale),
     height: Math.round(height * previewScale),
+    ...(ground ? checkerTint(ground) : {}),
   };
 
   return (

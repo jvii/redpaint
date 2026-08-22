@@ -2,7 +2,7 @@ import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { GadgetCluster } from './MenuGadgets';
-import { checkerTint } from './checkerTint';
+import { checkerTint } from '../ui/checkerTint';
 import './BrushSlotStrip.css';
 
 // The automatic companion to the curated slots (docs/brush-slots.md): the

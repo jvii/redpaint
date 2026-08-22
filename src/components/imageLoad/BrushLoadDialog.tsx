@@ -159,6 +159,7 @@ function BrushLoadDialogOpen(): JSX.Element {
           height={info.height}
           colorCount={info.colorCount}
           exactNote={fitsPalette ? 'fits the palette exactly' : undefined}
+          ground={state.palette.backgroundColor}
           canvasRef={previewRef}
         />
         <RetroFieldset legend="Colors">

@@ -5,12 +5,12 @@ import { Color } from '../../types';
 // instead of its neutral greys, by overriding the two custom properties it is
 // built from. No second pattern and no new rule — the same class, re-tinted.
 //
-// For a brush slot that color is the background: a brush's transparent pixels
-// are exactly the ones the background shows through, so the thumbnail reads
-// the way the stamp will, and a thin dark line stops competing with a grey
-// check for attention. The pattern stays on top of it because a brush can also
-// *contain* the background color, and against a flat fill a hole and a painted
-// pixel of the same color would be one shape.
+// Used wherever the thing shown is a *brush*: the slots, and the Load Brush
+// preview. A brush's transparent pixels are exactly the ones the background
+// shows through, so it reads the way the stamp will, and a thin dark line stops
+// competing with a grey check for attention. The pattern stays on top of the
+// color because a brush can also *contain* the background color, and against a
+// flat fill a hole and a painted pixel of that color would be one shape.
 //
 // The fill style swatch (FillStyleSettings.css) reached the same ground from
 // the other side: it dropped the checker for a flat background color, because
@@ -18,8 +18,10 @@ import { Color } from '../../types';
 // preview against the color they will be painted on; only this one has
 // per-pixel transparency worth marking, so only this one keeps the pattern.
 //
-// Elsewhere (the load preview, the menubar fill box) the checker stands for
-// "nothing here" rather than "the background", and neutral greys are right.
+// Not the Load Image preview, which shares that component: an image becomes
+// the picture rather than being stamped onto it, so its transparency is not the
+// background showing through. Nor the menubar fill box, where the checker
+// stands for "nothing here". Those keep the neutral greys.
 export function checkerTint(color: Color): CSSProperties {
   // The neutral pair is #e8e8e8 against #cfcfcf, about a ninth apart. Matching
   // that, shifted away from whichever end the color sits at so the pattern

@@ -3,7 +3,7 @@ import { useActions, useAppState } from '../../overmind';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { GadgetCluster } from './MenuGadgets';
 import { StoreIcon } from './BrushSlotIcons';
-import { checkerTint } from './checkerTint';
+import { checkerTint } from '../ui/checkerTint';
 import './BrushSlotStrip.css';
 
 // The brush-slot strip (docs/brush-slots.md Phase B): no permanently-visible

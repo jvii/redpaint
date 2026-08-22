@@ -37,7 +37,11 @@
 }
 
 /* the media as the draft would load it; the shared .transparency-checker
-   class (index.css, applied in the JSX) shows through its transparency */
+   class (index.css, applied in the JSX) shows through its transparency —
+   tinted to the background color for a brush, see the `ground` prop.
+   No paper ring like the brush slots carry (BrushSlotStrip.css): this sits
+   alone on the requester's own light ground, so its black border always has
+   something to frame against. */
 .load-preview__canvas {
   flex: none;
   border: 2px solid black;
