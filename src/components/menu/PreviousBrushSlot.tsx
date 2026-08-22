@@ -2,6 +2,7 @@ import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { GadgetCluster } from './MenuGadgets';
+import { checkerTint } from './checkerTint';
 import './BrushSlotStrip.css';
 
 // The automatic companion to the curated slots (docs/brush-slots.md): the
@@ -27,7 +28,11 @@ export function PreviousBrushSlot(): JSX.Element {
       <div className="brush-slot-strip">
         <div className="brush-slot">
           <button
-            className={'brush-slot__cell' + (slot.occupied ? ' is-occupied' : ' is-disabled')}
+            className={
+              'brush-slot__cell' +
+              (slot.occupied ? ' is-occupied transparency-checker' : ' is-disabled')
+            }
+            style={slot.occupied ? checkerTint(state.palette.backgroundColor) : undefined}
             type="button"
             title={
               slot.occupied ? 'Recall the previous custom brush' : 'No previous custom brush yet'

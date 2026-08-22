@@ -3,6 +3,7 @@ import { useActions, useAppState } from '../../overmind';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { GadgetCluster } from './MenuGadgets';
 import { StoreIcon } from './BrushSlotIcons';
+import { checkerTint } from './checkerTint';
 import './BrushSlotStrip.css';
 
 // The brush-slot strip (docs/brush-slots.md Phase B): no permanently-visible
@@ -69,6 +70,7 @@ export function BrushSlotStrip(): JSX.Element {
                     ? 'Cannot store a built-in brush'
                     : `Store current brush in slot ${index + 1}`
               }
+              style={slot.occupied ? checkerTint(state.palette.backgroundColor) : undefined}
               onClick={slot.occupied ? recall(index) : store(index)}
               onKeyDown={(event): void => {
                 if (event.key === 'Enter' || event.key === ' ') {
