@@ -45,6 +45,12 @@ export class BrushSelector implements Tool {
     brushRecall.setCustom(customBrush);
     overmind.actions.brush.clearBuiltInBrushSelection();
     overmind.actions.brush.setMode('Matte');
+    // Back to the centre for a brush picked up here. A capture has no opinion
+    // about centre-versus-corner — it records which corner, not whether to use
+    // one — and the setting it would otherwise inherit may have come from a
+    // loaded file rather than from anyone choosing it (docs/brush-handle.md).
+    // The corner above is kept either way, so Corner is one click from here.
+    overmind.actions.brush.setHandleMode('center');
     overmind.actions.brush.refreshPreviousBrushSlot();
 
     // exit brush selection tool
