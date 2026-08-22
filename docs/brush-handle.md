@@ -84,10 +84,19 @@ middle. Consistent with the lower-right default the toggle falls back on, which
 is what is used here for a file with no GRAB at all (a PNG, or an ILBM written
 without one).
 
-Note what the loaded point does *not* do: DPaint held a loaded brush at its
-GRAB whatever `midHandle` said, because its handle was a stored offset. Here
-the setting still decides, and GRAB only answers "held where" when it is set to
-Corner.
+**A loaded GRAB wins over the setting**, as it does in DPaint —
+`curbr.xoffs = mbm.grab.x` runs with no reference to `midHandle` at all. A file
+that recorded a handle is answering exactly the question the setting asks, so
+it would be strange to write one and then ignore it; and with Center the
+default, filtering it through the setting meant ignoring it on almost every
+load, which makes writing it pointless.
+
+The setting therefore *follows* the file rather than filtering it: loading
+moves it to Center or Corner to match where the brush is now held, so the
+toggle keeps telling the truth, and one click still overrides. This is the one
+place a global setting changes by itself, and it is the price of a derived
+handle — DPaint had no such setting to contradict, because its handle was a
+stored offset and `midHandle` was only ever read at pickup.
 
 ## Shape
 
@@ -112,6 +121,7 @@ Corner.
 5. ✅ `GRAB` carries the handle between sessions. Saving writes
    `restingHandle()` floored — the resting one, so saving while a transform
    tool is armed records the brush rather than the drag, and floored because
-   GRAB is whole pixels and a centred handle is a half. Loading puts it on the
-   brush as its held point, which is why that field is a point and not a
-   corner: a file can record any pixel.
+   GRAB is whole pixels and a centred handle is a half. Loading takes it as the
+   brush's held point and moves the setting to match, so the round trip
+   actually round-trips (see Loading). That a file can record any pixel is why
+   the field is a held point and not a corner.

@@ -238,6 +238,13 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (CURBRUSH.C:47) and never consult midHandle. They have no pickup drag to
   // derive a corner from anyway, and the point of the small ones is that the
   // pixel under the cursor is the one that gets painted.
+  // Whether a point is this brush's centre as a file would have recorded it —
+  // GRAB is whole pixels, so a centred handle was floored on the way out
+  // (brushSaveFormats). What tells a loaded handle's two cases apart.
+  public isCentreHandle(point: Point): boolean {
+    return point.x === Math.floor(this.width / 2) && point.y === Math.floor(this.heigth / 2);
+  }
+
   // Where the brush is held when nothing is reshaping it. This is the handle
   // in its own right — what a file's GRAB records — as against handle() below,
   // which also answers for the middle of a transform drag.
