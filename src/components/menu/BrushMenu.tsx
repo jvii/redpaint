@@ -138,6 +138,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
+            opensFileDialog
             title="Open brush..."
             onClick={onOpenFile}
           />
@@ -146,6 +147,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
+            opensFileDialog
             title={usingBuiltInBrush ? 'Cannot save a built-in brush' : 'Save brush...'}
             onClick={handleBrushSave}
             disabled={!isSaveableBrush(brushRecall.current)}

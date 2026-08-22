@@ -19,6 +19,9 @@ type GadgetProps = {
   // the rail (Open/Save/Brush) and the drawer's transform gadgets alike
   label?: string;
   title: string;
+  // Set on a gadget that hands off to an OS file dialog: it then carries no
+  // native tooltip while it is clickable. See the render below.
+  opensFileDialog?: boolean;
   onClick?: () => void;
   disabled?: boolean;
   // pressed-in (armed/open) state
@@ -35,6 +38,7 @@ export function Gadget({
   icon,
   label,
   title,
+  opensFileDialog = false,
   onClick,
   disabled = false,
   on = false,
@@ -47,29 +51,33 @@ export function Gadget({
         'wb-gadget' + (on ? ' wb-gadget--on' : '') + (stacked ? ' wb-gadget--stacked' : '')
       }
       type="button"
-      title={title}
+      // A gadget that opens an OS file dialog carries no native tooltip while
+      // it can be clicked. The picker takes the cursor off-page with the
+      // tooltip already up, so the browser never gets the mouseleave that would
+      // dismiss it and goes on painting it over whatever appears next — usually
+      // the requester the chosen file just opened, where it sits until clicked
+      // away. Three goes at clearing the attribute at the right instant (a
+      // frame later, on mouseleave, on mousemove) each failed, because by then
+      // the tooltip is already on screen and out of the page's hands.
+      //
+      // The visible label and the drawer head above it already say what these
+      // do, and aria-label keeps the full text for a screen reader. A disabled
+      // one keeps its tooltip: it cannot be clicked, so nothing can strand it,
+      // and its title is the only place that says why it is dim.
+      title={opensFileDialog && !disabled ? undefined : title}
       aria-label={title}
       onClick={(event): void => {
-        // Gadgets like Open/Save image synchronously trigger a native OS file
-        // dialog that steals the cursor before the button unmounts (the menu
-        // closes on mouseleave once the cursor leaves the page: see
-        // MenuGadgets.tsx's useFileOpener comment). The browser's native
-        // title-attribute tooltip isn't tied to DOM lifecycle, so it stays
-        // painted over whatever is there now. Clearing the attribute forces it
-        // to hide immediately.
+        // Most gadgets close the menu, so the button unmounts with the pointer
+        // still on it. A native tooltip is not tied to DOM lifecycle and would
+        // stay painted over the canvas, so clear the attribute while the
+        // browser can still be told to drop it. (The file gadgets carry no
+        // title at all — see the render above for why that case is beyond
+        // rescuing.)
         //
-        // Restored only once the pointer really moves over this button again.
-        // Neither of the obvious moments works: a frame later (rAF) is still
-        // while the file dialog is up, and mouseleave *is* the dialog opening,
-        // since the picker takes the cursor off-page (see useFileOpener below).
-        // Both put the title back while the cursor was parked on the button, so
-        // it armed a fresh tooltip the instant the dialog closed — and that one
-        // surfaced over the requester the chosen file had just opened.
-        //
-        // A mousemove cannot happen in that window: the cursor comes back from
-        // the picker where it left, and the button unmounts with the menu
-        // before anything moves. When the pointer does move here, the user is
-        // deliberately hovering and should get the tooltip.
+        // Restored only once the pointer really moves over this button again,
+        // not on a timer or on mouseleave: while it sits still there is nothing
+        // to show a tooltip for, and putting the title back under a parked
+        // cursor is what arms the next one.
         const button = event.currentTarget;
         button.removeAttribute('title');
         const restore = (): void => {

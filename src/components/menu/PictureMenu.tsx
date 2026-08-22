@@ -170,6 +170,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
             label="Open"
+            opensFileDialog
             title="Open a picture..."
             onClick={onOpenFile}
           />
@@ -178,6 +179,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.diskSave} scale={2} />}
             label="Save"
+            opensFileDialog
             title={saveTitle()}
             onClick={save}
           />
