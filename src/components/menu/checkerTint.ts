@@ -12,9 +12,14 @@ import { Color } from '../../types';
 // *contain* the background color, and against a flat fill a hole and a painted
 // pixel of the same color would be one shape.
 //
-// Only the brush slots tint it. Elsewhere (the load preview, the menubar fill
-// box) the checker stands for "nothing here", not "the background", and neutral
-// greys are the right answer.
+// The fill style swatch (FillStyleSettings.css) reached the same ground from
+// the other side: it dropped the checker for a flat background color, because
+// nearly all of what it checkered was the margin around the ellipse. Both
+// preview against the color they will be painted on; only this one has
+// per-pixel transparency worth marking, so only this one keeps the pattern.
+//
+// Elsewhere (the load preview, the menubar fill box) the checker stands for
+// "nothing here" rather than "the background", and neutral greys are right.
 export function checkerTint(color: Color): CSSProperties {
   // The neutral pair is #e8e8e8 against #cfcfcf, about a ninth apart. Matching
   // that, shifted away from whichever end the color sits at so the pattern
