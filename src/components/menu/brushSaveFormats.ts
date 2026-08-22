@@ -73,9 +73,15 @@ export function brushBlobMakerFor(
           palette: plainPalette(palette),
           pixels: indexed.pixels,
           transparentColor: indexed.transparentColor,
-          // The handle is the centre until there is a real one to write
-          // (docs/brush-handle.md), which is where the brush stamps today.
-          grab: { x: Math.floor(brush.width / 2), y: Math.floor(brush.heigth / 2) },
+          // Where the brush is actually held (docs/brush-handle.md), which is
+          // what DPaint wrote too — curbr.xoffs straight into the chunk
+          // (DPIO.C:250). The resting handle rather than handle(), so saving
+          // while a transform tool is armed records the brush, not the drag.
+          // Floored: GRAB is whole pixels and a centred handle is a half.
+          grab: {
+            x: Math.floor(brush.restingHandle().x),
+            y: Math.floor(brush.restingHandle().y),
+          },
         }) as BlobPart,
       ],
       { type: mime }

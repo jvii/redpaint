@@ -8,10 +8,10 @@ import {
   shearHorizontal,
   bendHorizontal,
   bendVertical,
-  mirrorCornerX,
-  mirrorCornerY,
-  rotateCorner90,
-  scaleCorner,
+  mirrorHandleX,
+  mirrorHandleY,
+  rotateHandle90,
+  scaleHandle,
 } from '../../src/algorithm/brushTransform';
 import { Point } from '../../src/types';
 import { BrushColorIndex } from '../../src/domain/BrushColorIndex';
@@ -308,14 +308,14 @@ describe('capture corner rules', () => {
 
   test('mirrors with a horizontal flip', () => {
     const corner = { x: 0, y: 2 };
-    expect(mirrorCornerX(corner, size, size)).toEqual({ x: 3, y: 2 });
-    expect(markerLandsAt(rows, corner, flipHorizontal)).toEqual(mirrorCornerX(corner, size, size));
+    expect(mirrorHandleX(corner, size, size)).toEqual({ x: 3, y: 2 });
+    expect(markerLandsAt(rows, corner, flipHorizontal)).toEqual(mirrorHandleX(corner, size, size));
   });
 
   test('mirrors with a vertical flip', () => {
     const corner = { x: 3, y: 0 };
-    expect(mirrorCornerY(corner, size, size)).toEqual({ x: 3, y: 2 });
-    expect(markerLandsAt(rows, corner, flipVertical)).toEqual(mirrorCornerY(corner, size, size));
+    expect(mirrorHandleY(corner, size, size)).toEqual({ x: 3, y: 2 });
+    expect(markerLandsAt(rows, corner, flipVertical)).toEqual(mirrorHandleY(corner, size, size));
   });
 
   test('follows the pixels through a 90 degree rotation', () => {
@@ -327,15 +327,15 @@ describe('capture corner rules', () => {
       { x: 3, y: 2 },
     ]) {
       const rotated = { width: size.height, height: size.width };
-      expect(rotateCorner90(corner, size, rotated)).toEqual(markerLandsAt(rows, corner, rotate90));
+      expect(rotateHandle90(corner, size, rotated)).toEqual(markerLandsAt(rows, corner, rotate90));
     }
   });
 
   test('scales with the picture, and stays inside it when shrinking', () => {
-    expect(scaleCorner({ x: 3, y: 2 }, size, { width: 8, height: 6 })).toEqual({ x: 6, y: 4 });
+    expect(scaleHandle({ x: 3, y: 2 }, size, { width: 8, height: 6 })).toEqual({ x: 6, y: 4 });
     // 3 of 4 into a width of 3 rounds to 2.25 -> 2, but 9 of 10 into 3 is 2.7,
     // which rounds off the end without the clamp
-    expect(scaleCorner({ x: 9, y: 0 }, { width: 10, height: 1 }, { width: 3, height: 1 })).toEqual({
+    expect(scaleHandle({ x: 9, y: 0 }, { width: 10, height: 1 }, { width: 3, height: 1 })).toEqual({
       x: 2,
       y: 0,
     });

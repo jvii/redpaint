@@ -17,7 +17,7 @@ import { Mode, usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
 import { BrushColorIndex } from '../domain/BrushColorIndex';
-import { CornerMove } from '../algorithm/brushTransform';
+import { HandleMove } from '../algorithm/brushTransform';
 import { BuiltInFamily } from '../algorithm/builtInBrushShapes';
 import { ALPHA_INDEXED, ALPHA_TRUECOLOR } from '../domain/CanvasColorIndex';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
@@ -43,12 +43,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (no Matte/Repl, never banked to Previous) even though it's a fresh object,
   // not one of the fixed registry singletons.
   public builtInFamily?: BuiltInFamily;
-  // Where the pickup drag ended, in the brush's own pixels — what the Brush
-  // Handle toggle holds the brush by when it is on (docs/brush-handle.md).
-  // Undefined for a brush with no drag to consult: one loaded from a file, or
-  // produced by a transform. Those fall back to the lower right, as DPaint's
-  // own loader does.
-  public captureCorner?: Point;
+  // Where this brush wants to be held, in its own pixels, when the Handle
+  // setting is Corner (docs/brush-handle.md): the corner its pickup drag ended
+  // at, or the GRAB point a file recorded. A file's can be any point, not only
+  // a corner. Undefined for a brush with neither — one from a PNG, or one a
+  // transform reshaped past its rule — and those fall back to the lower right.
+  public handlePoint?: Point;
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
   private brushColorIndexColorBG: BrushColorIndex;
@@ -74,7 +74,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     start: Point,
     width: number,
     height: number,
-    captureCorner?: Point
+    handlePoint?: Point
   ): CustomBrush {
     const brushColorIndex = paintingCanvasController.getBrushColorIndexFromArea(
       start,
@@ -85,7 +85,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
       throw new Error('Failed to get brush color index from area');
     }
     const brush = new CustomBrush(brushColorIndex, width, height);
-    brush.captureCorner = captureCorner;
+    brush.handlePoint = handlePoint;
     return brush;
   }
 
@@ -213,15 +213,15 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // always read the matte (source-of-truth) bitmap, never a colorized variant.
   public transform(
     fn: (index: BrushColorIndex) => BrushColorIndex,
-    moveCorner?: CornerMove
+    moveCorner?: HandleMove
   ): CustomBrush {
     const transformed = fn(this.brushColorIndexMatte);
     const brush = new CustomBrush(transformed, transformed.width, transformed.height);
     // Without a rule the corner is dropped and the lower-right fallback takes
     // over, which is what DPaint's re-centring transforms amount to here.
-    if (this.captureCorner && moveCorner) {
-      brush.captureCorner = moveCorner(
-        this.captureCorner,
+    if (this.handlePoint && moveCorner) {
+      brush.handlePoint = moveCorner(
+        this.handlePoint,
         { width: this.width, height: this.heigth },
         { width: transformed.width, height: transformed.height }
       );
@@ -238,22 +238,34 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (CURBRUSH.C:47) and never consult midHandle. They have no pickup drag to
   // derive a corner from anyway, and the point of the small ones is that the
   // pixel under the cursor is the one that gets painted.
-  // A transform drag holds the brush by the centre whatever the toggle says,
-  // and it goes back to the corner once the drag commits. The drag positions
-  // the brush by its own geometry — the bounds box and the preview are placed
-  // from the anchor — so an off-centre handle would slide the preview out of
-  // the box it is being sized inside. (DPaint anchored those drags at the
-  // lower right instead, which is the same reasoning reaching a different
-  // corner; the centre is the one that keeps the preview inside the box.)
-  public handle(): Point {
-    const centred =
-      overmind.state.brush.handleMode === 'center' ||
-      this.builtInFamily !== undefined ||
-      isBrushTransformTool(overmind.state.toolbox.selectedSelectorToolId);
-    if (centred) {
+  // Where the brush is held when nothing is reshaping it. This is the handle
+  // in its own right — what a file's GRAB records — as against handle() below,
+  // which also answers for the middle of a transform drag.
+  //
+  // Built-in brushes are always centred, whatever the setting says: DPaint's
+  // pens set their own offset unconditionally in FixUpPen (CURBRUSH.C:47) and
+  // never consult midHandle. They have no pickup drag to derive a point from
+  // anyway, and the point of the small ones is that the pixel under the cursor
+  // is the one that gets painted.
+  public restingHandle(): Point {
+    if (overmind.state.brush.handleMode === 'center' || this.builtInFamily !== undefined) {
       return { x: this.width / 2, y: this.heigth / 2 };
     }
-    return this.captureCorner ?? { x: this.width - 1, y: this.heigth - 1 };
+    return this.handlePoint ?? { x: this.width - 1, y: this.heigth - 1 };
+  }
+
+  // A transform drag holds the brush by the centre whatever the setting says,
+  // and it goes back to the resting handle once the drag commits. The drag
+  // positions the brush by its own geometry — the bounds box and the preview
+  // are placed from the anchor — so an off-centre handle would slide the
+  // preview out of the box it is being sized inside. (DPaint anchored those
+  // drags at the lower right instead, which is the same reasoning reaching a
+  // different corner; the centre is the one that keeps the preview inside.)
+  public handle(): Point {
+    if (isBrushTransformTool(overmind.state.toolbox.selectedSelectorToolId)) {
+      return { x: this.width / 2, y: this.heigth / 2 };
+    }
+    return this.restingHandle();
   }
 
   private adjustHandle(point: Point): Point {

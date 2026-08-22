@@ -18,11 +18,11 @@ import {
   bendHorizontal,
   bendVertical,
   BendControls,
-  CornerMove,
-  mirrorCornerX,
-  mirrorCornerY,
-  rotateCorner90,
-  scaleCorner,
+  HandleMove,
+  mirrorHandleX,
+  mirrorHandleY,
+  rotateHandle90,
+  scaleHandle,
 } from '../../algorithm/brushTransform';
 
 // DPaint switches away to (dotted) freehand when a built-in brush is picked
@@ -125,7 +125,7 @@ const MAX_BRUSH_DIMENSION = 4096;
 const transformBrush = (
   context: Context,
   fn: (index: BrushColorIndex) => BrushColorIndex,
-  moveCorner?: CornerMove
+  moveCorner?: HandleMove
 ): void => {
   const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush) || isBuiltInBrush(brush)) {
@@ -157,19 +157,19 @@ export const restoreOriginalBrush = (context: Context): void => {
 // capture corner (docs/brush-handle.md); shear, bend and free rotation do not,
 // and drop it.
 export const flipBrushHorizontal = (context: Context): void => {
-  transformBrush(context, flipHorizontal, mirrorCornerX);
+  transformBrush(context, flipHorizontal, mirrorHandleX);
 };
 
 export const flipBrushVertical = (context: Context): void => {
-  transformBrush(context, flipVertical, mirrorCornerY);
+  transformBrush(context, flipVertical, mirrorHandleY);
 };
 
 export const rotateBrush90 = (context: Context): void => {
-  transformBrush(context, rotate90, rotateCorner90);
+  transformBrush(context, rotate90, rotateHandle90);
 };
 
 export const halveBrush = (context: Context): void => {
-  transformBrush(context, (b) => resize(b, b.width / 2, b.height / 2), scaleCorner);
+  transformBrush(context, (b) => resize(b, b.width / 2, b.height / 2), scaleHandle);
 };
 
 const doubleBrushBy = (context: Context, scaleX: number, scaleY: number): void => {
@@ -180,7 +180,7 @@ const doubleBrushBy = (context: Context, scaleX: number, scaleY: number): void =
   if (brush.width * scaleX > MAX_BRUSH_DIMENSION || brush.heigth * scaleY > MAX_BRUSH_DIMENSION) {
     return;
   }
-  transformBrush(context, (b) => resize(b, b.width * scaleX, b.height * scaleY), scaleCorner);
+  transformBrush(context, (b) => resize(b, b.width * scaleX, b.height * scaleY), scaleHandle);
 };
 
 export const doubleBrush = (context: Context): void => {
@@ -198,7 +198,7 @@ export const doubleBrushVertical = (context: Context): void => {
 // Commits of the interactive drags (Stretch/ShearBrushTool): the preview
 // frames were temporary brushes, so these are the drags' only real transform.
 export const stretchBrushTo = (context: Context, size: { width: number; height: number }): void => {
-  transformBrush(context, (b) => resize(b, size.width, size.height), scaleCorner);
+  transformBrush(context, (b) => resize(b, size.width, size.height), scaleHandle);
 };
 
 // Commits the right-click drag-resize of a built-in brush

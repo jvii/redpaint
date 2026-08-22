@@ -3,7 +3,7 @@ import './BrushLoadDialog.css';
 import { useActions, useAppState } from '../../overmind';
 import { peekPendingBrush, takePendingBrush } from '../../canvas/pendingBrush';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
-import { pendingBrushPalette } from '../../canvas/pendingBrush';
+import { pendingBrushHandle, pendingBrushPalette } from '../../canvas/pendingBrush';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { distinctOpaqueColorsByFrequency, plainPalette } from '../../algorithm/imageColors';
@@ -138,7 +138,12 @@ function BrushLoadDialogOpen(): JSX.Element {
       );
     }
 
-    brushRecall.setCustom(new CustomBrush(colorIndex, image.width, image.height));
+    const brush = new CustomBrush(colorIndex, image.width, image.height);
+    // What the file said it was held by (docs/brush-handle.md). Absent — a PNG,
+    // or an IFF written without a GRAB — the lower-right fallback applies, and
+    // either way the Handle setting still decides whether it is used at all.
+    brush.handlePoint = pendingBrushHandle() ?? undefined;
+    brushRecall.setCustom(brush);
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
     actions.brush.refreshPreviousBrushSlot();

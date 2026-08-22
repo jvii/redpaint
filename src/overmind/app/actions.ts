@@ -214,11 +214,15 @@ export const beginBrushIlbmLoad = async (context: Context, file: File): Promise<
       rgba[i * 4 + 3] = 255;
     }
     const imageData = new ImageData(rgba, image.width, image.height);
-    setPendingBrush(imageData, {
-      palette: image.palette,
-      pixels: image.pixels,
-      transparentColor: image.transparentColor,
-    });
+    setPendingBrush(
+      imageData,
+      {
+        palette: image.palette,
+        pixels: image.pixels,
+        transparentColor: image.transparentColor,
+      },
+      image.grab
+    );
     context.state.app.brushLoadInfo = {
       width: image.width,
       height: image.height,

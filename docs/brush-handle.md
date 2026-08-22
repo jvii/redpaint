@@ -1,9 +1,7 @@
 # Brush handle — design
 
-Status: steps 1–4 built — the setting, the capture corner, `adjustHandle`
-reading them, and a rule per transform. Step 5, reading `GRAB` back on load, is
-not. Wanted for its own sake, and the reason a `GRAB` chunk would have anything
-to carry (docs/brush-save.md).
+Status: built. The setting, the held point, `adjustHandle` reading them, a rule
+per transform, and `GRAB` written and read back (docs/brush-save.md).
 
 Before it, the handle was always the centre: `CustomBrush.adjustHandle` was
 `point - size/2`, computed on the spot and stored nowhere.
@@ -82,7 +80,14 @@ does, and the apology in `ROTATE.C` says why nothing better was obvious.
 A brush read from a file has no capture drag to derive from. DPaint I takes the
 `GRAB` chunk when there is one, and otherwise `xoffs = BytesPerRow*4`,
 `yoffs = Rows/2` (`DPIO.C:307`) — the right edge, vertically centred, not the
-middle. Consistent with the lower-right default the toggle falls back on.
+middle. Consistent with the lower-right default the toggle falls back on, which
+is what is used here for a file with no GRAB at all (a PNG, or an ILBM written
+without one).
+
+Note what the loaded point does *not* do: DPaint held a loaded brush at its
+GRAB whatever `midHandle` said, because its handle was a stored offset. Here
+the setting still decides, and GRAB only answers "held where" when it is set to
+Corner.
 
 ## Shape
 
@@ -104,4 +109,9 @@ middle. Consistent with the lower-right default the toggle falls back on.
    a deliberate divergence: DPaint re-centred there, but Handle should keep
    meaning "a corner". A modal drag holds the brush by the centre throughout
    and returns to the corner on commit, as above.
-5. Only then is `GRAB` worth reading back on load.
+5. ✅ `GRAB` carries the handle between sessions. Saving writes
+   `restingHandle()` floored — the resting one, so saving while a transform
+   tool is armed records the brush rather than the drag, and floored because
+   GRAB is whole pixels and a centred handle is a half. Loading puts it on the
+   brush as its held point, which is why that field is a point and not a
+   corner: a file can record any pixel.

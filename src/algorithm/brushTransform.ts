@@ -253,25 +253,25 @@ export function resize(
 // free rotation. Here a transform with no rule drops the corner instead, and
 // the fallback takes over — so Handle keeps meaning "a corner" rather than
 // silently reverting to the centre.
-export type CornerMove = (
+export type HandleMove = (
   corner: Point,
   from: { width: number; height: number },
   to: { width: number; height: number }
 ) => Point;
 
-export const mirrorCornerX: CornerMove = (corner, from) => ({
+export const mirrorHandleX: HandleMove = (corner, from) => ({
   x: from.width - 1 - corner.x,
   y: corner.y,
 });
 
-export const mirrorCornerY: CornerMove = (corner, from) => ({
+export const mirrorHandleY: HandleMove = (corner, from) => ({
   x: corner.x,
   y: from.height - 1 - corner.y,
 });
 
 // Matches rotate90's visual clockwise mapping: the old top-left corner becomes
 // the new top-right one.
-export const rotateCorner90: CornerMove = (corner, from) => ({
+export const rotateHandle90: HandleMove = (corner, from) => ({
   x: from.height - 1 - corner.y,
   y: corner.x,
 });
@@ -280,7 +280,7 @@ export const rotateCorner90: CornerMove = (corner, from) => ({
 // it — DPaint's MulDiv in STRETCH.C's FixOffs. Clamped because shrinking rounds
 // the far corner past the last pixel: 9 of 10 into a width of 3 is 2.7, and 3
 // is off the end.
-export const scaleCorner: CornerMove = (corner, from, to) => ({
+export const scaleHandle: HandleMove = (corner, from, to) => ({
   x: Math.min(to.width - 1, Math.round((corner.x * to.width) / from.width)),
   y: Math.min(to.height - 1, Math.round((corner.y * to.height) / from.height)),
 });
