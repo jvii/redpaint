@@ -42,6 +42,30 @@
    rule below outranks it (two class selectors to its one), so a hovered cell
    still goes flat orange. */
 
+/* An occupied cell's ground is the picture's background color, which can be
+   black — and then neighbouring cells, and the strip's own black border, merge
+   into one dark block. A paper ring inside the border keeps every cell's edges
+   legible against any ground: the same job .retro-frame's mat does for a
+   preview whose own ground may be any color in the palette (index.css).
+   The thumbnail insets by the ring's width so it cannot paint over it —
+   box-shadow: inset draws above the background but below content. */
+.brush-slot__cell.is-occupied {
+  box-shadow: inset 0 0 0 2px var(--paper);
+}
+
+.brush-slot__cell.is-occupied .brush-slot__thumbnail {
+  max-width: calc(100% - 4px);
+  max-height: calc(100% - 4px);
+}
+
+/* the hover overlay is a bar across the top, so it crosses the ring: inset it
+   to match rather than letting it break the frame it sits inside */
+.brush-slot__cell.is-occupied .brush-slot__overlay {
+  top: 2px;
+  left: 2px;
+  right: 2px;
+}
+
 .brush-slot__cell:hover {
   background-color: var(--wb-orange);
   background-image: none;
