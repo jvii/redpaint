@@ -55,12 +55,22 @@ export function Gadget({
         // closes on mouseleave once the cursor leaves the page: see
         // MenuGadgets.tsx's useFileOpener comment). The browser's native
         // title-attribute tooltip isn't tied to DOM lifecycle, so it stays
-        // painted over the canvas until the next real mouse move. Clearing (and
-        // restoring) the attribute forces it to hide immediately.
+        // painted over whatever is there now. Clearing the attribute forces it
+        // to hide immediately.
+        //
+        // Restored on the way out rather than on a timer. A frame later is
+        // still while the file dialog is up and the cursor is parked on the
+        // button, so the title came back, armed a fresh tooltip the moment the
+        // dialog closed, and that one surfaced over the requester the file had
+        // just opened. Nothing can arm while the pointer has not moved off.
         const button = event.currentTarget;
         button.removeAttribute('title');
+        const restore = (): void => {
+          button.setAttribute('title', title);
+          button.removeEventListener('mouseleave', restore);
+        };
+        button.addEventListener('mouseleave', restore);
         onClick?.();
-        requestAnimationFrame(() => button.setAttribute('title', title));
       }}
       disabled={disabled}
     >
