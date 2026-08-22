@@ -97,6 +97,12 @@ toggle keeps telling the truth, and one click still overrides. That is the
 price of a derived handle — DPaint had no such setting to contradict, because
 its handle was a stored offset and `midHandle` was only ever read at pickup.
 
+A brush kept in a slot, or in Previous, keeps its held **point** — recall
+clones rather than transforms, and a clone has reshaped nothing, so unlike a
+transform with no rule it carries the point over. What a slot does *not* keep
+is the **mode**: Center/Corner is one app-wide setting, so recalling a brush
+holds it whichever way the setting stands at the time.
+
 **Capturing from the canvas puts it back to Center.** A capture has no opinion
 about centre-versus-corner — it records which corner, not whether to use one —
 so it should not inherit a setting that a loaded file may have imposed rather

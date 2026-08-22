@@ -211,6 +211,17 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // in via brushRecall.setTransformed, which keeps lastChanged-based texture
   // caching correct and the pre-transform original recallable. Transforms
   // always read the matte (source-of-truth) bitmap, never a colorized variant.
+  // An independent copy: same pixels, same handle. A clone has not reshaped
+  // anything, so unlike a transform with no rule it keeps the held point rather
+  // than dropping it — recalling a brush from a slot must give back the brush
+  // that was stored, handle included (docs/brush-handle.md).
+  public clone(): CustomBrush {
+    return this.transform(
+      (matte) => matte,
+      (point) => point
+    );
+  }
+
   public transform(
     fn: (index: BrushColorIndex) => BrushColorIndex,
     moveCorner?: HandleMove

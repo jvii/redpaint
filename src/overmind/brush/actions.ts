@@ -303,7 +303,7 @@ export const recallPreviousBrush = (context: Context): void => {
   // A copy, independent of the stored reference, as BrushSlots.recall.
   // setCustom then banks the brush this replaces, so Previous is a two-way
   // swap.
-  const brush = previous.transform((matte) => matte);
+  const brush = previous.clone();
   activateCustomBrush(context, brush);
 };
 
