@@ -18,6 +18,11 @@ function copyRanges(ranges: (PaletteRange | null)[]): (PaletteRange | null)[] {
 }
 
 export const open = (context: Context): void => {
+  // Here rather than at each call site: the menu panel sits above the editor
+  // and is translucent, so an editor opened from behind it is both unreachable
+  // and tinted blue. The `p` key could do that from an open menu, and any
+  // future caller could too.
+  context.actions.app.closeMenu();
   context.state.paletteEditor.editedColorId = context.state.palette.foregroundColorId;
   context.state.paletteEditor.paletteSnapshot = copyPalette(context.state.palette.palette);
   context.state.paletteEditor.rangesSnapshot = copyRanges(context.state.palette.ranges);

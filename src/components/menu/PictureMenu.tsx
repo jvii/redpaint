@@ -345,10 +345,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             stacked
             shortcut={shortcutCap('p')}
             title="Open the palette editor"
-            onClick={(): void => {
-              actions.app.closeMenu();
-              actions.paletteEditor.open();
-            }}
+            onClick={(): void => actions.paletteEditor.open()}
           />
           <Gadget
             icon={<BrushPaletteIcon />}

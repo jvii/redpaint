@@ -341,10 +341,12 @@ const paletteGlyphBox = (size: number): { viewBox: string; width: number; height
 export function EditPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
-      {/* tip, shoulders, butt — symmetric about its own 45° axis, so the two
-          long edges stay parallel at this size instead of drifting a pixel */}
-      <path d="M14 13 L19 12 L26 5 L22 1 L15 8 Z" />
-      <line x1="21" y1="10" x2="17" y2="6" />
+      {/* Laid along a shallow axis rather than 45°: the box is 40 by 24, so a
+          pencil steep enough to look like one runs out of height long before it
+          runs out of width. Points computed off that axis so the two long edges
+          stay parallel — a pixel of drift at this size reads as a bent pencil. */}
+      <path d="M10 13 L16 14 L31 6 L29 1 L13 8 Z" />
+      <line x1="19" y1="13" x2="16" y2="7" />
       <PaletteStrip />
     </svg>
   );
