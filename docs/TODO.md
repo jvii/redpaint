@@ -4,6 +4,7 @@ Living backlog for redpaint. Roughly ordered within each section; nothing here
 is scheduled. Design details live in the linked docs where they exist.
 
 What each DPaint version added, and which of it is in scope: docs/dpaint-versions.md.
+What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.md.
 
 ## Near-term
 
@@ -165,6 +166,22 @@ What each DPaint version added, and which of it is in scope: docs/dpaint-version
       in Picture's Color Control as well, applied to the picture; those exist
       too, and take an undo point each rather than banking for Restore.
       See docs/brush-palette.md.
+
+- [ ] **Stencil.** Lock chosen colors so painting cannot touch them:
+      make/free/reverse/toggle, plus Lock Foreground. A system rather than a
+      menu item — it constrains fills, and in DPaint III brush pickup as well.
+      The largest DPaint II gap (docs/dpaint2-parity.md).
+
+- [ ] **Fix / Free Background.** The stencil's companion: freeze the picture as
+      a background painting leaves alone.
+
+- [ ] **Spacing requester.** Right-click the line or dotted freehand tool for
+      splat spacing, absolute (pixels between) or relative (splats per line).
+      Small, and the dotted freehand tool already wants it.
+
+- [ ] **Perspective.** A 3D grid with its own spacing and movement keys, brushes
+      drawn in perspective. The last of the three real DPaint II gaps: large,
+      self-contained, and the least reached for.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
