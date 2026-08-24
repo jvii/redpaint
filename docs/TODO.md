@@ -3,6 +3,8 @@
 Living backlog for redpaint. Roughly ordered within each section; nothing here
 is scheduled. Design details live in the linked docs where they exist.
 
+What each DPaint version added, and which of it is in scope: docs/dpaint-versions.md.
+
 ## Near-term
 
 - [x] **Palette editor: separate editing from painting-color selection.** The
