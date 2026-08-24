@@ -47,9 +47,12 @@ or a different program.
   register cycling through many colors.
 - ◐ **Five gradient kinds** in Fill Type. We have gradient fills with dither and
   jitter.
-- ○ **Antialias**, three levels. Tracked as a mode beside Smooth
-  (docs/effects.md).
-- ○ **Process** and **Translucency** for tinting on the fly.
+- ○ **Antialias**, three levels (None/Low/High, Alt-/). Not a paint mode: it
+  sits in the Effect menu with Stencil and Perspective and stacks with whichever
+  mode is painting, so it cannot be a ninth entry in MODE_ORDER
+  (docs/text-tool.md).
+- ○ **Process** and **Translucency** for tinting on the fly — Effect menu
+  settings too, and active alongside a mode rather than instead of one.
 - ○ **Mix** brush mode — brush color mixes with what is on screen.
 - ○ **Stencil by painting** the mask with any tool; Tolerance in HAM.
 - ○ **Animation Control Panel**; add/copy/delete frames; saved "moves";
