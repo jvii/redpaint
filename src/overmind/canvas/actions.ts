@@ -11,7 +11,7 @@ import {
   extractExactPalette,
   medianCutPalette,
 } from '../../algorithm/quantize';
-import { countDistinctColors } from '../../algorithm/imageColors';
+import { countDistinctColors, paletteEquals } from '../../algorithm/imageColors';
 import { createPalette } from '../../components/palette/util';
 import { CropRect } from '../crop/state';
 import { Color } from '../../types';
@@ -397,3 +397,75 @@ function combinedRGBA(buffers: Uint8ClampedArray[]): Uint8ClampedArray {
   }
   return combined;
 }
+
+// DPaint II's Picture > Color Control trio, the picture-wide twins of the brush
+// ones in the Brush drawer (docs/brush-palette.md). Two differences follow from
+// the subject rather than the operation: a picture has no transparency, so
+// Bg -> Fg is a plain color substitution rather than a filling of holes; and
+// these change pixels, so each takes an undo point where the brush versions
+// bank for Restore.
+//
+// The current page only, as every drawing operation is. The Spare is a separate
+// picture, not part of this one.
+const editCurrentPage = (
+  context: Context,
+  edit: (colorIndex: CanvasColorIndex) => CanvasColorIndex
+): void => {
+  const current = paintingCanvasController.getCanvasColorIndex();
+  if (!current) {
+    return;
+  }
+  paintingCanvasController.setCanvasColorIndex(edit(current));
+  // setCanvasColorIndex only uploads the texture; nothing draws until asked, as
+  // the undo path does after its own restore (components/canvas/hooks.tsx).
+  paintingCanvasController.render();
+  context.actions.undo.setUndoPoint();
+};
+
+export const pictureBackgroundToForeground = (context: Context): void => {
+  const background = Number(context.state.palette.backgroundColorId);
+  const foreground = Number(context.state.palette.foregroundColorId);
+  if (background === foreground) {
+    return;
+  }
+  editCurrentPage(context, (c) => c.withColorReplaced(background, foreground));
+};
+
+export const pictureSwapBackgroundAndForeground = (context: Context): void => {
+  const background = Number(context.state.palette.backgroundColorId);
+  const foreground = Number(context.state.palette.foregroundColorId);
+  if (background === foreground) {
+    return;
+  }
+  editCurrentPage(context, (c) => c.withColorsSwapped(background, foreground));
+};
+
+// Re-index the picture from the palette it was painted under into the current
+// one, so it keeps its colors rather than its slots — the other way out of a
+// palette change from Restore, which puts the old palette back instead.
+//
+// The source is picturePalette, what the pixels mean, which the DP2 manual
+// describes as "the colors it used in the original palette". Not the palette
+// Restore remembers: that one is only written by Use Brush and Default, and the
+// manual's own example is a hand edit, which writes neither.
+//
+// conformedTo with remapAll does the work; it is what a screen conform already
+// uses to bring a picture onto a rebuilt palette. Plain nearest, not the greedy
+// exclusive assignment the brush remap uses: a picture has far more colors than
+// slots to be exclusive about.
+export const remapPictureToPalette = (context: Context): void => {
+  const from = plainPalette(context.state.palette.picturePalette);
+  const to = plainPalette(Object.values(context.state.palette.palette));
+  if (paletteEquals(from, to)) {
+    return;
+  }
+  const nearest = createNearestMapper(to);
+  // Before the edit, because editCurrentPage takes the undo point: set after,
+  // the entry would record the re-indexed pixels as still meaning the palette
+  // they were just moved off, and a redo onto it would report a mismatch that
+  // is not there. (Re-indexing is what makes the pixels mean the new palette —
+  // DPaint overwrites LoadBrColors at the end of the brush remap for the same
+  // reason.)
+  context.state.palette.picturePalette = to;
+  editCurrentPage(context, (c) => c.conformedTo(from, to, false, true, nearest));
+};

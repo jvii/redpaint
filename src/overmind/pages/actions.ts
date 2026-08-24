@@ -175,8 +175,10 @@ export const restoreOffScreenPage = (
   const history = new UndoBuffer();
   const entry: UndoEntry = {
     // The palette is the document's, shared by every page, and is already
-    // installed by the time this runs.
+    // installed by the time this runs. A restored page's pixels were written
+    // against it, so the two agree.
     palette: plainPalette(Object.values(context.state.palette.palette)),
+    sourcePalette: plainPalette(Object.values(context.state.palette.palette)),
     width: restored.width,
     height: restored.height,
     packed: restored.packed,
@@ -245,7 +247,11 @@ function currentEntry(context: Context): UndoEntry | null {
   }
   const colorIndex = paintingCanvasController.getCanvasColorIndex();
   return colorIndex
-    ? createUndoEntry(colorIndex, plainPalette(Object.values(context.state.palette.palette)))
+    ? createUndoEntry(
+        colorIndex,
+        plainPalette(Object.values(context.state.palette.palette)),
+        plainPalette(context.state.palette.picturePalette)
+      )
     : null;
 }
 
@@ -265,7 +271,10 @@ function blankPage(context: Context): Page {
     height,
     Number(backgroundColorId)
   );
-  const entry = createUndoEntry(blank, plainPalette(Object.values(context.state.palette.palette)));
+  // A blank page is painted in one palette color, so it means whatever palette
+  // is current whatever the rest of the document means.
+  const palette = plainPalette(Object.values(context.state.palette.palette));
+  const entry = createUndoEntry(blank, palette, palette);
   return {
     history,
     currentIndex: history.push(entry, null),

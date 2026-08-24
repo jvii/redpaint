@@ -1,16 +1,24 @@
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { Color } from '../../types';
 
-// One committed state of the document: the pixels and the palette they index
-// into. The palette rides along (a few hundred bytes beside a megabyte
-// snapshot) because a depth reduction or a rebuilt palette would leave old
-// indices pointing at missing or different colors.
+// One committed state of the document: the pixels and the two palettes that
+// describe them. Both ride along (a few hundred bytes each beside a megabyte
+// snapshot) — `palette` because a depth reduction or a rebuilt palette would
+// leave old indices pointing at missing or different colors, and
+// `sourcePalette` because Remap's whole job is to notice when the two differ
+// (docs/brush-palette.md), so an undo that restored one without the other would
+// leave the picture mismatched while the record said otherwise.
 //
 // Bytes rather than a CanvasColorIndex so the raster can be held packed: one
 // byte per pixel instead of the texture's four whenever the picture is fully
 // indexed, which is four times the history for the same memory.
 export type UndoEntry = {
+  // What was current when the snapshot was taken: what the pixels display as.
   palette: Color[];
+  // What the pixels *mean* — the palette they were last indexed against. Equal
+  // to `palette` except while something has moved the palette out from under
+  // the picture without re-indexing it: a hand edit, Use Brush, Default.
+  sourcePalette: Color[];
   width: number;
   height: number;
   // One byte per pixel (indices) when true, the raw RGBA texture bytes when
@@ -23,12 +31,16 @@ export type UndoEntry = {
 
 // Packs if the picture allows it. toIndexedPixels returns null the moment any
 // pixel is true colour, which is both the test and the conversion.
-export function createUndoEntry(colorIndex: CanvasColorIndex, palette: Color[]): UndoEntry {
+export function createUndoEntry(
+  colorIndex: CanvasColorIndex,
+  palette: Color[],
+  sourcePalette: Color[]
+): UndoEntry {
   const indices = colorIndex.toIndexedPixels();
   const { width, height } = colorIndex;
   return indices
-    ? { palette, width, height, packed: true, pixels: indices }
-    : { palette, width, height, packed: false, pixels: colorIndex.indexArray };
+    ? { palette, sourcePalette, width, height, packed: true, pixels: indices }
+    : { palette, sourcePalette, width, height, packed: false, pixels: colorIndex.indexArray };
 }
 
 // Rebuilds the raster the canvas can take. The allocation and pass this costs

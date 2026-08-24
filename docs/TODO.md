@@ -159,7 +159,10 @@ is scheduled. Design details live in the linked docs where they exist.
       from the brush's own palette into the current one via remapColorsGreedy,
       the same greedy assignment brush loading uses, and is disabled while the
       two already agree. All pure, in algorithm/brushRecolor.ts, and all banked
-      for Restore like the reshaping transforms. See docs/brush-palette.md.
+      for Restore like the reshaping transforms. DPaint II puts the same three
+      in Picture's Color Control as well, applied to the picture; those exist
+      too, and take an undo point each rather than banking for Restore.
+      See docs/brush-palette.md.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with

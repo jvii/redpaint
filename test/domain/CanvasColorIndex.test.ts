@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { CanvasColorIndex } from '../../src/domain/CanvasColorIndex';
+import {
+  CanvasColorIndex,
+  ALPHA_INDEXED,
+  ALPHA_TRUECOLOR,
+} from '../../src/domain/CanvasColorIndex';
 
 describe('toIndexedPixels', () => {
   test('is the inverse of fromIndexedPixels (top-down rows, 0-based indices)', () => {
@@ -185,5 +189,54 @@ describe('croppedTo', () => {
     expect(grid(source().croppedTo({ x: 0, y: 0, width: 3, height: 3 }, 1))).toEqual(
       grid(source())
     );
+  });
+});
+
+// One row of stored (0-based) indices, for the two color operations below.
+function rowFrom(indices: number[]): CanvasColorIndex {
+  const array = new Uint8Array(indices.length * 4);
+  indices.forEach((index, i) => {
+    array[i * 4] = index;
+    array[i * 4 + 3] = ALPHA_INDEXED;
+  });
+  return new CanvasColorIndex(indices.length, 1, array);
+}
+
+function indicesOf(canvas: CanvasColorIndex): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < canvas.indexArray.length; i += 4) {
+    out.push(canvas.indexArray[i]);
+  }
+  return out;
+}
+
+describe('withColorReplaced', () => {
+  test('repaints one color number as another, leaving the rest', () => {
+    // color numbers are 1-based: 1 -> 4 is stored index 0 -> 3
+    expect(indicesOf(rowFrom([0, 1, 0, 2]).withColorReplaced(1, 4))).toEqual([3, 1, 3, 2]);
+  });
+
+  test('leaves true-color pixels alone, having no index to match', () => {
+    const canvas = rowFrom([0, 0]);
+    canvas.indexArray[7] = ALPHA_TRUECOLOR;
+    expect(indicesOf(canvas.withColorReplaced(1, 4))).toEqual([3, 0]);
+  });
+
+  test('does not touch the source', () => {
+    const canvas = rowFrom([0, 1]);
+    canvas.withColorReplaced(1, 4);
+    expect(indicesOf(canvas)).toEqual([0, 1]);
+  });
+});
+
+describe('withColorsSwapped', () => {
+  test('exchanges two color numbers wherever either appears', () => {
+    // numbers 1 and 3 are stored indices 0 and 2
+    expect(indicesOf(rowFrom([0, 1, 2, 0]).withColorsSwapped(1, 3))).toEqual([2, 1, 0, 2]);
+  });
+
+  test('is its own inverse', () => {
+    const there = rowFrom([0, 1, 2, 0]).withColorsSwapped(1, 3);
+    expect(indicesOf(there.withColorsSwapped(1, 3))).toEqual([0, 1, 2, 0]);
   });
 });

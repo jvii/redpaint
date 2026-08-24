@@ -55,6 +55,17 @@ export type State = {
   // cyclingOn is written and read only by toggleCycling, so it looks redundant
   // with CycleDriver's rafId. Kept on purpose: it is what a cycling indicator
   // would bind to. Drop it with that idea, not as dead-code cleanup.
+  // The palette the picture's pixels were last indexed against — what they
+  // *mean*, as against `palette`, which is what they currently display as. The
+  // two differ exactly while something has moved the palette without
+  // re-indexing the picture (a hand edit, Use Brush, Default), which is the
+  // mismatch Remap exists to close (docs/brush-palette.md).
+  //
+  // Per document rather than per page: every page indexes into the one palette,
+  // and every path that re-indexes one re-indexes the rest. It rides in the
+  // undo entry all the same, or an undo would restore pixels while leaving this
+  // describing the ones it replaced.
+  picturePalette: Color[];
   // What Use Brush Palette displaced, so Restore Palette can put it back
   // (docs/brush-palette.md). DPaint's prevColors, which its own loader sets
   // too; here only the one action writes it.
@@ -113,6 +124,7 @@ export const state: State = {
   backgroundColor: derived((state: State) => state.palette[state.backgroundColorId]),
   foregroundPaintColor: derived((state: State): PaintColor => foregroundPaintColorOf(state)),
   backgroundPaintColor: derived((state: State): PaintColor => backgroundPaintColorOf(state)),
+  picturePalette: defaultPaletteColors(),
   previousPalette: null,
   cyclingOn: false,
   cycleOffsets: [0, 0, 0, 0, 0, 0],

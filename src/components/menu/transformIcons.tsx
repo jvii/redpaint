@@ -384,3 +384,31 @@ export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+// The palette strip again, with the revert arrow the Restore glyph uses: back
+// to the built-in palette for this depth.
+export function DefaultPaletteIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <polyline points="8,3 4,7 8,11" />
+      <path d="M4 7h9a3 3 0 0 1 3 3v2" />
+      <rect x="2" y="16" width="20" height="6" />
+      <line x1="7" y1="16" x2="7" y2="22" />
+      <line x1="12" y1="16" x2="12" y2="22" />
+      <line x1="17" y1="16" x2="17" y2="22" />
+    </svg>
+  );
+}
+
+// Two arrows chasing each other round: colors rotating through a range, which
+// is the one thing in this group that animates rather than replaces.
+export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <polyline points="9,2 5,6 9,10" />
+      <path d="M5 6h7a6 6 0 0 1 6 6v1" />
+      <polyline points="15,22 19,18 15,14" />
+      <path d="M19 18h-7a6 6 0 0 1-6-6v-1" />
+    </svg>
+  );
+}

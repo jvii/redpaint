@@ -304,6 +304,42 @@ export class CanvasColorIndex {
     return new CanvasColorIndex(this.width, this.height, dest);
   }
 
+  // DPaint II's Picture > Color Control > Bg -> Fg: every pixel holding one
+  // color number now holds another. Unlike the brush operation of the same
+  // name there is no transparency involved — a picture has no holes, so this is
+  // a plain color substitution over the raster.
+  //
+  // True-color pixels are left alone throughout: they hold no index to compare.
+  withColorReplaced(fromColorNumber: number, toColorNumber: number): CanvasColorIndex {
+    const from = fromColorNumber - 1; // stored 0-based
+    const to = toColorNumber - 1;
+    const dest = new Uint8Array(this.indexArray);
+    for (let i = 0; i < dest.length; i += 4) {
+      if (dest[i + 3] !== ALPHA_TRUECOLOR && dest[i] === from) {
+        dest[i] = to;
+      }
+    }
+    return new CanvasColorIndex(this.width, this.height, dest);
+  }
+
+  // Bg <-> Fg: the two color numbers change places wherever either appears.
+  withColorsSwapped(aColorNumber: number, bColorNumber: number): CanvasColorIndex {
+    const a = aColorNumber - 1;
+    const b = bColorNumber - 1;
+    const dest = new Uint8Array(this.indexArray);
+    for (let i = 0; i < dest.length; i += 4) {
+      if (dest[i + 3] === ALPHA_TRUECOLOR) {
+        continue;
+      }
+      if (dest[i] === a) {
+        dest[i] = b;
+      } else if (dest[i] === b) {
+        dest[i] = a;
+      }
+    }
+    return new CanvasColorIndex(this.width, this.height, dest);
+  }
+
   // The canvas resolved to displayable RGBA pixels (indexed pixels through the
   // palette, true-color pixels directly): the input for extracting an optimal
   // palette from the picture itself. Row order is the stored one; palette

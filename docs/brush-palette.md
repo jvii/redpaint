@@ -104,6 +104,84 @@ A new picture (right-click CLR) clears `previousPalette` along with the brushes
 themselves: what Use Brush displaced belonged to the outgoing document, and the
 brush that would have justified restoring it is gone too.
 
+## The rest of Picture ▸ Color Control
+
+DPaint's submenu is five items (`MENU.C:102`), and all five exist here now:
+
+| DPaint | here |
+| --- | --- |
+| Palette   p | the palette editor |
+| Use Brush Palette | Picture ▸ Palette ▸ Use Brush |
+| Restore Palette | Picture ▸ Palette ▸ Restore |
+| Default Palette | Picture ▸ Palette ▸ Default |
+| Cycle   TAB | Picture ▸ Palette ▸ Cycling, and Tab |
+
+**Default** is `defPals[curDepth]` — the built-in palette for however many colors
+the screen has, which is `createPalette(n)` here. Its `DefaultPalette()` is
+`InitPalette()` then `LoadCMap`, and `InitPalette` is `GetColors(prevColors)`, so
+it stashes what it replaces and Restore undoes it. Same rule a brush palette
+follows, for the same reason: it moves the palette without touching a pixel, so
+no undo point records it. Disabled when the palette already is the default.
+
+DPaint II adds **Remap**, **Bg -> Fg** and **Bg <-> Fg** here too — the same
+three as its Brush ▸ Change Color, applied to the picture instead of the brush.
+Both trios exist here, in a Color cluster in each drawer, sharing their glyphs
+because they are the same operation on a different subject. Two things follow
+from the subject rather than the operation:
+
+- A picture has no transparency, so **Bg to Fg** is a plain color substitution
+  over the raster rather than a filling of holes (`withColorReplaced` /
+  `withColorsSwapped` on `CanvasColorIndex`). Both are disabled when the
+  foreground and background are the same color.
+- These change pixels, so each takes an **undo point**, where the brush versions
+  bank the pre-change brush for Restore.
+
+Picture **Remap** re-indexes from `palette.picturePalette` into the current one,
+so the picture keeps its colors rather than its slots. The DP2 manual describes
+that source as "the colors it used in the original palette", and gives the
+motivating case as "if you have modified the palette since loading the picture"
+— a hand edit. So it is deliberately *not* `previousPalette`, which Restore
+reads: that one is written only by Use Brush and Default, and a hand edit writes
+neither, which would leave the gadget dim in the manual's own example.
+
+`picturePalette` is what the pixels **mean**, against `palette` being what they
+currently display as. It follows the palette by default — `replacePalette` syncs
+it — and the three operations that deliberately part the two put it back
+afterwards: Use Brush, Default, Restore. A hand edit never comes through
+`replacePalette` at all, editing slots in place, so it parts them by doing
+nothing. Following by default rather than being set at each of the several
+places a palette is installed means a path added later is right without knowing
+about any of this.
+
+Where a fresh document gets one: a new picture goes through `replacePalette`
+with the defaults, and the initial state seeds the same, so the record follows.
+A blank canvas is one background color anyway — it means whatever palette is
+current, and no mismatch is possible. An image load that builds a new palette
+syncs through `replacePalette` too; the two modes that replace no palette
+(remap into the current one, or load true-color pixels) call
+`syncPicturePalette` instead, or the record would go on describing the document
+that was open before.
+
+**It rides in the undo entry** beside the palette, as `sourcePalette`. Without
+that, undoing a Remap would restore the old pixels while leaving the record
+saying they had been re-indexed — the picture mismatched again and the gadget
+claiming otherwise. Per document rather than per page, since every page indexes
+into the one palette and every path that re-indexes one re-indexes the rest.
+
+Remap goes through `conformedTo` with `remapAll`, which a screen conform already
+uses, and plain nearest rather than the brush remap's greedy exclusive
+assignment: a picture has far more colors than there are slots to be exclusive
+about. The current page only, as every drawing operation is.
+
+The manual adds that "Bg -> Fg and Bg <-> Fg are special cases of Remap", which
+they are: all three are color mappings over the raster, those two with a
+hand-written mapping of one or two entries rather than a computed one.
+
+**Cycling** is labelled that rather than DPaint's "Cycle" because the mode row is
+always on screen and already has a Cycle — the paint mode, a different thing.
+"Color Cycling" is what the palette editor's legend calls this
+(docs/color-cycling.md); Cycling is as much of it as a gadget label fits.
+
 ## Brush ▸ Change Color
 
 DPaint II's submenu, three items; DPaint I has the first and third

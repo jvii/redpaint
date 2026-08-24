@@ -7,7 +7,7 @@ import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../algorithm/color';
 import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
 import { cycleDriver, refreshCyclePalettes } from '../../canvas/CycleDriver';
-import { plainPalette } from '../../algorithm/imageColors';
+import { plainPalette, paletteEquals } from '../../algorithm/imageColors';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -49,7 +49,9 @@ export const useBrushPalette = (context: Context): void => {
     return;
   }
   context.actions.palette.rememberPreviousPalette();
-  context.actions.palette.replacePalette(brush.palette);
+  keepingPicturePalette(context, () => {
+    context.actions.palette.replacePalette(brush.palette);
+  });
   pushPaletteToGl();
 };
 
@@ -63,6 +65,28 @@ export const useBrushPalette = (context: Context): void => {
 // it, so a load or a conform is already one undo away. Loading a brush changes
 // no pixels and takes no undo point, which makes it the one wholesale palette
 // replacement with no other way back.
+// DPaint's Default Palette, the item below Restore in the same submenu:
+// defPals[curDepth], the built-in palette for however many colors the screen
+// has. Its DefaultPalette() is InitPalette() then LoadCMap, and InitPalette is
+// GetColors(prevColors) — so it stashes what it replaces and Restore undoes it,
+// which is the same rule a brush palette follows here and for the same reason:
+// it moves the palette without touching a pixel, so it takes no undo point and
+// nothing else can put it back.
+export const defaultPalette = (context: Context): void => {
+  // The raw map, not the paletteArray derived: an action must not read one
+  // (test/overmind/derivedsInActions.test.ts).
+  const current = plainPalette(Object.values(context.state.palette.palette));
+  const defaults = plainPalette(Object.values(createPalette(current.length)));
+  if (paletteEquals(defaults, current)) {
+    return;
+  }
+  context.actions.palette.rememberPreviousPalette();
+  keepingPicturePalette(context, () => {
+    context.actions.palette.replacePalette(defaults);
+  });
+  pushPaletteToGl();
+};
+
 export const rememberPreviousPalette = (context: Context): void => {
   context.state.palette.previousPalette = plainPalette(
     Object.values(context.state.palette.palette)
@@ -77,9 +101,31 @@ export const restorePalette = (context: Context): void => {
   if (!previous) {
     return;
   }
-  context.actions.palette.replacePalette(previous);
+  keepingPicturePalette(context, () => {
+    context.actions.palette.replacePalette(previous);
+  });
   pushPaletteToGl();
 };
+
+// The mirror of those three: pixels freshly indexed against the palette that is
+// already current, so what they mean has changed without the palette moving.
+// An image load that remaps into the current palette, or that loads true-color
+// pixels, replaces no palette and so would otherwise leave this describing the
+// document that was open before.
+export const syncPicturePalette = (context: Context): void => {
+  context.state.palette.picturePalette = plainPalette(
+    Object.values(context.state.palette.palette)
+  );
+};
+
+// The three that move the palette without re-indexing the picture. What the
+// pixels mean is unchanged by any of them, so it survives the replacement —
+// that difference is exactly what Remap reads.
+function keepingPicturePalette(context: Context, change: () => void): void {
+  const meaning = context.state.palette.picturePalette;
+  change();
+  context.state.palette.picturePalette = meaning;
+}
 
 // The GL palette textures do not watch Overmind, so a palette swapped out from
 // under the picture has to be handed to them (the same push the brush load
@@ -95,6 +141,13 @@ export const replacePalette = (context: Context, colors: Color[]): void => {
     palette[String(i + 1)] = { ...color };
   });
   context.state.palette.palette = palette;
+  // The picture's pixels mean the palette that is current, unless something
+  // deliberately parts the two — Use Brush, Default and Restore each put this
+  // back afterwards, and a hand edit never comes through here at all, editing
+  // slots in place. Following by default rather than being updated at each of
+  // the several places a palette gets installed, so a path added later is right
+  // without having to know about this.
+  context.state.palette.picturePalette = plainPalette(colors);
   clampColorReferences(context, colors.length);
 };
 

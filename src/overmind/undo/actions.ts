@@ -26,7 +26,8 @@ export const setUndoPoint = (context: Context): void => {
   // (docs/gotchas.md, "Overmind").
   const entry = createUndoEntry(
     colorIndex,
-    plainPalette(Object.values(context.state.palette.palette))
+    plainPalette(Object.values(context.state.palette.palette)),
+    plainPalette(context.state.palette.picturePalette)
   );
   // push owns both the array and the resulting index: it discards the redo
   // future and evicts old entries to stay inside the memory budget, either of
@@ -114,6 +115,13 @@ function restoreEntryState(context: Context): void {
         ),
       entry.palette
     );
+  }
+  // Last, because replacePalette above syncs this to whatever it installs. The
+  // entry's own record is the truth: it is what the restored pixels mean, which
+  // is not the same as what they display as while a hand edit or a Use Brush
+  // sits between the two (docs/brush-palette.md).
+  if (entry) {
+    context.state.palette.picturePalette = entry.sourcePalette;
   }
 }
 

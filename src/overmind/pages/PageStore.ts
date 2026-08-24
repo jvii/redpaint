@@ -120,7 +120,9 @@ export function conformParkedPages(
     }
     page.history.replaceItem(
       page.currentIndex,
-      createUndoEntry(conform(toCanvasColorIndex(entry)), palette)
+      // Conforming re-indexes the pixels into `palette`, so that is now both
+      // what they show as and what they mean.
+      createUndoEntry(conform(toCanvasColorIndex(entry)), palette, palette)
     );
   });
 }

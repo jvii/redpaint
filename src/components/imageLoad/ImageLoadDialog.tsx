@@ -150,6 +150,13 @@ function ImageLoadDialogOpen(): JSX.Element {
       colorIndex = CanvasColorIndex.fromIndexedPixels(image.width, image.height, indices);
     }
 
+    // Whatever the mode, the pixels now on their way in are indexed against the
+    // palette that is current, so that is what they mean (docs/brush-palette.md).
+    // The 'new' branch's replacePalette has already said so; the other two
+    // replace no palette and would otherwise leave the record describing the
+    // document that was open before.
+    actions.palette.syncPicturePalette();
+
     // the canvas resizes to the image; the resolution effect uploads the queued
     // content once the resize commits, and (as a fresh document) resets the
     // undo history to it

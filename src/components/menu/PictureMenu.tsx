@@ -3,8 +3,13 @@ import { useActions, useAppState } from '../../overmind';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import {
+  BgToFgIcon,
   BrushPaletteIcon,
   CopyToSpareIcon,
+  CycleIcon,
+  DefaultPaletteIcon,
+  RemapIcon,
+  SwapColorsIcon,
   CropIcon,
   DeletePageIcon,
   MergeBackIcon,
@@ -16,6 +21,7 @@ import { brushRecall } from '../../brush/BrushRecall';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Color } from '../../types';
 import { paletteEquals } from '../../algorithm/imageColors';
+import { createPalette } from '../palette/util';
 import { shortcutCap } from '../ui/shortcutCap';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
@@ -73,6 +79,18 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   const actions = useActions();
   const paletteState = brushPaletteState(state.palette);
   const restoreState = restorePaletteState(state.palette);
+  // Remap only means something while the picture's pixels and the palette
+  // showing them disagree — after a hand edit, a Use Brush or a Default.
+  const pictureMatchesPalette = paletteEquals(
+    state.palette.picturePalette,
+    state.palette.paletteArray
+  );
+  // Both color swaps are no-ops with one color selected twice.
+  const sameColors = state.palette.foregroundColorId === state.palette.backgroundColorId;
+  const isDefaultPalette = paletteEquals(
+    Object.values(createPalette(state.palette.paletteArray.length)),
+    state.palette.paletteArray
+  );
 
   // What a save offers as the name: whatever the document is already called, or
   // the same word the tab title uses for one that is not called anything. The
@@ -348,13 +366,99 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             // palette. But the tooltip should not need that to be true.)
             title={
               restoreState === 'differs'
-                ? 'Go back to the palette that was in use before a brush\u2019s palette replaced it, dropping any palette changes made since'
+                ? 'Go back to the palette that was in use before Use Brush or Default replaced it, dropping any palette changes made since'
                 : restoreState === 'matches'
                   ? 'That palette is already back'
-                  : 'No brush palette has replaced one yet'
+                  : 'No palette has been replaced yet'
             }
             onClick={(): void => {
               actions.palette.restorePalette();
+              actions.app.closeMenu();
+            }}
+          />
+          <Gadget
+            icon={<DefaultPaletteIcon />}
+            label="Default"
+            stacked
+            disabled={isDefaultPalette}
+            title={
+              isDefaultPalette
+                ? 'This is already the default palette for its number of colors'
+                : 'Back to the built-in palette for this number of colors. Restore puts the current one back'
+            }
+            onClick={(): void => {
+              actions.palette.defaultPalette();
+              actions.app.closeMenu();
+            }}
+          />
+          {/* The only item here that animates rather than replaces, and the
+              only one that was keyboard-only: DPaint lists it in this submenu
+              too, "Cycle TAB". Labelled Cycling, not Cycle, because the mode
+              row above is always on screen and already has a Cycle — a paint
+              mode, a different thing entirely. "Color Cycling" is what the
+              palette editor's own legend calls this, and Cycling is as much of
+              that as a gadget label fits. */}
+          <Gadget
+            icon={<CycleIcon />}
+            label="Cycling"
+            stacked
+            shortcut={shortcutCap('Tab')}
+            on={state.palette.cyclingOn}
+            title="Animate the palette ranges, rotating each range's colors. Display only — it paints nothing"
+            onClick={(): void => {
+              actions.palette.toggleCycling();
+              actions.app.closeMenu();
+            }}
+          />
+        </GadgetCluster>
+        {/* The picture-wide twins of the Brush drawer's Color cluster, and
+            DPaint II's own additions to this submenu. Same glyphs, since it is
+            the same operation on a different subject — but each changes pixels,
+            so each is one undo step, where the brush versions bank for
+            Restore. */}
+        <GadgetCluster head="Color">
+          <Gadget
+            icon={<RemapIcon />}
+            label="Remap"
+            stacked
+            disabled={pictureMatchesPalette}
+            title={
+              pictureMatchesPalette
+                ? 'The picture is already indexed against this palette'
+                : 'Re-index the picture into the current palette, so it keeps its colors rather than its slots'
+            }
+            onClick={(): void => {
+              actions.canvas.remapPictureToPalette();
+              actions.app.closeMenu();
+            }}
+          />
+          <Gadget
+            icon={<BgToFgIcon />}
+            label="Bg to Fg"
+            stacked
+            disabled={sameColors}
+            title={
+              sameColors
+                ? 'The foreground and background colors are the same'
+                : 'Repaint every background-colored pixel in the foreground color'
+            }
+            onClick={(): void => {
+              actions.canvas.pictureBackgroundToForeground();
+              actions.app.closeMenu();
+            }}
+          />
+          <Gadget
+            icon={<SwapColorsIcon />}
+            label="Swap"
+            stacked
+            disabled={sameColors}
+            title={
+              sameColors
+                ? 'The foreground and background colors are the same'
+                : 'Exchange the foreground and background colors throughout the picture'
+            }
+            onClick={(): void => {
+              actions.canvas.pictureSwapBackgroundAndForeground();
               actions.app.closeMenu();
             }}
           />
