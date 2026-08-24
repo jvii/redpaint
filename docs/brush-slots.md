@@ -1,5 +1,9 @@
 # Brush Recall & Slots
 
+The strip is headed **Stored Brushes** in the UI; "slots" is the word for them
+throughout the code and this note, since that is what they are — a fixed number
+of places, curated by hand, as against the automatic Previous beside them.
+
 How getting a previous brush back should work: the automatic layer (what the
 app remembers for you) and the deliberate layer (brush slots you curate).
 Companion to docs/brush-transforms.md, which owns the transform snapshot.

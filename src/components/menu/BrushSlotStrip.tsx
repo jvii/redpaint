@@ -44,7 +44,7 @@ export function BrushSlotStrip(): JSX.Element {
   };
 
   return (
-    <GadgetCluster head="Slots">
+    <GadgetCluster head="Stored Brushes">
       <div className="brush-slot-strip">
         {state.brush.slots.map((slot, index) => (
           <div className="brush-slot" key={index}>

@@ -171,7 +171,12 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
       {/* every transform gets its own row, separate from the file
           gadgets above — it's a distinct kind of action */}
       <div className="drawer-menu__row">
-        <GadgetCluster head="Size">
+        {/* Resize, not Size: every other head on this row names what it does
+            to the brush — Flip, Rotate, Bend, Recolor — and a noun among them
+            read as a property rather than an action. (The Picture drawer keeps
+            Size: its neighbours there are Spare and Palette, so there is no
+            verb convention for it to break.) */}
+        <GadgetCluster head="Resize">
           <Gadget
             icon={<StretchIcon />}
             label="Stretch"
