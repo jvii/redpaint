@@ -111,6 +111,10 @@ export type State = {
   pixelAspect: { x: number; y: number };
   scrollFocusPoint: Point | null;
   zoomFocusPoint: Point | null;
+  // The area the drawing pane sits in, which is the pane itself unless the zoom
+  // view is open and taking part of it. What a canvas "fitted to the window"
+  // means, as against viewportSize, which is what the pane happens to be now.
+  paneAreaSize: { width: number; height: number };
   // Mirror of MainCanvas's displayScale (CSS px per buffer px, per axis),
   // computed there from the live pane size and kept locally for its own render.
   // Mirrored so other UI (the Fill Style preview) can see the canvas's current
@@ -150,10 +154,19 @@ export type PendingScreenFormat = {
 // Shared by the two gestures that mean "a fresh page at Native": the new-page
 // half of CLR, and switching to Native without keeping the picture.
 export function nativeCanvasSize(canvas: {
+  paneAreaSize: { width: number; height: number };
   viewportSize: { width: number; height: number };
   resolution: { width: number; height: number };
 }): { width: number; height: number } {
-  const { viewportSize, resolution } = canvas;
+  const { paneAreaSize, viewportSize, resolution } = canvas;
+  // The whole area, not the drawing pane: with the zoom view open the pane is
+  // the half of it left over, and a canvas fitted to that is half a window
+  // wide the moment the zoom view closes — which resizing the canvas does
+  // (setResolution). Everything that asks this means "a canvas for the
+  // window", and the window is the area.
+  if (paneAreaSize.width > 0 && paneAreaSize.height > 0) {
+    return paneAreaSize;
+  }
   return viewportSize.width > 0 && viewportSize.height > 0 ? viewportSize : resolution;
 }
 
@@ -180,6 +193,7 @@ export const state: State = {
   ),
   scrollFocusPoint: null,
   zoomFocusPoint: null,
+  paneAreaSize: { width: 0, height: 0 },
   displayScale: { x: 1, y: 1 },
   viewportSize: { width: 0, height: 0 },
   hasTrueColorPixels: false,

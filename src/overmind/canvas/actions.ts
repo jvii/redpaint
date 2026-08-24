@@ -167,6 +167,14 @@ export const setViewportSize = (
   context.state.canvas.viewportSize = size;
 };
 
+// The area the pane sits in, tracked alongside it: see paneAreaSize's comment.
+export const setPaneAreaSize = (
+  context: Context,
+  size: { width: number; height: number }
+): void => {
+  context.state.canvas.paneAreaSize = size;
+};
+
 // The one automatic sizing: a Native canvas fitted to the drawing pane at
 // startup. MainCanvas may call it more than once while the chrome settles, so
 // it resets the history rather than appending: two baseline entries read as

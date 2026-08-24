@@ -4,6 +4,17 @@ Things that cost hours to find and are invisible in the code. The code carries a
 one-line note and a pointer here; the detail lives here so it is out of the way
 of reading the code, and the history of how each was found is in `git log`.
 
+## The pane is not the area when the zoom view is open
+
+The drawing pane is `flex-grow: 1` beside the zoom view's sized basis, so with
+the zoom view open it is only part of the area it sits in. Anything sizing a
+canvas "to the window" wants the area, not the pane: closing the zoom view hands
+the rest straight back, and resizing the canvas is itself what closes it
+(`setResolution`), so a canvas fitted to the pane is half a window wide by the
+time it exists. That is `canvas.paneAreaSize`, tracked beside `viewportSize`,
+and what `nativeCanvasSize` answers with — right-clicking CLR with the zoom view
+open used to produce a half-width picture.
+
 ## Fitting the canvas to its pane
 
 `MainCanvas.paneSize` measures the drawing pane so a canvas can be sized to fill

@@ -81,10 +81,23 @@ export function MainCanvas(): JSX.Element {
   // above returns early there). Feeds the Canvas Size requester and the fit.
   useEffect((): (() => void) => {
     const pane = canvasDivRef.current;
-    const measure = (): void => actions.canvas.setViewportSize(paneSize(pane, dpr));
+    // Its parent as well as itself. The pane is flex-grow: 1 beside the zoom
+    // view's sized basis, so with the zoom view open it is only part of the
+    // area — and a canvas fitted to the window wants the area, since closing
+    // the zoom view hands the rest straight back (see paneAreaSize).
+    const area = pane.parentElement;
+    const measure = (): void => {
+      actions.canvas.setViewportSize(paneSize(pane, dpr));
+      if (area) {
+        actions.canvas.setPaneAreaSize(paneSize(area, dpr));
+      }
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(pane);
+    if (area) {
+      observer.observe(area);
+    }
     return (): void => observer.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dpr]);
