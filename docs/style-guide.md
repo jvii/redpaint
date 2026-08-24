@@ -297,6 +297,20 @@ fat-pixel one.
 The built-in-brush dots in the toolbox are neither register: they are
 literal pictures of the pixels they paint — content, not iconography.
 
+### Where an icon lives
+
+**Inline, unless a CSS property demands a URL.** An icon whose color changes
+with state has to be inline: `currentColor` is what follows hover, disabled and
+pressed, and a CSS `background-image` cannot inherit it. The toolbox sprite
+(`src/resources/toolbar.svg`) predates this and pays for it — 21 of its entries
+are `-active-view` duplicates, second copies of the same drawing in another
+color.
+
+The exception is genuine: `cursor: url()` takes a URL and nothing else, which
+is why `cursorCrossHair.svg` is a file. Pixel art is a third case, kept as ASCII
+maps (`pixelIcons.tsx`), a text grid being the natural way to edit it — the same
+form the built-in brush shapes use.
+
 ## Text on controls, per control type
 
 Consistency is judged within each control type, not across them:

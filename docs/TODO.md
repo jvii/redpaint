@@ -176,6 +176,17 @@ is scheduled. Design details live in the linked docs where they exist.
       the tool's use, its halves, its right-click and its keys. This is what
       made the shortcuts discoverable from the UI at all; the full set and its
       reasoning is `docs/keyboard.md`.
+- [ ] **Move the toolbox icons inline.** `src/resources/toolbar.svg` is a
+      sprite of 74 symbols behind 37 CSS `background: url(...)` rules, and 21 of
+      those entries are `-active-view` duplicates: second copies of the same
+      drawing in another color, because a CSS background cannot inherit
+      `currentColor`. Inline components get hover, disabled and pressed from one
+      drawing, which is why nothing in the menu needed a variant.
+
+      About 37 components replacing 74 symbols. Mechanical, but large enough to
+      want its own pass rather than riding along with something else. The rule
+      it would settle is in docs/style-guide.md ("Where an icon lives").
+
 - [ ] **Menu final design.** The pull-down menu got a cleanup pass
       (bottom-aligned, spacebar toggle) but the final look/structure is undecided.
 - [ ] **`Restore…` requester**, for reaching a backup that is not this tab's
