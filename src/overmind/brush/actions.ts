@@ -6,6 +6,12 @@ import { createSizedBuiltInBrush } from '../../brush/BuiltInBrushFactory';
 import { brushRecall } from '../../brush/BrushRecall';
 import { brushSlots } from '../../brush/BrushSlots';
 import { renderBrushThumbnail } from '../../brush/brushThumbnail';
+import { plainPalette } from '../../algorithm/imageColors';
+import {
+  backgroundToForeground,
+  swapBackgroundAndForeground,
+  remapToPalette,
+} from '../../algorithm/brushRecolor';
 import { DrawingToolId } from '../toolbox/state';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import {
@@ -145,6 +151,36 @@ export const restoreOriginalBrush = (context: Context): void => {
   brushRecall.restore(original); // drops the snapshot: nothing left to restore
   context.state.brush.hasOriginalBrush = false;
   context.actions.brush.setMode(context.state.brush.mode);
+};
+
+// DPaint's Brush > Change Color (docs/brush-palette.md). Recolors rather than
+// reshapes, but goes through transformBrush all the same: it banks the
+// pre-change brush for Restore, which is what these need too.
+export const brushBackgroundToForeground = (context: Context): void => {
+  const foreground = Number(context.state.palette.foregroundColorId);
+  transformBrush(context, (b) => backgroundToForeground(b, foreground));
+};
+
+export const brushSwapBackgroundAndForeground = (context: Context): void => {
+  const foreground = Number(context.state.palette.foregroundColorId);
+  transformBrush(context, (b) => swapBackgroundAndForeground(b, foreground));
+};
+
+// Re-index the brush into the current palette, so it keeps its colors rather
+// than its slots, and adopt that palette as its own — DPaint overwrites
+// LoadBrColors the same way at the end of BrRemapCols.
+export const remapBrushToPalette = (context: Context): void => {
+  const brush = brushRecall.current;
+  if (!(brush instanceof CustomBrush) || !brush.palette) {
+    return;
+  }
+  const from = brush.palette;
+  const to = plainPalette(Object.values(context.state.palette.palette));
+  transformBrush(context, (b) => remapToPalette(b, from, to));
+  const remapped = brushRecall.current;
+  if (remapped instanceof CustomBrush) {
+    remapped.palette = to;
+  }
 };
 
 export const flipBrushHorizontal = (context: Context): void => {

@@ -337,3 +337,50 @@ export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+// The Brush drawer's Change Color trio. All three say "these pixels become
+// those", so all three are built from a pair of brush squares.
+
+// Bg to Fg: the hollow square (holes) becomes a filled one.
+export function BgToFgIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="8" width="7" height="8" />
+      <line x1="10" y1="12" x2="14" y2="12" />
+      <polyline points="12,10 14,12 12,14" />
+      <rect x="15" y="8" width="7" height="8" />
+      <line x1="15" y1="16" x2="22" y2="9" />
+      <line x1="15" y1="12" x2="18" y2="9" />
+      <line x1="19" y1="16" x2="22" y2="13" />
+    </svg>
+  );
+}
+
+// Bg swapped with Fg: the same pair, each going the other way.
+export function SwapColorsIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="7" width="6" height="10" />
+      <rect x="16" y="7" width="6" height="10" />
+      <line x1="9" y1="10" x2="15" y2="10" />
+      <polyline points="13,8 15,10 13,12" />
+      <line x1="15" y1="14" x2="9" y2="14" />
+      <polyline points="11,12 9,14 11,16" />
+    </svg>
+  );
+}
+
+// Remap: the brush coming down into the palette strip it is re-indexed against.
+export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="8" y="2" width="8" height="6" />
+      <line x1="12" y1="8" x2="12" y2="13" />
+      <polyline points="9,10 12,13 15,10" />
+      <rect x="2" y="16" width="20" height="6" />
+      <line x1="7" y1="16" x2="7" y2="22" />
+      <line x1="12" y1="16" x2="12" y2="22" />
+      <line x1="17" y1="16" x2="17" y2="22" />
+    </svg>
+  );
+}

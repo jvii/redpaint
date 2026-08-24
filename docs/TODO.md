@@ -153,18 +153,13 @@ is scheduled. Design details live in the linked docs where they exist.
       are DPaint's Color control pair built on it. Design, and what the DPaint
       source does at each point: docs/brush-palette.md.
 
-- [ ] **Brush ▸ Change Color.** DPaint II's submenu, three items: Bg -> Fg
-      (fill the brush's transparent pixels with the foreground color — the
-      opposite end from Color mode, which recolors the opaque ones), Bg <-> Fg
-      (the swap, DPaint II only), and Remap. The first two are straightforward
-      against BrushColorIndex, whose holes are ALPHA_TRANSPARENT pixels with
-      transparentColorNumber remembering what they were made from.
-
-      Remap became buildable with the brush palette above: re-index from
-      brush.palette into the current one via remapColorsGreedy, which is
-      already ported and already used by the load requester. Same operation the
-      requester offers, applied to a brush already in hand. See
-      docs/brush-palette.md.
+- [x] **Brush ▸ Change Color** — DPaint II's three: Bg to Fg (fill the brush's
+      transparent pixels with the foreground color, the opposite end from Color
+      mode, which recolors the opaque ones), Swap, and Remap. Remap re-indexes
+      from the brush's own palette into the current one via remapColorsGreedy,
+      the same greedy assignment brush loading uses, and is disabled while the
+      two already agree. All pure, in algorithm/brushRecolor.ts, and all banked
+      for Restore like the reshaping transforms. See docs/brush-palette.md.
 
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with

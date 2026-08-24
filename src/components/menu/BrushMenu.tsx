@@ -5,6 +5,7 @@ import { RetroToggle } from '../ui/RetroToggle';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushRecall } from '../../brush/BrushRecall';
 import { isBuiltInBrush, HandleMode } from '../../overmind/brush/state';
+import { paletteEquals } from '../../algorithm/imageColors';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { BrushTransformToolId } from '../../overmind/toolbox/actions';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
@@ -23,6 +24,9 @@ import {
   BendHIcon,
   BendVIcon,
   RestoreIcon,
+  BgToFgIcon,
+  SwapColorsIcon,
+  RemapIcon,
 } from './transformIcons';
 import { saveFileAs } from './saveAsPng';
 import { beginSaveAsPrompt } from './pendingSaveAs';
@@ -71,6 +75,15 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   // with a tooltip that doesn't say why
   const transformTitle = (enabledTitle: string): string =>
     usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
+  // Remap only means something while the brush's palette and the picture's
+  // disagree, which is the same three-way answer Picture's Use Brush gives.
+  const brush = brushRecall.current;
+  const remapState =
+    !(brush instanceof CustomBrush) || !brush.palette
+      ? 'none'
+      : paletteEquals(brush.palette, state.palette.paletteArray)
+        ? 'matches'
+        : 'differs';
 
   // Always through the requester, unlike a picture's Save: a brush has no file
   // it came from, so there is never an answer to repeat (docs/brush-save.md).
@@ -274,6 +287,48 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             shortcut={shortcutCap('B')}
             disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
             onClick={instant(actions.brush.restoreOriginalBrush)}
+          />
+        </GadgetCluster>
+        {/* DPaint's Brush > Change Color (docs/brush-palette.md). Recolors
+            rather than reshapes, but belongs on this row all the same: like
+            every transform it is custom-brush-only, it banks the brush for
+            Restore, and it is something you do *to* the brush in hand. */}
+        <GadgetCluster head="Color">
+          <Gadget
+            icon={<BgToFgIcon />}
+            label="Bg to Fg"
+            stacked
+            title={transformTitle(
+              "Fill the brush's transparent pixels with the foreground color, leaving it solid"
+            )}
+            disabled={usingBuiltInBrush}
+            onClick={instant(actions.brush.brushBackgroundToForeground)}
+          />
+          <Gadget
+            icon={<SwapColorsIcon />}
+            label="Swap"
+            stacked
+            title={transformTitle(
+              "Swap the brush's transparent pixels and its foreground-colored ones"
+            )}
+            disabled={usingBuiltInBrush}
+            onClick={instant(actions.brush.brushSwapBackgroundAndForeground)}
+          />
+          <Gadget
+            icon={<RemapIcon />}
+            label="Remap"
+            stacked
+            title={
+              usingBuiltInBrush
+                ? 'Cannot transform a built-in brush'
+                : remapState === 'differs'
+                  ? 'Re-index the brush into the current palette, so it keeps its colors rather than its slots'
+                  : remapState === 'matches'
+                    ? 'The brush is already indexed against this palette'
+                    : 'The current brush carries no palette to remap from'
+            }
+            disabled={usingBuiltInBrush || remapState !== 'differs'}
+            onClick={instant(actions.brush.remapBrushToPalette)}
           />
         </GadgetCluster>
         {/* a mode rather than an action, and the only one in this row — it

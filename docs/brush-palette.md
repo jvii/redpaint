@@ -1,7 +1,7 @@
 # The palette a brush was made under — design
 
-Status: the storage and DPaint's Picture ▸ Color control pair are built. Its
-Brush ▸ Change Color submenu is not (see "Not built" below).
+Status: built — the storage, DPaint's Picture ▸ Color control pair, and its
+Brush ▸ Change Color submenu.
 
 ## Why a brush needs one at all
 
@@ -104,22 +104,33 @@ A new picture (right-click CLR) clears `previousPalette` along with the brushes
 themselves: what Use Brush displaced belonged to the outgoing document, and the
 brush that would have justified restoring it is gone too.
 
-## Not built
+## Brush ▸ Change Color
 
-DPaint's **Brush ▸ Change Color** submenu, three items in DPaint II and two in
-DPaint I (`MENU.C:207` has only the first and third):
+DPaint II's submenu, three items; DPaint I has the first and third
+(`MENU.C:207`). All in `algorithm/brushRecolor.ts`, pure, and all routed through
+`transformBrush` so they bank the pre-change brush for Restore, as the reshaping
+transforms do.
 
-- **Bg -> Fg** (`BrBgToFg`, `BRXFORM.C:77`) —
-  `BMMapColor(bm, bm, curxpc, FgPen)` masks every pixel holding the brush's
-  transparent color and paints it in the foreground pen, then rebuilds the
-  mask. The brush comes back opaque with its holes filled in FG. Note this is
-  the opposite end from Color mode, which recolors the *opaque* pixels.
-- **Bg <-> Fg** — the swap, DPaint II only.
-- **Remap** — now that the palette is stored, this is buildable as DPaint has
-  it: re-index the brush from `brush.palette` into the current one via
-  `remapColorsGreedy` (already ported, `algorithm/quantize.ts`, and already used
-  by the load requester), then adopt the current palette as the brush's.
+A brush's holes and its background color are the same pixels — capture tags
+every pixel holding the background color as transparent and zeroes the index,
+which is what DPaint's mask against `curxpc` amounts to — so "the background
+color" means the holes throughout.
 
-The first two are straightforward against `BrushColorIndex`: holes are
-`ALPHA_TRANSPARENT` pixels with the index zeroed, and `transparentColorNumber`
-remembers what they were made from.
+- **Bg to Fg** (`BrBgToFg`, `BRXFORM.C:77`) — paints the holes in the foreground
+  color, leaving a brush with none. The opposite end from Color mode, which
+  recolors the *opaque* pixels and leaves the holes alone.
+- **Swap** (DPaint II's Bg <-> Fg) — holes take the foreground color and the
+  foreground-colored pixels become holes. Its own inverse, and it renames the
+  transparent color to the one that just made the holes.
+- **Remap** (`BrRemapCols`, `REMAP.C:159`) — re-index from `brush.palette` into
+  the current one, so the brush keeps its colors rather than its slots, then
+  adopt the current palette as the brush's, exactly as DPaint overwrites
+  `LoadBrColors` at the end. Uses `remapColorsGreedy`, the port of DPaint's own
+  `used`-bitmask assignment that brush loading already goes through, weighted by
+  how much of the brush each color covers so a one-pixel color cannot take the
+  slot a dominant one wants.
+
+Remap is disabled while the brush's palette and the picture's already agree,
+the same three-way answer Use Brush gives — after a load they always do, and it
+could only be a no-op.
+
