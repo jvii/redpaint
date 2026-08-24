@@ -275,21 +275,6 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             onClick={armTransform('brushBendVerticalTool')}
           />
         </GadgetCluster>
-        {/* strictly "undo a transform" — disabled on a built-in (nothing to
-            undo there; getting back to a custom brush is Previous's job) */}
-        <GadgetCluster>
-          <Gadget
-            icon={<RestoreIcon />}
-            label="Restore"
-            stacked
-            title={
-              usingBuiltInBrush ? 'Cannot restore a built-in brush' : 'Restore original brush — B'
-            }
-            shortcut={shortcutCap('B')}
-            disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
-            onClick={instant(actions.brush.restoreOriginalBrush)}
-          />
-        </GadgetCluster>
         {/* DPaint's Brush > Change Color (docs/brush-palette.md). Recolors
             rather than reshapes, but belongs on this row all the same: like
             every transform it is custom-brush-only, it banks the brush for
@@ -307,7 +292,9 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             icon={<BgToFgIcon />}
             label={
               <>
-                Bg<LabelArrow />Fg
+                Bg
+                <LabelArrow />
+                Fg
               </>
             }
             stacked
@@ -321,7 +308,9 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             icon={<SwapColorsIcon />}
             label={
               <>
-                Bg<LabelArrow both />Fg
+                Bg
+                <LabelArrow both />
+                Fg
               </>
             }
             stacked
@@ -346,6 +335,24 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             }
             disabled={usingBuiltInBrush || remapState !== 'differs'}
             onClick={instant(actions.brush.remapBrushToPalette)}
+          />
+        </GadgetCluster>
+        {/* Undoes any of the above, recolors included: they all go through
+            transformBrush, which banks the brush on the first change in a run.
+            Last in the row for that reason — everything to its left is
+            something it takes back. Disabled on a built-in (nothing to undo
+            there; getting back to a custom brush is Previous's job). */}
+        <GadgetCluster>
+          <Gadget
+            icon={<RestoreIcon />}
+            label="Restore"
+            stacked
+            title={
+              usingBuiltInBrush ? 'Cannot restore a built-in brush' : 'Restore original brush — B'
+            }
+            shortcut={shortcutCap('B')}
+            disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
+            onClick={instant(actions.brush.restoreOriginalBrush)}
           />
         </GadgetCluster>
         {/* a mode rather than an action, and the only one in this row — it
