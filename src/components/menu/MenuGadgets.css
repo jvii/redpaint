@@ -61,6 +61,16 @@
   font-size: 16px;
 }
 
+/* The drawn arrow inside a label (transformIcons.tsx's LabelArrow). Lifted off
+   the baseline so it reads across the caps: the letters beside it have
+   descenders, so anything centred on the line as a whole sits under them. */
+.wb-gadget__arrow {
+  vertical-align: 3px;
+  /* More room on the head side: the arrowhead is a wider mass than the tail, so
+     equal gaps leave the letter after it looking crowded. */
+  margin: 0 5px 0 2px;
+}
+
 /* stacked variant (the transform gadgets): icon above the label, centered.
    Taller than the base gadget height, and every stacked gadget takes the same
    height so labels stay aligned across Size / Flip / Rotate / Bend.

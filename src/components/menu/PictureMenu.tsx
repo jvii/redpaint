@@ -7,7 +7,7 @@ import {
   BrushPaletteIcon,
   CopyToSpareIcon,
   CycleIcon,
-  DefaultPaletteIcon,
+  LabelArrow,
   RemapIcon,
   SwapColorsIcon,
   CropIcon,
@@ -377,7 +377,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             }}
           />
           <Gadget
-            icon={<DefaultPaletteIcon />}
+            icon={<BrushPaletteIcon />}
             label="Default"
             stacked
             disabled={isDefaultPalette}
@@ -418,23 +418,14 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             Restore. */}
         <GadgetCluster head="Color">
           <Gadget
-            icon={<RemapIcon />}
-            label="Remap"
-            stacked
-            disabled={pictureMatchesPalette}
-            title={
-              pictureMatchesPalette
-                ? 'The picture is already indexed against this palette'
-                : 'Re-index the picture into the current palette, so it keeps its colors rather than its slots'
-            }
-            onClick={(): void => {
-              actions.canvas.remapPictureToPalette();
-              actions.app.closeMenu();
-            }}
-          />
-          <Gadget
             icon={<BgToFgIcon />}
-            label="Bg to Fg"
+            label={
+              <>
+                Bg
+                <LabelArrow />
+                Fg
+              </>
+            }
             stacked
             disabled={sameColors}
             title={
@@ -449,7 +440,13 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           />
           <Gadget
             icon={<SwapColorsIcon />}
-            label="Swap"
+            label={
+              <>
+                Bg
+                <LabelArrow both />
+                Fg
+              </>
+            }
             stacked
             disabled={sameColors}
             title={
@@ -459,6 +456,21 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             }
             onClick={(): void => {
               actions.canvas.pictureSwapBackgroundAndForeground();
+              actions.app.closeMenu();
+            }}
+          />
+          <Gadget
+            icon={<RemapIcon />}
+            label="Remap"
+            stacked
+            disabled={pictureMatchesPalette}
+            title={
+              pictureMatchesPalette
+                ? 'The picture is already indexed against this palette'
+                : 'Re-index the picture into the current palette, so it keeps its colors rather than its slots'
+            }
+            onClick={(): void => {
+              actions.canvas.remapPictureToPalette();
               actions.app.closeMenu();
             }}
           />

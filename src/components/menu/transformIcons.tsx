@@ -1,4 +1,4 @@
-import { JSX } from 'react';
+import { JSX, useId } from 'react';
 
 // Action glyphs for the drawer's transform gadgets (see docs/style-guide.md):
 // single-color line drawings, 24x24 viewBox, currentColor stroke, no fill, so
@@ -309,31 +309,53 @@ export function CropIcon({ size = 24 }: IconProps): JSX.Element {
 // these sit on the same strip as the Spare gadgets and have to read as their
 // siblings do.
 
-// A palette strip with something arriving in it: Use Brush Palette, which
-// replaces the picture's palette with the brush's.
+// The palette strip the three palette glyphs stand on. One geometry, defined
+// once: drawn per glyph they drifted into three sizes, and a row of icons that
+// each show "a palette" should show the same palette.
+//
+// Narrower than the 40-unit box, which is what lets Remap's semicircle reach
+// from the first cell's centre to the last (see RemapIcon).
+function PaletteStrip(): JSX.Element {
+  return (
+    <>
+      <rect x="8" y="17" width="24" height="5" />
+      <line x1="14" y1="17" x2="14" y2="22" />
+      <line x1="20" y1="17" x2="20" y2="22" />
+      <line x1="26" y1="17" x2="26" y2="22" />
+    </>
+  );
+}
+
+// The box these three share. Wider than the file's usual 24 because the strip
+// needs the room; the height matches its siblings, so a row still lines up.
+const paletteGlyphBox = (size: number): { viewBox: string; width: number; height: number } => ({
+  viewBox: '0 0 40 24',
+  width: (size * 40) / 24,
+  height: size,
+});
+
+// A palette strip with something arriving in it: installing a palette. Shared
+// by Use Brush and Default, which differ only in where the palette comes from —
+// something the glyph does not attempt to say, and the labels do.
 export function BrushPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="2" y="14" width="20" height="8" />
-      <line x1="7" y1="14" x2="7" y2="22" />
-      <line x1="12" y1="14" x2="12" y2="22" />
-      <line x1="17" y1="14" x2="17" y2="22" />
-      <line x1="12" y1="2" x2="12" y2="10" />
-      <polyline points="8,6 12,10 16,6" />
+    <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
+      <line x1="20" y1="2" x2="20" y2="13" />
+      <polyline points="16,9 20,13 24,9" />
+      <PaletteStrip />
     </svg>
   );
 }
 
-// The same strip with the arrow turned back out of it: Restore Palette.
+// The strip under the revert arrow the Restore gadget elsewhere uses: putting a
+// palette back is an undo, and reads as one. An arrow merely pointing out of
+// the strip did not — out of it to where?
 export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="2" y="14" width="20" height="8" />
-      <line x1="7" y1="14" x2="7" y2="22" />
-      <line x1="12" y1="14" x2="12" y2="22" />
-      <line x1="17" y1="14" x2="17" y2="22" />
-      <line x1="12" y1="2" x2="12" y2="10" />
-      <polyline points="8,6 12,2 16,6" />
+    <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
+      <polyline points="16,3 12,7 16,11" />
+      <path d="M12 7h9a3 3 0 0 1 3 3v3" />
+      <PaletteStrip />
     </svg>
   );
 }
@@ -341,64 +363,99 @@ export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
 // The Brush drawer's Change Color trio. All three say "these pixels become
 // those", so all three are built from a pair of brush squares.
 
-// Bg to Fg: the hollow square (holes) becomes a filled one.
+// Bg to Fg and its two-headed twin: a hollow square becomes a filled one, or
+// the two change places. One drawing with a second head, as LabelArrow is.
+//
+// Wider than the 24-unit box the rest of this file uses, and by some way. Three
+// things compete for the width: squares big enough for the hollow one to read
+// as hollow, a gap either side so the arrow does not touch them, and a shaft
+// that survives a second head eating into it. At 24 units the arrow is a dash;
+// at 36 it is an arrow with nowhere to stand. Solid fill rather than hatching,
+// which at this size is all stroke.
+function ColorSwapGlyph({ size, both = false }: { size: number; both?: boolean }): JSX.Element {
+  // The filled square is hatched rather than solid: solid black next to a
+  // hollow outline reads as "empty and full" where these two are "one color and
+  // another". Its own id per instance, since the same glyph renders more than
+  // once on a page and a shared one would be a duplicate.
+  const hatch = `swap-hatch-${useId().replace(/:/g, '')}`;
+  return (
+    <svg
+      {...base}
+      viewBox="0 0 40 24"
+      width={(size * 40) / 24}
+      height={size}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <defs>
+        <pattern
+          id={hatch}
+          width="4"
+          height="4"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)"
+        >
+          <line x1="1" y1="0" x2="1" y2="4" stroke="currentColor" strokeWidth="2" />
+        </pattern>
+      </defs>
+      <rect x="1" y="5" width="8" height="14" />
+      <line x1="13" y1="12" x2="27" y2="12" />
+      <polyline points="23,8 27,12 23,16" />
+      {both && <polyline points="17,8 13,12 17,16" />}
+      <rect x="31" y="5" width="8" height="14" fill={`url(#${hatch})`} />
+    </svg>
+  );
+}
+
 export function BgToFgIcon({ size = 24 }: IconProps): JSX.Element {
-  return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="2" y="8" width="7" height="8" />
-      <line x1="10" y1="12" x2="14" y2="12" />
-      <polyline points="12,10 14,12 12,14" />
-      <rect x="15" y="8" width="7" height="8" />
-      <line x1="15" y1="16" x2="22" y2="9" />
-      <line x1="15" y1="12" x2="18" y2="9" />
-      <line x1="19" y1="16" x2="22" y2="13" />
-    </svg>
-  );
+  return <ColorSwapGlyph size={size} />;
 }
 
-// Bg swapped with Fg: the same pair, each going the other way.
 export function SwapColorsIcon({ size = 24 }: IconProps): JSX.Element {
-  return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="2" y="7" width="6" height="10" />
-      <rect x="16" y="7" width="6" height="10" />
-      <line x1="9" y1="10" x2="15" y2="10" />
-      <polyline points="13,8 15,10 13,12" />
-      <line x1="15" y1="14" x2="9" y2="14" />
-      <polyline points="11,12 9,14 11,16" />
-    </svg>
-  );
+  return <ColorSwapGlyph size={size} both />;
 }
 
-// Remap: the brush coming down into the palette strip it is re-indexed against.
+// Remap: a color hopping from the first palette slot to the last, which is what
+// re-indexing is. A true semicircle, radius 12 on the strip's own centre line,
+// so it meets the strip at a right angle and the head sits on it square — no
+// tilt to align, a circle meeting its diameter being vertical there.
+//
+// The head is the same open V the straight arrows use, and it is separated from
+// the curve rather than turned away from it. Rotating cannot work: the arms sit
+// 90 degrees apart, so any angle that swings one clear swings the other in —
+// counter-clockwise makes a tick, clockwise buries the near arm in the descent.
+// A short stem below the arc's end puts the whole head clear of it instead.
+//
+// The far end gets the same stem, which is what makes the shape symmetric: a
+// semicircle's ends are level, but the head hangs below one of them, so without
+// a matching drop on the other side one end reached the strip while the other
+// floated. Both now stop two units short of it — no arrow here touches what it
+// points at, and a square linecap adds half a stroke past the coordinate, which
+// is what closed the gap the first time this was tried.
+//
+// The strip is narrower than the box so the arc's ends land on the first and
+// last cell centres: a semicircle wide enough to span a full-width strip needs
+// half that width in height, which there is not. The arrow-into-a-strip this started as said only "a palette
+// is involved" — and said it in the same words as Use Brush and Default, which
+// install one. What distinguishes Remap is that nothing is installed: the
+// palette stays and the picture's pointers move within it.
 export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="8" y="2" width="8" height="6" />
-      <line x1="12" y1="8" x2="12" y2="13" />
-      <polyline points="9,10 12,13 15,10" />
-      <rect x="2" y="16" width="20" height="6" />
-      <line x1="7" y1="16" x2="7" y2="22" />
-      <line x1="12" y1="16" x2="12" y2="22" />
-      <line x1="17" y1="16" x2="17" y2="22" />
+    <svg
+      {...base}
+      {...paletteGlyphBox(size)}
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path d="M11 10 A 9 9 0 0 1 29 10" />
+      <line x1="11" y1="10" x2="11" y2="13" />
+      <line x1="29" y1="10" x2="29" y2="13" />
+      <polyline points="25,9 29,13 33,9" />
+      <PaletteStrip />
     </svg>
   );
 }
 
-// The palette strip again, with the revert arrow the Restore glyph uses: back
-// to the built-in palette for this depth.
-export function DefaultPaletteIcon({ size = 24 }: IconProps): JSX.Element {
-  return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <polyline points="8,3 4,7 8,11" />
-      <path d="M4 7h9a3 3 0 0 1 3 3v2" />
-      <rect x="2" y="16" width="20" height="6" />
-      <line x1="7" y1="16" x2="7" y2="22" />
-      <line x1="12" y1="16" x2="12" y2="22" />
-      <line x1="17" y1="16" x2="17" y2="22" />
-    </svg>
-  );
-}
 
 // Two arrows chasing each other round: colors rotating through a range, which
 // is the one thing in this group that animates rather than replaces.
@@ -412,3 +469,37 @@ export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+// An arrow to sit inside a gadget label, drawn rather than typed. Press Start
+// 2P has no arrow at any codepoint, and the fallback faces that supply one give
+// U+2192 and U+2194 different weights, sizes and baselines — so a pair of them
+// never matches, however they are scaled or nudged. Drawn here at the same 2px
+// stroke as every glyph in this file, which is also the pixel font's stroke, so
+// the arrow sits with the letters rather than beside them.
+export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
+  // Wider when it has two heads, so the shaft between them stays the length it
+  // is on the one-headed arrow. Sized the other way round — one box for both —
+  // the second head eats the shaft and the arrow reads as a squashed X.
+  const width = both ? 20 : 16;
+  const tip = width - 2;
+  return (
+    <svg
+      className="wb-gadget__arrow"
+      width={width}
+      height="12"
+      viewBox={`0 0 ${width} 12`}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <line x1="2" y1="6" x2={tip} y2="6" />
+      <polyline points={`${tip - 4},2 ${tip},6 ${tip - 4},10`} />
+      {both && <polyline points="6,2 2,6 6,10" />}
+    </svg>
+  );
+}
+

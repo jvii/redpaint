@@ -16,8 +16,10 @@ type GadgetProps = {
   // transform row - so this component stays icon-style agnostic
   icon?: ReactNode;
   // rendered icon-left, text-right, the same shape everywhere in the menu -
-  // the rail (Open/Save/Brush) and the drawer's transform gadgets alike
-  label?: string;
+  // the rail (Open/Save/Brush) and the drawer's transform gadgets alike.
+  // A node rather than a string so a label can carry an arrow that needs its
+  // own sizing (wb-gadget__arrow); everything else passes plain text.
+  label?: ReactNode;
   title: string;
   // Set on a gadget that hands off to an OS file dialog: it then carries no
   // native tooltip while it is clickable. See the render below.

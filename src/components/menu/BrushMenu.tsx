@@ -27,6 +27,7 @@ import {
   BgToFgIcon,
   SwapColorsIcon,
   RemapIcon,
+  LabelArrow,
 } from './transformIcons';
 import { saveFileAs } from './saveAsPng';
 import { beginSaveAsPrompt } from './pendingSaveAs';
@@ -292,11 +293,20 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
         {/* DPaint's Brush > Change Color (docs/brush-palette.md). Recolors
             rather than reshapes, but belongs on this row all the same: like
             every transform it is custom-brush-only, it banks the brush for
-            Restore, and it is something you do *to* the brush in hand. */}
+            Restore, and it is something you do *to* the brush in hand.
+
+            Arrows rather than DPaint's ASCII "->" and "<->", which at this
+            size read as a minus sign wedged between angle brackets. Drawn, not
+            typed: see LabelArrow for why a real arrow character cannot be made
+            to match its own double-headed twin. */}
         <GadgetCluster head="Color">
           <Gadget
             icon={<BgToFgIcon />}
-            label="Bg to Fg"
+            label={
+              <>
+                Bg<LabelArrow />Fg
+              </>
+            }
             stacked
             title={transformTitle(
               "Fill the brush's transparent pixels with the foreground color, leaving it solid"
@@ -306,7 +316,11 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
           />
           <Gadget
             icon={<SwapColorsIcon />}
-            label="Swap"
+            label={
+              <>
+                Bg<LabelArrow both />Fg
+              </>
+            }
             stacked
             title={transformTitle(
               "Swap the brush's transparent pixels and its foreground-colored ones"
