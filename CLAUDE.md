@@ -28,6 +28,21 @@ for the actual painting).
 `tsconfig.json` has `strict: false`. There are `paths` overrides pointing `react`/`react-dom` at
 `node_modules` — leave these alone, they exist to work around a local linked-package setup.
 
+## Comments
+
+Keep them very concise. State the end state, not how it was arrived at: no
+history, no accounts of what was tried, no reasoning the code already shows.
+Never explain what a name or a signature explains. Do not cite DPaint source
+files or any other program — behaviour that matters belongs in `docs/`, and a
+comment can point at the doc.
+
+What earns a comment is a constraint that is invisible in the code: why a number
+is that number, what breaks if it changes, which of two plausible readings is
+the intended one. Two sentences is usually enough.
+
+This applies to comments already in the file. When working in one, cut the
+verbose comments you pass, whether or not they are part of the change.
+
 ## UI style guide
 
 Before making any UI change (new components, CSS, icons, colors, typography), read

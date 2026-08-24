@@ -37,23 +37,12 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public width: number;
   public heigth: number;
   public lastChanged: number;
-  // Set only on the built-in brushes (and their right-click resized variants,
-  // docs/brush-transforms.md "Sizing a built-in brush"). The tag
-  // `isBuiltInBrush` keys off, so a resized instance keeps reading as built-in
-  // (no Matte/Repl, never banked to Previous) even though it's a fresh object,
-  // not one of the fixed registry singletons.
+  // Set on the built-in brushes and on a right-click resize of one, so a
+  // resized instance still reads as built-in. What isBuiltInBrush checks.
   public builtInFamily?: BuiltInFamily;
-  // The palette this brush's indices mean: the picture's palette when it was
-  // captured, or the one it was resolved into when loaded. A brush holds
-  // indices, so a later palette change silently recolors it, and this is what
-  // makes that recoverable — the picture's palette can be moved back to the
-  // brush's (Use Brush Palette). Undefined for a true-color brush, which has no
-  // indices to interpret, and for the built-ins, which carry no color at all.
-  //
-  // DPaint keeps exactly this and sets it in both places: DoSelBr on capture
-  // (MODES.C:279) and the loader (DPIO.C:298). Its LoadBrColors is one global
-  // describing whatever brush is in hand; per brush here, so one recalled from
-  // a slot after a palette change still knows its own.
+  // The palette this brush's indices mean, so a later palette change stays
+  // recoverable (docs/brush-palette.md). Undefined for a true-color brush and
+  // for the built-ins, neither of which holds palette indices.
   public palette?: Color[];
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
@@ -75,7 +64,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.builtInFamily = builtInFamily;
   }
 
-  // Factory method for extracting a brush from canvas
   public static fromCanvasArea(start: Point, width: number, height: number): CustomBrush {
     const brushColorIndex = paintingCanvasController.getBrushColorIndexFromArea(
       start,
@@ -90,8 +78,6 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     return brush;
   }
 
-  // Factory method for decoding a brush from an image URL (opened file or
-  // clipboard paste buffer)
   public static async fromImageUrl(url: string): Promise<CustomBrush> {
     const image = new Image();
     await new Promise<void>((resolve, reject): void => {
@@ -203,57 +189,34 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
 
   public drawFilledPolygon(vertices: Point[], canvas: DrawTarget): void {
     // DPaint just draws the filled shape as if using a pixel brush
-    drawStyledFilledShape({ kind: 'polygon', vertices }, canvas, () =>
-      filledPolygon(vertices)
-    );
+    drawStyledFilledShape({ kind: 'polygon', vertices }, canvas, () => filledPolygon(vertices));
   }
 
-  // Returns a new transformed brush rather than mutating: the caller swaps it
-  // in via brushRecall.setTransformed, which keeps lastChanged-based texture
-  // caching correct and the pre-transform original recallable. Transforms
-  // always read the matte (source-of-truth) bitmap, never a colorized variant.
+  // A new brush rather than a mutation, so the pre-transform one stays
+  // recallable and texture caching keys off a fresh lastChanged. Always reads
+  // the matte bitmap, never a colorized variant.
   public transform(fn: (index: BrushColorIndex) => BrushColorIndex): CustomBrush {
     const transformed = fn(this.brushColorIndexMatte);
     const brush = new CustomBrush(transformed, transformed.width, transformed.height);
-    // Reshaping moves pixels; it never reinterprets them, so the palette they
-    // are indices into is the same one. This is also the only copy path a slot
-    // recall takes (BrushSlots.recall), which is what keeps a stored brush's
-    // palette with it.
+    // Reshaping moves pixels without reinterpreting them, so the palette
+    // carries over — which is also what keeps a slotted brush's palette, a
+    // recall being an identity transform.
     brush.palette = this.palette;
     return brush;
   }
 
-  // Where in its own pixels the brush is held. Derived rather than stored: the
-  // toggle has to be able to answer "which corner" for a brush it did not
-  // capture, and storing an absolute offset could not.
-  //
-  // Built-in brushes are always held by the centre, whatever the toggle says —
-  // DPaint's pens set their own offset unconditionally in FixUpPen
-  // (CURBRUSH.C:47) and never consult midHandle. They have no pickup drag to
-  // derive a corner from anyway, and the point of the small ones is that the
-  // pixel under the cursor is the one that gets painted.
-  // Where the brush is held when nothing is reshaping it. This is the handle
-  // in its own right — what a file's GRAB records — as against handle() below,
-  // which also answers for the middle of a transform drag.
-  //
-  // Built-in brushes are always centred, whatever the setting says: DPaint's
-  // pens set their own offset unconditionally in FixUpPen (CURBRUSH.C:47) and
-  // never consult midHandle. They have no pickup drag to derive a point from
-  // anyway, and the point of the small ones is that the pixel under the cursor
-  // is the one that gets painted.
+  // Where the brush is held when nothing is reshaping it, and what a saved
+  // GRAB records. Built-ins are always centred: the point of the small ones is
+  // that the pixel under the cursor is the one painted.
   public restingHandle(): Point {
     return overmind.state.brush.handleMode === 'center' || this.builtInFamily !== undefined
       ? { x: this.width / 2, y: this.heigth / 2 }
       : { x: this.width - 1, y: this.heigth - 1 };
   }
 
-  // A transform drag holds the brush by the centre whatever the setting says,
-  // and it goes back to the resting handle once the drag commits. The drag
-  // positions the brush by its own geometry — the bounds box and the preview
-  // are placed from the anchor — so an off-centre handle would slide the
-  // preview out of the box it is being sized inside. (DPaint anchored those
-  // drags at the lower right instead, which is the same reasoning reaching a
-  // different corner; the centre is the one that keeps the preview inside.)
+  // Centred throughout a transform drag, whatever the setting says: those tools
+  // place the preview and its bounds box from the drag anchor, so an off-centre
+  // handle slides the preview out of the box it is being sized inside.
   public handle(): Point {
     if (isBrushTransformTool(overmind.state.toolbox.selectedSelectorToolId)) {
       return { x: this.width / 2, y: this.heigth / 2 };
@@ -275,23 +238,18 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     }
   }
 
-  // Sets up the bitmap variants a paint mode needs and switches to that mode's
-  // resting bitmap: the single place encoding which modes show the colorized
-  // brush vs the matte one (used by the setMode action and by transform
-  // previews on temporary brushes).
+  // The one place deciding which modes show the colorized bitmap and which the
+  // matte one, and switches to it.
   public applyMode(mode: Mode): void {
     if (usesColorizedBrush(mode)) {
-      // Color, Cycle and the canvas-reading effects all show (and Color/ Cycle
-      // paint) the FG-colorized bitmap. The effects only ever read its alpha as
-      // a shape mask, but the colorized version is the more useful overlay
-      // cursor.
+      // The effects read only the alpha, but the colorized bitmap is the more
+      // useful overlay cursor.
       this.setFGColor();
       this.setBGColor();
       this.toFGColor();
     } else {
-      // Matte previews the brush's own transparency; Repl stamps that same
-      // pristine bitmap with holes filled from BG. Both need the matte bitmap
-      // as their resting state, not a colorized one.
+      // Matte shows the brush's own transparency and Repl fills those holes
+      // from BG; both rest on the matte bitmap.
       this.setBGColor();
       this.toMatte();
     }
@@ -300,8 +258,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // CustomBrushFeatures
 
   public setFGColor(): void {
-    // always colorize from the pristine matte bitmap so recoloring never
-    // compounds on a previously colorized array
+    // From the matte bitmap, so recoloring never compounds.
     this.brushColorIndexColorFG = this.brushColorIndexMatte.derive(
       this.width,
       this.heigth,
@@ -341,10 +298,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.lastChanged = Date.now();
   }
 
-
-  // The bitmap a save reads: the pristine matte one, never a colorized
-  // variant, which is the same choice toImageData makes and for the same
-  // reason.
+  // The matte bitmap, never a colorized variant, as toImageData also takes.
   public brushColorIndexForSaving(): BrushColorIndex {
     return this.brushColorIndexMatte;
   }
