@@ -17,7 +17,7 @@ export type UndoEntry = {
   palette: Color[];
   // What the pixels *mean* — the palette they were last indexed against. Equal
   // to `palette` except while something has moved the palette out from under
-  // the picture without re-indexing it: a hand edit, Use Brush, Default.
+  // the picture without re-indexing it: a hand edit, From Brush, Default.
   sourcePalette: Color[];
   width: number;
   height: number;

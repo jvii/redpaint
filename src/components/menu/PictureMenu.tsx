@@ -30,7 +30,7 @@ import { fileHandleFor, rememberFileHandle } from './savedFileHandle';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
 
-// What Use Brush would actually do, in one of three answers. Safe to read
+// What From Brush would actually do, in one of three answers. Safe to read
 // brushRecall directly, as BrushMenu does: every action that changes the
 // current brush also closes the menu, so this remounts fresh.
 //
@@ -80,7 +80,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   const paletteState = brushPaletteState(state.palette);
   const restoreState = restorePaletteState(state.palette);
   // Remap only means something while the picture's pixels and the palette
-  // showing them disagree — after a hand edit, a Use Brush or a Default.
+  // showing them disagree — after a hand edit, a From Brush or a Default.
   const pictureMatchesPalette = paletteEquals(
     state.palette.picturePalette,
     state.palette.paletteArray
@@ -337,7 +337,22 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
         <GadgetCluster head="Palette">
           <Gadget
             icon={<BrushPaletteIcon />}
-            label="Use Brush"
+            label="Default"
+            stacked
+            disabled={isDefaultPalette}
+            title={
+              isDefaultPalette
+                ? 'This is already the default palette for its number of colors'
+                : 'Back to the built-in palette for this number of colors. Restore puts the current one back'
+            }
+            onClick={(): void => {
+              actions.palette.defaultPalette();
+              actions.app.closeMenu();
+            }}
+          />
+          <Gadget
+            icon={<BrushPaletteIcon />}
+            label="From Brush"
             stacked
             disabled={paletteState !== 'differs'}
             title={
@@ -360,34 +375,19 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             // Says what it costs, not just what it does. It installs the
             // palette that was in use before a brush's displaced it, whatever
             // has happened to the palette since — so after a hand edit it is
-            // not the undo of Use Brush the shorter wording implied, it also
+            // not the undo of From Brush the shorter wording implied, it also
             // drops the edit. (One undo brings that back: a palette editor
             // session commits an undo point and an undo entry carries the
             // palette. But the tooltip should not need that to be true.)
             title={
               restoreState === 'differs'
-                ? 'Go back to the palette that was in use before Use Brush or Default replaced it, dropping any palette changes made since'
+                ? 'Go back to the palette that was in use before From Brush or Default replaced it, dropping any palette changes made since'
                 : restoreState === 'matches'
                   ? 'That palette is already back'
                   : 'No palette has been replaced yet'
             }
             onClick={(): void => {
               actions.palette.restorePalette();
-              actions.app.closeMenu();
-            }}
-          />
-          <Gadget
-            icon={<BrushPaletteIcon />}
-            label="Default"
-            stacked
-            disabled={isDefaultPalette}
-            title={
-              isDefaultPalette
-                ? 'This is already the default palette for its number of colors'
-                : 'Back to the built-in palette for this number of colors. Restore puts the current one back'
-            }
-            onClick={(): void => {
-              actions.palette.defaultPalette();
               actions.app.closeMenu();
             }}
           />

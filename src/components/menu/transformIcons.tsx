@@ -335,7 +335,7 @@ const paletteGlyphBox = (size: number): { viewBox: string; width: number; height
 });
 
 // A palette strip with something arriving in it: installing a palette. Shared
-// by Use Brush and Default, which differ only in where the palette comes from —
+// by From Brush and Default, which differ only in where the palette comes from —
 // something the glyph does not attempt to say, and the labels do.
 export function BrushPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
@@ -436,7 +436,7 @@ export function SwapColorsIcon({ size = 24 }: IconProps): JSX.Element {
 // The strip is narrower than the box so the arc's ends land on the first and
 // last cell centres: a semicircle wide enough to span a full-width strip needs
 // half that width in height, which there is not. The arrow-into-a-strip this started as said only "a palette
-// is involved" — and said it in the same words as Use Brush and Default, which
+// is involved" — and said it in the same words as From Brush and Default, which
 // install one. What distinguishes Remap is that nothing is installed: the
 // palette stays and the picture's pointers move within it.
 export function RemapIcon({ size = 24 }: IconProps): JSX.Element {

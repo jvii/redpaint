@@ -77,7 +77,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
   const transformTitle = (enabledTitle: string): string =>
     usingBuiltInBrush ? 'Cannot transform a built-in brush' : enabledTitle;
   // Remap only means something while the brush's palette and the picture's
-  // disagree, which is the same three-way answer Picture's Use Brush gives.
+  // disagree, which is the same three-way answer Picture's From Brush gives.
   const brush = brushRecall.current;
   const remapState =
     !(brush instanceof CustomBrush) || !brush.palette

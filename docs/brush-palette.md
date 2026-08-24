@@ -53,7 +53,7 @@ it costs nothing: brushes live in slots here, so a brush recalled long after a
 palette change still knows its own, where DPaint's single global would have been
 overwritten by whatever was picked up since.
 
-`Use Brush` and `Restore` in the Picture drawer are the pair above.
+`From Brush` and `Restore` in the Picture drawer are the pair above.
 Both gadgets are disabled whenever they would do nothing, and say which of the
 three cases they are in: nothing to work with, already in step, or live. Restore
 is idempotent — DPaint's is a plain `LoadCMap(prevColors)`, neither clearing nor
@@ -61,7 +61,7 @@ swapping — so without that it would sit enabled after use, re-applying the
 palette already on screen.
 
 Restore installs the remembered palette whatever has happened to the palette
-since, so after a hand edit it is not the undo of Use Brush it might read as: it
+since, so after a hand edit it is not the undo of From Brush it might read as: it
 drops the edit too. Its wording says so. Nothing invalidates the record on an
 edit, which is DPaint's behaviour as well (the palette editor never writes
 `prevColors`; only Use Brush Palette, a picture load, and `DefaultPalette` do)
@@ -70,7 +70,7 @@ only route back to a brush's palette. The cost is bounded: a palette editor
 session commits one undo point, and an undo entry carries the palette.
 
 `palette.previousPalette` is `prevColors`, written by `rememberPreviousPalette`
-from the two places a brush's palette displaces the picture's: Use Brush, and
+from the two places a brush's palette displaces the picture's: From Brush, and
 the load requester's own Use Brush Palette, which does the same thing before the
 brush is even installed.
 
@@ -85,7 +85,7 @@ remembered one rather than being a single-use button.
 The picture's own pixels are indices too, so they recolor when the palette
 moves. That is the trade the feature makes, and Restore is the way back.
 
-**Use Brush is disabled while the brush's palette already matches the
+**From Brush is disabled while the brush's palette already matches the
 picture's**, which is every route out of the load requester: adopting the file's
 palette replaces the picture's with it, and remapping re-indexes the brush into
 the picture's, so either way the two agree and the gadget could only be a no-op.
@@ -94,14 +94,14 @@ there is nothing to put back, and it comes alive the moment the palette drifts �
 a conform, New Palette From Image, an edited slot, a picture loaded with its own
 CMAP — which is the situation the whole feature exists for.
 
-That also answers what Use Brush is *for* on a loaded brush: not the moment of
+That also answers what From Brush is *for* on a loaded brush: not the moment of
 loading, when there is nothing to restore, but afterwards. A loaded brush has
 the stronger case, in fact — a captured brush's palette is one the document
 already had, while a loaded brush's may exist nowhere else once the palette has
 moved on.
 
 A new picture (right-click CLR) clears `previousPalette` along with the brushes
-themselves: what Use Brush displaced belonged to the outgoing document, and the
+themselves: what From Brush displaced belonged to the outgoing document, and the
 brush that would have justified restoring it is gone too.
 
 ## The rest of Picture ▸ Color Control
@@ -111,7 +111,7 @@ DPaint's submenu is five items (`MENU.C:102`), and all five exist here now:
 | DPaint | here |
 | --- | --- |
 | Palette   p | the palette editor |
-| Use Brush Palette | Picture ▸ Palette ▸ Use Brush |
+| Use Brush Palette | Picture ▸ Palette ▸ From Brush |
 | Restore Palette | Picture ▸ Palette ▸ Restore |
 | Default Palette | Picture ▸ Palette ▸ Default |
 | Cycle   TAB | Picture ▸ Palette ▸ Cycling, and Tab |
@@ -149,13 +149,13 @@ so the picture keeps its colors rather than its slots. The DP2 manual describes
 that source as "the colors it used in the original palette", and gives the
 motivating case as "if you have modified the palette since loading the picture"
 — a hand edit. So it is deliberately *not* `previousPalette`, which Restore
-reads: that one is written only by Use Brush and Default, and a hand edit writes
+reads: that one is written only by From Brush and Default, and a hand edit writes
 neither, which would leave the gadget dim in the manual's own example.
 
 `picturePalette` is what the pixels **mean**, against `palette` being what they
 currently display as. It follows the palette by default — `replacePalette` syncs
 it — and the three operations that deliberately part the two put it back
-afterwards: Use Brush, Default, Restore. A hand edit never comes through
+afterwards: From Brush, Default, Restore. A hand edit never comes through
 `replacePalette` at all, editing slots in place, so it parts them by doing
 nothing. Following by default rather than being set at each of the several
 places a palette is installed means a path added later is right without knowing
@@ -217,6 +217,6 @@ color" means the holes throughout.
   slot a dominant one wants.
 
 Remap is disabled while the brush's palette and the picture's already agree,
-the same three-way answer Use Brush gives — after a load they always do, and it
+the same three-way answer From Brush gives — after a load they always do, and it
 could only be a no-op.
 

@@ -118,7 +118,7 @@ function restoreEntryState(context: Context): void {
   }
   // Last, because replacePalette above syncs this to whatever it installs. The
   // entry's own record is the truth: it is what the restored pixels mean, which
-  // is not the same as what they display as while a hand edit or a Use Brush
+  // is not the same as what they display as while a hand edit or a From Brush
   // sits between the two (docs/brush-palette.md).
   if (entry) {
     context.state.palette.picturePalette = entry.sourcePalette;

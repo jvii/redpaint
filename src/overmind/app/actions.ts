@@ -328,7 +328,7 @@ export const newPicture = (context: Context): void => {
   // records whichever palette is current.
   context.actions.palette.replacePalette(defaultPaletteColors());
   context.actions.palette.replaceRanges(defaultRanges());
-  // Nothing left to put back: what Use Brush displaced belonged to the old
+  // Nothing left to put back: what From Brush displaced belonged to the old
   // document, and its brush is gone too, so Restore goes dim with them.
   context.state.palette.previousPalette = null;
   // And the slots selected in it: replacePalette only clamps the ids into the

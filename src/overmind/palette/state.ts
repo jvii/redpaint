@@ -58,7 +58,7 @@ export type State = {
   // The palette the picture's pixels were last indexed against — what they
   // *mean*, as against `palette`, which is what they currently display as. The
   // two differ exactly while something has moved the palette without
-  // re-indexing the picture (a hand edit, Use Brush, Default), which is the
+  // re-indexing the picture (a hand edit, From Brush, Default), which is the
   // mismatch Remap exists to close (docs/brush-palette.md).
   //
   // Per document rather than per page: every page indexes into the one palette,

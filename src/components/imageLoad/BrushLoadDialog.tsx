@@ -114,7 +114,7 @@ function BrushLoadDialogOpen(): JSX.Element {
     let colorIndex: BrushColorIndex;
     if (mode === 'brush' && fromPalette) {
       // The file's own indices, kept as they are, under the file's own palette.
-      // This displaces the picture's palette exactly as Use Brush does, so it
+      // This displaces the picture's palette exactly as From Brush does, so it
       // records what it displaced the same way — and it is the one wholesale
       // replacement undo cannot put back, a brush load changing no pixels and
       // taking no undo point (docs/brush-palette.md).

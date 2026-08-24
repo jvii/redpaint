@@ -142,7 +142,7 @@ export const replacePalette = (context: Context, colors: Color[]): void => {
   });
   context.state.palette.palette = palette;
   // The picture's pixels mean the palette that is current, unless something
-  // deliberately parts the two — Use Brush, Default and Restore each put this
+  // deliberately parts the two — From Brush, Default and Restore each put this
   // back afterwards, and a hand edit never comes through here at all, editing
   // slots in place. Following by default rather than being updated at each of
   // the several places a palette gets installed, so a path added later is right

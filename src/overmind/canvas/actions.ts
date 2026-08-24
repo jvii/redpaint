@@ -446,7 +446,7 @@ export const pictureSwapBackgroundAndForeground = (context: Context): void => {
 //
 // The source is picturePalette, what the pixels mean, which the DP2 manual
 // describes as "the colors it used in the original palette". Not the palette
-// Restore remembers: that one is only written by Use Brush and Default, and the
+// Restore remembers: that one is only written by From Brush and Default, and the
 // manual's own example is a hand edit, which writes neither.
 //
 // conformedTo with remapAll does the work; it is what a screen conform already
