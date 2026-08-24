@@ -242,8 +242,10 @@ the rest of the UI layer.
   ping-pong; DRNG/CCRT chunks are a possible future note.
 - Any change to the Cycle paint mode.
 
-Toggled by Tab, and since 2026-08-23 by the **Cycling** gadget in the Picture
-drawer's Palette cluster — DPaint lists it in the same Color Control submenu
+Toggled by Tab, and since 2026-08-23 by the **Color Cycling** gadget in the
+Picture drawer, in a cluster of its own at the end of the row — DPaint lists it in the same Color Control submenu
 ("Cycle   TAB"), and it was the one item there reachable only from the keyboard.
-It is labelled Cycling, not Cycle, because the always-visible mode row already
-has a Cycle: the paint mode, which is unrelated.
+It is labelled Color Cycling, not Cycle, because the always-visible mode row
+already has a Cycle: the paint mode, which is unrelated. Its own cluster because
+it belongs to neither neighbour — Palette changes which colors exist, Recolor
+what the picture points at, and this changes neither.

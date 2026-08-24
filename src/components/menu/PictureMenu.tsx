@@ -391,25 +391,6 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
               actions.app.closeMenu();
             }}
           />
-          {/* The only item here that animates rather than replaces, and the
-              only one that was keyboard-only: DPaint lists it in this submenu
-              too, "Cycle TAB". Labelled Cycling, not Cycle, because the mode
-              row above is always on screen and already has a Cycle — a paint
-              mode, a different thing entirely. "Color Cycling" is what the
-              palette editor's own legend calls this, and Cycling is as much of
-              that as a gadget label fits. */}
-          <Gadget
-            icon={<CycleIcon />}
-            label="Cycling"
-            stacked
-            shortcut={shortcutCap('Tab')}
-            on={state.palette.cyclingOn}
-            title="Animate the palette ranges, rotating each range's colors. Display only — it paints nothing"
-            onClick={(): void => {
-              actions.palette.toggleCycling();
-              actions.app.closeMenu();
-            }}
-          />
         </GadgetCluster>
         {/* The picture-wide twins of the Brush drawer's Recolor cluster, and
             DPaint II's own additions to this submenu. Same glyphs, since it is
@@ -479,6 +460,25 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             }
             onClick={(): void => {
               actions.canvas.remapPictureToPalette();
+              actions.app.closeMenu();
+            }}
+          />
+        </GadgetCluster>
+        {/* Its own cluster, unheaded: it belongs to neither of the two beside
+            it. Palette changes which colors exist and Recolor what the picture
+            points at, where this changes neither — it animates the ranges and
+            paints nothing. Last on the row, and named in full here because the
+            head that would have said "Color" is the one it does without. */}
+        <GadgetCluster>
+          <Gadget
+            icon={<CycleIcon />}
+            label="Color Cycling"
+            stacked
+            shortcut={shortcutCap('Tab')}
+            on={state.palette.cyclingOn}
+            title="Animate the palette ranges, rotating each range's colors. Display only — it paints nothing"
+            onClick={(): void => {
+              actions.palette.toggleCycling();
               actions.app.closeMenu();
             }}
           />
