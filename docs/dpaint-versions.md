@@ -79,14 +79,18 @@ or a different program.
 
 ## Where the line sits
 
-redpaint is DPaint II re-imagined, so III's painting additions are the natural
-next ones — brush Edge, stencil-aware pickup, AutoTransp, fill-to-background —
-and the small III/IV interface wins are mostly already in.
+**The objective is DPaint II parity.** Everything below that line is the measure;
+everything above it is optional and judged one feature at a time.
 
-Animation is the whole of III's headline and most of IV's and V's, and is a
-different program: frames, an anim brush type, a player, and a file format. Not
-in scope without deciding to be an animation package.
+From III, the painting additions are the plausible ones — brush Edge,
+stencil-aware pickup, AutoTransp, fill-to-background. Its interface wins are
+mostly already in.
 
-HAM is a hardware answer to a problem true color already solves here. Palette
-files and the Color Mixer are the parts of IV worth having, and they attach to
-the palette editor rather than to any of it.
+**Animation is out of scope**, and it is the bulk of III, IV and V: frames, an
+anim brush type, a player, a file format. Taking it would make this an animation
+package.
+
+Of the rest, HAM answers a problem true color already solves here. Palette files
+and the Color Mixer are the parts of IV worth having, and attach to the palette
+editor. Antialias, Process and Translucency would attach to the mode machinery
+without joining it.
