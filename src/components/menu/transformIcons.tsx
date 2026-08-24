@@ -1,12 +1,8 @@
 import { JSX, useId } from 'react';
 
-// Action glyphs for the drawer's transform gadgets (see docs/style-guide.md):
-// single-color line drawings, 24x24 viewBox, currentColor stroke, no fill, so
-// they scale smoothly and inherit the gadget's hover/disabled/pressed color.
-// Square caps and miter joins, not rounded. The crisp line-ends read like a
-// sharp 1-bit drawing at native resolution, which is what period toolbar glyphs
-// actually were; rounded caps are the modern-web tell. The disk and brush
-// identity icons stay pixel art (pixelIcons.tsx).
+// Action glyphs for the drawer gadgets (docs/style-guide.md): line drawings on
+// a 24-unit box, currentColor stroke, no fill, square caps and miter joins.
+// The disk and brush identity icons are pixel art instead (pixelIcons.tsx).
 
 type IconProps = { size?: number };
 
@@ -19,9 +15,8 @@ const base = {
   strokeLinejoin: 'miter' as const,
 };
 
-// two standard arrows pointing away from a dashed mirror axis. Exact coordinate
-// reflections of each other, so the glyph is symmetric by construction, and the
-// arrow style matches the other transform icons
+// Two arrows away from a dashed mirror axis, exact coordinate reflections of
+// each other so the glyph is symmetric by construction.
 export function FlipHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -46,9 +41,8 @@ export function FlipVIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// a right angle (the two legs, plus the small square notch that marks it as
-// exactly 90°) with a quarter-circle arrow sweeping between the legs' ends,
-// so the glyph reads as "turn by this exact corner"
+// A right angle with its notch, and a quarter-circle arrow sweeping between the
+// legs' ends.
 export function Rotate90Icon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -60,8 +54,7 @@ export function Rotate90Icon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the standard rotate-cw glyph: a near-full circle sweeping into its own
-// arrowhead at the top right
+// A near-full circle sweeping into its own arrowhead.
 export function RotateAnyIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -71,8 +64,8 @@ export function RotateAnyIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the classic "minimize" glyph: corner brackets pulled in toward the
-// center, each trailing a short diagonal out to its true corner
+// Corner brackets pulled toward the centre, each trailing a diagonal out to its
+// true corner.
 export function HalveIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -84,8 +77,8 @@ export function HalveIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the classic "maximize" glyph: corner brackets sitting at the true
-// corners, each trailing a short diagonal in toward the center
+// Corner brackets at the true corners, each trailing a diagonal in toward the
+// centre.
 export function DoubleIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -107,10 +100,8 @@ export function StretchIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the box plus what the drag does to it: the top edge slides one way, the
-// bottom the other. The box runs the full icon height; the viewBox is widened
-// (not square, unlike the other transform icons) so the arrows flagging each
-// edge's direction can sit clear of the box, out at the sides
+// The box with its top edge slid one way and its bottom the other. The viewBox
+// is widened, unlike the others here, so the direction arrows sit clear of it.
 export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg
@@ -130,9 +121,8 @@ export function ShearIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the bent rectangle from the drag preview (both long edges bow the same way,
-// the short ends stay anchored), plus an arrow for the drag direction the bulge
-// follows
+// The bent rectangle from the drag preview, plus an arrow for the direction the
+// bulge follows.
 export function BendHIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg
@@ -173,7 +163,7 @@ export function BendVIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// the standard undo glyph: back-arrow into a curve that loops ahead
+// A back-arrow into a curve that loops ahead.
 export function RestoreIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -183,28 +173,14 @@ export function RestoreIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The three Spare glyphs share a page frame at the full extent of the 24-unit
-// box, with the mark inside drawn as large as the frame allows. A thin frame
-// around a small mark reads lighter than a Flip or Rotate glyph whose strokes
-// cross the whole box, which is why these looked smaller than their neighbours
-// at the same nominal size — the ink, not the bounds, is what the eye measures.
-//
-// Every coordinate is a whole unit. With a 2px stroke centred on the path, an
-// integer lands the edges on pixel boundaries at 24px and at any whole multiple
-// of it; the half-units this started with put vertices mid-pixel and cost the
-// glyph its crispness at the one size it is actually drawn at.
+// The Spare glyphs share a page frame at the box's full extent, the mark inside
+// as large as it allows: a thin frame around a small mark reads lighter than its
+// neighbours. Every coordinate is a whole unit, so a 2px stroke lands on pixel
+// boundaries at 24px and any multiple of it.
 
-// The picture's frame, and the two opposed arrows that mean swap everywhere
-// else. The pair reads as a verb where two stacked page outlines would only
-// have said "two pages" — and "the other page" is the whole of what the gesture
-// does. They keep two clear units between them: drawn any closer the heads meet
-// in the middle and the glyph is one dark smudge.
-//
-// Each arrow is shifted one unit the way it points, which is what centres it in
-// the frame — not the two units the shafts' coordinates suggest. A mitred tip
-// puts ink about 1.4 units past the vertex it is drawn at (half the stroke over
-// sin 45°), so an arrow's ink already reaches further forward than its numbers
-// do, and moving it a full two overshoots and crowds the frame.
+// The page frame with the two opposed arrows that mean swap, kept two units
+// apart so the heads do not meet. Each is shifted one unit the way it points,
+// not two: a mitred tip already puts ink ~1.4 units past its vertex.
 export function SwapPageIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -217,9 +193,7 @@ export function SwapPageIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The same page frame as the swap glyph with a one-way arrow: this page's
-// contents going to the other one. A family, so the three Spare gadgets read as
-// three things done to the same object rather than three unrelated pictures.
+// The same frame with a one-way arrow: this page's contents going to the other.
 export function CopyToSpareIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -230,9 +204,8 @@ export function CopyToSpareIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The page frame struck through. An X rather than a wastebasket: the bin is a
-// desktop metaphor for a file, and this is not a file — nothing goes anywhere,
-// the page stops existing.
+// The frame struck through. An X rather than a bin: nothing goes anywhere, the
+// page stops existing.
 export function DeletePageIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -243,33 +216,11 @@ export function DeletePageIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The merges take two pages rather than one, so they step outside the single
-// frame the other three Spare glyphs share: two overlapping pages, and which
-// one is in front says which the gesture is.
-//
-// The overlap is drawn by interrupting the outline of whichever page is behind,
-// the way a line drawing has always shown one thing lying over another. Filling
-// the front page would have been the easy way and is what most icon sets do,
-// but every glyph in this file is an unfilled stroke drawing (see the style
-// guide's two registers), and a solid black page next to the Flip and Rotate
-// glyphs would read as a different kind of thing entirely.
-//
-// Both show the *spare* as the page at the top right. In front it is whole and
-// crosses over this page; behind, this page is whole and the spare shows as the
-// corner still visible past it.
-//
-// Two alternatives were built and dropped, both for reasons that would recur:
-//
-//  - Dotting the spare says "the page you cannot see" in one stroke, but a
-//    dotted outline cannot occlude anything, and occlusion is the entire cue
-//    that separates these two. A heavier dash only fixes that by ceasing to
-//    look dotted: square caps extend every dash by a unit at each end, so
-//    4-on-2-off renders solid.
-//  - One page with the other's material as an arrow running through it, over
-//    for front and behind for back, reads well at 10x and fails at 24px. A page
-//    big enough to read as a page leaves too little of the box for an arrow
-//    whose middle can visibly go missing; shrinking it to 10x14 to make room
-//    put the glyph back to looking smaller than its neighbours.
+// Two overlapping pages, the one in front saying which way the merge goes; the
+// spare is the page at the top right in both. The overlap is drawn by
+// interrupting the page behind rather than filling the one in front, every glyph
+// here being an unfilled stroke drawing.
+
 export function MergeFrontIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -292,10 +243,8 @@ export function MergeBackIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The two overlapping corner marks a photographer's crop L's make. The
-// long-standing glyph for the operation, legible in a way a dashed rectangle is
-// not. Drawn as two polylines rather than four lines so each corner is one
-// mitred joint, matching the other glyphs' joins.
+// The two overlapping corner marks a photographer's crop L's make, drawn as two
+// polylines so each corner is a single mitred joint.
 export function CropIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -305,16 +254,12 @@ export function CropIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The Picture drawer's palette pair. Not transforms, but the same register —
-// these sit on the same strip as the Spare gadgets and have to read as their
-// siblings do.
+// The palette glyphs. Not transforms, but the same register: they share a row
+// with the Spare gadgets.
 
-// The palette strip the three palette glyphs stand on. One geometry, defined
-// once: drawn per glyph they drifted into three sizes, and a row of icons that
-// each show "a palette" should show the same palette.
-//
-// Narrower than the 40-unit box, which is what lets Remap's semicircle reach
-// from the first cell's centre to the last (see RemapIcon).
+// The strip every palette glyph stands on, defined once so they cannot drift
+// apart. Narrower than the box, which is what lets Remap's semicircle reach from
+// the first cell's centre to the last.
 function PaletteStrip(): JSX.Element {
   return (
     <>
@@ -326,30 +271,23 @@ function PaletteStrip(): JSX.Element {
   );
 }
 
-// The box these three share. Wider than the file's usual 24 because the strip
-// needs the room; the height matches its siblings, so a row still lines up.
+// Wider than the file's usual 24 because the strip needs the room; the height
+// matches its siblings, so a row still lines up.
 const paletteGlyphBox = (size: number): { viewBox: string; width: number; height: number } => ({
   viewBox: '0 0 40 24',
   width: (size * 40) / 24,
   height: size,
 });
 
-// A pencil over the strip: opening the palette editor. First of the group, as
-// DPaint's Color Control leads with Palette — and the one item there that is a
-// way in rather than an operation, which is why it is a tool rather than an
-// arrow.
+// A pencil over the strip: opening the palette editor. A tool rather than an
+// arrow, being a way in rather than an operation on the palette.
 export function EditPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
-      {/* At 45°, and symmetric by construction: the shoulders sit at (5,-1) and
-          (1,-5) from the tip, the butt a further (8,-8) from each, so the two
-          long edges are parallel and the two sides of the point equal without
-          depending on how anything rounds.
-          
-          As long as the box allows. The butt corner is at y=1, one stroke off
-          the top, so the length comes from the tip reaching down instead —
-          which it can, being a point rather than a broad head, and so needing
-          less clearance over the strip than the arrows beside it. */}
+      {/* Symmetric by construction: shoulders at (5,-1) and (1,-5) from the
+          tip, butt a further (8,-8) from each, so the long edges stay parallel
+          however the numbers round. As long as the box allows — the butt corner
+          is already a stroke off the top. */}
       <path d="M13 14 L18 13 L26 5 L22 1 L14 9 Z" />
       <line x1="21" y1="10" x2="17" y2="6" />
       <PaletteStrip />
@@ -357,9 +295,8 @@ export function EditPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// A palette strip with something arriving in it: installing a palette. Shared
-// by From Brush and Default, which differ only in where the palette comes from —
-// something the glyph does not attempt to say, and the labels do.
+// An arrow arriving in the strip: installing a palette. Shared by From Brush and
+// Default, which differ only in where the palette comes from.
 export function BrushPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
@@ -370,9 +307,8 @@ export function BrushPaletteIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The strip under the revert arrow the Restore gadget elsewhere uses: putting a
-// palette back is an undo, and reads as one. An arrow merely pointing out of
-// the strip did not — out of it to where?
+// The strip under a revert arrow: putting a palette back is an undo and reads as
+// one.
 export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
@@ -383,23 +319,16 @@ export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// The Brush drawer's Change Color trio. All three say "these pixels become
-// those", so all three are built from a pair of brush squares.
+// The Recolor glyphs: a pair of squares, one becoming the other.
 
-// Bg to Fg and its two-headed twin: a hollow square becomes a filled one, or
-// the two change places. One drawing with a second head, as LabelArrow is.
-//
-// Wider than the 24-unit box the rest of this file uses, and by some way. Three
-// things compete for the width: squares big enough for the hollow one to read
-// as hollow, a gap either side so the arrow does not touch them, and a shaft
-// that survives a second head eating into it. At 24 units the arrow is a dash;
-// at 36 it is an arrow with nowhere to stand. Solid fill rather than hatching,
-// which at this size is all stroke.
+// A hollow square becoming a filled one, or the two changing places — one
+// drawing with a second head, as LabelArrow is. Wide because three things want
+// the width: squares that read as hollow, a gap either side of the arrow, and a
+// shaft that survives a second head.
 function ColorSwapGlyph({ size, both = false }: { size: number; both?: boolean }): JSX.Element {
-  // The filled square is hatched rather than solid: solid black next to a
-  // hollow outline reads as "empty and full" where these two are "one color and
-  // another". Its own id per instance, since the same glyph renders more than
-  // once on a page and a shared one would be a duplicate.
+  // Hatched rather than solid: solid black beside a hollow outline reads as
+  // "empty and full", where these two mean one color and another. Its own id per
+  // instance, the glyph rendering more than once on a page.
   const hatch = `swap-hatch-${useId().replace(/:/g, '')}`;
   return (
     <svg
@@ -438,38 +367,18 @@ export function SwapColorsIcon({ size = 24 }: IconProps): JSX.Element {
   return <ColorSwapGlyph size={size} both />;
 }
 
-// Remap: a color hopping from the first palette slot to the last, which is what
-// re-indexing is. A true semicircle, radius 12 on the strip's own centre line,
-// so it meets the strip at a right angle and the head sits on it square — no
-// tilt to align, a circle meeting its diameter being vertical there.
+// A color hopping from the first palette slot to the last, which is what
+// re-indexing is: an arc within the strip, where an arrow into one would say
+// installing a palette, as From Brush and Default do.
 //
-// The head is the same open V the straight arrows use, and it is separated from
-// the curve rather than turned away from it. Rotating cannot work: the arms sit
-// 90 degrees apart, so any angle that swings one clear swings the other in —
-// counter-clockwise makes a tick, clockwise buries the near arm in the descent.
-// A short stem below the arc's end puts the whole head clear of it instead.
-//
-// The far end gets the same stem, which is what makes the shape symmetric: a
-// semicircle's ends are level, but the head hangs below one of them, so without
-// a matching drop on the other side one end reached the strip while the other
-// floated. Both now stop two units short of it — no arrow here touches what it
-// points at, and a square linecap adds half a stroke past the coordinate, which
-// is what closed the gap the first time this was tried.
-//
-// The strip is narrower than the box so the arc's ends land on the first and
-// last cell centres: a semicircle wide enough to span a full-width strip needs
-// half that width in height, which there is not. The arrow-into-a-strip this started as said only "a palette
-// is involved" — and said it in the same words as From Brush and Default, which
-// install one. What distinguishes Remap is that nothing is installed: the
-// palette stays and the picture's pointers move within it.
+// A true semicircle, so it meets the strip at a right angle and the head needs
+// no tilt. Both ends drop to matching stems stopping two units short of the
+// strip: the head hangs below one end, and without the other's stem the shape
+// is lopsided.
+
 export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
   return (
-    <svg
-      {...base}
-      {...paletteGlyphBox(size)}
-      aria-hidden="true"
-      focusable="false"
-    >
+    <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
       <path d="M11 10 A 9 9 0 0 1 29 10" />
       <line x1="11" y1="10" x2="11" y2="13" />
       <line x1="29" y1="10" x2="29" y2="13" />
@@ -479,9 +388,7 @@ export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-
-// Two arrows chasing each other round: colors rotating through a range, which
-// is the one thing in this group that animates rather than replaces.
+// Two arrows chasing each other round: colors rotating through a range.
 export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -493,16 +400,13 @@ export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// An arrow to sit inside a gadget label, drawn rather than typed. Press Start
-// 2P has no arrow at any codepoint, and the fallback faces that supply one give
-// U+2192 and U+2194 different weights, sizes and baselines — so a pair of them
-// never matches, however they are scaled or nudged. Drawn here at the same 2px
-// stroke as every glyph in this file, which is also the pixel font's stroke, so
-// the arrow sits with the letters rather than beside them.
+// An arrow inside a gadget label, drawn rather than typed: Press Start 2P has no
+// arrow codepoint, and the fallback faces that do give U+2192 and U+2194
+// different weights and baselines. At the file's 2px stroke, which is also the
+// pixel font's, so it sits with the letters.
 export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
-  // Wider when it has two heads, so the shaft between them stays the length it
-  // is on the one-headed arrow. Sized the other way round — one box for both —
-  // the second head eats the shaft and the arrow reads as a squashed X.
+  // Wider when it has two heads, so the shaft between them keeps the length it
+  // has on the one-headed arrow.
   const width = both ? 20 : 16;
   const tip = width - 2;
   return (
@@ -525,4 +429,3 @@ export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
     </svg>
   );
 }
-
