@@ -175,6 +175,11 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
 - [ ] **Fix / Free Background.** The stencil's companion: freeze the picture as
       a background painting leaves alone.
 
+- [ ] **Grid.** A toolbox toggle, right-click for spacing, `g` to toggle,
+      snapping to 8x8 by default. Keeps a grid origin that shifts on toggle so
+      the held brush does not move (DPaint's CHPROC.C does this deliberately).
+      Separate from Perspective's grid.
+
 - [ ] **Spacing requester.** Right-click the line or dotted freehand tool for
       splat spacing, absolute (pixels between) or relative (splats per line).
       Small, and the dotted freehand tool already wants it.

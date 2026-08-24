@@ -28,6 +28,12 @@ a background that painting leaves alone.
 movement keys, brushes drawn in perspective. Self-contained, and the only DPaint
 II feature with a genuinely different interaction model.
 
+**Grid.** A toolbox toggle with its own spacing requester on right-click and `g`
+as its key, snapping coordinates to an 8x8 grid by default. It keeps a grid
+origin that shifts when the grid is toggled, so turning it on does not move the
+brush you are holding. Not to be confused with Perspective's grid, which is a
+different thing that happens to share the word.
+
 **Spacing requester.** Command-click the line or dotted freehand tool to set
 splat spacing — absolute (pixels between splats) or relative (splats per line).
 Small, and the dotted freehand tool is already there to want it.
@@ -44,6 +50,6 @@ program's print pipeline is a different problem.
 ## Order
 
 Stencil first: it is the one whose absence other features keep running into, and
-it is what makes Fix Background mean anything. Spacing after it, being small and
-close to work already done. Perspective last of the three real gaps — large,
+it is what makes Fix Background mean anything. Grid and Spacing after it — both
+small, both attaching to tools that already exist. Perspective last: large,
 self-contained, and the least reached for.
