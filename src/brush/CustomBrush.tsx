@@ -13,6 +13,7 @@ import {
 } from '../algorithm/shape';
 import { overmind } from '../index';
 import { foregroundPaintColorOf, backgroundPaintColorOf } from '../overmind/palette/state';
+import { plainPalette } from '../algorithm/imageColors';
 import { Mode, usesEffectDraw, usesColorizedBrush } from '../overmind/brush/mode';
 import { colorizeTexture } from '../canvas/util/util';
 import { DrawTarget } from '../canvas/CanvasController';
@@ -42,6 +43,18 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // (no Matte/Repl, never banked to Previous) even though it's a fresh object,
   // not one of the fixed registry singletons.
   public builtInFamily?: BuiltInFamily;
+  // The palette this brush's indices mean: the picture's palette when it was
+  // captured, or the one it was resolved into when loaded. A brush holds
+  // indices, so a later palette change silently recolors it, and this is what
+  // makes that recoverable — the picture's palette can be moved back to the
+  // brush's (Use Brush Palette). Undefined for a true-color brush, which has no
+  // indices to interpret, and for the built-ins, which carry no color at all.
+  //
+  // DPaint keeps exactly this and sets it in both places: DoSelBr on capture
+  // (MODES.C:279) and the loader (DPIO.C:298). Its LoadBrColors is one global
+  // describing whatever brush is in hand; per brush here, so one recalled from
+  // a slot after a palette change still knows its own.
+  public palette?: Color[];
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
   private brushColorIndexColorBG: BrushColorIndex;
@@ -72,7 +85,9 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     if (!brushColorIndex) {
       throw new Error('Failed to get brush color index from area');
     }
-    return new CustomBrush(brushColorIndex, width, height);
+    const brush = new CustomBrush(brushColorIndex, width, height);
+    brush.palette = plainPalette(Object.values(overmind.state.palette.palette));
+    return brush;
   }
 
   // Factory method for decoding a brush from an image URL (opened file or
@@ -199,7 +214,13 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // always read the matte (source-of-truth) bitmap, never a colorized variant.
   public transform(fn: (index: BrushColorIndex) => BrushColorIndex): CustomBrush {
     const transformed = fn(this.brushColorIndexMatte);
-    return new CustomBrush(transformed, transformed.width, transformed.height);
+    const brush = new CustomBrush(transformed, transformed.width, transformed.height);
+    // Reshaping moves pixels; it never reinterprets them, so the palette they
+    // are indices into is the same one. This is also the only copy path a slot
+    // recall takes (BrushSlots.recall), which is what keeps a stored brush's
+    // palette with it.
+    brush.palette = this.palette;
+    return brush;
   }
 
   // Where in its own pixels the brush is held. Derived rather than stored: the

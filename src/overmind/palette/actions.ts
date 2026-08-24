@@ -7,6 +7,9 @@ import { createPalette } from '../../components/palette/util';
 import { rgbToHsv, hsvToRgb } from '../../algorithm/color';
 import { DEFAULT_CYCLE_RATE, MIN_RANGE_SLOTS } from '../../algorithm/paletteRange';
 import { cycleDriver, refreshCyclePalettes } from '../../canvas/CycleDriver';
+import { plainPalette } from '../../algorithm/imageColors';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
 // Resizes the palette to exactly `colors` entries (the screen format's Number
 // of Colors). Existing colors are kept up to the new count; growing fills the
@@ -33,6 +36,58 @@ export const setNumberOfColors = (context: Context, colors: number): void => {
 export const replaceRanges = (context: Context, ranges: (PaletteRange | null)[]): void => {
   context.state.palette.ranges = ranges;
 };
+
+// DPaint's Picture > Color control pair (UseBrPalette and RestorePalette,
+// CURBRUSH.C:30 and PRISM.C:331). A brush holds indices, so changing the
+// palette recolors it; this moves the picture's palette to the brush instead
+// of the brush to the palette, which is the other way out of that (the first
+// being Remap). The picture's own pixels are indices too, so they recolor —
+// that is the trade, and Restore puts it back.
+export const useBrushPalette = (context: Context): void => {
+  const brush = brushRecall.current;
+  if (!(brush instanceof CustomBrush) || !brush.palette) {
+    return;
+  }
+  context.actions.palette.rememberPreviousPalette();
+  context.actions.palette.replacePalette(brush.palette);
+  pushPaletteToGl();
+};
+
+// Stashes the palette a brush's is about to displace, so Restore can put it
+// back. Called from the two places that happens: here, and the brush load
+// requester's Use Brush Palette, which does the same thing before the brush is
+// even installed.
+//
+// Deliberately not from everything that replaces a palette. DPaint stashes on
+// picture load too (DPIO.C:99), but an undo entry here carries the palette with
+// it, so a load or a conform is already one undo away. Loading a brush changes
+// no pixels and takes no undo point, which makes it the one wholesale palette
+// replacement with no other way back.
+export const rememberPreviousPalette = (context: Context): void => {
+  context.state.palette.previousPalette = plainPalette(
+    Object.values(context.state.palette.palette)
+  );
+};
+
+// Idempotent, and it keeps the record: DPaint's RestorePalette is a plain
+// LoadCMap(prevColors) that neither clears nor swaps, so calling it twice does
+// nothing the once did not.
+export const restorePalette = (context: Context): void => {
+  const previous = context.state.palette.previousPalette;
+  if (!previous) {
+    return;
+  }
+  context.actions.palette.replacePalette(previous);
+  pushPaletteToGl();
+};
+
+// The GL palette textures do not watch Overmind, so a palette swapped out from
+// under the picture has to be handed to them (the same push the brush load
+// requester makes after adopting a file's palette).
+function pushPaletteToGl(): void {
+  paintingCanvasController.updatePalette();
+  overlayCanvasController.updatePalette();
+}
 
 export const replacePalette = (context: Context, colors: Color[]): void => {
   const palette: { [id: string]: Color } = {};

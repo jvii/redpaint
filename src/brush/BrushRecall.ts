@@ -71,6 +71,15 @@ class BrushRecall {
     this.current = original;
     this.originalBrush = null;
   }
+
+  // A fresh document: back to the state the constructor left. Every brush here
+  // was made from the old picture's pixels under the old picture's palette, so
+  // none of it means anything against a new one.
+  reset(): void {
+    this.current = new PixelBrush();
+    this.originalBrush = null;
+    this.previousBrush = null;
+  }
 }
 
 export const brushRecall = new BrushRecall();

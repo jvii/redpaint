@@ -319,10 +319,18 @@ export const newPicture = (context: Context): void => {
   context.actions.canvas.setVideoStandard(DEFAULT_VIDEO_STANDARD);
   context.actions.canvas.setTrueColorEnabled(DEFAULT_TRUE_COLOR_ENABLED);
 
+  // The brushes go with the picture they were cut from: every one of them holds
+  // that picture's pixels, indexed into that picture's palette. Before the
+  // palette below, so nothing is left pointing into the outgoing one.
+  context.actions.brush.resetBrushes();
+
   // Palette next: the GL textures index into it, and the snapshot taken below
   // records whichever palette is current.
   context.actions.palette.replacePalette(defaultPaletteColors());
   context.actions.palette.replaceRanges(defaultRanges());
+  // Nothing left to put back: what Use Brush displaced belonged to the old
+  // document, and its brush is gone too, so Restore goes dim with them.
+  context.state.palette.previousPalette = null;
   // And the slots selected in it: replacePalette only clamps the ids into the
   // new depth, so without this the page would be filled with whatever color now
   // sits in the old background's slot. Back on color 1, black in every DPaint

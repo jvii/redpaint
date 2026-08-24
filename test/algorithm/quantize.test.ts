@@ -9,6 +9,7 @@ import {
   remapColorsGreedy,
 } from '../../src/algorithm/quantize';
 import { createPalette } from '../../src/components/palette/util';
+import { paletteEquals } from '../../src/algorithm/imageColors';
 
 function pixels(colors: [number, number, number][]): Uint8ClampedArray {
   const data = new Uint8ClampedArray(colors.length * 4);
@@ -356,6 +357,26 @@ describe('createNearestMapper', () => {
 
 // The generated palettes the requester offers beyond DPaint's own depths.
 // Kept here beside the remap they exist to be matched against.
+describe('paletteEquals', () => {
+  const a = [
+    { r: 1, g: 2, b: 3 },
+    { r: 4, g: 5, b: 6 },
+  ];
+
+  test('same colors in the same order', () => {
+    expect(paletteEquals(a, [...a])).toBe(true);
+  });
+
+  test('order counts', () => {
+    expect(paletteEquals(a, [a[1], a[0]])).toBe(false);
+  });
+
+  test('length counts, so a resize is always a change', () => {
+    expect(paletteEquals(a, [...a, { r: 7, g: 8, b: 9 }])).toBe(false);
+    expect(paletteEquals(a, [a[0]])).toBe(false);
+  });
+});
+
 describe('createPalette beyond DPaint depths', () => {
   const distinctColors = (palette: { r: number; g: number; b: number }[]): number =>
     new Set(palette.map((c) => `${c.r},${c.g},${c.b}`)).size;

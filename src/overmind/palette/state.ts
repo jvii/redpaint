@@ -55,6 +55,10 @@ export type State = {
   // cyclingOn is written and read only by toggleCycling, so it looks redundant
   // with CycleDriver's rafId. Kept on purpose: it is what a cycling indicator
   // would bind to. Drop it with that idea, not as dead-code cleanup.
+  // What Use Brush Palette displaced, so Restore Palette can put it back
+  // (docs/brush-palette.md). DPaint's prevColors, which its own loader sets
+  // too; here only the one action writes it.
+  previousPalette: Color[] | null;
   cyclingOn: boolean;
   cycleOffsets: number[];
   // What the UI shows for each slot: the base palette with each cycling range
@@ -109,6 +113,7 @@ export const state: State = {
   backgroundColor: derived((state: State) => state.palette[state.backgroundColorId]),
   foregroundPaintColor: derived((state: State): PaintColor => foregroundPaintColorOf(state)),
   backgroundPaintColor: derived((state: State): PaintColor => backgroundPaintColorOf(state)),
+  previousPalette: null,
   cyclingOn: false,
   cycleOffsets: [0, 0, 0, 0, 0, 0],
   displayPalette: derived((state: State) =>

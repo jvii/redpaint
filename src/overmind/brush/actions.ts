@@ -272,6 +272,23 @@ export const clearBrushSlot = (context: Context, index: number): void => {
   context.state.brush.slots[index] = { occupied: false, thumbnail: null, size: null };
 };
 
+// A fresh document (app.newPicture, right-click CLR). Every brush was cut from
+// the old picture's pixels and indexed into its palette, so none of them
+// survives it — the curated slots, Previous, the pre-transform original, and
+// whatever was in hand, which goes back to the default single-pixel brush.
+export const resetBrushes = (context: Context): void => {
+  context.state.brush.slots.forEach((_, index) => {
+    context.actions.brush.clearBrushSlot(index);
+  });
+  brushRecall.reset();
+  context.state.brush.previousSlot = { occupied: false, thumbnail: null, size: null };
+  context.state.brush.selectedBuiltInBrushId = 1;
+  context.state.brush.usingBuiltInBrush = true;
+  context.state.brush.hasOriginalBrush = false;
+  context.state.brush.handleMode = 'center';
+  context.actions.brush.setMode('Color');
+};
+
 // The Previous slot (docs/brush-slots.md): the automatic companion to the
 // curated slots, populated by BrushRecall.setCustom whenever a different custom
 // brush takes over. No store/clear: this one is not curated.

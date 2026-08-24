@@ -114,6 +114,11 @@ function BrushLoadDialogOpen(): JSX.Element {
     let colorIndex: BrushColorIndex;
     if (mode === 'brush' && fromPalette) {
       // The file's own indices, kept as they are, under the file's own palette.
+      // This displaces the picture's palette exactly as Use Brush does, so it
+      // records what it displaced the same way — and it is the one wholesale
+      // replacement undo cannot put back, a brush load changing no pixels and
+      // taking no undo point (docs/brush-palette.md).
+      actions.palette.rememberPreviousPalette();
       actions.palette.replacePalette(fromPalette.palette);
       // The GL palette textures don't watch Overmind, so the picture would go
       // on resolving indices through the old palette — the brush would preview
@@ -138,7 +143,18 @@ function BrushLoadDialogOpen(): JSX.Element {
       );
     }
 
-    brushRecall.setCustom(new CustomBrush(colorIndex, image.width, image.height));
+    const brush = new CustomBrush(colorIndex, image.width, image.height);
+    // What the brush's indices mean once the choice above is applied: the
+    // file's palette when it was adopted wholesale, the current one when the
+    // brush was remapped into it. A True Color brush keeps none — it has no
+    // indices to interpret. Read from the source rather than from state, which
+    // still holds the pre-action snapshot inside this handler.
+    if (mode === 'brush' && fromPalette) {
+      brush.palette = plainPalette(fromPalette.palette);
+    } else if (mode !== 'true') {
+      brush.palette = plainPalette(state.palette.paletteArray);
+    }
+    brushRecall.setCustom(brush);
     actions.brush.clearBuiltInBrushSelection();
     actions.brush.setMode('Matte');
     actions.brush.refreshPreviousBrushSlot();

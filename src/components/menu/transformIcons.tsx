@@ -304,3 +304,36 @@ export function CropIcon({ size = 24 }: IconProps): JSX.Element {
     </svg>
   );
 }
+
+// The Picture drawer's palette pair. Not transforms, but the same register —
+// these sit on the same strip as the Spare gadgets and have to read as their
+// siblings do.
+
+// A palette strip with something arriving in it: Use Brush Palette, which
+// replaces the picture's palette with the brush's.
+export function BrushPaletteIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="14" width="20" height="8" />
+      <line x1="7" y1="14" x2="7" y2="22" />
+      <line x1="12" y1="14" x2="12" y2="22" />
+      <line x1="17" y1="14" x2="17" y2="22" />
+      <line x1="12" y1="2" x2="12" y2="10" />
+      <polyline points="8,6 12,10 16,6" />
+    </svg>
+  );
+}
+
+// The same strip with the arrow turned back out of it: Restore Palette.
+export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="14" width="20" height="8" />
+      <line x1="7" y1="14" x2="7" y2="22" />
+      <line x1="12" y1="14" x2="12" y2="22" />
+      <line x1="17" y1="14" x2="17" y2="22" />
+      <line x1="12" y1="2" x2="12" y2="10" />
+      <polyline points="8,6 12,2 16,6" />
+    </svg>
+  );
+}

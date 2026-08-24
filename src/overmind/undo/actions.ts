@@ -1,8 +1,8 @@
 import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
-import { Color } from '../../types';
 import { createUndoEntry, totalUndoBytes } from './UndoBuffer';
+import { paletteEquals } from '../../algorithm/imageColors';
 import { conformParkedPages, currentHistory } from '../pages/PageStore';
 import { createNearestMapper } from '../../algorithm/quantize';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
@@ -117,9 +117,3 @@ function restoreEntryState(context: Context): void {
   }
 }
 
-function paletteEquals(a: Color[], b: { r: number; g: number; b: number }[]): boolean {
-  if (a.length !== b.length) {
-    return false;
-  }
-  return a.every((c, i) => c.r === b[i].r && c.g === b[i].g && c.b === b[i].b);
-}

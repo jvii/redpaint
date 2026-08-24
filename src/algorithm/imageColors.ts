@@ -57,6 +57,14 @@ export function distinctOpaqueColorsByFrequency(
 // proxy get-trap on each is the difference between a snappy load and a visible
 // stall; copying the 32..256 entries once costs nothing. Every caller handing
 // palette state to a mapping function goes through this.
+// Whether two palettes hold the same colors in the same order. Length first,
+// so a resize counts as a change however the leading entries compare.
+export function paletteEquals(a: readonly Color[], b: readonly Color[]): boolean {
+  return (
+    a.length === b.length && a.every((c, i) => c.r === b[i].r && c.g === b[i].g && c.b === b[i].b)
+  );
+}
+
 export function plainPalette(palette: readonly Color[]): Color[] {
   return palette.map((c) => ({ r: c.r, g: c.g, b: c.b }));
 }

@@ -147,6 +147,25 @@ is scheduled. Design details live in the linked docs where they exist.
       BODY uncompressed at 64 pixels wide and under, which is fidelity only.
       GRAB is the centre until the handle lands (docs/brush-handle.md).
 
+- [x] **The palette a brush was made under** — recorded on capture and on load,
+      per brush rather than DPaint's single global, so one recalled from a slot
+      after a palette change still knows its own. Picture ▸ Use Brush / Restore
+      are DPaint's Color control pair built on it. Design, and what the DPaint
+      source does at each point: docs/brush-palette.md.
+
+- [ ] **Brush ▸ Change Color.** DPaint II's submenu, three items: Bg -> Fg
+      (fill the brush's transparent pixels with the foreground color — the
+      opposite end from Color mode, which recolors the opaque ones), Bg <-> Fg
+      (the swap, DPaint II only), and Remap. The first two are straightforward
+      against BrushColorIndex, whose holes are ALPHA_TRANSPARENT pixels with
+      transparentColorNumber remembering what they were made from.
+
+      Remap became buildable with the brush palette above: re-index from
+      brush.palette into the current one via remapColorsGreedy, which is
+      already ported and already used by the load requester. Same operation the
+      requester offers, applied to a brush already in hand. See
+      docs/brush-palette.md.
+
 - [ ] **Brush-size keys, `-` and `=`.** The last unclaimed row of DPaint's
       keyboard table: `-`/`=` step the brush size down and up, `Shift` with
       either steps twice as far. Not done with the rest (`docs/keyboard.md`)

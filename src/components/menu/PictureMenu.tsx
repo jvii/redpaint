@@ -3,13 +3,19 @@ import { useActions, useAppState } from '../../overmind';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import { icons, PixelIcon } from './pixelIcons';
 import {
+  BrushPaletteIcon,
   CopyToSpareIcon,
   CropIcon,
   DeletePageIcon,
   MergeBackIcon,
   MergeFrontIcon,
+  RestorePaletteIcon,
   SwapPageIcon,
 } from './transformIcons';
+import { brushRecall } from '../../brush/BrushRecall';
+import { CustomBrush } from '../../brush/CustomBrush';
+import { Color } from '../../types';
+import { paletteEquals } from '../../algorithm/imageColors';
 import { shortcutCap } from '../ui/shortcutCap';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
@@ -17,6 +23,41 @@ import { blobMakerFor, SaveFormat, saveFormats } from './saveFormats';
 import { fileHandleFor, rememberFileHandle } from './savedFileHandle';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
+
+// What Use Brush would actually do, in one of three answers. Safe to read
+// brushRecall directly, as BrushMenu does: every action that changes the
+// current brush also closes the menu, so this remounts fresh.
+//
+// "matches" is the case worth naming. Every route out of the brush load
+// requester leaves the brush's palette equal to the picture's — adopting the
+// file's replaces the picture's with it, and remapping re-indexes the brush
+// into the picture's — so straight after a load the gadget can only be a no-op.
+// Left enabled it invites the click and does nothing visible; disabled, it says
+// there is nothing to put back, and comes alive when the palette later drifts,
+// which is the whole point of the feature (docs/brush-palette.md).
+type BrushPaletteState = 'none' | 'matches' | 'differs';
+
+function brushPaletteState(state: { paletteArray: readonly Color[] }): BrushPaletteState {
+  const brush = brushRecall.current;
+  if (!(brush instanceof CustomBrush) || !brush.palette) {
+    return 'none';
+  }
+  return paletteEquals(brush.palette, state.paletteArray) ? 'matches' : 'differs';
+}
+
+// The same three answers for Restore. It is idempotent — DPaint's is a plain
+// LoadCMap(prevColors), neither clearing nor swapping — so once used it would
+// otherwise sit enabled re-applying the palette already showing. Dim instead,
+// and live again if the palette moves away from the remembered one.
+function restorePaletteState(state: {
+  paletteArray: readonly Color[];
+  previousPalette: Color[] | null;
+}): BrushPaletteState {
+  if (!state.previousPalette) {
+    return 'none';
+  }
+  return paletteEquals(state.previousPalette, state.paletteArray) ? 'matches' : 'differs';
+}
 
 // The picture drawer: whole-image disk I/O, DPaint's term for the canvas as a
 // whole, as opposed to a brush. Mutually exclusive with the Brush drawer
@@ -30,6 +71,8 @@ import './DrawerMenu.css';
 export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const state = useAppState();
   const actions = useActions();
+  const paletteState = brushPaletteState(state.palette);
+  const restoreState = restorePaletteState(state.palette);
 
   // What a save offers as the name: whatever the document is already called, or
   // the same word the tab title uses for one that is not called anything. The
@@ -266,6 +309,54 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             disabled={state.pages.pageCount < 2}
             title="Merge the other page behind this one, showing through wherever this page is background color"
             onClick={spareAction((): void => actions.pages.mergeBack())}
+          />
+        </GadgetCluster>
+        {/* DPaint's Picture > Color control pair. A brush holds palette
+            indices, so changing the palette recolors it; this moves the
+            picture's palette to the brush rather than the brush to the
+            palette. The picture's own pixels are indices too and recolor with
+            it — which is what Restore is for. */}
+        <GadgetCluster head="Palette">
+          <Gadget
+            icon={<BrushPaletteIcon />}
+            label="Use Brush"
+            stacked
+            disabled={paletteState !== 'differs'}
+            title={
+              paletteState === 'differs'
+                ? "Give the picture the palette the current brush was made under, so the brush's colors read as they did"
+                : paletteState === 'matches'
+                  ? 'The brush already matches the picture\u2019s palette'
+                  : 'The current brush carries no palette of its own'
+            }
+            onClick={(): void => {
+              actions.palette.useBrushPalette();
+              actions.app.closeMenu();
+            }}
+          />
+          <Gadget
+            icon={<RestorePaletteIcon />}
+            label="Restore"
+            stacked
+            disabled={restoreState !== 'differs'}
+            // Says what it costs, not just what it does. It installs the
+            // palette that was in use before a brush's displaced it, whatever
+            // has happened to the palette since — so after a hand edit it is
+            // not the undo of Use Brush the shorter wording implied, it also
+            // drops the edit. (One undo brings that back: a palette editor
+            // session commits an undo point and an undo entry carries the
+            // palette. But the tooltip should not need that to be true.)
+            title={
+              restoreState === 'differs'
+                ? 'Go back to the palette that was in use before a brush\u2019s palette replaced it, dropping any palette changes made since'
+                : restoreState === 'matches'
+                  ? 'That palette is already back'
+                  : 'No brush palette has replaced one yet'
+            }
+            onClick={(): void => {
+              actions.palette.restorePalette();
+              actions.app.closeMenu();
+            }}
           />
         </GadgetCluster>
       </div>

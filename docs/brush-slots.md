@@ -159,3 +159,13 @@ row already.
 - **Phase B — slots.** ✅ Done. Model + actions + thumbnail strip in the
   menu, plus the automatic Previous slot (addendum above).
 - **Phase C (maybe) — persistence** once slots prove out.
+
+## A new picture empties them
+
+Right-click CLR resets every brush the app is holding — the curated slots,
+Previous, the pre-transform original, and whatever is in hand, which goes back
+to the default single-pixel brush (`brush.resetBrushes`, called from
+`app.newPicture`). Each of them was cut from the outgoing picture's pixels and
+indexed into its palette, so none of them means anything against a fresh one;
+keeping them would leave the old picture's material reachable from the strip
+after the picture itself is gone.
