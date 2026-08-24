@@ -110,7 +110,7 @@ DPaint's submenu is five items (`MENU.C:102`), and all five exist here now:
 
 | DPaint | here |
 | --- | --- |
-| Palette   p | the palette editor |
+| Palette   p | Picture ▸ Palette ▸ Edit, and `p` |
 | Use Brush Palette | Picture ▸ Palette ▸ From Brush |
 | Restore Palette | Picture ▸ Palette ▸ Restore |
 | Default Palette | Picture ▸ Palette ▸ Default |

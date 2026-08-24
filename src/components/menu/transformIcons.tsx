@@ -334,6 +334,22 @@ const paletteGlyphBox = (size: number): { viewBox: string; width: number; height
   height: size,
 });
 
+// A pencil over the strip: opening the palette editor. First of the group, as
+// DPaint's Color Control leads with Palette — and the one item there that is a
+// way in rather than an operation, which is why it is a tool rather than an
+// arrow.
+export function EditPaletteIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
+      {/* tip, shoulders, butt — symmetric about its own 45° axis, so the two
+          long edges stay parallel at this size instead of drifting a pixel */}
+      <path d="M14 13 L19 12 L26 5 L22 1 L15 8 Z" />
+      <line x1="21" y1="10" x2="17" y2="6" />
+      <PaletteStrip />
+    </svg>
+  );
+}
+
 // A palette strip with something arriving in it: installing a palette. Shared
 // by From Brush and Default, which differ only in where the palette comes from —
 // something the glyph does not attempt to say, and the labels do.

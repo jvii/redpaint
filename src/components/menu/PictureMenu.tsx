@@ -5,6 +5,7 @@ import { icons, PixelIcon } from './pixelIcons';
 import {
   BgToFgIcon,
   BrushPaletteIcon,
+  EditPaletteIcon,
   CopyToSpareIcon,
   CycleIcon,
   LabelArrow,
@@ -335,6 +336,20 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             palette. The picture's own pixels are indices too and recolor with
             it — which is what Restore is for. */}
         <GadgetCluster head="Palette">
+          {/* DPaint's Color Control leads with Palette too. Hard to find
+              otherwise: the editor has only ever opened on `p`, which you have
+              to know about first. */}
+          <Gadget
+            icon={<EditPaletteIcon />}
+            label="Edit"
+            stacked
+            shortcut={shortcutCap('p')}
+            title="Open the palette editor"
+            onClick={(): void => {
+              actions.app.closeMenu();
+              actions.paletteEditor.open();
+            }}
+          />
           <Gadget
             icon={<BrushPaletteIcon />}
             label="Default"
