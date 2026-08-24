@@ -319,6 +319,19 @@ export const newPicture = (context: Context): void => {
   context.actions.canvas.setVideoStandard(DEFAULT_VIDEO_STANDARD);
   context.actions.canvas.setTrueColorEnabled(DEFAULT_TRUE_COLOR_ENABLED);
 
+  // The zoom view was aimed at a point on the picture being discarded, so it
+  // goes with it — the same reasoning setResolution applies when a resize
+  // invalidates the point. Here rather than there because a new picture may
+  // happen to be the same size as the old one, and the zoom view surviving or
+  // not should not turn on that.
+  //
+  // Not what fixes the canvas size, though it looks like it should: the pane
+  // only widens once React has re-rendered and the observer has fired, both
+  // after this action returns. nativeCanvasSize reads paneAreaSize for that
+  // reason (canvas/state.ts).
+  context.state.toolbox.zoomModeOn = false;
+  context.state.canvas.zoomFocusPoint = null;
+
   // The brushes go with the picture they were cut from: every one of them holds
   // that picture's pixels, indexed into that picture's palette. Before the
   // palette below, so nothing is left pointing into the outgoing one.
