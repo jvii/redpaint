@@ -411,12 +411,20 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             }}
           />
         </GadgetCluster>
-        {/* The picture-wide twins of the Brush drawer's Color cluster, and
+        {/* The picture-wide twins of the Brush drawer's Recolor cluster, and
             DPaint II's own additions to this submenu. Same glyphs, since it is
             the same operation on a different subject — but each changes pixels,
             so each is one undo step, where the brush versions bank for
-            Restore. */}
-        <GadgetCluster head="Color">
+            Restore.
+
+            Recolor rather than Color, beside a cluster called Palette: the two
+            are the halves of this app's whole colour model, and "Color" next to
+            "Palette" named neither of them. Palette changes which colors exist
+            and leaves the picture's indices alone; Recolor changes what those
+            indices point at and leaves the palette alone. The palette strip in
+            Remap's glyph reads as "against the palette" under that head, rather
+            than as a fourth palette operation. */}
+        <GadgetCluster head="Recolor">
           <Gadget
             icon={<BgToFgIcon />}
             label={

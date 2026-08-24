@@ -125,8 +125,16 @@ no undo point records it. Disabled when the palette already is the default.
 
 DPaint II adds **Remap**, **Bg -> Fg** and **Bg <-> Fg** here too — the same
 three as its Brush ▸ Change Color, applied to the picture instead of the brush.
-Both trios exist here, in a Color cluster in each drawer, sharing their glyphs
-because they are the same operation on a different subject. Two things follow
+Both trios exist here, in a **Recolor** cluster in each drawer, sharing their
+glyphs because they are the same operation on a different subject.
+
+Recolor rather than Color, since in the Picture drawer it sits beside a Palette
+cluster and the two are the halves of the app's colour model: Palette changes
+which colors exist and leaves the picture's indices alone, Recolor changes what
+those indices point at and leaves the palette alone. Two clusters both called
+some variant of "color" named neither. It also settles what the palette strip in
+Remap's glyph means — "against the palette", under that head, rather than a
+fourth palette operation. Two things follow
 from the subject rather than the operation:
 
 - A picture has no transparency, so **Bg to Fg** is a plain color substitution

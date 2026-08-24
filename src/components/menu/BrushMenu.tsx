@@ -298,8 +298,11 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             Arrows rather than DPaint's ASCII "->" and "<->", which at this
             size read as a minus sign wedged between angle brackets. Drawn, not
             typed: see LabelArrow for why a real arrow character cannot be made
-            to match its own double-headed twin. */}
-        <GadgetCluster head="Color">
+            to match its own double-headed twin.
+
+            Recolor, matching the Picture drawer's cluster of the same three
+            (see the comment there on why not "Color"). */}
+        <GadgetCluster head="Recolor">
           <Gadget
             icon={<BgToFgIcon />}
             label={
