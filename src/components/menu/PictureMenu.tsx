@@ -537,10 +537,10 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             shortcut={shortcutCap('Tab')}
             on={state.palette.cyclingOn}
             title="Animate the palette ranges, rotating each range's colors. Display only — it paints nothing"
-            onClick={(): void => {
-              actions.palette.toggleCycling();
-              actions.app.closeMenu();
-            }}
+            // Stays open, as the Prefs toggles do: the gadget shows its own
+            // state, and closing over it hides the one thing the click was
+            // for.
+            onClick={(): void => actions.palette.toggleCycling()}
           />
         </GadgetCluster>
       </div>

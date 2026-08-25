@@ -419,6 +419,13 @@ Consistency is judged within each control type, not across them:
   states, and a finished action is the opposite of one. Copy to the clipboard
   is the case this exists for; anything else with nothing to show reuses it
   rather than growing a toast of its own.
+- **A control that shows its own state leaves the menu open** — the Handle
+  toggle, Color Cycling, everything in Prefs. Closing over a gadget hides the
+  one thing the click was for. Actions close as before: they have somewhere
+  else to show their result, and the panel is covering it.
+  - The paint modes are the exception, and the test for the rule: they close,
+    because the menubar readout names the mode once the panel is gone. State
+    that survives the close is state the menu need not stay open for.
 - Menu panels are UI chrome: `user-select: none`.
 - Panel heights are measured from content, never hand-tuned pixel
   constants.

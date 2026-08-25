@@ -420,13 +420,11 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
           <RetroToggle
             variant="row"
             value={state.brush.handleMode}
-            onChange={(value): void => {
-              actions.brush.setHandleMode(value as HandleMode);
-              actions.app.closeMenu();
-              // the handle moves the brush under a cursor that otherwise won't
-              // repaint until the mouse does (see instant() above)
-              setTimeout(refreshBrushPreview, 150);
-            }}
+            // Stays open so the segment that just took the press is visible,
+            // as the Prefs toggles do. Nothing to refresh while it does: the
+            // canvas is covered, and the preview picks the new handle up when
+            // the pointer next moves over it.
+            onChange={(value): void => actions.brush.setHandleMode(value as HandleMode)}
             options={[
               { value: 'center', label: 'Center' },
               { value: 'corner', label: 'Corner' },
