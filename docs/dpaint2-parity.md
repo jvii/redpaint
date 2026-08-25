@@ -68,13 +68,13 @@ border instead of a doubled one. Waits on Grid.
 
 ## Declined
 
-**Be Square.** DPaint II's finer aspect correction, and a real one: an Amiga
-Lo-Res pixel is about 1.2:1 on a 4:3 display, which the original's power-of-two
-mapping cannot express, so it needed a second mechanism. Ours holds the ratio
-as a float, where 1.2 costs no more than 2 — the correction in
-docs/pixel-aspect.md covers it, and a toggle could only choose between
-correcting properly and correcting partly. Declined as a separate feature, not
-as a problem.
+**Be Square.** DPaint II's finer aspect correction, and a real one: the residue
+its power-of-two mapping could not express, an Amiga Lo-Res pixel being about
+1.2:1 on a 4:3 display. Declined as a *drawing* feature — PyDPainter drops it
+too, keeping that residue in the display layer (square/NTSC/PAL) where it never
+reaches the raster. Baking it in could not guarantee a round circle anyway,
+since our window is freely resizable. If the Amiga display aspect is wanted it
+belongs beside the screen format, as a viewing option (docs/pixel-aspect.md).
 
 **Fast FB.** Faster, coarser feedback while drawing, for hardware that could
 not keep up. Nothing here is waiting on it.

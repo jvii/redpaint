@@ -55,24 +55,45 @@ symmetry's rotation but not arbitrary-angle brush rotation. Left alone here
 too — a rotated bitmap is its own artefact, and matching the original costs
 nothing.
 
-## Be Square is the same correction, at a ratio shifts cannot hold
+## Two layers, and only one of them touches pixels
 
-Be Square is a real and separate thing in DPaint, and it is worth being exact
-about why it does not become a separate thing here.
+PyDPainter separates this in a way that settles most of the questions here, and
+it is worth copying.
 
-`VMapX` is `x << xShft`. That space can say 1:1 and 2:1 and nothing else. A
-320x200 Lo-Res screen on a 4:3 display is really about 1.2:1, which no shift
-expresses — so DPaint calls Lo-Res square, draws a true raster circle there,
-and it lands perceptibly off round. Be Square corrects that residue, which is
-why the Handbuch explains it as "because the Amiga's pixels are not perfectly
-square" rather than anything about Hi-Res.
+**Draw time** takes the ratio from the screen mode. `tools.py:763` is a direct
+port of `GEOM.C`:
 
-A ratio held as a float has no such gap: 1.2 is not a harder number than 2. So
-Be Square is not dropped for having nothing to correct — it is dropped because
-once the correction is a ratio rather than a shift it is the same code, and a
-toggle could only choose between correcting properly and correcting partly.
+```python
+ax = config.aspectX;  ay = config.aspectY
+dx = (mouseX-startX)//ax          # the drag, measured in corrected space
+dy = (mouseY-startY)//ay
+radius = int(math.sqrt(dx*dx + dy*dy))
+if ax == ay: drawcircle(..., radius, ...)
+else:        drawellipse(..., radius*ax, radius*ay, ...)
+```
 
+**Display** is a separate setting entirely: `pixel_aspect`, one of
+`["square", "NTSC", "PAL"] = [1.0, 10/11, 59/54]`, doubled for lace and halved
+for hi-res. It sizes the window and appears nowhere in `tools.py` or `prim.py`.
+`force_1_to_1_pixels` turns it off.
 
+That split is the whole answer. The near-1:1 part — NTSC's 10:11, PAL's 59:54,
+the ~1.2 of a Lo-Res pixel on a 4:3 screen — is a *viewing* question and never
+reaches the raster. Only the integer part does.
+
+## Be Square
+
+DPaint II's finer correction, and a real one: the residue the shift space
+cannot express, since `VMapX` is `x << xShft` and says only 1:1 or 2:1.
+
+PyDPainter has no equivalent — nothing in `libs` or `docs` — because it puts
+that residue in the display layer instead, where it belongs. Baking it into
+pixels cannot guarantee anything anyway: our window is freely resizable, so
+there is no fixed screen geometry for a "truly round" circle to be round on.
+
+Declined here for that reason, not for having nothing to correct. If the Amiga
+display aspect is ever wanted it belongs beside the screen format as a viewing
+option, in PyDPainter's shape.
 ## What to change here
 
 Convert at the tool boundary, as DPaint does — not by threading an aspect
@@ -81,21 +102,21 @@ primitives are right as they stand: a raster circle is a raster circle. The
 adapters above it are where the screen gets a say (`PixelBrush` is already
 described as a thin adapter).
 
-**The ratio comes from `canvas.displayScale`, not from the format.**
-`aspectX`/`aspectY` are only floors: `MainCanvas` fills the two axes
-independently (`Math.max(format.aspectX, fillX)`), so the on-screen pixel shape
-is set by the window and moves as it is resized — Med-Res in a 1218x850 area is
-about 2.2:1, not exactly 2:1. `displayScale` is already mirrored into Overmind
-for readers outside that component.
+**The ratio is the format's `aspectX / aspectY`** — 1 on Lo-Res and Hi-Res,
+0.5 on Med-Res, 2 on Interlace.
 
-For a shape to read round, its screen extents must match: `rx * displayScale.x
-== ry * displayScale.y`, so `ry = rx * displayScale.x / displayScale.y`. That
-one expression covers every case above, the 1.2:1 of a true 4:3 Lo-Res
-included.
+**Not `canvas.displayScale`.** It is tempting, since it is what the screen
+actually does, but `MainCanvas` fills the two axes independently
+(`Math.max(format.aspectX, fillX)`) so it follows the window and moves as it is
+resized. Drawing from it would make the same drag produce different pixels
+depending on how the window was sized, and a saved picture would carry whatever
+shape the window happened to have. The raster has to be deterministic; the
+window is a viewing condition, and belongs to the display layer above.
 
-- **Circle tool** — call `filledEllipse`/`unfilledEllipse` with that `ry`, and
-  measure the drag radius in the corrected
-  space (`RadSM`'s job) so the drag matches what appears.
+- **Circle tool** — call `filledEllipse`/`unfilledEllipse` with
+  `ry = rx * aspectX / aspectY`, and measure the drag radius in the corrected
+  space too (`RadSM`, and PyDPainter's `dx // ax`), so the drag matches what
+  appears.
 - **Airbrush** (`AirbrushTool.tsx:39`) — scale the y component of its spray
   offset.
 - **Symmetry** (`algorithm/symmetry.ts`) — the one place the correction has to
@@ -114,13 +135,12 @@ Open: the text rasterizer has no aspect handling, so glyphs squash on Med-Res.
 DPaint's bitmap fonts did not face the question. Decide it with the text tool,
 not here.
 
-## Open: should Lo-Res ever be 1.2:1?
+## Open: should the Amiga display aspect be offered?
 
 The format table defines a Lo-Res pixel as square, which is a modelling choice
-and not what an Amiga on a 4:3 monitor did. Displaying 320x200 at a true 4:3 is
-what emulators do and what the artwork was drawn for, and it is the only case
-where DPaint's own Be Square would have had anything to say.
+and not what an Amiga on a 4:3 monitor did. PyDPainter offers NTSC and PAL
+beside square, and a `force_1_to_1_pixels` escape from both.
 
-Nothing here depends on the answer: the correction reads `displayScale`, so a
-1.2 arrives the same way a 2 does. Worth deciding on its own merits, as a
-question about how faithfully the formats model the hardware.
+That is a display question, so it changes nothing above: the raster stays
+driven by the format's integer ratio either way. Worth deciding on its own
+merits.
