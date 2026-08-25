@@ -4,6 +4,7 @@ import { colorToRGBString } from '../../algorithm/color';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { ColorFillBox } from './ColorFillBox';
 import { registerCoordsNodes } from './coordsDisplay';
+import { AxisArrow } from './transformIcons';
 import './Menubar.css';
 
 // The flood fill bucket glyph, lifted from the toolbox sprite's
@@ -162,9 +163,9 @@ export function Menubar(): JSX.Element {
   );
 }
 
-// X and Y as separate nodes so the updater writes two short strings rather
-// than rebuilding the row. It registers them on mount and clears the
-// registration on unmount, which is what turning the setting off does.
+// Two nodes so the updater writes two short strings rather than rebuilding the
+// row. Registered on mount and cleared on unmount, which is what turning the
+// setting off does.
 function CoordsReadout(): JSX.Element {
   const xRef = useRef<HTMLSpanElement>(null);
   const yRef = useRef<HTMLSpanElement>(null);
@@ -175,10 +176,12 @@ function CoordsReadout(): JSX.Element {
   return (
     <div className="menubar__coords">
       <span className="menubar__coord">
-        X<span className="menubar__coord-value" ref={xRef}></span>
+        <span className="menubar__coord-value" ref={xRef}></span>
+        <AxisArrow axis="x" />
       </span>
       <span className="menubar__coord">
-        Y<span className="menubar__coord-value" ref={yRef}></span>
+        <span className="menubar__coord-value" ref={yRef}></span>
+        <AxisArrow axis="y" />
       </span>
     </div>
   );

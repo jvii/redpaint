@@ -404,6 +404,35 @@ export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
 // arrow codepoint, and the fallback faces that do give U+2192 and U+2194
 // different weights and baselines. At the file's 2px stroke, which is also the
 // pixel font's, so it sits with the letters.
+// The coordinate readout's axis marks, following the number as DPaint's did.
+// Right for x and up for y: these name the axis, the way a graph's do, rather
+// than pointing the way the number grows.
+export function AxisArrow({ axis }: { axis: 'x' | 'y' }): JSX.Element {
+  const long = 16;
+  const short = 12;
+  const tip = long - 2;
+  const stroke = {
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'square' as const,
+    strokeLinejoin: 'miter' as const,
+    'aria-hidden': true,
+    focusable: false as const,
+  };
+  return axis === 'x' ? (
+    <svg width={long} height={short} viewBox={`0 0 ${long} ${short}`} {...stroke}>
+      <line x1="2" y1="6" x2={tip} y2="6" />
+      <polyline points={`${tip - 4},2 ${tip},6 ${tip - 4},10`} />
+    </svg>
+  ) : (
+    <svg width={short} height={long} viewBox={`0 0 ${short} ${long}`} {...stroke}>
+      <line x1="6" y1={tip} x2="6" y2="2" />
+      <polyline points="2,6 6,2 10,6" />
+    </svg>
+  );
+}
+
 export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
   // Wider when it has two heads, so the shaft between them keeps the length it
   // has on the one-headed arrow.

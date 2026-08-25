@@ -99,10 +99,17 @@
   font-size: 16px;
 }
 
+/* The arrow follows its number, as DPaint's did. Baseline-ish rather than
+   centred: Press Start 2P's digits fill their box with no descenders, so
+   centring an arrow against them leaves it sitting high. */
 .menubar__coord {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.menubar__coord svg {
+  flex: none;
 }
 
 /* Fixed width for the digits, so the bar does not twitch as the cursor moves
