@@ -4,13 +4,13 @@
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
   display: grid;
-  grid-template-areas: 'title modeIndicator indicators';
+  grid-template-areas: 'title modeIndicator indicators coords';
   /* title/mode columns are sized to their own content only (not stretched
      to fill leftover space) so the indicators appearing/disappearing in the
      third column can't shove them around; the row is pinned to the bar's own
      height so a taller item in that column can't grow the row and shift
      "redpaint" vertically */
-  grid-template-columns: max-content max-content 1fr;
+  grid-template-columns: max-content max-content 1fr max-content;
   grid-template-rows: 50px;
   column-gap: 180px;
   font-size: 24px;
@@ -83,6 +83,35 @@
 .menubar__mode-value {
   font-size: 16px;
   color: var(--wb-blue);
+}
+
+/* The cursor readout (Prefs ▸ Coordinates), at the bar's right-hand end where
+   DPaint put it. Deliberately not in the indicators cluster: those come and go
+   with what is happening, and this stays up for as long as the setting is on.
+   Right-aligned rather than centred in its slot, so the pair sits against the
+   edge and only the digits move. */
+.menubar__coords {
+  grid-area: coords;
+  margin: 10px 20px 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 16px;
+}
+
+.menubar__coord {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Fixed width for the digits, so the bar does not twitch as the cursor moves
+   between 9 and 10. Four is the widest a canvas dimension reaches here; a
+   fifth would only shift this slot left, not disturb anything in it. */
+.menubar__coord-value {
+  color: var(--wb-blue);
+  min-width: 4ch;
+  text-align: right;
 }
 
 /* A confirmation replacing the mode name for a moment. It fades rather than

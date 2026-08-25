@@ -419,6 +419,11 @@ Consistency is judged within each control type, not across them:
   states, and a finished action is the opposite of one. Copy to the clipboard
   is the case this exists for; anything else with nothing to show reuses it
   rather than growing a toast of its own.
+- **The menubar has two kinds of slot.** The mode indicator and the indicators
+  cluster are transient — they say what is happening now, and a flash borrows
+  the first of them. A setting that is on until turned off gets its own
+  reserved slot instead, sized so its content cannot move anything beside it;
+  Coords is the one, at the right-hand end.
 - **A control that shows its own state leaves the menu open** — the Handle
   toggle, Color Cycling, everything in Prefs. Closing over a gadget hides the
   one thing the click was for. Actions close as before: they have somewhere

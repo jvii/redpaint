@@ -20,6 +20,9 @@ cycling and ranges included, and Remap for both picture and brush. Spare page
 with both merges, page size, load and save for pictures and brushes, the font
 requester.
 
+Coords too, as of 2026-08-25: the Prefs toggle, in its own slot at the menu
+bar's right-hand end, absolute or drag-relative as DPaint's was.
+
 Past it in one place: Copy and Paste, in both drawers, moving pictures and
 brushes through the OS clipboard. The Amiga DPaint II has no Edit menu and no
 clipboard — an earlier revision of this file listed one as missing, having
@@ -54,10 +57,6 @@ does with a multi-color brush. Off, the brush cycles as one color (the
 foreground); on, every color in it cycles, each within whichever range it
 belongs to.
 
-**Coords.** Cursor coordinates in the menu bar, top right. The menu bar
-already carries the rest of what DPaint II puts there — the mode name and the
-fill box — so this is the piece that is missing rather than a new surface.
-
 **Be Square.** Squares the built-in brushes, the shape tools and symmetry, to
 compensate for non-square pixels. Grid and perspective are deliberately
 untouched by it. Whether it means anything on a square-pixel display is the
@@ -80,10 +79,7 @@ different problem.
 
 ## Order
 
-Coords first — small, self-contained, and the menu bar it belongs in is already
-there.
-
-Then Stencil: the one whose absence other features keep running into, and what
+Stencil next: the one whose absence other features keep running into, and what
 makes Fix Background mean anything. Grid after it, with Spacing and ExclBrush
 behind it — both attach to it. MultiCycle whenever Cycle mode is next open.
 Perspective last: large, self-contained, and the least reached for.

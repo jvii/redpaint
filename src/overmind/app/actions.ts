@@ -25,6 +25,7 @@ import {
 } from '../palette/state';
 import { cycleRangesToPaletteRanges } from '../../algorithm/paletteRange';
 import { storeUiScale } from '../../uiScale';
+import { storeBooleanPref } from '../../prefs';
 import { Drawer } from './state';
 import { SaveFormat } from '../../components/menu/saveFormats';
 import { BrushSaveFormat } from '../../components/menu/brushSaveFormats';
@@ -439,4 +440,9 @@ export const toggleDrawer = (context: Context, drawer: Drawer): void => {
 export const setUiScale = (context: Context, scale: number): void => {
   context.state.app.uiScale = scale;
   storeUiScale(scale);
+};
+
+export const setShowCoordinates = (context: Context, show: boolean): void => {
+  context.state.app.showCoordinates = show;
+  storeBooleanPref('showCoordinates', show);
 };

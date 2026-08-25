@@ -38,6 +38,21 @@ export function PreferencesMenu(): JSX.Element {
             }))}
           />
         </div>
+        {/* Shows the cursor position at the menu bar's right-hand end, where
+            DPaint put it. On/Off rather than a pressed gadget, matching UI
+            Size beside it. */}
+        <div className="wb-cluster">
+          <div className="wb-cluster__subhead">Coordinates</div>
+          <RetroToggle
+            variant="row"
+            value={state.app.showCoordinates ? 'on' : 'off'}
+            onChange={(value): void => actions.app.setShowCoordinates(value === 'on')}
+            options={[
+              { value: 'off', label: 'Off' },
+              { value: 'on', label: 'On' },
+            ]}
+          />
+        </div>
       </div>
       <div className="drawer-menu__row">
         {/* Not a setting — a readout, and deliberately somewhere quiet. History

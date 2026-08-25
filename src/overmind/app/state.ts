@@ -1,6 +1,7 @@
 import { derived } from 'overmind';
 import { OvermindState } from '..';
 import { loadUiScale } from '../../uiScale';
+import { loadBooleanPref } from '../../prefs';
 import { SaveFormat } from '../../components/menu/saveFormats';
 import { BrushSaveFormat } from '../../components/menu/brushSaveFormats';
 
@@ -76,6 +77,9 @@ export type State = {
   // screens: see uiScale.ts. Persisted in localStorage, not part of a document,
   // so it's read back here at startup.
   uiScale: number;
+  // Cursor position in the menu bar, DPaint's Prefs toggle. Persisted, and not
+  // part of a document.
+  showCoordinates: boolean;
 };
 
 export const state: State = {
@@ -98,4 +102,5 @@ export const state: State = {
   menuOpen: false,
   openDrawer: null,
   uiScale: loadUiScale(),
+  showCoordinates: loadBooleanPref('showCoordinates', false),
 };

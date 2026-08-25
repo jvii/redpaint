@@ -167,6 +167,29 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       too, and take an undo point each rather than banking for Restore.
       See docs/brush-palette.md.
 
+- [x] **Coords** — done. A Prefs toggle, persisted, showing the cursor position
+      at the menu bar's right-hand end in its own reserved slot: not the
+      transient one the mode name and flashes share, since this stays up for as
+      long as the setting is on. While a button is held it reads the offset
+      from where the drag began instead of the absolute position, which is what
+      makes it a size while a shape is dragged out rather than only a readout.
+
+      Written straight into the DOM (`coordsDisplay.ts`), not through Overmind:
+      it changes per mousemove, and Canvas's own crosshair already takes that
+      route for the same reason. The value boxes are a fixed 4ch so the bar
+      cannot twitch between 9 and 10.
+
+- [ ] **MultiCycle.** The remaining Prefs flag with real behaviour behind it:
+      off, a multi-color brush in Cycle mode cycles as the foreground color
+      alone; on, every color in it cycles within whichever range it belongs to.
+
+- [ ] **Be Square** and **ExclBrush**, the last two Prefs items. Be Square
+      squares the built-in brushes, shape tools and symmetry against non-square
+      pixels (worth deciding whether it means anything on a square-pixel
+      display before building). ExclBrush drops the right and bottom edge of a
+      picked-up brush's one-pixel border so a pattern made from it keeps a
+      single-width border — it needs Grid, which gates it.
+
 - [ ] **Stencil.** Lock chosen colors so painting cannot touch them:
       make/free/reverse/toggle, plus Lock Foreground. A system rather than a
       menu item — it constrains fills, and in DPaint III brush pickup as well.

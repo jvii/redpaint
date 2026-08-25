@@ -1,8 +1,9 @@
-import React, { JSX } from 'react';
+import React, { JSX, useEffect, useRef } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { colorToRGBString } from '../../algorithm/color';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { ColorFillBox } from './ColorFillBox';
+import { registerCoordsNodes } from './coordsDisplay';
 import './Menubar.css';
 
 // The flood fill bucket glyph, lifted from the toolbox sprite's
@@ -156,6 +157,29 @@ export function Menubar(): JSX.Element {
           </div>
         )}
       </div>
+      {state.app.showCoordinates && <CoordsReadout />}
+    </div>
+  );
+}
+
+// X and Y as separate nodes so the updater writes two short strings rather
+// than rebuilding the row. It registers them on mount and clears the
+// registration on unmount, which is what turning the setting off does.
+function CoordsReadout(): JSX.Element {
+  const xRef = useRef<HTMLSpanElement>(null);
+  const yRef = useRef<HTMLSpanElement>(null);
+  useEffect((): (() => void) => {
+    registerCoordsNodes(xRef.current, yRef.current);
+    return (): void => registerCoordsNodes(null, null);
+  }, []);
+  return (
+    <div className="menubar__coords">
+      <span className="menubar__coord">
+        X<span className="menubar__coord-value" ref={xRef}></span>
+      </span>
+      <span className="menubar__coord">
+        Y<span className="menubar__coord-value" ref={yRef}></span>
+      </span>
     </div>
   );
 }

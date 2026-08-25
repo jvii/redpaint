@@ -1,7 +1,8 @@
 import React, { JSX, useEffect, useRef } from 'react';
 import { useContextLossRecovery, useInitTool, useUndo } from './hooks';
 import { useAppState } from '../../overmind';
-import { getEventHandler, isMiddleMouseButton } from '../../tools/util/util';
+import { getEventHandler, getMousePos, isMiddleMouseButton } from '../../tools/util/util';
+import { clearCoords, showCoords } from '../menu/coordsDisplay';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
@@ -157,6 +158,24 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     }
   };
 
+  // Prefs ▸ Coordinates. While a button is held this reads the offset from
+  // where the drag began rather than the absolute position, which is what
+  // makes it a size while a shape is being dragged out (DPaint's PAINTW.C
+  // does the same). Written straight to the DOM — see coordsDisplay.ts.
+  const dragOriginRef = useRef<Point | null>(null);
+  const updateCoords = (event: React.MouseEvent<HTMLCanvasElement>): void => {
+    if (!state.app.showCoordinates) {
+      return;
+    }
+    const pos = getMousePos(event);
+    const origin = dragOriginRef.current;
+    if (origin) {
+      showCoords(pos.x - origin.x, pos.y - origin.y);
+    } else {
+      showCoords(pos.x, pos.y);
+    }
+  };
+
   // The Stretch/SizeBuiltInBrushTool resize indicator (see RESIZE_CURSOR_ICON
   // above): unlike the precise crosshair, this doesn't need buffer-pixel
   // snapping (it's a decorative corner indicator, not a paint-target marker),
@@ -233,6 +252,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           if (isMiddleMouseButton(event)) {
             return; // reserved app-wide for the menu toggle, not a paint tool
           }
+          dragOriginRef.current = getMousePos(event);
           getEventHandler(tool, 'onMouseDown')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseDownOverlay')(event);
@@ -241,6 +261,8 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           if (isMiddleMouseButton(event)) {
             return;
           }
+          dragOriginRef.current = null;
+          updateCoords(event);
           getEventHandler(tool, 'onMouseUp')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseUpOverlay')(event);
@@ -253,11 +275,13 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         onMouseEnter={(event): void => {
           updateCursorPos(event);
           updateResizeCursorPos(event);
+          updateCoords(event);
           getEventHandler(tool, 'onMouseEnter')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseEnterOverlay')(event);
         }}
         onMouseLeave={(event): void => {
+          clearCoords();
           hideCursor();
           hideResizeCursor();
           getEventHandler(tool, 'onMouseLeave')(event);
@@ -267,6 +291,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
         onMouseMove={(event): void => {
           updateCursorPos(event);
           updateResizeCursorPos(event);
+          updateCoords(event);
           getEventHandler(tool, 'onMouseMove')(event);
           // Each mouse event's overlay draws (possibly several: a gradient fill
           // preview issues one call per color band) replace the previous
