@@ -75,7 +75,27 @@ else:        drawellipse(..., radius*ax, radius*ay, ...)
 **Display** is a separate setting entirely: `pixel_aspect`, one of
 `["square", "NTSC", "PAL"] = [1.0, 10/11, 59/54]`, doubled for lace and halved
 for hi-res. It sizes the window and appears nowhere in `tools.py` or `prim.py`.
-`force_1_to_1_pixels` turns it off.
+
+The mode table keeps both as fields on one record (`displayinfo.py:44`), which
+is the clearest statement of the split anywhere in either program:
+
+| mode | size | `aspect` (display) | `aspect_x`, `aspect_y` (drawing) |
+| --- | --- | --- | --- |
+| Lo-Res | 320x200 | 0.909 = 10/11 | 1, 1 |
+| Med-Res | 640x200 | 0.4545 | 2, 1 |
+| Interlace | 320x400 | 1.818 | 1, 2 |
+| Hi-Res | 640x400 | 0.909 | 1, 1 |
+| Lo-Res PAL | 320x256 | 1.0926 = 59/54 | 1, 1 |
+
+`aspect` is the broadcast fraction times the integer factor — Med-Res is
+0.909/2. The drawing pair is only ever the integer part. Note their `aspect_x`
+counts units per pixel where ours states the pixel's width, so the two
+conventions are reciprocal: their Med-Res 2:1 is our 0.5:1.
+
+**Force 1:1 Pixels** swaps `sm.aspect` for the integer ratio, so it removes the
+broadcast fraction and nothing else: about 10% of width on NTSC, 9% on PAL. It
+never makes a hi-res pixel square, despite the name. Unchecking it is also
+inert — the handler calls `resize_display()` only on the way on.
 
 That split is the whole answer. The near-1:1 part — NTSC's 10:11, PAL's 59:54,
 the ~1.2 of a Lo-Res pixel on a 4:3 screen — is a *viewing* question and never
@@ -86,8 +106,8 @@ reaches the raster. Only the integer part does.
 DPaint II's finer correction, and a real one: the residue the shift space
 cannot express, since `VMapX` is `x << xShft` and says only 1:1 or 2:1.
 
-PyDPainter has no equivalent — nothing in `libs` or `docs` — because it puts
-that residue in the display layer instead, where it belongs. Baking it into
+PyDPainter has no equivalent — nothing in `libs` or `docs` — because that
+residue is the `aspect` field above, which only ever reaches the window. Baking it into
 pixels cannot guarantee anything anyway: our window is freely resizable, so
 there is no fixed screen geometry for a "truly round" circle to be round on.
 
@@ -172,8 +192,8 @@ not here.
 ## Open: should the Amiga display aspect be offered?
 
 The format table defines a Lo-Res pixel as square, which is a modelling choice
-and not what an Amiga on a 4:3 monitor did. PyDPainter offers NTSC and PAL
-beside square, and a `force_1_to_1_pixels` escape from both.
+and not what an Amiga on a 4:3 monitor did. PyDPainter offers NTSC and PAL beside square, and
+`force_1_to_1_pixels` to drop back to the integer ratio.
 
 That is a display question, so it changes nothing above: the raster stays
 driven by the format's integer ratio either way. Worth deciding on its own
