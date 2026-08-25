@@ -98,7 +98,13 @@ export function Gadget({
           {shortcut && <kbd className="wb-gadget__keycap">{shortcut}</kbd>}
         </span>
       ) : (
-        label && <span className="wb-gadget__label">{label}</span>
+        // Side by side the keycap is a third item in the button's own flex
+        // row, taking its gap from there; stacked it needs the labelrow to sit
+        // beside the label rather than under the icon.
+        <>
+          {label && <span className="wb-gadget__label">{label}</span>}
+          {shortcut && <kbd className="wb-gadget__keycap">{shortcut}</kbd>}
+        </>
       )}
     </button>
   );

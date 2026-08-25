@@ -294,6 +294,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.clipboardPaste} scale={2} />}
             label="Paste"
+            shortcut={shortcutCap(`${MOD_KEY}V`)}
             title="Replace the picture with the one on the clipboard"
             onClick={paste}
             disabled={!canReadImageFromClipboard()}

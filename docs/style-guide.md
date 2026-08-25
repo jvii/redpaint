@@ -398,8 +398,13 @@ Consistency is judged within each control type, not across them:
     inside RetroToggle's roomier segment padding, reads more spacious than a
     transform cluster's 2-3 gadgets, so the same 16px here felt oversized
     next to the label.
-  - Horizontal-layout gadgets (rail, drawer File row) don't get a keycap —
-    that layout has no stacked/columnar slot to put one in.
+  - Horizontal-layout gadgets take the keycap as a third item in the button's
+    own flex row, after the label, at the same 12px gap that separates the
+    icon from it. This replaces an earlier rule that they got none, on the
+    grounds that the layout had nowhere to put one: the flex row is that
+    place, and a chord nobody can find is worse than a slightly busier
+    gadget. Only gadgets that actually have a binding show one, so the File
+    row's Open and Save still carry nothing.
 
 ## Interaction
 

@@ -209,6 +209,7 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
           <Gadget
             icon={<PixelIcon map={icons.clipboardPaste} scale={2} />}
             label="Paste"
+            shortcut={shortcutCap(`${MOD_KEY}V`)}
             title="Take the picture on the clipboard as the brush"
             onClick={paste}
             disabled={!canReadImageFromClipboard()}
