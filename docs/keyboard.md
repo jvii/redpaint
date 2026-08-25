@@ -56,6 +56,11 @@ convention, since that is what you would grep for.
 | `p` | Palette editor | manual ("Palette Window") — opens only, see below |
 | `u` | Undo | manual |
 | `⌘Z` / `Ctrl+Z`, `⇧⌘Z` / `Ctrl+Y` | Undo / Redo | not DPaint's; what everyone else uses |
+| `⌘C` / `Ctrl+C`, `⌘V` / `Ctrl+V` | Copy / Paste, via the OS clipboard | not DPaint's; the Amiga had no clipboard |
+
+Both clipboard chords ask what they mean, having no drawer to have said it —
+except that Copy skips the question when the brush is built-in or absent, which
+leaves the picture as the only thing worth copying.
 
 **Airbrush and Polygon have no key** because DPaint gave them none. Its table
 runs `b B c C d D e E f F g G j K m p q r R s t u v` with no gap either could
