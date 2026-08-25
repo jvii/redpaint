@@ -110,11 +110,9 @@ export function Menubar(): JSX.Element {
           ...
         </div>
       </div>
-      {/* while a modal state is armed — a brush transform, a crop — a click
-          does that instead of painting with the mode, so the slot says so.
-          A flash outranks both: it is brief, and it is the only feedback for
-          an action that changed nothing on screen. Not the armed accent
-          though — orange means "armed", and a finished copy is not that. */}
+      {/* While a modal state is armed, a click does that rather than paint, so
+          the slot says so. A flash outranks it, briefly — but never in the
+          armed orange, which means "armed" and not "done". */}
       <div
         className={
           'menubar__mode-indicator' +

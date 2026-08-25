@@ -51,12 +51,8 @@ function isSaveableBrush(brush: unknown): boolean {
   return brush instanceof CustomBrush && !isBuiltInBrush(brush);
 }
 
-// A one-line "what's active" readout next to the drawer's own head. Safe to
-// read brushRecall.current directly with no extra reactive plumbing: every
-// action that changes it (transform, capture, load, slot/Previous recall,
-// Restore) also closes the menu, so BrushMenu always remounts fresh the
-// next time it's opened rather than needing to track a live change while
-// mounted.
+// Reading brushRecall.current directly needs no reactive plumbing: every
+// action that changes the brush also closes the menu, so this remounts fresh.
 function describeCurrentBrush(usingBuiltInBrush: boolean): string {
   const brush = brushRecall.current;
   const kind = usingBuiltInBrush ? 'Built-in' : 'Custom';
@@ -66,12 +62,9 @@ function describeCurrentBrush(usingBuiltInBrush: boolean): string {
   return `${kind} ${size}`;
 }
 
-// The brush drawer: brush disk I/O plus the brush transforms
-// (docs/brush-transforms.md), custom brushes only, like DPaint, grouped as its
-// Size/Flip/Rotate/Bend submenus. Double Horiz/Vert exist too but are
-// keyboard-only (Shift-X/Y), matching the original. Instant transforms and the
-// modal drags close the menu on selection so the reshaped brush cursor (or the
-// armed drag) shows at once.
+// Brush disk I/O plus the transforms (docs/brush-transforms.md), custom
+// brushes only. Double Horiz/Vert are keyboard-only (Shift-X/Y). Transforms
+// close the menu so the reshaped cursor or armed drag shows at once.
 export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const actions = useActions();
   const state = useAppState();
@@ -169,11 +162,9 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
         <span className="brush-menu__current">{describeCurrentBrush(usingBuiltInBrush)}</span>
       </div>
       <div className="drawer-menu__row">
-        {/* Open and Save sit in their own unheaded groups, as in the Picture
-            drawer - see the comment there on why reading and writing don't
-            share a seam, and why "File" over them was redundant. Here the
-            split also keeps Save's disabled state (built-in brushes cannot be
-            saved) from reading as if it dimmed the pair. */}
+        {/* Unheaded groups as in the Picture drawer, which has the reasoning.
+            The split also keeps Save's disabled state from reading as if it
+            dimmed the pair. */}
         <GadgetGroup>
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
@@ -408,22 +399,17 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             onClick={instant(actions.brush.restoreOriginalBrush)}
           />
         </GadgetCluster>
-        {/* a mode rather than an action, and the only one in this row — it
-            changes where the brush sits under the cursor, not what the brush
-            is. Two named options rather than a pressed gadget: "on" does not
-            say which of two places the brush is held, and there is no third.
-            Never disabled: it is app-wide, so it can be set with a built-in in
-            hand and takes effect at the next pickup, which is where DPaint kept
-            it too (a Prefs item there). */}
+        {/* Two named options rather than a pressed gadget: "on" would not say
+            which of the two places holds the brush. Never disabled — it is
+            app-wide and takes effect at the next pickup, so it can be set with
+            a built-in brush in hand. */}
         <div className="wb-cluster">
           <div className="wb-cluster__subhead">Handle</div>
           <RetroToggle
             variant="row"
             value={state.brush.handleMode}
-            // Stays open so the segment that just took the press is visible,
-            // as the Prefs toggles do. Nothing to refresh while it does: the
-            // canvas is covered, and the preview picks the new handle up when
-            // the pointer next moves over it.
+            // Stays open so the pressed segment is visible (docs/style-guide.md).
+            // No preview refresh: the canvas is still covered.
             onChange={(value): void => actions.brush.setHandleMode(value as HandleMode)}
             options={[
               { value: 'center', label: 'Center' },

@@ -397,13 +397,12 @@ export const closeSaveAsPrompt = (context: Context): void => {
   context.state.app.saveAsPrompt = null;
 };
 
-// Long enough to read two words without watching for them, short enough that
-// the slot is back to the paint mode before anyone wonders why it is not.
+// Long enough to read two words without watching for them. Must match the
+// menubar-flash animation in Menubar.css, which fades over the same span.
 const FLASH_MS = 1600;
 
 let flashTimer: ReturnType<typeof setTimeout> | undefined;
-// Rises on every flash, so the menu bar can key off it and replay the fade
-// even when the same message repeats.
+// The menu bar keys off this to replay the fade when a message repeats.
 let flashId = 0;
 
 export const flash = (context: Context, message: { name: string; value?: string }): void => {

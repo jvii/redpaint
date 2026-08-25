@@ -85,11 +85,10 @@
   color: var(--wb-blue);
 }
 
-/* A confirmation replacing the mode name for a moment. It fades in rather
-   than cutting, so it reads as something that just happened rather than as
-   the slot's new contents; it holds most of its life and leaves on the last
-   of it. Remounted per flash (the React key), which is what replays this when
-   the same message repeats. */
+/* A confirmation replacing the mode name for a moment. It fades rather than
+   cuts, so it reads as something that happened and not as the slot's new
+   contents. Duration must match FLASH_MS in overmind/app/actions.ts, which
+   clears the state. */
 .menubar__mode-indicator--flash {
   animation: menubar-flash 1.6s ease-out;
 }

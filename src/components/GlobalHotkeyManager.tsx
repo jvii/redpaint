@@ -6,13 +6,8 @@ import { DrawingToolId } from '../overmind/toolbox/state';
 import { isEdge } from '../browser';
 import { copyableBrush, copyPicture } from './menu/copyToClipboard';
 
-// A non-rendering logic component for managing hotkeys and copy/paste.
-//
-// Every hook below registers its listeners on `document` and removes them on
-// unmount. The component never unmounts today, so the cleanups never run. They
-// are here so nothing depends on that, nor on addEventListener de-duplicating
-// StrictMode's double invocation. Either changing would give every hotkey two
-// handlers, and two handlers on the cycling toggle cancel out into a dead Tab.
+// The cleanups below never run — this never unmounts — but must stay. Two
+// handlers on the cycling toggle cancel out into a dead Tab.
 export function GlobalHotKeyManager(): null {
   usePaste();
   useCopyHotkey();
@@ -31,8 +26,7 @@ function usePaste(): void {
   const actions = useActions();
 
   function handlePaste(event: ClipboardEvent): void {
-    // Both branches raise a requester, and the drawer would cover it. The
-    // gadget paths close the menu for the same reason.
+    // Both branches raise a requester, which the drawer would cover.
     actions.app.closeMenu();
     const imageFile = event.clipboardData?.files[0];
     if (!imageFile || !isImageFile(imageFile)) {
@@ -53,10 +47,8 @@ function isImageFile(file: File): boolean {
   return file.type.search(/^image\//i) === 0;
 }
 
-// Ctrl/Cmd-C, the counterpart to the paste above. With no drawer to have said
-// which, it asks — but only when both answers exist. A built-in brush is not
-// worth copying (copyToClipboard.ts), so with one of those selected there is
-// one thing on screen to copy and no question to put.
+// Asks what to copy, having no drawer to have said it — but only when both
+// answers exist. With no copyable brush the picture is the only candidate.
 function useCopyHotkey(): void {
   const actions = useActions();
 
@@ -67,9 +59,8 @@ function useCopyHotkey(): void {
     if (event.key.toLowerCase() !== 'c' || event.altKey || event.shiftKey) {
       return;
     }
-    // A real text selection's copy belongs to the browser. Chrome here is
-    // user-select: none, so this only defers when something is genuinely
-    // selected — in a requester, say.
+    // A real text selection's copy belongs to the browser. Chrome is
+    // user-select: none, so this only defers inside a requester.
     if (document.getSelection()?.isCollapsed === false) {
       return;
     }

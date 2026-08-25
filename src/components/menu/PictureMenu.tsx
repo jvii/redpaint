@@ -38,17 +38,13 @@ import { copyPicture } from './copyToClipboard';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
 
-// What From Brush would actually do, in one of three answers. Safe to read
-// brushRecall directly, as BrushMenu does: every action that changes the
-// current brush also closes the menu, so this remounts fresh.
+// Reading brushRecall directly is safe: every action that changes the brush
+// also closes the menu, so this remounts fresh.
 //
-// "matches" is the case worth naming. Every route out of the brush load
-// requester leaves the brush's palette equal to the picture's — adopting the
-// file's replaces the picture's with it, and remapping re-indexes the brush
-// into the picture's — so straight after a load the gadget can only be a no-op.
-// Left enabled it invites the click and does nothing visible; disabled, it says
-// there is nothing to put back, and comes alive when the palette later drifts,
-// which is the whole point of the feature (docs/brush-palette.md).
+// "matches" earns its own answer. Every route out of the brush load requester
+// leaves the two palettes equal, so straight after a load the gadget is a
+// no-op — dimmed it says there is nothing to put back, and comes alive when
+// the palette drifts (docs/brush-palette.md).
 type BrushPaletteState = 'none' | 'matches' | 'differs';
 
 function brushPaletteState(state: { paletteArray: readonly Color[] }): BrushPaletteState {
@@ -159,16 +155,11 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     })();
   };
 
-  // Every Spare gadget acts on a page and then gets out of the way. The panel
-  // covers the canvas, so a swap or a merge would otherwise land behind it, and
-  // DPaint's own menus closed on any selection. Copy is in here too even though
-  // it writes to the page you cannot see: a gadget that leaves the screen
-  // exactly as it was reads as a gadget that did nothing.
-  //
-  // The refresh is the transform gadgets' (BrushMenu's `instant`): the pointer
-  // is over the gadget, not the canvas, and the brush preview only repaints on
-  // a real mouse move, so one is replayed once the close transition has
-  // uncovered the canvas.
+  // Every Spare gadget acts on a page and then gets out of the way, since the
+  // panel covers the canvas the result lands on. The delayed refresh is the
+  // transform gadgets' (BrushMenu's `instant`): the pointer is over the
+  // gadget, so the brush preview needs a replayed move once the close
+  // transition has uncovered the canvas.
   const spareAction = (run: () => void) => (): void => {
     run();
     actions.app.closeMenu();
@@ -228,9 +219,8 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     void copyPicture();
   };
 
-  // No PASTE_SELECT on this path: the drawer already said which of the two a
-  // paste means, which is the only thing that requester exists to ask. The
-  // menu still closes first, so the color requester behind it is not covered.
+  // No PASTE_SELECT here: the drawer already answered the only thing that
+  // requester asks. The menu closes so the color requester is not covered.
   const paste = (): void => {
     actions.app.closeMenu();
     void (async (): Promise<void> => {
@@ -247,14 +237,10 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     <div className="drawer-menu">
       <div className="wb-cluster__head drawer-menu__head">Picture</div>
       <div className="drawer-menu__row">
-        {/* Reading and writing are separate groups, not one strip: a shared
-            seam reads as "one set of related choices", and losing the picture
-            to a mis-aimed click is the one thing in here that cannot be
-            undone. The gap does the same work the icons' arrows do.
-            Bare groups rather than GadgetCluster - the disks and their labels
-            already say these are files, so a "File" head over them only added
-            a word to read past, and with nothing headed left on this row
-            there is no sibling for a blank head to align to either. */}
+        {/* Reading and writing sit in separate groups: a shared seam reads as
+            one set of related choices, and losing the picture to a mis-aimed
+            click is the only thing here that cannot be undone. Unheaded, since
+            the disks and labels already say these are files. */}
         <GadgetGroup>
           <Gadget
             icon={<PixelIcon map={icons.diskLoad} scale={2} />}
@@ -537,9 +523,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             shortcut={shortcutCap('Tab')}
             on={state.palette.cyclingOn}
             title="Animate the palette ranges, rotating each range's colors. Display only — it paints nothing"
-            // Stays open, as the Prefs toggles do: the gadget shows its own
-            // state, and closing over it hides the one thing the click was
-            // for.
+            // Stays open so the pressed state is visible (docs/style-guide.md).
             onClick={(): void => actions.palette.toggleCycling()}
           />
         </GadgetCluster>

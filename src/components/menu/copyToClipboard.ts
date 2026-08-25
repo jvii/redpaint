@@ -6,10 +6,9 @@ import { blobMakerFor } from './saveFormats';
 import { brushBlobMakerFor } from './brushSaveFormats';
 import { writeImageToClipboard } from './clipboard';
 
-// The brush a copy would produce, or null if there is nothing worth copying.
 // Built-in brushes are excluded, as they are from Save: a few monochrome
-// pixels is not something anyone wants in another program, and leaving them
-// out is what lets Ctrl-C skip its requester when the answer is obvious.
+// pixels is not worth putting in another program. That exclusion is what lets
+// the copy chord skip its requester.
 export function copyableBrush(): CustomBrush | null {
   const brush = brushRecall.current;
   return brush instanceof CustomBrush && !isBuiltInBrush(brush) ? brush : null;
