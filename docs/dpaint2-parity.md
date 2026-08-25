@@ -59,8 +59,10 @@ belongs to.
 
 **Non-square pixels.** Not a DPaint menu item — DPaint corrects for these
 unconditionally, and we do not correct at all, so circles, the airbrush and
-symmetry come out 2:1 wrong on Med-Res and Interlace. Four sites, all at the
-tool boundary: docs/pixel-aspect.md.
+symmetry come out wrong on Med-Res and Interlace. Two halves: the display does
+not present the format's pixel shape (both scaling modes take it from the
+window), and four drawing sites do not compensate for it. The display half
+comes first. docs/pixel-aspect.md.
 
 **ExclBrush.** With Grid on, brush pickup drops the right and bottom edge of
 the one-pixel border, so a pattern made from the brush keeps a single-width

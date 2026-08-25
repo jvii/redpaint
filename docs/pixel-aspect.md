@@ -94,6 +94,40 @@ there is no fixed screen geometry for a "truly round" circle to be round on.
 Declined here for that reason, not for having nothing to correct. If the Amiga
 display aspect is ever wanted it belongs beside the screen format as a viewing
 option, in PyDPainter's shape.
+## The display does not honour the format's aspect either
+
+PyDPainter fits with a single scale and letterboxes the remainder:
+
+```python
+scale = min(max_height/screen_height, max_width/screen_width/pixel_aspect)
+new_window_size = (screen_width*scale*pixel_aspect, screen_height*scale)
+```
+
+One factor for both axes, so the displayed shape is constant however the window
+is resized; black bars take up the slack. DPaint had the same guarantee for
+free, its screen being a fixed size.
+
+`MainCanvas` instead computes `fillX` and `fillY` independently and uses
+`aspectX`/`aspectY` only as floors, so the displayed pixel shape follows the
+window. Neither mode reproduces the format. Med-Res PAL (640x256) in a 1218x850
+area:
+
+| mode | gives | the format means |
+| --- | --- | --- |
+| Stretch | 1.90 x 3.32, about 1.75:1 | 2:1 |
+| Integer | 1x3 blocks | 1x2 |
+
+So choosing Med-Res today changes the canvas dimensions but not the shape it is
+shown at, and "pixel-perfect" scaling lands on 1x3 pixels for a format whose
+pixels are 1x2.
+
+This is upstream of everything below. Correcting the raster for a display
+geometry that is never presented cannot be checked by looking at it, and a
+circle would still not come out round. Worth settling first: one scale, the
+format's aspect applied to it, margin where it does not fit — the third mode
+neither existing toggle provides.
+
+
 ## What to change here
 
 Convert at the tool boundary, as DPaint does — not by threading an aspect
