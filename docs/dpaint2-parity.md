@@ -68,12 +68,13 @@ border instead of a doubled one. Waits on Grid.
 
 ## Declined
 
-**Be Square.** DPaint II's finer aspect correction, on top of the unconditional
-one. It exists because an Amiga Lo-Res pixel is about 1.2:1 on a 4:3 display,
-which the original's power-of-two mapping cannot express. A browser's pixels
-are square and our formats are only ever 1:1 or 2:1, so there is no residue for
-it to correct (docs/pixel-aspect.md). An earlier revision of this file listed
-it as the whole of the aspect story, which had it backwards.
+**Be Square.** DPaint II's finer aspect correction, and a real one: an Amiga
+Lo-Res pixel is about 1.2:1 on a 4:3 display, which the original's power-of-two
+mapping cannot express, so it needed a second mechanism. Ours holds the ratio
+as a float, where 1.2 costs no more than 2 — the correction in
+docs/pixel-aspect.md covers it, and a toggle could only choose between
+correcting properly and correcting partly. Declined as a separate feature, not
+as a problem.
 
 **Fast FB.** Faster, coarser feedback while drawing, for hardware that could
 not keep up. Nothing here is waiting on it.

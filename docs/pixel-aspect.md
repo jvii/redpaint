@@ -55,21 +55,23 @@ symmetry's rotation but not arbitrary-angle brush rotation. Left alone here
 too — a rotated bitmap is its own artefact, and matching the original costs
 nothing.
 
-## This is not Be Square
+## Be Square is the same correction, at a ratio shifts cannot hold
 
-Be Square is a separate, finer correction, and the distinction matters because
-the parity list had it the wrong way round.
+Be Square is a real and separate thing in DPaint, and it is worth being exact
+about why it does not become a separate thing here.
 
-The shift space can only say 1:1 or 2:1. But a 320x200 Lo-Res screen on a 4:3
-display is really about 1.2:1, which no shift expresses — so DPaint calls
-Lo-Res square, draws a true raster circle there, and it lands perceptibly off
-round. Be Square is what corrects _that_ residue, which is why the Handbuch
-explains it as "because the Amiga's pixels are not perfectly square" rather
-than anything about Hi-Res.
+`VMapX` is `x << xShft`. That space can say 1:1 and 2:1 and nothing else. A
+320x200 Lo-Res screen on a 4:3 display is really about 1.2:1, which no shift
+expresses — so DPaint calls Lo-Res square, draws a true raster circle there,
+and it lands perceptibly off round. Be Square corrects that residue, which is
+why the Handbuch explains it as "because the Amiga's pixels are not perfectly
+square" rather than anything about Hi-Res.
 
-Our formats are only ever 1:1 or 2:1, and a browser's pixels really are square.
-So the unconditional correction covers everything we have, and a Be Square
-toggle would have nothing left to do. It is dropped from the parity list.
+A ratio held as a float has no such gap: 1.2 is not a harder number than 2. So
+Be Square is not dropped for having nothing to correct — it is dropped because
+once the correction is a ratio rather than a shift it is the same code, and a
+toggle could only choose between correcting properly and correcting partly.
+
 
 ## What to change here
 
@@ -79,11 +81,20 @@ primitives are right as they stand: a raster circle is a raster circle. The
 adapters above it are where the screen gets a say (`PixelBrush` is already
 described as a thin adapter).
 
-The ratio wanted is `aspectX / aspectY`: 1 on Lo-Res and Hi-Res, 0.5 on
-Med-Res, 2 on Interlace.
+**The ratio comes from `canvas.displayScale`, not from the format.**
+`aspectX`/`aspectY` are only floors: `MainCanvas` fills the two axes
+independently (`Math.max(format.aspectX, fillX)`), so the on-screen pixel shape
+is set by the window and moves as it is resized — Med-Res in a 1218x850 area is
+about 2.2:1, not exactly 2:1. `displayScale` is already mirrored into Overmind
+for readers outside that component.
 
-- **Circle tool** — call `filledEllipse`/`unfilledEllipse` with
-  `ry = rx * aspectX / aspectY`, and measure the drag radius in the corrected
+For a shape to read round, its screen extents must match: `rx * displayScale.x
+== ry * displayScale.y`, so `ry = rx * displayScale.x / displayScale.y`. That
+one expression covers every case above, the 1.2:1 of a true 4:3 Lo-Res
+included.
+
+- **Circle tool** — call `filledEllipse`/`unfilledEllipse` with that `ry`, and
+  measure the drag radius in the corrected
   space (`RadSM`'s job) so the drag matches what appears.
 - **Airbrush** (`AirbrushTool.tsx:39`) — scale the y component of its spray
   offset.
@@ -102,3 +113,14 @@ polygon, the ellipse tool, crop, flood fill.
 Open: the text rasterizer has no aspect handling, so glyphs squash on Med-Res.
 DPaint's bitmap fonts did not face the question. Decide it with the text tool,
 not here.
+
+## Open: should Lo-Res ever be 1.2:1?
+
+The format table defines a Lo-Res pixel as square, which is a modelling choice
+and not what an Amiga on a 4:3 monitor did. Displaying 320x200 at a true 4:3 is
+what emulators do and what the artwork was drawn for, and it is the only case
+where DPaint's own Be Square would have had anything to say.
+
+Nothing here depends on the answer: the correction reads `displayScale`, so a
+1.2 arrives the same way a 2 does. Worth deciding on its own merits, as a
+question about how faithfully the formats model the hardware.
