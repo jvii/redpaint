@@ -217,10 +217,8 @@ export function DeletePageIcon({ size = 24 }: IconProps): JSX.Element {
 }
 
 // Two overlapping pages, the one in front saying which way the merge goes; the
-// spare is the page at the top right in both. The overlap is drawn by
-// interrupting the page behind rather than filling the one in front, every glyph
-// here being an unfilled stroke drawing.
-
+// spare is the top right one in both. The overlap interrupts the page behind
+// rather than filling the one in front, every glyph here being unfilled.
 export function MergeFrontIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -257,9 +255,9 @@ export function CropIcon({ size = 24 }: IconProps): JSX.Element {
 // The palette glyphs. Not transforms, but the same register: they share a row
 // with the Spare gadgets.
 
-// The strip every palette glyph stands on, defined once so they cannot drift
-// apart. Narrower than the box, which is what lets Remap's semicircle reach from
-// the first cell's centre to the last.
+// The strip every palette glyph stands on, once so they cannot drift apart.
+// Narrower than the box, which is what lets Remap's semicircle reach from the
+// first cell's centre to the last.
 function PaletteStrip(): JSX.Element {
   return (
     <>
@@ -286,8 +284,8 @@ export function EditPaletteIcon({ size = 24 }: IconProps): JSX.Element {
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
       {/* Symmetric by construction: shoulders at (5,-1) and (1,-5) from the
           tip, butt a further (8,-8) from each, so the long edges stay parallel
-          however the numbers round. As long as the box allows — the butt corner
-          is already a stroke off the top. */}
+          however the numbers round. As long as the box allows — the butt is
+          already a stroke off the top. */}
       <path d="M13 14 L18 13 L26 5 L22 1 L14 9 Z" />
       <line x1="21" y1="10" x2="17" y2="6" />
       <PaletteStrip />
@@ -323,12 +321,12 @@ export function RestorePaletteIcon({ size = 24 }: IconProps): JSX.Element {
 
 // A hollow square becoming a filled one, or the two changing places — one
 // drawing with a second head, as LabelArrow is. Wide because three things want
-// the width: squares that read as hollow, a gap either side of the arrow, and a
+// the room: squares that read as hollow, a gap either side of the arrow, and a
 // shaft that survives a second head.
 function ColorSwapGlyph({ size, both = false }: { size: number; both?: boolean }): JSX.Element {
   // Hatched rather than solid: solid black beside a hollow outline reads as
-  // "empty and full", where these two mean one color and another. Its own id per
-  // instance, the glyph rendering more than once on a page.
+  // "empty and full", where these two mean one color and another. Its own id
+  // per instance, the glyph rendering more than once on a page.
   const hatch = `swap-hatch-${useId().replace(/:/g, '')}`;
   return (
     <svg
@@ -368,14 +366,10 @@ export function SwapColorsIcon({ size = 24 }: IconProps): JSX.Element {
 }
 
 // A color hopping from the first palette slot to the last, which is what
-// re-indexing is: an arc within the strip, where an arrow into one would say
-// installing a palette, as From Brush and Default do.
-//
-// A true semicircle, so it meets the strip at a right angle and the head needs
-// no tilt. Both ends drop to matching stems stopping two units short of the
-// strip: the head hangs below one end, and without the other's stem the shape
-// is lopsided.
-
+// re-indexing is; an arrow into the strip would say installing a palette, as
+// From Brush and Default do. A true semicircle, so it meets the strip square
+// and the head needs no tilt, and both ends drop to matching stems — the head
+// hangs below one, and without the other's stem the shape is lopsided.
 export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
@@ -400,17 +394,12 @@ export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// An arrow inside a gadget label, drawn rather than typed: Press Start 2P has no
-// arrow codepoint, and the fallback faces that do give U+2192 and U+2194
-// different weights and baselines. At the file's 2px stroke, which is also the
-// pixel font's, so it sits with the letters.
-// The coordinate readout's axis marks, following the number as DPaint's did.
-// Right for x and down for y, the way each coordinate grows from an origin at
-// the top left.
+// The coordinate readout's axis marks, following the number: right for x, down
+// for y, the way each coordinate grows from an origin at the top left.
 //
 // Drawn rather than the face's own U+2192/U+2193, which it does carry: its
 // horizontal arrow is a much lighter design than its vertical one, and at
-// readout size the pair reads as two different registers.
+// readout size the pair reads as two registers.
 export function AxisArrow({ axis }: { axis: 'x' | 'y' }): JSX.Element {
   const long = 16;
   const short = 12;
@@ -437,6 +426,10 @@ export function AxisArrow({ axis }: { axis: 'x' | 'y' }): JSX.Element {
   );
 }
 
+// An arrow inside a gadget label. Drawn because the two-headed one has to be:
+// Press Start 2P has the four cardinal arrows but no U+2194, so that one falls
+// back to another face at a different weight and baseline. Both are drawn, so
+// the pair matches. At the file's 2px stroke, which is the pixel font's too.
 export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
   // Wider when it has two heads, so the shaft between them keeps the length it
   // has on the one-headed arrow.
