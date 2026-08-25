@@ -225,10 +225,19 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
   // Always PNG, and through blobMakerFor so a cycling picture copies its base
   // colors rather than whichever frame the cycle was on.
   const copy = (): void => {
-    const makeBlob = blobMakerFor('png', Object.values(state.palette.palette), state.palette.ranges);
-    if (makeBlob) {
-      void writeImageToClipboard(makeBlob);
+    const makeBlob = blobMakerFor(
+      'png',
+      Object.values(state.palette.palette),
+      state.palette.ranges
+    );
+    if (!makeBlob) {
+      return;
     }
+    actions.app.closeMenu();
+    void (async (): Promise<void> => {
+      const copied = await writeImageToClipboard(makeBlob);
+      actions.app.flash(copied ? { name: 'Copied', value: 'picture' } : { name: 'Copy failed' });
+    })();
   };
 
   // No PASTE_SELECT on this path: the drawer already said which of the two a

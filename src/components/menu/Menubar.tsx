@@ -38,6 +38,7 @@ export function Menubar(): JSX.Element {
   const state = useAppState();
 
   const mode = state.brush.mode;
+  const flash = state.app.flash;
   // The armed modal state, as a name plus an optional live readout: the name is
   // the mode, the readout is the thing the mode is deciding, a crop's size, a
   // rotate's angle. Split rather than one string so the two can take different
@@ -110,13 +111,23 @@ export function Menubar(): JSX.Element {
         </div>
       </div>
       {/* while a modal state is armed — a brush transform, a crop — a click
-          does that instead of painting with the mode, so the slot says so */}
+          does that instead of painting with the mode, so the slot says so.
+          A flash outranks both: it is brief, and it is the only feedback for
+          an action that changed nothing on screen. Not the armed accent
+          though — orange means "armed", and a finished copy is not that. */}
       <div
-        className={'menubar__mode-indicator' + (armedMode ? ' menubar__mode-indicator--armed' : '')}
+        className={
+          'menubar__mode-indicator' +
+          (flash ? ' menubar__mode-indicator--flash' : '') +
+          (armedMode && !flash ? ' menubar__mode-indicator--armed' : '')
+        }
+        key={flash ? `flash-${flash.id}` : 'mode'}
       >
         <span className="menubar__mode-name">
-          {armedMode?.name ?? mode}
-          {armedMode?.value && <span className="menubar__mode-value">{armedMode.value}</span>}
+          {flash?.name ?? armedMode?.name ?? mode}
+          {(flash ?? armedMode)?.value && (
+            <span className="menubar__mode-value">{(flash ?? armedMode)?.value}</span>
+          )}
         </span>
         {armedHint && (
           <span className="supporting-text menubar__hint">

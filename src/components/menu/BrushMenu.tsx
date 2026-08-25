@@ -151,9 +151,14 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
       return;
     }
     const makeBlob = brushBlobMakerFor(brush, 'png', Object.values(state.palette.palette));
-    if (makeBlob) {
-      void writeImageToClipboard(makeBlob);
+    if (!makeBlob) {
+      return;
     }
+    actions.app.closeMenu();
+    void (async (): Promise<void> => {
+      const copied = await writeImageToClipboard(makeBlob);
+      actions.app.flash(copied ? { name: 'Copied', value: 'brush' } : { name: 'Copy failed' });
+    })();
   };
 
   // The menu closes first: both the load requester and the error land on top

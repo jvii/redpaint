@@ -407,6 +407,13 @@ Consistency is judged within each control type, not across them:
   slot names the mode in orange, the cursor changes to the matching
   affordance, and the on-canvas preview carries the marquee. New modal
   tools reuse all three.
+- An action that leaves the screen unchanged confirms itself in the same
+  menubar slot, via `app.flash`: the verb where the mode name goes, the
+  subject beside it in the blue a readout takes. It fades rather than cutting,
+  and is gone in under two seconds. Not orange — that is reserved for armed
+  states, and a finished action is the opposite of one. Copy to the clipboard
+  is the case this exists for; anything else with nothing to show reuses it
+  rather than growing a toast of its own.
 - Menu panels are UI chrome: `user-select: none`.
 - Panel heights are measured from content, never hand-tuned pixel
   constants.

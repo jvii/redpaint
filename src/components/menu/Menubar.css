@@ -85,6 +85,28 @@
   color: var(--wb-blue);
 }
 
+/* A confirmation replacing the mode name for a moment. It fades in rather
+   than cutting, so it reads as something that just happened rather than as
+   the slot's new contents; it holds most of its life and leaves on the last
+   of it. Remounted per flash (the React key), which is what replays this when
+   the same message repeats. */
+.menubar__mode-indicator--flash {
+  animation: menubar-flash 1.6s ease-out;
+}
+
+@keyframes menubar-flash {
+  0% {
+    opacity: 0;
+  }
+  10%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* What an armed mode lets you do: a caption to the mode name, not a rival to
    the orange it sits beside. Sentence case, since it reads as a sentence and
    not a title. The keycap takes its ink and border from here. */

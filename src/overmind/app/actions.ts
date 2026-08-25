@@ -397,6 +397,25 @@ export const closeSaveAsPrompt = (context: Context): void => {
   context.state.app.saveAsPrompt = null;
 };
 
+// Long enough to read two words without watching for them, short enough that
+// the slot is back to the paint mode before anyone wonders why it is not.
+const FLASH_MS = 1600;
+
+let flashTimer: ReturnType<typeof setTimeout> | undefined;
+// Rises on every flash, so the menu bar can key off it and replay the fade
+// even when the same message repeats.
+let flashId = 0;
+
+export const flash = (context: Context, message: { name: string; value?: string }): void => {
+  context.state.app.flash = { ...message, id: ++flashId };
+  clearTimeout(flashTimer);
+  flashTimer = setTimeout((): void => context.actions.app.clearFlash(), FLASH_MS);
+};
+
+export const clearFlash = (context: Context): void => {
+  context.state.app.flash = null;
+};
+
 export const setLoading = (context: Context, isLoading: boolean): void => {
   context.state.app.isLoading = isLoading;
 };

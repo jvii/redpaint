@@ -23,6 +23,10 @@ export type State = {
   // compete for a palette slot.
   brushLoadInfo: { width: number; height: number; colorCount: number } | null;
   isLoading: boolean;
+  // A short confirmation in the menu bar's mode slot, for actions that leave
+  // the screen looking exactly as it did — a copy to the clipboard. null when
+  // the slot is back to showing the paint mode.
+  flash: { name: string; value?: string; id: number } | null;
   // The document's name without an extension, as last saved or loaded: the name
   // a save offers, and what the tab title and the autosave record carry. Empty
   // until something names it; read displayName for the name to show.
@@ -80,6 +84,7 @@ export const state: State = {
   imageLoadInfo: null,
   brushLoadInfo: null,
   isLoading: false,
+  flash: null,
   documentName: '',
   displayName: derived((state: State) => state.documentName || UNTITLED_DOCUMENT),
   saveFormat: 'png',
