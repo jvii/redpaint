@@ -4,6 +4,12 @@ Audited 2026-08-24 against the DPaint II manual's Reference chapter (menus and
 toolbox) and DPaint I's `MENU.C`, both in `docs/reference/`. Parity with II is
 the objective (docs/dpaint-versions.md), so this is the list that ends.
 
+Revised 2026-08-25: the first pass read the Reference chapter out of the IIGS
+manual, whose Edit menu does not exist on the Amiga, and invented gaps from it
+(a clipboard, an Info Bar toggle, Square Aspect). Menu contents here now come
+from the German Handbuch, which is the Amiga edition — `PLATFORM_NOTE.md` says
+to prefer it, and this is what ignoring that costs.
+
 ## Reached
 
 Every toolbox drawing tool: dotted and continuous freehand, line, curve, fill,
@@ -43,15 +49,41 @@ different thing that happens to share the word.
 splat spacing — absolute (pixels between splats) or relative (splats per line).
 Small, and the dotted freehand tool is already there to want it.
 
-**Prefs oddments.** Coordinates, Fast Feedback, Info Bar, Excl Brush, Square
-Aspect. Each is one flag; none is interesting alone.
+**MultiCycle.** A Prefs flag, but not an oddment: it decides what Cycle mode
+does with a multi-color brush. Off, the brush cycles as one color (the
+foreground); on, every color in it cycles, each within whichever range it
+belongs to.
 
-**Print.** Declined rather than missing — a browser prints the page, and a paint
-program's print pipeline is a different problem.
+**Coords.** Cursor coordinates in the menu bar, top right. The menu bar
+already carries the rest of what DPaint II puts there — the mode name and the
+fill box — so this is the piece that is missing rather than a new surface.
+
+**Be Square.** Squares the built-in brushes, the shape tools and symmetry, to
+compensate for non-square pixels. Grid and perspective are deliberately
+untouched by it. Whether it means anything on a square-pixel display is the
+question to answer before building it.
+
+**ExclBrush.** With Grid on, brush pickup drops the right and bottom edge of
+the one-pixel border, so a pattern made from the brush keeps a single-width
+border instead of a doubled one. Waits on Grid.
+
+## Declined
+
+**Fast FB.** Faster, coarser feedback while drawing, for hardware that could
+not keep up. Nothing here is waiting on it.
+
+**Workbench.** Shows and hides the Amiga Workbench screen, which a browser has
+no equivalent of.
+
+**Print.** A browser prints the page, and a paint program's print pipeline is a
+different problem.
 
 ## Order
 
-Stencil first: it is the one whose absence other features keep running into, and
-it is what makes Fix Background mean anything. Grid and Spacing after it — both
-small, both attaching to tools that already exist. Perspective last: large,
-self-contained, and the least reached for.
+Coords first — small, self-contained, and the menu bar it belongs in is already
+there.
+
+Then Stencil: the one whose absence other features keep running into, and what
+makes Fix Background mean anything. Grid after it, with Spacing and ExclBrush
+behind it — both attach to it. MultiCycle whenever Cycle mode is next open.
+Perspective last: large, self-contained, and the least reached for.
