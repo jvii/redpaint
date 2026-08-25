@@ -32,6 +32,12 @@ import {
 import { saveFileAs } from './saveAsPng';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import { brushBlobMakerFor, BrushSaveFormat, brushSaveFormats } from './brushSaveFormats';
+import {
+  canReadImageFromClipboard,
+  canWriteImageToClipboard,
+  clipboardImageUrl,
+  writeImageToClipboard,
+} from './clipboard';
 import './DrawerMenu.css';
 
 // Only captured or loaded brushes can be saved. The pixel brush has no bitmap
@@ -136,6 +142,34 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
     setTimeout(refreshBrushPreview, 150);
   };
 
+  // PNG, so the transparent pixels stay transparent wherever the brush is
+  // pasted. Built-in brushes copy fine — Save excludes them because a file
+  // named after one is confusing, which the clipboard has no equivalent of.
+  const copy = (): void => {
+    const brush = brushRecall.current;
+    if (!(brush instanceof CustomBrush)) {
+      return;
+    }
+    const makeBlob = brushBlobMakerFor(brush, 'png', Object.values(state.palette.palette));
+    if (makeBlob) {
+      void writeImageToClipboard(makeBlob);
+    }
+  };
+
+  // The menu closes first: both the load requester and the error land on top
+  // of the picture, and the drawer covers that.
+  const paste = (): void => {
+    actions.app.closeMenu();
+    void (async (): Promise<void> => {
+      const url = await clipboardImageUrl();
+      if (!url) {
+        actions.dialog.open('PASTE_ERROR');
+        return;
+      }
+      actions.app.beginBrushLoad(url);
+    })();
+  };
+
   return (
     <div className="drawer-menu">
       <div className="wb-cluster__head drawer-menu__head">
@@ -165,6 +199,22 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
             title={usingBuiltInBrush ? 'Cannot save a built-in brush' : 'Save brush...'}
             onClick={handleBrushSave}
             disabled={!isSaveableBrush(brushRecall.current)}
+          />
+        </GadgetGroup>
+        <GadgetGroup>
+          <Gadget
+            icon={<PixelIcon map={icons.clipboardCopy} scale={2} />}
+            label="Copy"
+            title="Copy the brush to the clipboard, as PNG"
+            onClick={copy}
+            disabled={!canWriteImageToClipboard() || !(brushRecall.current instanceof CustomBrush)}
+          />
+          <Gadget
+            icon={<PixelIcon map={icons.clipboardPaste} scale={2} />}
+            label="Paste"
+            title="Take the picture on the clipboard as the brush"
+            onClick={paste}
+            disabled={!canReadImageFromClipboard()}
           />
         </GadgetGroup>
       </div>

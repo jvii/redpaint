@@ -28,6 +28,12 @@ import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
 import { blobMakerFor, SaveFormat, saveFormats } from './saveFormats';
 import { fileHandleFor, rememberFileHandle } from './savedFileHandle';
+import {
+  canReadImageFromClipboard,
+  canWriteImageToClipboard,
+  clipboardImageUrl,
+  writeImageToClipboard,
+} from './clipboard';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
 
@@ -216,6 +222,30 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     })();
   };
 
+  // Always PNG, and through blobMakerFor so a cycling picture copies its base
+  // colors rather than whichever frame the cycle was on.
+  const copy = (): void => {
+    const makeBlob = blobMakerFor('png', Object.values(state.palette.palette), state.palette.ranges);
+    if (makeBlob) {
+      void writeImageToClipboard(makeBlob);
+    }
+  };
+
+  // No PASTE_SELECT on this path: the drawer already said which of the two a
+  // paste means, which is the only thing that requester exists to ask. The
+  // menu still closes first, so the color requester behind it is not covered.
+  const paste = (): void => {
+    actions.app.closeMenu();
+    void (async (): Promise<void> => {
+      const url = await clipboardImageUrl();
+      if (!url) {
+        actions.dialog.open('PASTE_ERROR');
+        return;
+      }
+      actions.app.beginImageLoad({ url });
+    })();
+  };
+
   return (
     <div className="drawer-menu">
       <div className="wb-cluster__head drawer-menu__head">Picture</div>
@@ -250,6 +280,25 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
             label="Save As"
             title="Save the picture under a new name, in a format of your choosing..."
             onClick={saveAs}
+          />
+        </GadgetGroup>
+        {/* A third group rather than joining Save: the clipboard is not the
+            disk, and Copy going next to Save As would read as another way to
+            write a file. */}
+        <GadgetGroup>
+          <Gadget
+            icon={<PixelIcon map={icons.clipboardCopy} scale={2} />}
+            label="Copy"
+            title="Copy the picture to the clipboard, as PNG"
+            onClick={copy}
+            disabled={!canWriteImageToClipboard()}
+          />
+          <Gadget
+            icon={<PixelIcon map={icons.clipboardPaste} scale={2} />}
+            label="Paste"
+            title="Replace the picture with the one on the clipboard"
+            onClick={paste}
+            disabled={!canReadImageFromClipboard()}
           />
         </GadgetGroup>
       </div>

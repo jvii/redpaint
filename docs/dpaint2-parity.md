@@ -14,6 +14,11 @@ cycling and ranges included, and Remap for both picture and brush. Spare page
 with both merges, page size, load and save for pictures and brushes, the font
 requester.
 
+Past it in one place: Copy and Paste, in both drawers, moving pictures and
+brushes through the OS clipboard. The Amiga DPaint II has no Edit menu and no
+clipboard — an earlier revision of this file listed one as missing, having
+taken it from the IIGS manual text (`PLATFORM_NOTE.md`).
+
 ## Missing
 
 **Stencil.** The largest gap, and it is a system rather than a menu item: lock
@@ -37,9 +42,6 @@ different thing that happens to share the word.
 **Spacing requester.** Command-click the line or dotted freehand tool to set
 splat spacing — absolute (pixels between splats) or relative (splats per line).
 Small, and the dotted freehand tool is already there to want it.
-
-**Cut / Copy / Paste.** The Edit menu clipboard. We have a paste buffer for
-images arriving from outside, not the internal clipboard.
 
 **Prefs oddments.** Coordinates, Fast Feedback, Info Bar, Excl Brush, Square
 Aspect. Each is one flag; none is interesting alone.
