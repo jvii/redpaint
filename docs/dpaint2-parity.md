@@ -57,16 +57,23 @@ does with a multi-color brush. Off, the brush cycles as one color (the
 foreground); on, every color in it cycles, each within whichever range it
 belongs to.
 
-**Be Square.** Squares the built-in brushes, the shape tools and symmetry, to
-compensate for non-square pixels. Grid and perspective are deliberately
-untouched by it. Whether it means anything on a square-pixel display is the
-question to answer before building it.
+**Non-square pixels.** Not a DPaint menu item — DPaint corrects for these
+unconditionally, and we do not correct at all, so circles, the airbrush and
+symmetry come out 2:1 wrong on Med-Res and Interlace. Four sites, all at the
+tool boundary: docs/pixel-aspect.md.
 
 **ExclBrush.** With Grid on, brush pickup drops the right and bottom edge of
 the one-pixel border, so a pattern made from the brush keeps a single-width
 border instead of a doubled one. Waits on Grid.
 
 ## Declined
+
+**Be Square.** DPaint II's finer aspect correction, on top of the unconditional
+one. It exists because an Amiga Lo-Res pixel is about 1.2:1 on a 4:3 display,
+which the original's power-of-two mapping cannot express. A browser's pixels
+are square and our formats are only ever 1:1 or 2:1, so there is no residue for
+it to correct (docs/pixel-aspect.md). An earlier revision of this file listed
+it as the whole of the aspect story, which had it backwards.
 
 **Fast FB.** Faster, coarser feedback while drawing, for hardware that could
 not keep up. Nothing here is waiting on it.
@@ -83,3 +90,6 @@ Stencil next: the one whose absence other features keep running into, and what
 makes Fix Background mean anything. Grid after it, with Spacing and ExclBrush
 behind it — both attach to it. MultiCycle whenever Cycle mode is next open.
 Perspective last: large, self-contained, and the least reached for.
+
+Non-square pixels sit outside that order: it is a correctness bug rather than a
+missing feature, and the four sites are independent of everything above.

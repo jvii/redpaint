@@ -187,12 +187,17 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       off, a multi-color brush in Cycle mode cycles as the foreground color
       alone; on, every color in it cycles within whichever range it belongs to.
 
-- [ ] **Be Square** and **ExclBrush**, the last two Prefs items. Be Square
-      squares the built-in brushes, shape tools and symmetry against non-square
-      pixels (worth deciding whether it means anything on a square-pixel
-      display before building). ExclBrush drops the right and bottom edge of a
-      picked-up brush's one-pixel border so a pattern made from it keeps a
-      single-width border — it needs Grid, which gates it.
+- [ ] **Non-square pixels.** A correctness bug rather than a missing feature:
+      Med-Res and Interlace display a 2:1 pixel, and nothing in the drawing
+      pipeline knows. Circles, the airbrush, symmetry and the built-in round
+      brushes all come out 2:1 wrong there. DPaint corrected this
+      unconditionally by converting at the tool boundary, which is the shape
+      the fix should take — `algorithm/` stays pure. Four sites, the original's
+      six, and why Be Square is a different thing: docs/pixel-aspect.md.
+
+- [ ] **ExclBrush**, the last Prefs item. With Grid on, brush pickup drops the
+      right and bottom edge of the one-pixel border so a pattern made from the
+      brush keeps a single-width border. Waits on Grid, which gates it.
 
 - [ ] **Stencil.** Lock chosen colors so painting cannot touch them:
       make/free/reverse/toggle, plus Lock Foreground. A system rather than a
