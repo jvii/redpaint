@@ -84,6 +84,14 @@ function canvasPixelUnder(event: React.MouseEvent<HTMLCanvasElement>): Point {
   };
 }
 
+// How many pixels a drag covers on one axis, counting both ends: a 3-pixel
+// rectangle reads 3, and the press itself reads 1. The sign is kept, so the
+// number says which way the drag went as well as how far.
+function dragSpan(from: number, to: number): number {
+  const delta = to - from;
+  return delta >= 0 ? delta + 1 : delta - 1;
+}
+
 export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): JSX.Element | null {
   const state = useAppState();
 
@@ -174,10 +182,9 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     }
   };
 
-  // Prefs ▸ Coordinates. While a button is held this reads the offset from
-  // where the drag began rather than the absolute position, which is what
-  // makes it a size while a shape is being dragged out (DPaint's PAINTW.C
-  // does the same). Written straight to the DOM — see coordsDisplay.ts.
+  // Prefs ▸ Coordinates. While a button is held this measures the drag rather
+  // than reporting the position, which is what makes it a size while a shape
+  // is dragged out. Written straight to the DOM — see coordsDisplay.ts.
   const dragOriginRef = useRef<Point | null>(null);
   const updateCoords = (event: React.MouseEvent<HTMLCanvasElement>): void => {
     if (!state.app.showCoordinates) {
@@ -186,7 +193,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     const pos = canvasPixelUnder(event);
     const origin = dragOriginRef.current;
     if (origin) {
-      showCoords(pos.x - origin.x, pos.y - origin.y);
+      showCoords(dragSpan(origin.x, pos.x), dragSpan(origin.y, pos.y));
     } else {
       showCoords(pos.x, pos.y);
     }
@@ -269,6 +276,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
             return; // reserved app-wide for the menu toggle, not a paint tool
           }
           dragOriginRef.current = canvasPixelUnder(event);
+          updateCoords(event); // the press itself is one pixel covered
           getEventHandler(tool, 'onMouseDown')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseDownOverlay')(event);

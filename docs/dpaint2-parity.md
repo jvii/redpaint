@@ -21,7 +21,7 @@ with both merges, page size, load and save for pictures and brushes, the font
 requester.
 
 Coords too, as of 2026-08-25: the Prefs toggle, in its own slot at the menu
-bar's right-hand end, absolute or drag-relative as DPaint's was.
+bar's right-hand end, absolute, or measuring the drag while a button is held.
 
 Past it in one place: Copy and Paste, in both drawers, moving pictures and
 brushes through the OS clipboard. The Amiga DPaint II has no Edit menu and no
