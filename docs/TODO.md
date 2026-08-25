@@ -172,10 +172,11 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       transient one the mode name and flashes share, since this stays up for as
       long as the setting is on. While a button is held it measures the drag
       instead of reporting the position, which is what makes it a size while a
-      shape is dragged out rather than only a readout. Counted inclusively —
-      a 3-pixel rectangle reads 3, and the press itself reads 1, where DPaint's
-      own `nx-sx` would have said 2 and 0. Signed, so the number carries the
-      direction as well as the distance.
+      shape is dragged out rather than only a readout. Counted inclusively and
+      unsigned, as DPaint II reports it: a 3-pixel rectangle reads 3, and the
+      press itself reads 1. The vendored source is DPaint I, whose `nx-sx` is a
+      plain signed delta — it does not settle what II does, and here it is
+      wrong.
 
       Written straight into the DOM (`coordsDisplay.ts`), not through Overmind:
       it changes per mousemove, and Canvas's own crosshair already takes that

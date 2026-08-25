@@ -85,11 +85,10 @@ function canvasPixelUnder(event: React.MouseEvent<HTMLCanvasElement>): Point {
 }
 
 // How many pixels a drag covers on one axis, counting both ends: a 3-pixel
-// rectangle reads 3, and the press itself reads 1. The sign is kept, so the
-// number says which way the drag went as well as how far.
+// rectangle reads 3, and the press itself reads 1. Unsigned — it is a size,
+// and the direction is on screen already. Both as DPaint II reports it.
 function dragSpan(from: number, to: number): number {
-  const delta = to - from;
-  return delta >= 0 ? delta + 1 : delta - 1;
+  return Math.abs(to - from) + 1;
 }
 
 export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): JSX.Element | null {
