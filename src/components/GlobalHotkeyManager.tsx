@@ -4,6 +4,7 @@ import { overmind } from '../index';
 import { MODE_ORDER } from '../overmind/brush/mode';
 import { DrawingToolId } from '../overmind/toolbox/state';
 import { isEdge } from '../browser';
+import { copyableBrush, copyPicture } from './menu/copyToClipboard';
 
 // A non-rendering logic component for managing hotkeys and copy/paste.
 //
@@ -14,6 +15,7 @@ import { isEdge } from '../browser';
 // handlers, and two handlers on the cycling toggle cancel out into a dead Tab.
 export function GlobalHotKeyManager(): null {
   usePaste();
+  useCopyHotkey();
   useMenuHotkey();
   useCyclingHotkey();
   useUndoHotkeys();
@@ -46,6 +48,40 @@ function usePaste(): void {
 
 function isImageFile(file: File): boolean {
   return file.type.search(/^image\//i) === 0;
+}
+
+// Ctrl/Cmd-C, the counterpart to the paste above. With no drawer to have said
+// which, it asks — but only when both answers exist. A built-in brush is not
+// worth copying (copyToClipboard.ts), so with one of those selected there is
+// one thing on screen to copy and no question to put.
+function useCopyHotkey(): void {
+  const actions = useActions();
+
+  function handleKey(event: KeyboardEvent): void {
+    if (hotkeysSuspended(event) || !(event.ctrlKey || event.metaKey)) {
+      return;
+    }
+    if (event.key.toLowerCase() !== 'c' || event.altKey || event.shiftKey) {
+      return;
+    }
+    // A real text selection's copy belongs to the browser. Chrome here is
+    // user-select: none, so this only defers when something is genuinely
+    // selected — in a requester, say.
+    if (document.getSelection()?.isCollapsed === false) {
+      return;
+    }
+    event.preventDefault();
+    if (copyableBrush()) {
+      actions.dialog.open('COPY_SELECT');
+    } else {
+      void copyPicture();
+    }
+  }
+
+  useEffect((): (() => void) => {
+    document.addEventListener('keydown', handleKey);
+    return (): void => document.removeEventListener('keydown', handleKey);
+  }, []);
 }
 
 // Hotkeys belong to the canvas, so they are suspended whenever keystrokes mean

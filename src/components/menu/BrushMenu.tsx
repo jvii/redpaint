@@ -1,6 +1,7 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { shortcutCap } from '../ui/shortcutCap';
+import { MOD_KEY } from '../../platform';
 import { RetroToggle } from '../ui/RetroToggle';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { brushRecall } from '../../brush/BrushRecall';
@@ -36,8 +37,8 @@ import {
   canReadImageFromClipboard,
   canWriteImageToClipboard,
   clipboardImageUrl,
-  writeImageToClipboard,
 } from './clipboard';
+import { copyableBrush, copyBrush } from './copyToClipboard';
 import './DrawerMenu.css';
 
 // Only captured or loaded brushes can be saved. The pixel brush has no bitmap
@@ -142,23 +143,9 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
     setTimeout(refreshBrushPreview, 150);
   };
 
-  // PNG, so the transparent pixels stay transparent wherever the brush is
-  // pasted. Built-in brushes copy fine — Save excludes them because a file
-  // named after one is confusing, which the clipboard has no equivalent of.
   const copy = (): void => {
-    const brush = brushRecall.current;
-    if (!(brush instanceof CustomBrush)) {
-      return;
-    }
-    const makeBlob = brushBlobMakerFor(brush, 'png', Object.values(state.palette.palette));
-    if (!makeBlob) {
-      return;
-    }
     actions.app.closeMenu();
-    void (async (): Promise<void> => {
-      const copied = await writeImageToClipboard(makeBlob);
-      actions.app.flash(copied ? { name: 'Copied', value: 'brush' } : { name: 'Copy failed' });
-    })();
+    void copyBrush();
   };
 
   // The menu closes first: both the load requester and the error land on top
@@ -210,9 +197,14 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
           <Gadget
             icon={<PixelIcon map={icons.clipboardCopy} scale={2} />}
             label="Copy"
-            title="Copy the brush to the clipboard, as PNG"
+            shortcut={shortcutCap(`${MOD_KEY}C`)}
+            title={
+              copyableBrush()
+                ? 'Copy the brush to the clipboard, as PNG'
+                : 'Cannot copy a built-in brush'
+            }
             onClick={copy}
-            disabled={!canWriteImageToClipboard() || !(brushRecall.current instanceof CustomBrush)}
+            disabled={!canWriteImageToClipboard() || !copyableBrush()}
           />
           <Gadget
             icon={<PixelIcon map={icons.clipboardPaste} scale={2} />}

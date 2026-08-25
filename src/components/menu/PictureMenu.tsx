@@ -24,6 +24,7 @@ import { Color } from '../../types';
 import { paletteEquals } from '../../algorithm/imageColors';
 import { createPalette } from '../palette/util';
 import { shortcutCap } from '../ui/shortcutCap';
+import { MOD_KEY } from '../../platform';
 import { refreshBrushPreview } from '../GlobalHotkeyManager';
 import { saveFileAs, SaveTarget, writeToHandle } from './saveAsPng';
 import { blobMakerFor, SaveFormat, saveFormats } from './saveFormats';
@@ -32,8 +33,8 @@ import {
   canReadImageFromClipboard,
   canWriteImageToClipboard,
   clipboardImageUrl,
-  writeImageToClipboard,
 } from './clipboard';
+import { copyPicture } from './copyToClipboard';
 import { beginSaveAsPrompt } from './pendingSaveAs';
 import './DrawerMenu.css';
 
@@ -222,22 +223,9 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
     })();
   };
 
-  // Always PNG, and through blobMakerFor so a cycling picture copies its base
-  // colors rather than whichever frame the cycle was on.
   const copy = (): void => {
-    const makeBlob = blobMakerFor(
-      'png',
-      Object.values(state.palette.palette),
-      state.palette.ranges
-    );
-    if (!makeBlob) {
-      return;
-    }
     actions.app.closeMenu();
-    void (async (): Promise<void> => {
-      const copied = await writeImageToClipboard(makeBlob);
-      actions.app.flash(copied ? { name: 'Copied', value: 'picture' } : { name: 'Copy failed' });
-    })();
+    void copyPicture();
   };
 
   // No PASTE_SELECT on this path: the drawer already said which of the two a
@@ -298,6 +286,7 @@ export function PictureMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Ele
           <Gadget
             icon={<PixelIcon map={icons.clipboardCopy} scale={2} />}
             label="Copy"
+            shortcut={shortcutCap(`${MOD_KEY}C`)}
             title="Copy the picture to the clipboard, as PNG"
             onClick={copy}
             disabled={!canWriteImageToClipboard()}

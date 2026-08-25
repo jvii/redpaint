@@ -3,6 +3,7 @@ import { useActions, useAppState } from '../../overmind';
 import { Dialog } from './Dialog';
 import './Dialog.css';
 import { RetroButton } from '../ui/RetroButton';
+import { copyBrush, copyPicture } from '../menu/copyToClipboard';
 
 export function DialogManager(): JSX.Element | null {
   const actions = useActions();
@@ -24,6 +25,11 @@ export function DialogManager(): JSX.Element | null {
   const cancelPaste = (): void => {
     URL.revokeObjectURL(state.app.pasteBufferImageObjectURL);
     actions.dialog.close();
+  };
+
+  const copy = (subject: 'picture' | 'brush') => (): void => {
+    actions.dialog.close();
+    void (subject === 'picture' ? copyPicture() : copyBrush());
   };
 
   // The chosen screen is smaller than the current canvas, so fitting it would
@@ -80,6 +86,19 @@ export function DialogManager(): JSX.Element | null {
           <RetroButton onClick={pasteAsBrush}>Paste as Brush</RetroButton>
           <RetroButton onClick={pasteAsImage}>Paste as New Picture</RetroButton>
           <RetroButton variant="secondary" onClick={cancelPaste}>
+            Cancel
+          </RetroButton>
+        </Dialog>
+      );
+
+    // Only ever raised when both answers are real: with a built-in brush, or
+    // none, the shortcut copies the picture without asking.
+    case 'COPY_SELECT':
+      return (
+        <Dialog header="Copy to clipboard" prompt="Select what to copy.">
+          <RetroButton onClick={copy('brush')}>Copy Brush</RetroButton>
+          <RetroButton onClick={copy('picture')}>Copy Picture</RetroButton>
+          <RetroButton variant="secondary" onClick={actions.dialog.close}>
             Cancel
           </RetroButton>
         </Dialog>
