@@ -68,6 +68,22 @@ const RESIZE_CURSOR_ICON = ((): string => {
 // corner and its content up-left of that, so any positive offset clears it.
 const RESIZE_CURSOR_OFFSET = 16;
 
+// The pixel under the pointer, clamped to the canvas.
+//
+// getMousePos can land one outside at an edge: the chrome above the canvas is
+// zoom-scaled (uiScale.ts), which leaves the canvas at a fractional offset, and
+// an event in the half pixel above it floors to -1. Painting can live with a
+// point that misses; a readout claiming the cursor is at -1 while it sits on
+// the top row cannot.
+function canvasPixelUnder(event: React.MouseEvent<HTMLCanvasElement>): Point {
+  const canvas = event.currentTarget;
+  const pos = getMousePos(event);
+  return {
+    x: Math.min(Math.max(pos.x, 0), canvas.width - 1),
+    y: Math.min(Math.max(pos.y, 0), canvas.height - 1),
+  };
+}
+
 export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): JSX.Element | null {
   const state = useAppState();
 
@@ -167,7 +183,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     if (!state.app.showCoordinates) {
       return;
     }
-    const pos = getMousePos(event);
+    const pos = canvasPixelUnder(event);
     const origin = dragOriginRef.current;
     if (origin) {
       showCoords(pos.x - origin.x, pos.y - origin.y);
@@ -252,7 +268,7 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           if (isMiddleMouseButton(event)) {
             return; // reserved app-wide for the menu toggle, not a paint tool
           }
-          dragOriginRef.current = getMousePos(event);
+          dragOriginRef.current = canvasPixelUnder(event);
           getEventHandler(tool, 'onMouseDown')(event);
           overlayCanvasController.beginFrame();
           getEventHandler(tool, 'onMouseDownOverlay')(event);

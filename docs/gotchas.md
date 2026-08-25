@@ -142,3 +142,9 @@ lengths. Two consequences that are easy to get backwards:
   element inside the zoom gets multiplied again, so it has to be divided by the
   scale first. The toolbox hint panels landed at `scale ×` their intended offset
   until they did. `currentUiScale()` exists for this.
+- **The canvas sits at a fractional offset**, because the zoomed chrome above it
+  does not come out to a whole number of pixels: `rect.top` is 33.5 at 100% and
+  37.5 at 75%. Anything flooring `clientY - rect.top` therefore has a half pixel
+  at each edge that comes out at -1, which is what put -1 in the coordinate
+  readout (`canvasPixelUnder` clamps it). Whole-pixel canvas geometry is not a
+  safe assumption at any UI scale, including 100%.
