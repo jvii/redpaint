@@ -31,6 +31,9 @@ function usePaste(): void {
   const actions = useActions();
 
   function handlePaste(event: ClipboardEvent): void {
+    // Both branches raise a requester, and the drawer would cover it. The
+    // gadget paths close the menu for the same reason.
+    actions.app.closeMenu();
     const imageFile = event.clipboardData?.files[0];
     if (!imageFile || !isImageFile(imageFile)) {
       actions.dialog.open('PASTE_ERROR');
@@ -71,6 +74,7 @@ function useCopyHotkey(): void {
       return;
     }
     event.preventDefault();
+    actions.app.closeMenu();
     if (copyableBrush()) {
       actions.dialog.open('COPY_SELECT');
     } else {
