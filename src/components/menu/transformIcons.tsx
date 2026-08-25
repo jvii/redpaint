@@ -405,8 +405,12 @@ export function CycleIcon({ size = 24 }: IconProps): JSX.Element {
 // different weights and baselines. At the file's 2px stroke, which is also the
 // pixel font's, so it sits with the letters.
 // The coordinate readout's axis marks, following the number as DPaint's did.
-// Right for x and up for y: these name the axis, the way a graph's do, rather
-// than pointing the way the number grows.
+// Right for x and down for y, the way each coordinate grows from an origin at
+// the top left.
+//
+// Drawn rather than the face's own U+2192/U+2193, which it does carry: its
+// horizontal arrow is a much lighter design than its vertical one, and at
+// readout size the pair reads as two different registers.
 export function AxisArrow({ axis }: { axis: 'x' | 'y' }): JSX.Element {
   const long = 16;
   const short = 12;
@@ -427,8 +431,8 @@ export function AxisArrow({ axis }: { axis: 'x' | 'y' }): JSX.Element {
     </svg>
   ) : (
     <svg width={short} height={long} viewBox={`0 0 ${short} ${long}`} {...stroke}>
-      <line x1="6" y1={tip} x2="6" y2="2" />
-      <polyline points="2,6 6,2 10,6" />
+      <line x1="6" y1="2" x2="6" y2={tip} />
+      <polyline points={`2,${tip - 4} 6,${tip} 10,${tip - 4}`} />
     </svg>
   );
 }
