@@ -28,10 +28,11 @@ export function MainCanvas(): JSX.Element {
 
   // CSS pixels per buffer pixel, per axis. A format fills the window on both
   // axes independently, so pixels need not stay square. 'stretch' takes the
-  // fractional scale (no margin, the cursor's pixel drifts slightly); 'integer'
-  // floors to whole pixels (uniform blocks, black margin until the window
-  // grows). At Native it is 1/dpr, so an artwork pixel is one physical pixel
-  // rather than one CSS pixel.
+  // fractional scale (no margin, the cursor's pixel drifts slightly);
+  // 'aspect' takes one whole scale and applies the format's pixel shape to it
+  // (uniform blocks of the right proportions, margin until the window grows).
+  // At Native it is 1/dpr, so an artwork pixel is one physical pixel rather
+  // than one CSS pixel.
   const formatId = state.canvas.screenFormatId;
   const scaleMode = state.canvas.scaleMode;
   const videoStandard = state.canvas.videoStandard;
@@ -56,11 +57,15 @@ export function MainCanvas(): JSX.Element {
       // that would leave the canvas permanently short (docs/gotchas.md).
       const fillX = area.offsetWidth / format.width;
       const fillY = area.offsetHeight / format.height;
-      if (scaleMode === 'integer') {
-        updateDisplayScale({
-          x: Math.max(1, Math.floor(fillX)),
-          y: Math.max(1, Math.floor(fillY)),
-        });
+      if (scaleMode === 'aspect') {
+        // The format's pixel shape as the smallest whole block: 1x1, 1x2, 2x1.
+        // One scale for both axes, so the shape is the format's however the
+        // window is resized, and whole so a pixel stays a uniform block.
+        const unit = Math.min(format.aspectX, format.aspectY);
+        const blockX = format.aspectX / unit;
+        const blockY = format.aspectY / unit;
+        const scale = Math.max(1, Math.floor(Math.min(fillX / blockX, fillY / blockY)));
+        updateDisplayScale({ x: scale * blockX, y: scale * blockY });
       } else {
         updateDisplayScale({
           x: Math.max(format.aspectX, fillX),

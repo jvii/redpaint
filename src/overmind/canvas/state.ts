@@ -85,13 +85,14 @@ export function findMatchingScreenFormat(
 }
 
 // How the simulated screen is scaled to the browser window:
-//  - 'stretch': fill the window exactly on both axes with a fractional scale;
-//    no margin, but pixels aren't uniform blocks (the cursor's pixel drifts
-//    slightly as you move).
-//  - 'integer': floor to whole CSS pixels per buffer pixel, so every pixel is
-//    a uniform block (crisp, no cursor drift) at the cost of black margin on
-//    the right/bottom until the window is enlarged.
-export type ScaleMode = 'stretch' | 'integer';
+//  - 'aspect': one whole-number scale, applied to the format's pixel shape, so
+//    a pixel is a uniform block of the proportions the format names — 1x1 on
+//    Lo-Res and Hi-Res, 1x2 on Med-Res, 2x1 on Interlace. Costs a margin until
+//    the window is enlarged. See docs/pixel-aspect.md.
+//  - 'stretch': fill the window on both axes with a fractional scale. No
+//    margin, and the most drawing area a window can give, but the shape is the
+//    window's rather than the format's and pixels aren't uniform blocks.
+export type ScaleMode = 'aspect' | 'stretch';
 
 export type State = {
   // the canvas: the actual pixel bitmap being painted (GL drawing buffer size)
@@ -182,7 +183,7 @@ export const state: State = {
   resolution: { width: 0, height: 0 },
   screenFormatId: DEFAULT_SCREEN_FORMAT_ID,
   videoStandard: DEFAULT_VIDEO_STANDARD,
-  scaleMode: 'stretch',
+  scaleMode: 'aspect',
   pixelAspect: derived((state: State) =>
     state.screenFormatId
       ? {

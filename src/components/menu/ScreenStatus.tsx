@@ -157,10 +157,10 @@ export function ScreenStatus(): JSX.Element {
         )}
       </div>
       {/* How the simulated screen fills the window. Named for what
-          switching it on does, so the resting state needs no label: on,
-          the screen stretches to fill the window; off, it is pixel perfect
-          — every pixel the same whole block, leaving a margin. Independent
-          of the format, and meaningless at Native, always 1:1. */}
+          switching it on does, so the resting state needs no label: off, the
+          screen keeps the pixel shape its format names, in whole blocks,
+          leaving a margin; on, it stretches to fill the window and takes the
+          window's shape instead. Meaningless at Native, always 1:1. */}
       {screenFormat && (
         <button
           className={
@@ -170,7 +170,7 @@ export function ScreenStatus(): JSX.Element {
           aria-pressed={state.canvas.scaleMode === 'stretch'}
           aria-label="Stretch"
           onClick={actions.canvas.toggleScaleMode}
-          title="Stretch the screen to fill the window. Turn off for pixel-perfect scaling: every pixel the same whole block, leaving a margin."
+          title="Stretch the screen to fill the window, taking the window's shape. Turn off to keep the format's own pixel shape in whole blocks, leaving a margin."
         >
           {stretchIcon}
         </button>

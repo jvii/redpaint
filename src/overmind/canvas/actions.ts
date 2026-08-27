@@ -151,7 +151,7 @@ export const setVideoStandard = (context: Context, standard: VideoStandard): voi
 // menu toggle owns it (ScreenStatus.tsx).
 export const toggleScaleMode = (context: Context): void => {
   context.state.canvas.scaleMode =
-    context.state.canvas.scaleMode === 'integer' ? 'stretch' : 'integer';
+    context.state.canvas.scaleMode === 'aspect' ? 'stretch' : 'aspect';
 };
 
 // Mirrors MainCanvas's own locally computed displayScale into Overmind state:

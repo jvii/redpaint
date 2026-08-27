@@ -145,15 +145,24 @@ This is upstream of everything below. Correcting the raster for a display
 geometry that is never presented cannot be checked by looking at it, and a
 circle would still not come out round. Worth settling first; the fix is the next section.
 
-## The display fix
+## The display fix — built
 
-Two modes, replacing today's two. `stretch` stays as it is; `integer` is
+Two modes, replacing today's two. `stretch` stays as it is; `integer` was
 replaced rather than joined, because the new mode does its job better.
+Measured after the change, at every window shape tried including 1600x600 and a
+window smaller than the canvas:
+
+| format | buffer | blocks | shape |
+| --- | --- | --- | --- |
+| Lo-Res | 320x256 | 3x3 | 1:1 |
+| Med-Res | 640x256 | 1x2 | 2:1 |
+| Interlace | 320x512 | 2x1 | 1:2 |
+| Hi-Res | 640x512 | 1x1 | 1:1 |
 
 **`stretch`** — fill the pane on both axes, shape not guaranteed. What it does
 now, and worth keeping: it is the most drawing area a window can give.
 
-**Aspect-correct** — one integer scale `k`, blocks of `k*rx` by `k*ry`, where
+**`aspect`** — one integer scale `k`, blocks of `k*rx` by `k*ry`, where
 `rx:ry` is the format's integer ratio (1:1, 2:1, 1:2). Whole blocks and the
 right shape at once. Today's `integer` floors the two axes independently and
 lands on 1x3 for a format whose pixels are 1x2, so it is worse at the very

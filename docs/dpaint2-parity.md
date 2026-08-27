@@ -59,11 +59,10 @@ belongs to.
 
 **Non-square pixels.** Not a DPaint menu item — DPaint corrects for these
 unconditionally, and we do not correct at all, so circles, the airbrush and
-symmetry come out wrong on Med-Res and Interlace. Two halves, in order: the display does
-not present the format's pixel shape (both scaling modes take it from the
-window, so a screen format changes dimensions but not shape), and four drawing
-sites do not compensate for it. Amiga formats only — Native is uniform by
-construction. docs/pixel-aspect.md.
+symmetry come out wrong on Med-Res and Interlace. The display half is done: a screen
+format now shows the pixel shape it names, at any window shape. What remains is
+the four drawing sites, which still take a raster circle for a round one. Amiga
+formats only — Native is uniform by construction. docs/pixel-aspect.md.
 
 **ExclBrush.** With Grid on, brush pickup drops the right and bottom edge of
 the one-pixel border, so a pattern made from the brush keeps a single-width
