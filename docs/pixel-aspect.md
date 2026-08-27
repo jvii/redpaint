@@ -143,12 +143,38 @@ pixels are 1x2.
 
 This is upstream of everything below. Correcting the raster for a display
 geometry that is never presented cannot be checked by looking at it, and a
-circle would still not come out round. Worth settling first: one scale, the
-format's aspect applied to it, margin where it does not fit — the third mode
-neither existing toggle provides.
+circle would still not come out round. Worth settling first; the fix is the next section.
+
+## The display fix
+
+Two modes, replacing today's two. `stretch` stays as it is; `integer` is
+replaced rather than joined, because the new mode does its job better.
+
+**`stretch`** — fill the pane on both axes, shape not guaranteed. What it does
+now, and worth keeping: it is the most drawing area a window can give.
+
+**Aspect-correct** — one integer scale `k`, blocks of `k*rx` by `k*ry`, where
+`rx:ry` is the format's integer ratio (1:1, 2:1, 1:2). Whole blocks and the
+right shape at once. Today's `integer` floors the two axes independently and
+lands on 1x3 for a format whose pixels are 1x2, so it is worse at the very
+thing it exists for; there is nothing to keep.
+
+Margin goes around **the canvas, not the app**. PyDPainter sizes the OS window
+because it is an SDL program owning the screen; our canvas already sits on a
+pasteboard inside a pane, so the slack has somewhere to go and the chrome does
+not move.
+
+Native is not affected. `formatId === null` returns `{x: 1/dpr, y: 1/dpr}`
+before any of this, uniform by construction, and has no format aspect to honour.
+
+The default should move to aspect-correct: a screen format that does not show
+the shape it names is not doing its job.
 
 
-## What to change here
+## The drawing fix
+
+After the display, and only then: correcting the raster for a shape the screen
+does not present cannot be checked by looking at it.
 
 Convert at the tool boundary, as DPaint does — not by threading an aspect
 argument through `algorithm/`. That layer is pure and fixture-tested, and its
@@ -189,12 +215,18 @@ Open: the text rasterizer has no aspect handling, so glyphs squash on Med-Res.
 DPaint's bitmap fonts did not face the question. Decide it with the text tool,
 not here.
 
-## Open: should the Amiga display aspect be offered?
+## Open: should the broadcast fraction be offered?
 
 The format table defines a Lo-Res pixel as square, which is a modelling choice
-and not what an Amiga on a 4:3 monitor did. PyDPainter offers NTSC and PAL beside square, and
+and not what an Amiga on a 4:3 monitor did: the real figures are 10/11 for NTSC
+and 59/54 for PAL. PyDPainter offers both beside square, with
 `force_1_to_1_pixels` to drop back to the integer ratio.
 
-That is a display question, so it changes nothing above: the raster stays
-driven by the format's integer ratio either way. Worth deciding on its own
-merits.
+Note this is the one place the video standard matters to shape. The integer
+ratio is the same for NTSC and PAL — only the fraction differs — so we already
+carry the right split: standard decides dimensions, format decides shape.
+
+It changes nothing above. The raster stays driven by the integer ratio, and
+this would multiply the display scale only, exactly as `aspect` does against
+`aspect_x`/`aspect_y`. Worth deciding on its own merits, and it would fit the
+aspect-correct mode as a modifier rather than a third mode.
