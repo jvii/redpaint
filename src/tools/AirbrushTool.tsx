@@ -1,10 +1,14 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton, isLeftOrRightMouseButton } from './util/util';
 import { overmind } from '../index';
+import { formatPixelAspect } from '../overmind/canvas/state';
 import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from 'src/types';
+
+// How far the spray reaches, as a distance on screen.
+const SPRAY_RADIUS = 30;
 
 export class AirbrushTool implements Tool {
   // TODO fix
@@ -34,14 +38,17 @@ export class AirbrushTool implements Tool {
   public onMouseDown(event: React.MouseEvent<HTMLCanvasElement, MouseEvent>): void {
     const draw = (): void => {
       const points: Point[] = [];
-      for (let i = 50; i--;) {
+      // The spread is a screen distance, divided back out per axis, so the
+      // spray is round and the same size whatever pixel shape the format has
+      // (docs/pixel-aspect.md). DPaint sets its radius the same way.
+      const aspect = formatPixelAspect(overmind.state.canvas.screenFormatId);
+      for (let i = 50; i--; ) {
         const angle = getRandomFloat(0, Math.PI * 2);
-        const radius = getRandomFloat(0, 30);
+        const radius = getRandomFloat(0, SPRAY_RADIUS);
         if (overmind.state.tool.airbrushTool.position) {
-
           points.push({
-            x: overmind.state.tool.airbrushTool.position.x + radius * Math.cos(angle),
-            y: overmind.state.tool.airbrushTool.position.y + radius * Math.sin(angle),
+            x: overmind.state.tool.airbrushTool.position.x + (radius * Math.cos(angle)) / aspect.x,
+            y: overmind.state.tool.airbrushTool.position.y + (radius * Math.sin(angle)) / aspect.y,
           });
         }
       }

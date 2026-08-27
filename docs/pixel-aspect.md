@@ -216,8 +216,12 @@ window is a viewing condition, and belongs to the display layer above.
 
   The residue is odd-diameter rounding. Before, Med-Res gave a 121x121 raster
   and 0.5 roundness.
-- **Airbrush** (`AirbrushTool.tsx:39`) — scale the y component of its spray
-  offset.
+- [x] **Airbrush** — done. `SPRAY_RADIUS` is a screen distance now, divided
+  back out per axis, so the spray is round and the same size on every format.
+  Measured roundness 1.009 on Med-Res and 1.045 on Interlace; Lo-Res and
+  Hi-Res divide by 1 and are unchanged. The residue is the measurement, not
+  the geometry — the spray is random, so a bounding box under-fills at the rim
+  and needs a long hold to settle.
 - **Symmetry** (`algorithm/symmetry.ts`) — the one place the correction has to
   reach into `algorithm/`, since the rotation happens there. Scale in, rotate,
   scale out, as `SymDo` does.
