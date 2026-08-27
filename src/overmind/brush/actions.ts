@@ -44,17 +44,21 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
 // changing it has to reshape the brush already selected, not only the next one
 // picked. A custom brush is the user's own pixels and is left alone.
 export const refreshBuiltInBrushForFormat = (context: Context): void => {
-  const id = context.state.brush.selectedBuiltInBrushId;
-  if (!context.state.brush.usingBuiltInBrush || id === null) {
+  // The brush in hand, not the preset behind it: a dragged size has no preset
+  // (resizeBuiltInBrushTo clears the id) and would otherwise be left at the old
+  // screen's shape, or snapped back to a preset size.
+  const brush = brushRecall.current;
+  if (!(brush instanceof CustomBrush) || brush.builtInFamily === undefined) {
     return;
   }
-  const preset = builtInBrushes[id];
-  if (!(preset instanceof CustomBrush)) {
-    return;
-  }
-  brushRecall.setBuiltIn(
-    builtInBrushForAspect(preset, formatPixelAspect(context.state.canvas.screenFormatId))
+  const reshaped = builtInBrushForAspect(
+    brush,
+    formatPixelAspect(context.state.canvas.screenFormatId)
   );
+  if (reshaped === brush) {
+    return;
+  }
+  brushRecall.setBuiltIn(reshaped);
   // A new CustomBrush has no colorized bitmap until a mode is applied to it,
   // and would draw nothing. Selecting a brush re-applies the mode for the same
   // reason.
@@ -264,13 +268,18 @@ export const stretchBrushTo = (context: Context, size: { width: number; height: 
 // Matte/Repl and Previous-banking remain disabled.
 export const resizeBuiltInBrushTo = (
   context: Context,
-  size: { width: number; height: number }
+  size: { width: number; height: number; screenSize: number }
 ): void => {
   const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush) || brush.builtInFamily === undefined) {
     return;
   }
-  const resized = createSizedBuiltInBrush(brush.builtInFamily, size.width, size.height);
+  const resized = createSizedBuiltInBrush(
+    brush.builtInFamily,
+    size.width,
+    size.height,
+    size.screenSize
+  );
   brushRecall.setBuiltIn(resized);
   // No preset icon matches a custom-dragged size: DPaint's cpPenBox = -1
   // (CTRPAN.C:189). usingBuiltInBrush stays true: that is the flag Matte/Repl

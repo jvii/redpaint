@@ -44,6 +44,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   // recoverable (docs/brush-palette.md). Undefined for a true-color brush and
   // for the built-ins, neither of which holds palette indices.
   public palette?: Color[];
+  // What a built-in was asked for, as a size on screen. Its width and height
+  // are that divided by the pixel shape, so they cannot say what to rebuild it
+  // as when the shape changes (docs/pixel-aspect.md). Unset on a preset at 1:1,
+  // where either side is the answer.
+  public builtInSize?: number;
   private brushColorIndexMatte: BrushColorIndex;
   private brushColorIndexColorFG: BrushColorIndex;
   private brushColorIndexColorBG: BrushColorIndex;
@@ -52,7 +57,8 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     colorIndex: BrushColorIndex,
     width: number,
     height: number,
-    builtInFamily?: BuiltInFamily
+    builtInFamily?: BuiltInFamily,
+    builtInSize?: number
   ) {
     this.width = width;
     this.heigth = height;
@@ -62,6 +68,7 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
     this.brushColorIndexColorBG = colorIndex;
     this.lastChanged = Date.now();
     this.builtInFamily = builtInFamily;
+    this.builtInSize = builtInSize;
   }
 
   public static fromCanvasArea(start: Point, width: number, height: number): CustomBrush {
