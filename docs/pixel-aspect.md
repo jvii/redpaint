@@ -252,12 +252,20 @@ window is a viewing condition, and belongs to the display layer above.
   shapes on every format. Applied at selection, the one place a preset becomes
   the current brush.
 
+  **dot3x3 is exempt**, and the boundary is not arbitrary: the generator
+  reproduces dot5x5 and dot7x7 exactly, but `roundBitmap(3,3)` is a solid block
+  where the art is a cross. Correcting it therefore does not widen a shape, it
+  replaces one — at 2:1 the cross became a 6x3 blob. The finest pen stays the
+  finest pen on every format, at the price of not being square on screen.
+
   | format | brush | raster | block | on screen |
   | --- | --- | --- | --- | --- |
   | Lo-Res | dot7x7 | 7x7, the art | 1x1 | 7x7 |
+  | Med-Res | dot5x5 | 10x5 | 1x2 | 10x10 |
   | Med-Res | dot7x7 | 14x7 | 1x2 | 14x14 |
   | Med-Res | square2x2 | 4x2 | 1x2 | 4x4 |
   | Interlace | square2x2 | 2x4 | 2x1 | 4x4 |
+  | any | dot3x3 | 3x3, unchanged | - | - |
 
 - [x] **Built-in brush size drag** — done. `dragSize` measures on screen and
   converts back per axis, `MODES.C:196`'s `MAX(VMapX(w), VMapY(h))`.

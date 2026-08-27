@@ -223,6 +223,10 @@ export function createSizedBuiltInBrush(
   return new CustomBrush(brushColorIndex, stringBitmap[0].length, stringBitmap.length, family);
 }
 
+// Below this the round family is hand-drawn art rather than a rasterized
+// ellipse, so it is left at whatever pixel shape the screen has.
+const ROUND_GENERATOR_FLOOR = 5;
+
 // The preset as it should be at the current pixel shape (docs/pixel-aspect.md).
 //
 // At 1:1 that is the hand-drawn art, which the generators do not reproduce —
@@ -240,5 +244,11 @@ export function builtInBrushForAspect(brush: CustomBrush, aspect: Point): Custom
   }
   // Presets are square at 1:1, so either side is the size being asked for.
   const size = Math.max(brush.width, brush.heigth);
+  // The finest round pen is a cross, and no ellipse is: roundBitmap(3,3) is a
+  // solid block, and at 2:1 it becomes a 6x3 blob. The generator reproduces
+  // dot5x5 and dot7x7 exactly, so it can speak for them and not for this one.
+  if (family === 'round' && size < ROUND_GENERATOR_FLOOR) {
+    return brush;
+  }
   return createSizedBuiltInBrush(family, size / aspect.x, size / aspect.y);
 }
