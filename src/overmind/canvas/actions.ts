@@ -317,6 +317,11 @@ export const applyScreenFormat = (
   context.state.canvas.trueColorEnabled = trueColorEnabled;
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();
+  // The format decides a built-in brush's shape, so the one in hand is
+  // re-derived rather than left at the old screen's proportions. After the
+  // palette is pushed, not inside setScreenFormat: a brush built before that
+  // colorizes against the palette the canvas has already stopped using.
+  context.actions.brush.refreshBuiltInBrushForFormat();
 
   // "Keep the picture?" is a question about the document, and the pages are part
   // of it: answering no puts a blank canvas on this page and takes the others

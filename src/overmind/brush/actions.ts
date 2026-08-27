@@ -39,6 +39,28 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
   'polygonFilled',
 ];
 
+// Re-derives the built-in brush in hand for the current pixel shape. A screen
+// format decides what shape a preset has to be (docs/pixel-aspect.md), so
+// changing it has to reshape the brush already selected, not only the next one
+// picked. A custom brush is the user's own pixels and is left alone.
+export const refreshBuiltInBrushForFormat = (context: Context): void => {
+  const id = context.state.brush.selectedBuiltInBrushId;
+  if (!context.state.brush.usingBuiltInBrush || id === null) {
+    return;
+  }
+  const preset = builtInBrushes[id];
+  if (!(preset instanceof CustomBrush)) {
+    return;
+  }
+  brushRecall.setBuiltIn(
+    builtInBrushForAspect(preset, formatPixelAspect(context.state.canvas.screenFormatId))
+  );
+  // A new CustomBrush has no colorized bitmap until a mode is applied to it,
+  // and would draw nothing. Selecting a brush re-applies the mode for the same
+  // reason.
+  context.actions.brush.setMode(context.state.brush.mode);
+};
+
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
   context.state.brush.selectedBuiltInBrushId = brushNumber;
   context.state.brush.usingBuiltInBrush = true;
