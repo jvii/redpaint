@@ -222,9 +222,24 @@ window is a viewing condition, and belongs to the display layer above.
   Hi-Res divide by 1 and are unchanged. The residue is the measurement, not
   the geometry — the spray is random, so a bounding box under-fills at the rim
   and needs a long hold to settle.
-- **Symmetry** (`algorithm/symmetry.ts`) — the one place the correction has to
-  reach into `algorithm/`, since the rotation happens there. Scale in, rotate,
-  scale out, as `SymDo` does.
+- [x] **Symmetry** — done. The one correction inside `algorithm/`, since the
+  rotation lives there. `SymmetrySettings` carries an optional `pixelAspect`
+  and `rotatePoint` scales in, rotates, scales out, as `SymDo` does; omitted
+  means square, so the layer stays usable without it and its existing tests
+  did not move. The mirror needs nothing: a flip about a vertical line is the
+  same operation at any pixel shape. `activeSettings` supplies the aspect, so
+  every caller gets it.
+
+  Checked with a 6-fold star, one spoke horizontal, whose bounding box should
+  be `1/sin 60` = 1.155 wide for tall:
+
+  | format | raster | block | on screen | ratio |
+  | --- | --- | --- | --- | --- |
+  | Lo-Res | 121x105 | 1x1 | 121x105 | 1.152 |
+  | Med-Res | 121x53 | 1x2 | 121x106 | 1.142 |
+  | Interlace | 121x209 | 2x1 | 242x209 | 1.158 |
+
+  Three quite different rasters, one star on screen.
 - **Built-in round brushes** (`algorithm/builtInBrushShapes.ts`) —
   `roundBitmap` already takes independent width and height, so this is only a
   question of what the caller asks for.

@@ -42,4 +42,36 @@ describe('symmetryCopies', () => {
     expect(symmetryCopies({ center: { x: 0, y: 0 }, order: 0, mirror: false })).toHaveLength(1);
     expect(symmetryCopies({ center: { x: 0, y: 0 }, order: 100, mirror: false })).toHaveLength(40);
   });
+
+  test('a square pixel aspect leaves the rotation unchanged', () => {
+    const settings = { center: { x: 0, y: 0 }, order: 4, mirror: false };
+    const plain = symmetryCopies(settings);
+    const square = symmetryCopies({ ...settings, pixelAspect: { x: 1, y: 1 } });
+    const p = { x: 10, y: 3 };
+    expect(square.map((c) => c.point(p))).toEqual(plain.map((c) => c.point(p)));
+  });
+
+  // On Med-Res a pixel is half as wide as it is tall, so a point 100 to the
+  // right is 50 away as seen. A quarter turn has to put it 50 pixels up, not
+  // 100: it is the distance on screen that is preserved (docs/pixel-aspect.md).
+  test('a quarter turn preserves the distance on screen, not in the raster', () => {
+    const copies = symmetryCopies({
+      center: { x: 0, y: 0 },
+      order: 4,
+      mirror: false,
+      pixelAspect: { x: 0.5, y: 1 },
+    });
+    expect(copies[1].point({ x: 100, y: 0 })).toEqual({ x: 0, y: -50 });
+    expect(copies[1].point({ x: 0, y: 50 })).toEqual({ x: 100, y: 0 });
+  });
+
+  test('a mirror copy still reflects across the vertical axis when pixels are not square', () => {
+    const copies = symmetryCopies({
+      center: { x: 5, y: 5 },
+      order: 1,
+      mirror: true,
+      pixelAspect: { x: 0.5, y: 1 },
+    });
+    expect(copies[1].point({ x: 8, y: 5 })).toEqual({ x: 2, y: 5 });
+  });
 });

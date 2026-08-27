@@ -9,6 +9,10 @@ export type SymmetrySettings = {
   center: Point;
   order: number; // number of rotational copies, 1..MAX_ORDER
   mirror: boolean; // also reflect each copy across the vertical axis
+  // The display shape of a pixel (docs/pixel-aspect.md). A rotation is only a
+  // rotation in a space where pixels are square, so points are mapped into one
+  // and back. Omitted means square, which leaves every coordinate untouched.
+  pixelAspect?: Point;
 };
 
 export type PointTransform = (p: Point) => Point;
@@ -33,25 +37,29 @@ function clampOrder(order: number): number {
 // Rotation around center (screen y-down), matching PSYM.C's convention:
 //   x' = cx + dx*cos + dy*sin
 //   y' = cy - dx*sin + dy*cos
-function rotatePoint(center: Point, cos: number, sin: number): PointTransform {
+//
+// The offset is scaled by the pixel shape on the way in and back out again, so
+// the angle is the one seen rather than the one in the raster. PSYM.C's SymDo
+// does exactly this with VMapX/PMapX around the same arithmetic.
+function rotatePoint(center: Point, cos: number, sin: number, aspect: Point): PointTransform {
   return (p: Point): Point => {
-    const dx = p.x - center.x;
-    const dy = p.y - center.y;
+    const dx = (p.x - center.x) * aspect.x;
+    const dy = (p.y - center.y) * aspect.y;
     return {
-      x: Math.round(center.x + dx * cos + dy * sin),
-      y: Math.round(center.y - dx * sin + dy * cos),
+      x: Math.round(center.x + (dx * cos + dy * sin) / aspect.x),
+      y: Math.round(center.y + (-dx * sin + dy * cos) / aspect.y),
     };
   };
 }
 
 // Rotation followed by reflection across the vertical line through the center.
-function mirrorRotatePoint(center: Point, cos: number, sin: number): PointTransform {
+// The reflection needs no correction of its own: flipping about a vertical
+// line is the same operation whatever shape the pixels are.
+function mirrorRotatePoint(center: Point, cos: number, sin: number, aspect: Point): PointTransform {
+  const rotate = rotatePoint(center, cos, sin, aspect);
   return (p: Point): Point => {
-    const dx = p.x - center.x;
-    const dy = p.y - center.y;
-    const rx = center.x + dx * cos + dy * sin;
-    const ry = center.y - dx * sin + dy * cos;
-    return { x: Math.round(2 * center.x - rx), y: Math.round(ry) };
+    const rotated = rotate(p);
+    return { x: 2 * center.x - rotated.x, y: rotated.y };
   };
 }
 
@@ -60,6 +68,7 @@ function mirrorRotatePoint(center: Point, cos: number, sin: number): PointTransf
 // 2 * order, interleaved as [rot0, mirror0, rot1, mirror1, ...].
 export function symmetryCopies(settings: SymmetrySettings): SymmetryCopy[] {
   const { center, mirror } = settings;
+  const aspect = settings.pixelAspect ?? { x: 1, y: 1 };
   const order = clampOrder(settings.order);
   const copies: SymmetryCopy[] = [];
 
@@ -69,9 +78,13 @@ export function symmetryCopies(settings: SymmetrySettings): SymmetryCopy[] {
     const cos = Math.cos(a);
     const sin = Math.sin(a);
 
-    copies.push({ point: rotatePoint(center, cos, sin), angleDegrees, mirror: false });
+    copies.push({ point: rotatePoint(center, cos, sin, aspect), angleDegrees, mirror: false });
     if (mirror) {
-      copies.push({ point: mirrorRotatePoint(center, cos, sin), angleDegrees, mirror: true });
+      copies.push({
+        point: mirrorRotatePoint(center, cos, sin, aspect),
+        angleDegrees,
+        mirror: true,
+      });
     }
   }
 

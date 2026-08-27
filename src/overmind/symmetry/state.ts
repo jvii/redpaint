@@ -1,6 +1,7 @@
 import { derived } from 'overmind';
 import { Point } from '../../types';
 import { SymmetrySettings } from '../../algorithm/symmetry';
+import { formatPixelAspect } from '../canvas/state';
 import type { OvermindState } from '../../overmind';
 
 export type State = {
@@ -34,6 +35,11 @@ export const state: State = {
       x: Math.floor(resolution.width / 2),
       y: Math.floor(resolution.height / 2),
     };
-    return { center, order: state.order, mirror: state.mirror };
+    return {
+      center,
+      order: state.order,
+      mirror: state.mirror,
+      pixelAspect: formatPixelAspect(rootState.canvas.screenFormatId),
+    };
   }),
 };
