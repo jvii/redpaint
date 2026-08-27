@@ -136,6 +136,10 @@ export interface SetScreenFormatParams {
 // screen is a separate, conditional step (the Screen Format requester).
 export const setScreenFormat = (context: Context, { formatId }: SetScreenFormatParams): void => {
   context.state.canvas.screenFormatId = formatId;
+  // The format decides a built-in brush's shape (docs/pixel-aspect.md), so the
+  // one in hand is re-derived here rather than at each caller: a load
+  // auto-matching a format needs it as much as the requester does.
+  context.actions.brush.refreshBuiltInBrushForFormat();
 };
 
 // Which broadcast standard the 4 named formats' dimensions resolve to. Set
@@ -317,11 +321,6 @@ export const applyScreenFormat = (
   context.state.canvas.trueColorEnabled = trueColorEnabled;
   paintingCanvasController.updatePalette();
   overlayCanvasController.updatePalette();
-  // The format decides a built-in brush's shape, so the one in hand is
-  // re-derived rather than left at the old screen's proportions. After the
-  // palette is pushed, not inside setScreenFormat: a brush built before that
-  // colorizes against the palette the canvas has already stopped using.
-  context.actions.brush.refreshBuiltInBrushForFormat();
 
   // "Keep the picture?" is a question about the document, and the pages are part
   // of it: answering no puts a blank canvas on this page and takes the others
