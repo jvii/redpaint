@@ -191,7 +191,7 @@ primitives are right as they stand: a raster circle is a raster circle. The
 adapters above it are where the screen gets a say (`PixelBrush` is already
 described as a thin adapter).
 
-**The ratio is the format's `aspectX / aspectY`** — 1 on Lo-Res and Hi-Res,
+**The ratio is the format's `aspectX / aspectY`** (`formatPixelAspect`) — 1 on Lo-Res and Hi-Res,
 0.5 on Med-Res, 2 on Interlace.
 
 **Not `canvas.displayScale`.** It is tempting, since it is what the screen
@@ -202,10 +202,20 @@ depending on how the window was sized, and a saved picture would carry whatever
 shape the window happened to have. The raster has to be deterministic; the
 window is a viewing condition, and belongs to the display layer above.
 
-- **Circle tool** — call `filledEllipse`/`unfilledEllipse` with
-  `ry = rx * aspectX / aspectY`, and measure the drag radius in the corrected
-  space too (`RadSM`, and PyDPainter's `dx // ax`), so the drag matches what
-  appears.
+- [x] **Circle tool** — done. `circleRadii` measures the drag in corrected
+  space and returns `rx = R/aspectX`, `ry = R/aspectY`, so the circle meets the
+  cursor and reads round on screen. Equal radii still take the circle
+  rasterizer, as `xShft == yShft` does. Measured roundness, drag 60px right:
+
+  | format | raster | block | on screen | roundness |
+  | --- | --- | --- | --- | --- |
+  | Lo-Res | 121x121 | 1x1 | 121x121 | 1.000 |
+  | Med-Res | 121x61 | 1x2 | 121x122 | 0.992 |
+  | Interlace | 121x241 | 2x1 | 242x241 | 1.004 |
+  | Hi-Res | 121x121 | 1x1 | 121x121 | 1.000 |
+
+  The residue is odd-diameter rounding. Before, Med-Res gave a 121x121 raster
+  and 0.5 roundness.
 - **Airbrush** (`AirbrushTool.tsx:39`) — scale the y component of its spray
   offset.
 - **Symmetry** (`algorithm/symmetry.ts`) — the one place the correction has to

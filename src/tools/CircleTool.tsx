@@ -1,11 +1,26 @@
 import { Tool } from './Tool';
 import { getMousePos, isRightMouseButton } from './util/util';
-import { distance } from '../algorithm/shape';
+import { formatPixelAspect } from '../overmind/canvas/state';
+import { Point } from '../types';
 import { overmind } from '../index';
 import { symmetryBrush } from '../brush/SymmetryBrush';
 import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { drawSymmetryIndicator } from './util/symmetryIndicator';
+
+// The raster radii a drag asks for, corrected so the result reads round on
+// screen rather than in the raster (docs/pixel-aspect.md). The drag itself is
+// measured in the same corrected space, so the circle meets the cursor.
+//
+// Equal radii mean a true circle, which keeps Lo-Res, Hi-Res and Native on the
+// circle rasterizer rather than sending them through the ellipse one.
+function circleRadii(origin: Point, to: Point): { rx: number; ry: number } {
+  const aspect = formatPixelAspect(overmind.state.canvas.screenFormatId);
+  const dx = (to.x - origin.x) * aspect.x;
+  const dy = (to.y - origin.y) * aspect.y;
+  const radius = Math.sqrt(dx * dx + dy * dy);
+  return { rx: Math.round(radius / aspect.x), ry: Math.round(radius / aspect.y) };
+}
 
 export class CircleTool implements Tool {
   public constructor(filled: boolean) {
@@ -36,13 +51,15 @@ export class CircleTool implements Tool {
       return;
     }
 
-    const mousePos = getMousePos(event);
-    const radius = Math.round(distance(origin, mousePos));
-
+    const { rx, ry } = circleRadii(origin, getMousePos(event));
     if (this.filled) {
-      symmetryBrush.drawFilledCircle(origin, radius, paintingCanvasController);
+      rx === ry
+        ? symmetryBrush.drawFilledCircle(origin, rx, paintingCanvasController)
+        : symmetryBrush.drawFilledEllipse(origin, rx, ry, 0, paintingCanvasController);
     } else {
-      symmetryBrush.drawUnfilledCircle(origin, radius, paintingCanvasController);
+      rx === ry
+        ? symmetryBrush.drawUnfilledCircle(origin, rx, paintingCanvasController)
+        : symmetryBrush.drawUnfilledEllipse(origin, rx, ry, 0, paintingCanvasController);
     }
     overmind.actions.undo.setUndoPoint();
     this.onInit();
@@ -85,11 +102,15 @@ export class CircleTool implements Tool {
 
     // Origin is set, so we render a preview of the cicle
 
-    const radius = Math.round(distance(origin, mousePos));
+    const { rx, ry } = circleRadii(origin, mousePos);
     if (this.filled) {
-      symmetryBrush.drawFilledCircle(origin, radius, overlayCanvasController);
+      rx === ry
+        ? symmetryBrush.drawFilledCircle(origin, rx, overlayCanvasController)
+        : symmetryBrush.drawFilledEllipse(origin, rx, ry, 0, overlayCanvasController);
     } else {
-      symmetryBrush.drawUnfilledCircle(origin, radius, overlayCanvasController);
+      rx === ry
+        ? symmetryBrush.drawUnfilledCircle(origin, rx, overlayCanvasController)
+        : symmetryBrush.drawUnfilledEllipse(origin, rx, ry, 0, overlayCanvasController);
       symmetryBrush.drawPointerCopies(mousePos, overlayCanvasController);
     }
   }

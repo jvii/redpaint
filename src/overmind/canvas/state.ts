@@ -55,6 +55,15 @@ export const screenFormats: { [id in ScreenFormatId]: ScreenFormat } = {
   },
 };
 
+// The format's pixel shape, for the drawing correction: a shape is round when
+// its raster radii divided by these are equal (docs/pixel-aspect.md). Taken
+// from the format and never from displayScale, which follows the window, so
+// the same drag always produces the same pixels. Native has square pixels.
+export function formatPixelAspect(formatId: ScreenFormatId | null): Point {
+  const format = formatId === null ? null : screenFormats[formatId];
+  return format ? { x: format.aspectX, y: format.aspectY } : { x: 1, y: 1 };
+}
+
 // A format's actual pixel size depends on the active video standard; every
 // caller that needs the current width/height goes through this instead of
 // reading screenFormats[id] directly.
