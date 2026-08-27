@@ -16,7 +16,7 @@ import { createPalette } from '../../components/palette/util';
 import { CropRect } from '../crop/state';
 import { Color } from '../../types';
 import { Point } from '../../types';
-import { PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
+import { formatPixelAspect, PendingScreenFormat, ScreenFormatId, VideoStandard } from './state';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { syncBufferSize } from '../undo/actions';
 import {
@@ -135,11 +135,16 @@ export interface SetScreenFormatParams {
 // independent view preference (toggleScaleMode), and resizing the canvas to the
 // screen is a separate, conditional step (the Screen Format requester).
 export const setScreenFormat = (context: Context, { formatId }: SetScreenFormatParams): void => {
+  const before = formatPixelAspect(context.state.canvas.screenFormatId);
   context.state.canvas.screenFormatId = formatId;
-  // The format decides a built-in brush's shape (docs/pixel-aspect.md), so the
-  // one in hand is re-derived here rather than at each caller: a load
-  // auto-matching a format needs it as much as the requester does.
-  context.actions.brush.refreshBuiltInBrushForFormat();
+  const after = formatPixelAspect(formatId);
+  // Only when the pixel's proportions actually change. Native, Lo-Res and
+  // Hi-Res all have square pixels, so a brush stays right across those; it is
+  // the ratio that invalidates it, not the size. Done here rather than at each
+  // caller, this being the one place the format is assigned.
+  if (before.x / before.y !== after.x / after.y) {
+    context.actions.brush.dropBuiltInBrushForNewPixelShape();
+  }
 };
 
 // Which broadcast standard the 4 named formats' dimensions resolve to. Set

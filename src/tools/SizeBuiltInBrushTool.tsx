@@ -95,21 +95,12 @@ export class SizeBuiltInBrushTool implements Tool {
 // The drag is measured on screen and converted back per axis, so the pen comes
 // out square there rather than in the raster (MODES.C's MAX(VMapX, VMapY),
 // docs/pixel-aspect.md).
-function dragSize(
-  anchor: Point,
-  mousePos: Point
-): { width: number; height: number; screenSize: number } {
+function dragSize(anchor: Point, mousePos: Point): { width: number; height: number } {
   const aspect = formatPixelAspect(overmind.state.canvas.screenFormatId);
   const side = Math.max(
     1,
     Math.abs(mousePos.x - anchor.x) * aspect.x,
     Math.abs(mousePos.y - anchor.y) * aspect.y
   );
-  // screenSize rides along so the brush can be rebuilt at another pixel shape:
-  // its width and height are already divided by this one.
-  return {
-    width: Math.max(1, side / aspect.x),
-    height: Math.max(1, side / aspect.y),
-    screenSize: side,
-  };
+  return { width: Math.max(1, side / aspect.x), height: Math.max(1, side / aspect.y) };
 }

@@ -39,30 +39,16 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
   'polygonFilled',
 ];
 
-// Re-derives the built-in brush in hand for the current pixel shape. A screen
-// format decides what shape a preset has to be (docs/pixel-aspect.md), so
-// changing it has to reshape the brush already selected, not only the next one
-// picked. A custom brush is the user's own pixels and is left alone.
-export const refreshBuiltInBrushForFormat = (context: Context): void => {
-  // The brush in hand, not the preset behind it: a dragged size has no preset
-  // (resizeBuiltInBrushTo clears the id) and would otherwise be left at the old
-  // screen's shape, or snapped back to a preset size.
-  const brush = brushRecall.current;
-  if (!(brush instanceof CustomBrush) || brush.builtInFamily === undefined) {
-    return;
+// A built-in brush is generated for the pixel shape of the screen it was picked
+// on (docs/pixel-aspect.md), so a format with a different shape leaves it the
+// wrong one. It drops back to the single-pixel brush rather than being
+// reshaped: reshaping has to carry the size a dragged brush was asked for,
+// which its own width and height no longer say, and nothing is lost by picking
+// again on the new screen. A custom brush is the user's own pixels and stays.
+export const dropBuiltInBrushForNewPixelShape = (context: Context): void => {
+  if (context.state.brush.usingBuiltInBrush) {
+    context.actions.brush.selectBuiltInBrush(1);
   }
-  const reshaped = builtInBrushForAspect(
-    brush,
-    formatPixelAspect(context.state.canvas.screenFormatId)
-  );
-  if (reshaped === brush) {
-    return;
-  }
-  brushRecall.setBuiltIn(reshaped);
-  // A new CustomBrush has no colorized bitmap until a mode is applied to it,
-  // and would draw nothing. Selecting a brush re-applies the mode for the same
-  // reason.
-  context.actions.brush.setMode(context.state.brush.mode);
 };
 
 export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId): void => {
@@ -268,18 +254,13 @@ export const stretchBrushTo = (context: Context, size: { width: number; height: 
 // Matte/Repl and Previous-banking remain disabled.
 export const resizeBuiltInBrushTo = (
   context: Context,
-  size: { width: number; height: number; screenSize: number }
+  size: { width: number; height: number }
 ): void => {
   const brush = brushRecall.current;
   if (!(brush instanceof CustomBrush) || brush.builtInFamily === undefined) {
     return;
   }
-  const resized = createSizedBuiltInBrush(
-    brush.builtInFamily,
-    size.width,
-    size.height,
-    size.screenSize
-  );
+  const resized = createSizedBuiltInBrush(brush.builtInFamily, size.width, size.height);
   brushRecall.setBuiltIn(resized);
   // No preset icon matches a custom-dragged size: DPaint's cpPenBox = -1
   // (CTRPAN.C:189). usingBuiltInBrush stays true: that is the flag Matte/Repl

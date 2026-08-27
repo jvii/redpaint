@@ -249,8 +249,15 @@ window is a viewing condition, and belongs to the display layer above.
   square on screen. Only when the aspect is not 1:1: the generators do not
   reproduce the hand-drawn art (`roundBitmap(3,3)` is a solid block where
   dot3x3 is a plus), so switching wholesale would have changed the familiar
-  shapes on every format. Applied at selection, the one place a preset becomes
-  the current brush.
+  shapes on every format.
+
+  Applied when a preset is picked. Changing the screen format afterwards drops
+  the brush back to the single-pixel one rather than reshaping what is in hand:
+  reshaping has to carry the size a *dragged* brush was asked for, which its own
+  width and height stop saying once divided by a pixel shape, and picking again
+  on the new screen costs nothing. Only on a real change of proportions —
+  Native, Lo-Res and Hi-Res are all square, so a brush survives moving between
+  them. A custom brush is the user's own pixels and is never touched.
 
   **dot3x3 is exempt**, and the boundary is not arbitrary: the generator
   reproduces dot5x5 and dot7x7 exactly, but `roundBitmap(3,3)` is a solid block

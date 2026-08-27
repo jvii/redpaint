@@ -216,18 +216,11 @@ function generateBuiltInBitmap(family: BuiltInFamily, width: number, height: num
 export function createSizedBuiltInBrush(
   family: BuiltInFamily,
   width: number,
-  height: number,
-  builtInSize?: number
+  height: number
 ): CustomBrush {
   const stringBitmap = generateBuiltInBitmap(family, width, height);
   const brushColorIndex = BrushColorIndex.fromBuiltInBrushStringBitmap(stringBitmap);
-  return new CustomBrush(
-    brushColorIndex,
-    stringBitmap[0].length,
-    stringBitmap.length,
-    family,
-    builtInSize
-  );
+  return new CustomBrush(brushColorIndex, stringBitmap[0].length, stringBitmap.length, family);
 }
 
 // Below this the round family is hand-drawn art rather than a rasterized
@@ -246,23 +239,18 @@ const ROUND_GENERATOR_FLOOR = 5;
 // roundness to preserve, and stretching one would only change its density.
 export function builtInBrushForAspect(brush: CustomBrush, aspect: Point): CustomBrush {
   const family = brush.builtInFamily;
-  if (!family || family === 'dither') {
+  // Square pixels leave a raster shape already right on screen, whatever size
+  // they are: Native, Lo-Res and Hi-Res all take the preset as drawn.
+  if (!family || family === 'dither' || aspect.x === aspect.y) {
     return brush;
   }
-  // What it was asked for. A preset at 1:1 carries no size of its own, and
-  // there either side is the answer; anything rebuilt or dragged does, since
-  // by then its width and height are that size divided by a pixel shape.
-  const size = brush.builtInSize ?? Math.max(brush.width, brush.heigth);
+  // Presets are square at 1:1, so either side is the size being asked for.
+  const size = Math.max(brush.width, brush.heigth);
   // The finest round pen is a cross, and no ellipse is: roundBitmap(3,3) is a
   // solid block, and at 2:1 it becomes a 6x3 blob. The generator reproduces
   // dot5x5 and dot7x7 exactly, so it can speak for them and not for this one.
   if (family === 'round' && size < ROUND_GENERATOR_FLOOR) {
     return brush;
   }
-  const width = Math.max(1, Math.round(size / aspect.x));
-  const height = Math.max(1, Math.round(size / aspect.y));
-  if (width === brush.width && height === brush.heigth) {
-    return brush; // already that shape — keeps a preset's hand-drawn art
-  }
-  return createSizedBuiltInBrush(family, width, height, size);
+  return createSizedBuiltInBrush(family, size / aspect.x, size / aspect.y);
 }
