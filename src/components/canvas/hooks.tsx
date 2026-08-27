@@ -162,6 +162,7 @@ export function useCanvasContentUpload(): void {
       // somewhere unnamed. Either way the previous document's name is gone.
       actions.app.setDocumentName(pending.documentName);
       forgetFileHandles();
+      actions.brush.dropBuiltInBrush();
       if (pending.documentModified) {
         actions.app.markDocumentModified();
       } else {

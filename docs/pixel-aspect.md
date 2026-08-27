@@ -251,13 +251,18 @@ window is a viewing condition, and belongs to the display layer above.
   dot3x3 is a plus), so switching wholesale would have changed the familiar
   shapes on every format.
 
-  Applied when a preset is picked. Changing the screen format afterwards drops
-  the brush back to the single-pixel one rather than reshaping what is in hand:
-  reshaping has to carry the size a *dragged* brush was asked for, which its own
-  width and height stop saying once divided by a pixel shape, and picking again
-  on the new screen costs nothing. Only on a real change of proportions —
-  Native, Lo-Res and Hi-Res are all square, so a brush survives moving between
-  them. A custom brush is the user's own pixels and is never touched.
+  Applied when a preset is picked. Two things then invalidate it, and both drop
+  the brush back to the single-pixel one rather than reshaping it: a screen
+  format change (`setScreenFormat`, the one place the format is assigned) and a
+  picture load (the `freshDocument` branch in `canvas/hooks.tsx`, which covers
+  ILBM, GIF, PNG and paste alike).
+
+  Dropped, not reshaped, because reshaping has to carry the size a *dragged*
+  brush was asked for — its own width and height stop saying once divided by a
+  pixel shape — and picking again is one click. Every format change, not only
+  the ones that change the proportions: a rule with no exceptions is worth more
+  than keeping the brush across the few moves that would leave it valid. A
+  custom brush is the user's own pixels and is never touched.
 
   **dot3x3 is exempt**, and the boundary is not arbitrary: the generator
   reproduces dot5x5 and dot7x7 exactly, but `roundBitmap(3,3)` is a solid block

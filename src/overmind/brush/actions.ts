@@ -39,13 +39,15 @@ const TOOLS_INCOMPATIBLE_WITH_BRUSHES: DrawingToolId[] = [
   'polygonFilled',
 ];
 
-// A built-in brush is generated for the pixel shape of the screen it was picked
-// on (docs/pixel-aspect.md), so a format with a different shape leaves it the
-// wrong one. It drops back to the single-pixel brush rather than being
-// reshaped: reshaping has to carry the size a dragged brush was asked for,
-// which its own width and height no longer say, and nothing is lost by picking
-// again on the new screen. A custom brush is the user's own pixels and stays.
-export const dropBuiltInBrushForNewPixelShape = (context: Context): void => {
+// Back to the single-pixel brush, for the two things that invalidate a
+// built-in: a screen format, which decides what shape one has to be
+// (docs/pixel-aspect.md), and a picture load, which replaces the document
+// under it. Dropped rather than reshaped — reshaping has to carry the size a
+// dragged brush was asked for, which its own width and height stop saying once
+// divided by a pixel shape, and picking again is one click.
+//
+// A custom brush is the user's own pixels and is never touched.
+export const dropBuiltInBrush = (context: Context): void => {
   if (context.state.brush.usingBuiltInBrush) {
     context.actions.brush.selectBuiltInBrush(1);
   }
