@@ -1,5 +1,7 @@
 import { Context } from '../../overmind';
 import { Mode, BuiltInBrushId, HandleMode, builtInBrushes, isBuiltInBrush } from './state';
+import { builtInBrushForAspect } from '../../brush/BuiltInBrushFactory';
+import { formatPixelAspect } from '../canvas/state';
 import { usesColorizedBrush } from './mode';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { createSizedBuiltInBrush } from '../../brush/BuiltInBrushFactory';
@@ -41,7 +43,12 @@ export const selectBuiltInBrush = (context: Context, brushNumber: BuiltInBrushId
   context.state.brush.selectedBuiltInBrushId = brushNumber;
   context.state.brush.usingBuiltInBrush = true;
   // banks the outgoing custom brush into Previous (docs/brush-slots.md)
-  brushRecall.setBuiltIn(builtInBrushes[brushNumber]);
+  const preset = builtInBrushes[brushNumber];
+  brushRecall.setBuiltIn(
+    preset instanceof CustomBrush
+      ? builtInBrushForAspect(preset, formatPixelAspect(context.state.canvas.screenFormatId))
+      : preset
+  );
   context.actions.brush.refreshPreviousBrushSlot();
   // Matte and Repl need a captured color, so they are custom-brush-only and
   // fall back to Color on a built-in. Every other mode works with a built-in

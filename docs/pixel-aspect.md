@@ -240,11 +240,27 @@ window is a viewing condition, and belongs to the display layer above.
   | Interlace | 121x209 | 2x1 | 242x209 | 1.158 |
 
   Three quite different rasters, one star on screen.
-- **Built-in round brushes** (`algorithm/builtInBrushShapes.ts`) —
-  `roundBitmap` already takes independent width and height, so this is only a
-  question of what the caller asks for.
-- **Built-in brush size drag** (`sizeBuiltInBrushTool`) — `MODES.C:196`'s
-  equivalent.
+- [x] **Built-in brushes** — done, round *and* square: `CURBRUSH.C:153-154`
+  maps both (`RoundPen(VMapY(size))`, `SquarePen(VMapY(size))`). Dither is
+  exempt, as it is there — `DOT_B` gets the raw size, a texture having no
+  roundness to preserve.
+
+  `builtInBrushForAspect` regenerates the family at a size that comes out
+  square on screen. Only when the aspect is not 1:1: the generators do not
+  reproduce the hand-drawn art (`roundBitmap(3,3)` is a solid block where
+  dot3x3 is a plus), so switching wholesale would have changed the familiar
+  shapes on every format. Applied at selection, the one place a preset becomes
+  the current brush.
+
+  | format | brush | raster | block | on screen |
+  | --- | --- | --- | --- | --- |
+  | Lo-Res | dot7x7 | 7x7, the art | 1x1 | 7x7 |
+  | Med-Res | dot7x7 | 14x7 | 1x2 | 14x14 |
+  | Med-Res | square2x2 | 4x2 | 1x2 | 4x4 |
+  | Interlace | square2x2 | 2x4 | 2x1 | 4x4 |
+
+- [x] **Built-in brush size drag** — done. `dragSize` measures on screen and
+  converts back per axis, `MODES.C:196`'s `MAX(VMapX(w), VMapY(h))`.
 
 Unaffected, because the drag already shows the result: rect, line, curve,
 polygon, the ellipse tool, crop, flood fill.

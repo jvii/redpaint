@@ -1,4 +1,5 @@
 import { BrushColorIndex } from '../domain/BrushColorIndex';
+import { Point } from '../types';
 import { CustomBrush } from './CustomBrush';
 import { BuiltInFamily, roundBitmap, squareBitmap } from '../algorithm/builtInBrushShapes';
 
@@ -220,4 +221,24 @@ export function createSizedBuiltInBrush(
   const stringBitmap = generateBuiltInBitmap(family, width, height);
   const brushColorIndex = BrushColorIndex.fromBuiltInBrushStringBitmap(stringBitmap);
   return new CustomBrush(brushColorIndex, stringBitmap[0].length, stringBitmap.length, family);
+}
+
+// The preset as it should be at the current pixel shape (docs/pixel-aspect.md).
+//
+// At 1:1 that is the hand-drawn art, which the generators do not reproduce —
+// roundBitmap(3,3) is a solid block where dot3x3 is a plus — so the familiar
+// shapes are left exactly as they are on Lo-Res, Hi-Res and Native. Elsewhere
+// the family is regenerated at a size that comes out square on screen, which
+// is what DPaint's SelPen does for every pen it hands out.
+//
+// Dither is exempt: DPaint passes DOT_B the raw size, a texture having no
+// roundness to preserve, and stretching one would only change its density.
+export function builtInBrushForAspect(brush: CustomBrush, aspect: Point): CustomBrush {
+  const family = brush.builtInFamily;
+  if (!family || family === 'dither' || aspect.x === aspect.y) {
+    return brush;
+  }
+  // Presets are square at 1:1, so either side is the size being asked for.
+  const size = Math.max(brush.width, brush.heigth);
+  return createSizedBuiltInBrush(family, size / aspect.x, size / aspect.y);
 }
