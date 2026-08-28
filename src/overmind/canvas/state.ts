@@ -186,7 +186,11 @@ export function nativeCanvasSize(canvas: {
 // carry it either. These three it does: they belong to the picture.
 export const DEFAULT_SCREEN_FORMAT_ID: ScreenFormatId | null = null;
 export const DEFAULT_VIDEO_STANDARD: VideoStandard = 'PAL';
-export const DEFAULT_TRUE_COLOR_ENABLED = true;
+// Off: a document only needs it once something brings colors a palette cannot
+// hold, and the load requesters turn it on for exactly that (their True Color
+// option). Starting on makes every fresh picture able to hold pixels the
+// indexed formats then refuse to save.
+export const DEFAULT_TRUE_COLOR_ENABLED = false;
 
 export const state: State = {
   resolution: { width: 0, height: 0 },
