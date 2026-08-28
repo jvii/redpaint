@@ -60,11 +60,19 @@ export function MainCanvas(): JSX.Element {
       if (scaleMode === 'aspect') {
         // The format's pixel shape as the smallest whole block: 1x1, 1x2, 2x1.
         // One scale for both axes, so the shape is the format's however the
-        // window is resized, and whole so a pixel stays a uniform block.
+        // window is resized, and the largest that fits, so the margin is only
+        // ever what the shape demands.
         const unit = Math.min(format.aspectX, format.aspectY);
         const blockX = format.aspectX / unit;
         const blockY = format.aspectY / unit;
-        const scale = Math.max(1, Math.floor(Math.min(fillX / blockX, fillY / blockY)));
+        // Never below one device pixel per artwork pixel. Shrinking past that
+        // does not make pixels smaller, it drops them — at 0.9 a tenth of the
+        // rows and columns simply have nowhere to land. The picture scrolls
+        // instead, which is what a canvas too big for the window does anyway.
+        // The narrower axis is the one that hits the floor first, so it sets
+        // the limit — blocks are normalized, so that axis is the scale itself.
+        const floorScale = 1 / dpr / Math.min(blockX, blockY);
+        const scale = Math.max(floorScale, Math.min(fillX / blockX, fillY / blockY));
         updateDisplayScale({ x: scale * blockX, y: scale * blockY });
       } else {
         updateDisplayScale({

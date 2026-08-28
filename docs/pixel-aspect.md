@@ -162,11 +162,29 @@ window smaller than the canvas:
 **`stretch`** — fill the pane on both axes, shape not guaranteed. What it does
 now, and worth keeping: it is the most drawing area a window can give.
 
-**`aspect`** — one integer scale `k`, blocks of `k*rx` by `k*ry`, where
-`rx:ry` is the format's integer ratio (1:1, 2:1, 1:2). Whole blocks and the
-right shape at once. Today's `integer` floors the two axes independently and
-lands on 1x3 for a format whose pixels are 1x2, so it is worse at the very
-thing it exists for; there is nothing to keep.
+**`aspect`** — one scale for both axes, applied to the format's ratio
+(`rx:ry`, one of 1:1, 2:1, 1:2), and the largest that fits. Not rounded to
+whole steps: stepping wastes most of a window sitting just below the next
+multiple, and overflows rather than shrinking when even one step does not fit.
+Measured on Lo-Res, height filled exactly at every size, shape held at 1.00:
+
+| window | canvas | scale |
+| --- | --- | --- |
+| 1400x1000 | 1188x950 | 3.71 |
+| 1200x800 | 938x750 | 2.93 |
+| 1000x600 | 688x550 | 2.15 |
+| 800x500 | 563x450 | 1.76 |
+
+**Floored at one device pixel per artwork pixel.** Below that, shrinking does
+not make pixels smaller, it drops them: at 0.9 a tenth of the rows and columns
+have nowhere to land. The picture scrolls instead. The floor is the narrower
+axis's, since blocks are normalized and that axis is the scale itself — using
+the wider one leaves the other below 1, which is how this was wrong first time.
+
+Uneven pixel runs are the cost of a fractional scale, and a smaller one than it
+looks: at 1.87 on a 2x display an artwork pixel covers 3 or 4 device pixels, a
+third's variation at half the size. On a 1x display the same scale is 1 or 2,
+which does show. Never an issue below the floor, because there is no below.
 
 Margin goes around **the canvas, not the app**. PyDPainter sizes the OS window
 because it is an SDL program owning the screen; our canvas already sits on a

@@ -94,13 +94,16 @@ export function findMatchingScreenFormat(
 }
 
 // How the simulated screen is scaled to the browser window:
-// Starts as 'stretch': the drawing area is worth more than exact proportions,
-// and 'aspect' can only scale in whole steps, so it leaves a wide margin at
-// any window a step below the next multiple.
-//  - 'aspect': one whole-number scale, applied to the format's pixel shape, so
-//    a pixel is a uniform block of the proportions the format names — 1x1 on
-//    Lo-Res and Hi-Res, 1x2 on Med-Res, 2x1 on Interlace. Costs a margin until
-//    the window is enlarged. See docs/pixel-aspect.md.
+// Starts as 'stretch': it gives the most drawing area, and the shape only
+// matters when you are checking one.
+//  - 'aspect': one scale for both axes, applied to the format's pixel shape,
+//    so a pixel keeps the proportions the format names — 1x1 on Lo-Res and
+//    Hi-Res, 1x2 on Med-Res, 2x1 on Interlace — at any window, with margin
+//    only where the shape demands it. Not rounded to whole steps: that wasted
+//    most of a window a step below the next multiple, and overflowed rather
+//    than shrinking when even one step did not fit. Floored at one device
+//    pixel per artwork pixel, below which shrinking drops pixels instead of
+//    scaling them. See docs/pixel-aspect.md.
 //  - 'stretch': fill the window on both axes with a fractional scale. No
 //    margin, and the most drawing area a window can give, but the shape is the
 //    window's rather than the format's and pixels aren't uniform blocks.
