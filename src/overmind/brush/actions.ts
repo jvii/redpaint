@@ -378,6 +378,8 @@ export const recallPreviousBrush = (context: Context): void => {
 function activateCustomBrush(context: Context, brush: CustomBrush): void {
   brushRecall.setCustom(brush);
   context.actions.brush.clearBuiltInBrushSelection();
-  context.actions.brush.setMode(context.state.brush.mode);
+  // Matte, as a capture and a load also do: a brush with pixels of its own is
+  // what the mode needs, and a built-in detour will have forced Color.
+  context.actions.brush.setMode('Matte');
   context.actions.brush.refreshPreviousBrushSlot();
 }
