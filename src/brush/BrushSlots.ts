@@ -23,6 +23,12 @@ class BrushSlots {
     return stored ? stored.transform((matte) => matte) : null;
   }
 
+  // The stored brush itself, for reading only — a thumbnail re-render has no
+  // reason to copy. Anything that hands a brush to the user calls recall().
+  peek(index: number): CustomBrush | null {
+    return this.slots[index];
+  }
+
   clear(index: number): void {
     this.slots[index] = null;
   }

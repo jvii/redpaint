@@ -360,6 +360,27 @@ export const refreshPreviousBrushSlot = (context: Context): void => {
     : { occupied: false, thumbnail: null, size: null };
 };
 
+// Thumbnails resolve a brush's indexed pixels against the palette and freeze a
+// PNG, so every one of them is wrong the moment the palette changes — after a
+// picture load a stored brush still shows the colors it had under the old one.
+//
+// Re-rendered when the drawer mounts rather than on every palette write: the
+// menu unmounts its content when closed, and the palette editor closes the
+// menu, so a thumbnail cannot go stale while it is on screen.
+export const refreshBrushThumbnails = (context: Context): void => {
+  context.actions.brush.refreshPreviousBrushSlot();
+  context.state.brush.slots.forEach((slot, index): void => {
+    const brush = slot.occupied ? brushSlots.peek(index) : null;
+    if (brush) {
+      context.state.brush.slots[index] = {
+        occupied: true,
+        thumbnail: renderBrushThumbnail(brush, BRUSH_SLOT_THUMBNAIL_SIZE),
+        size: { width: brush.width, height: brush.heigth },
+      };
+    }
+  });
+};
+
 export const recallPreviousBrush = (context: Context): void => {
   const previous = brushRecall.previousBrush;
   if (!previous) {

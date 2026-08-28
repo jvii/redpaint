@@ -1,4 +1,4 @@
-import React, { JSX } from 'react';
+import React, { JSX, useEffect } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { shortcutCap } from '../ui/shortcutCap';
 import { MOD_KEY } from '../../platform';
@@ -68,6 +68,15 @@ function describeCurrentBrush(usingBuiltInBrush: boolean): string {
 export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Element {
   const actions = useActions();
   const state = useAppState();
+
+  // A thumbnail bakes in the palette it was rendered against, so any brush
+  // stored before a palette change still shows its old colors. The drawer
+  // unmounts with the menu, so re-rendering them here catches every change
+  // that happened while they were off screen.
+  useEffect((): void => {
+    actions.brush.refreshBrushThumbnails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // transforms are custom-brush-only
   const usingBuiltInBrush = state.brush.usingBuiltInBrush;
