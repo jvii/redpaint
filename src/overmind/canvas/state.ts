@@ -94,6 +94,9 @@ export function findMatchingScreenFormat(
 }
 
 // How the simulated screen is scaled to the browser window:
+// Starts as 'stretch': the drawing area is worth more than exact proportions,
+// and 'aspect' can only scale in whole steps, so it leaves a wide margin at
+// any window a step below the next multiple.
 //  - 'aspect': one whole-number scale, applied to the format's pixel shape, so
 //    a pixel is a uniform block of the proportions the format names — 1x1 on
 //    Lo-Res and Hi-Res, 1x2 on Med-Res, 2x1 on Interlace. Costs a margin until
@@ -196,7 +199,7 @@ export const state: State = {
   resolution: { width: 0, height: 0 },
   screenFormatId: DEFAULT_SCREEN_FORMAT_ID,
   videoStandard: DEFAULT_VIDEO_STANDARD,
-  scaleMode: 'aspect',
+  scaleMode: 'stretch',
   pixelAspect: derived((state: State) =>
     state.screenFormatId
       ? {

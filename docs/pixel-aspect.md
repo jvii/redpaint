@@ -176,8 +176,12 @@ not move.
 Native is not affected. `formatId === null` returns `{x: 1/dpr, y: 1/dpr}`
 before any of this, uniform by construction, and has no format aspect to honour.
 
-The default should move to aspect-correct: a screen format that does not show
-the shape it names is not doing its job.
+`stretch` stays the default. Aspect-correct scales in whole steps only, so at
+any window a step below the next multiple it leaves a wide margin, and the
+drawing area is worth more than exact proportions for most work. The toggle is
+there when the shape matters — and the drawing correction is unaffected either
+way, taking its ratio from the format rather than from what the window is
+doing.
 
 
 ## The drawing fix

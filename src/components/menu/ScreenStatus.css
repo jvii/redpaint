@@ -138,14 +138,14 @@
   color: white;
 }
 
-/* Darker than the menu it sits on, not the requesters' Workbench blue: that
-   blue is this menu's own background, so an active gadget would vanish into it.
-   Recessed instead — sunk into the panel, orange label. */
+/* The pressed gadget everywhere else (.wb-gadget--on): Workbench blue, orange
+   label, deep blue inset. Its own black border and drop shadow are what keep it
+   off the panel's blue, so it needs no darker ground of its own. */
 .view-scaling--on {
-  background-color: var(--wb-deep-blue);
+  background-color: var(--wb-blue);
   color: var(--wb-orange);
   box-shadow:
-    inset 3px 3px 0 0 rgb(0, 30, 61),
+    inset 3px 3px 0 0 var(--wb-deep-blue),
     4px 4px 0 0 black;
 }
 
