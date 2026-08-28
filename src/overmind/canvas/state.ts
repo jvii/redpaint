@@ -104,9 +104,9 @@ export function findMatchingScreenFormat(
 //    than shrinking when even one step did not fit. Floored at one device
 //    pixel per artwork pixel, below which shrinking drops pixels instead of
 //    scaling them. See docs/pixel-aspect.md.
-//  - 'stretch': fill the window on both axes with a fractional scale. No
-//    margin, and the most drawing area a window can give, but the shape is the
-//    window's rather than the format's and pixels aren't uniform blocks.
+//  - 'stretch': fill the window on both axes, each with its own scale. No
+//    margin, and the most drawing area a window can give, at the cost of the
+//    shape, which becomes the window's rather than the format's.
 export type ScaleMode = 'aspect' | 'stretch';
 
 export type State = {

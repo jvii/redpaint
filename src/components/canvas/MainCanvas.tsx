@@ -29,8 +29,9 @@ export function MainCanvas(): JSX.Element {
   // CSS pixels per buffer pixel, per axis. A format fills the window on both
   // axes independently, so pixels need not stay square. 'stretch' takes the
   // fractional scale (no margin, the cursor's pixel drifts slightly);
-  // 'aspect' takes one whole scale and applies the format's pixel shape to it
-  // (uniform blocks of the right proportions, margin until the window grows).
+  // 'aspect' takes one scale for both axes and applies the format's pixel
+  // shape to it, fitting the window with margin only where that shape asks
+  // for it.
   // At Native it is 1/dpr, so an artwork pixel is one physical pixel rather
   // than one CSS pixel.
   const formatId = state.canvas.screenFormatId;
@@ -58,7 +59,7 @@ export function MainCanvas(): JSX.Element {
       const fillX = area.offsetWidth / format.width;
       const fillY = area.offsetHeight / format.height;
       if (scaleMode === 'aspect') {
-        // The format's pixel shape as the smallest whole block: 1x1, 1x2, 2x1.
+        // The format's pixel shape as its smallest whole ratio: 1:1, 1:2, 2:1.
         // One scale for both axes, so the shape is the format's however the
         // window is resized, and the largest that fits, so the margin is only
         // ever what the shape demands.
