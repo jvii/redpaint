@@ -306,6 +306,24 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
   public toImageData(): ImageData {
     const source = this.brushColorIndexMatte.indexArray;
     const data = new Uint8ClampedArray(this.width * this.heigth * 4);
+    // The palette flattened into plain arrays first. Read inside the loop it is
+    // an Overmind proxy lookup and a string allocation per pixel, which on a
+    // large brush is the whole cost of rendering one.
+    const palette = overmind.state.palette.palette;
+    const size = Object.keys(palette).length;
+    const red = new Uint8Array(size + 1);
+    const green = new Uint8Array(size + 1);
+    const blue = new Uint8Array(size + 1);
+    const known = new Uint8Array(size + 1);
+    for (let i = 1; i <= size; i++) {
+      const color = palette[String(i)];
+      if (color) {
+        red[i] = color.r;
+        green[i] = color.g;
+        blue[i] = color.b;
+        known[i] = 1;
+      }
+    }
     for (let y = 0; y < this.heigth; y++) {
       const sourceRow = (this.heigth - y - 1) * this.width * 4;
       const targetRow = y * this.width * 4;
@@ -319,11 +337,11 @@ export class CustomBrush implements BrushInterface, CustomBrushFeatures {
           data[t + 2] = source[s + 2];
           data[t + 3] = 255;
         } else if (tag === ALPHA_INDEXED) {
-          const color = overmind.state.palette.palette[String(source[s] + 1)];
-          if (color) {
-            data[t] = color.r;
-            data[t + 1] = color.g;
-            data[t + 2] = color.b;
+          const index = source[s] + 1;
+          if (index <= size && known[index]) {
+            data[t] = red[index];
+            data[t + 1] = green[index];
+            data[t + 2] = blue[index];
             data[t + 3] = 255;
           }
         }

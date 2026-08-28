@@ -1,4 +1,6 @@
 import { Context } from '../../overmind';
+import { Color } from '../../types';
+import { paletteEquals } from '../../algorithm/imageColors';
 import { Mode, BuiltInBrushId, HandleMode, builtInBrushes, isBuiltInBrush } from './state';
 import { builtInBrushForAspect } from '../../brush/BuiltInBrushFactory';
 import { formatPixelAspect } from '../canvas/state';
@@ -367,7 +369,18 @@ export const refreshPreviousBrushSlot = (context: Context): void => {
 // Re-rendered when the drawer mounts rather than on every palette write: the
 // menu unmounts its content when closed, and the palette editor closes the
 // menu, so a thumbnail cannot go stale while it is on screen.
+let thumbnailPalette: Color[] | null = null;
+
 export const refreshBrushThumbnails = (context: Context): void => {
+  // Rendering one is O(pixels), and the drawer opens far more often than the
+  // palette changes, so the palette they were drawn against is kept and
+  // compared first. Module-level, as brushRecall and brushSlots are: it is a
+  // cache key, and nothing renders from it.
+  const palette = plainPalette(Object.values(context.state.palette.palette));
+  if (thumbnailPalette && paletteEquals(thumbnailPalette, palette)) {
+    return;
+  }
+  thumbnailPalette = palette;
   context.actions.brush.refreshPreviousBrushSlot();
   context.state.brush.slots.forEach((slot, index): void => {
     const brush = slot.occupied ? brushSlots.peek(index) : null;
