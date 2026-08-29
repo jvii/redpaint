@@ -78,9 +78,9 @@ const stretchIcon = (
 const amigaCheck = (
   <svg
     className="screen-status__check"
-    // Sized to the artwork exactly: the polygons reach x=148.7 and the shadow
-    // 6 further, so a shorter box clips the right chevron.
-    viewBox="0 0 154.7 96.2"
+    // The artwork spans 0..158.7 by 0..96.2, plus 3 units of margin for the
+    // outline on every side and the shadow's 8 more on the right.
+    viewBox="-3 -3 172.7 102.2"
     // Fills its box instead of fitting inside it. The default centres the
     // artwork at whatever uniform scale fits, so the width in the CSS would be
     // silently ignored — which is exactly what it was.
@@ -103,28 +103,44 @@ const amigaCheck = (
         <stop offset="0.86" stopColor="#f1581f" />
         <stop offset="1" stopColor="#ef4223" />
       </linearGradient>
-      {/* The logo's own offset shadow, hard-edged: without it the yellow band
-          dissolves into the paper the readout sits on. Darker than the logo's
-          own grey, which is a shadow on white at poster size and barely reads
-          as an edge at 18px. stdDeviation 0 keeps it a copy rather than a blur,
-          which is the rule everywhere else here.
-          Sideways only, and narrower than the gap between the chevrons: a
-          wider one fills it and the two read as one shape. Widening that gap
-          past the logo's own is what buys the shadow enough room to stay a
-          hard edge at this size. */}
-      <filter id="amiga-check-shadow" x="0" y="0" width="115%" height="100%">
-        <feDropShadow dx="6" dy="0" stdDeviation="0" floodColor="#3a3839" floodOpacity="1" />
-      </filter>
+      {/* Each chevron as one closed path: the union of its two arms, so nothing
+          crosses the joint where they overlap. Stroked, it is the outline;
+          filled and offset, the shadow. The notch vertex is where the short
+          arm's right edge crosses the long arm's left edge — recompute it if
+          either arm's width or angle changes. */}
+      <path
+        id="amiga-check-v1"
+        d="M0,45.2 18.2,45.2 43.8,83.5 98.7,0 116.7,0 52.5,96.2 34.3,96.2 Z"
+      />
+      <path
+        id="amiga-check-v2"
+        d="M42,45.2 60.2,45.2 85.8,83.5 140.7,0 158.7,0 94.5,96.2 76.3,96.2 Z"
+      />
     </defs>
-    {/* The second chevron is the logo's own shape moved 32 units right rather
-        than its 21.7: at readout size the true spacing closes up, and the two
-        need daylight between them to read as two. */}
-    <g filter="url(#amiga-check-shadow)">
-      <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
-      <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
-      <polygon fill="url(#amiga-check-short)" points="32,45.2 50.2,45.2 84.3,96.2 66.3,96.2" />
-      <polygon fill="url(#amiga-check-long)" points="130.7,0 148.7,0 84.5,96.2 67.4,96.2" />
+    {/* Outline and shadow are geometry, not a filter: a dilate or a blur
+        resamples the mark and softens the arm ends, which are meant to be clean
+        horizontal cuts. Both strokes run at twice the outline width and sit
+        behind the filled arms, which cover their inner half.
+
+        The shadow is a lighter grey than the outline, so the mark keeps one
+        crisp dark edge and the shadow stays behind it rather than doubling it.
+        It goes right only, so it never crowds the digits it sits beside.
+        Between the chevrons it costs 8 units on top of the outline's 6, which is
+        why the second one stands 42 units off rather than the logo's own 21.7. */}
+    <g strokeWidth="6" strokeLinejoin="miter">
+      <g fill="#5c595a" stroke="#5c595a" transform="translate(8 0)">
+        <use href="#amiga-check-v1" />
+        <use href="#amiga-check-v2" />
+      </g>
+      <g fill="none" stroke="#3a3839">
+        <use href="#amiga-check-v1" />
+        <use href="#amiga-check-v2" />
+      </g>
     </g>
+    <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
+    <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
+    <polygon fill="url(#amiga-check-short)" points="42,45.2 60.2,45.2 94.3,96.2 76.3,96.2" />
+    <polygon fill="url(#amiga-check-long)" points="140.7,0 158.7,0 94.5,96.2 77.4,96.2" />
   </svg>
 );
 
