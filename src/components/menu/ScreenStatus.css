@@ -63,27 +63,17 @@
   color: var(--wb-orange);
 }
 
-/* True Color ON earns the full spectrum: the gradient painted through the
-   glyphs top to bottom (background-clip: text). On hover it whitens like any
-   other value. OFF reads plain black, the switched-off state. */
-.screen-status__segment .screen-status__rainbow {
-  /* four bright bands, red to blue. The yellow is amber (#fb0), not pure
-     (#fe0): yellow's luminance lives in its green channel, and at full it is
-     nearly the paper background's — invisible. Amber keeps the hue with
-     three times the contrast distance. */
-  background-image: linear-gradient(180deg, #f00, #fb0, #0a0, #00f);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+/* Sized to the readout's value row, so it sits on the same line as the numbers
+   beside it rather than setting its own height. */
+.screen-status__truecolor-mark {
+  display: flex;
+  align-items: center;
 }
 
-.screen-status__segment:hover .screen-status__rainbow {
-  background-image: none;
-  color: white;
-}
-
-.screen-status__segment .screen-status__truecolor-off {
-  color: black;
+.screen-status__check {
+  display: block;
+  width: 33px;
+  height: 30px;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
@@ -149,4 +139,3 @@
     inset 3px 3px 0 0 var(--wb-deep-blue),
     4px 4px 0 0 black;
 }
-

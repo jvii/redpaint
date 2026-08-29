@@ -64,6 +64,51 @@ const stretchIcon = (
 // The live screen state readout plus the view-scaling toggle beside it. Each
 // segment is the way into the requester that changes it. Resolution and colors
 // share a segment because one requester owns both.
+
+// The Amiga tick: two chevrons with the rainbow running up them, blue at the
+// short arm through green at the joint to red at the top. Drawn as two stroked
+// polylines rather than filled outlines, so the thickness is one number and the
+// two are the same shape offset.
+//
+// The only place in the app that spends more than the four theme inks, as the
+// rainbow "ON" it replaces did: many colors is precisely what it reports.
+const amigaCheck = (
+  <svg
+    className="screen-status__check"
+    viewBox="0 0 44 40"
+    fill="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <defs>
+      {/* Two gradients, because the color follows the stroke and not any
+          straight line: blue at the short arm's tip, green where the arms
+          meet, red at the top of the long one. A single linear gradient
+          cannot do that — the joint is the lowest point but the middle
+          color. */}
+      <linearGradient id="amiga-check-short" x1="0" y1="0" x2="0.6" y2="1">
+        <stop offset="0" stopColor="#0044ff" />
+        <stop offset="1" stopColor="#00c060" />
+      </linearGradient>
+      <linearGradient id="amiga-check-long" x1="0" y1="1" x2="0.5" y2="0">
+        <stop offset="0" stopColor="#00c060" />
+        <stop offset="0.35" stopColor="#7ad000" />
+        <stop offset="0.6" stopColor="#e8e800" />
+        <stop offset="0.8" stopColor="#ff8800" />
+        <stop offset="1" stopColor="#ee0000" />
+      </linearGradient>
+    </defs>
+    {/* Each arm overshoots the joint by half a stroke, so the two meet solid
+        rather than leaving a notch on the outside of the angle. */}
+    <g strokeWidth="5.5" strokeLinecap="butt">
+      <path d="M3 25 L12.5 35.6" stroke="url(#amiga-check-short)" />
+      <path d="M10.6 33.4 L28 3.5" stroke="url(#amiga-check-long)" />
+      <path d="M17.5 25 L27 35.6" stroke="url(#amiga-check-short)" />
+      <path d="M25.1 33.4 L42.5 3.5" stroke="url(#amiga-check-long)" />
+    </g>
+  </svg>
+);
+
 export function ScreenStatus(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
@@ -106,17 +151,16 @@ export function ScreenStatus(): JSX.Element {
             <span className="screen-status__label">Palette</span>
             <b>{state.palette.paletteArray.length}</b>
           </span>
-          {/* the mode (the requester's switch), not whether true-color
-              pixels exist yet — so flipping the switch shows here at
-              once, before anything is painted */}
-          <span className="screen-status__field">
-            <span className="screen-status__label">True Color</span>
-            {state.canvas.trueColorEnabled ? (
-              <b className="screen-status__rainbow">ON</b>
-            ) : (
-              <b className="screen-status__truecolor-off">OFF</b>
-            )}
-          </span>
+          {/* Only while it is on. Off is the default and says nothing worth a
+              column, where on is a mode the picture is in and the readout is
+              the only place that shows it. The mode, not whether true-color
+              pixels exist yet, so flipping the switch shows here at once. */}
+          {state.canvas.trueColorEnabled && (
+            <span className="screen-status__field">
+              <span className="screen-status__label">True Color</span>
+              <span className="screen-status__truecolor-mark">{amigaCheck}</span>
+            </span>
+          )}
         </button>
         <button
           className="screen-status__segment"

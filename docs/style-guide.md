@@ -406,6 +406,13 @@ Consistency is judged within each control type, not across them:
     gadget. Only gadgets that actually have a binding show one, so the File
     row's Open and Save still carry nothing.
 
+- **The Amiga tick** (ScreenStatus) is the one mark drawn outside the four
+  theme inks, as the rainbow "ON" it replaced was: reporting that the picture
+  can hold colors a palette cannot is exactly what the rainbow is for. Two
+  stroked chevrons, each arm carrying its own gradient, because the color runs
+  along the stroke — blue at the short arm's tip, green at the joint, red at
+  the top — which no single linear gradient can express.
+
 ## Interaction
 
 - Armed modal states (drag transforms) show three signals: the menubar mode
