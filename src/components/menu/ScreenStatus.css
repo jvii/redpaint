@@ -70,10 +70,12 @@
   align-items: center;
 }
 
+/* Height set, width from the logo's own 1.44:1 — it is wider than tall, where
+   a square box made it stand taller than the digits beside it. */
 .screen-status__check {
   display: block;
-  width: 33px;
-  height: 30px;
+  height: 22px;
+  width: 31.6px;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption

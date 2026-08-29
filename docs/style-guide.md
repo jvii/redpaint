@@ -62,7 +62,9 @@ Semantic exceptions, deliberately scarce:
   on (`ScreenStatus`), is the only spectrum in the app, and the only mark drawn
   outside the theme inks. Reporting that the picture can hold colors a palette
   cannot is exactly what a rainbow is for; a second one anywhere kills it. It
-  spends two gradients on one mark, because the color runs along the stroke —
+  is traced from the 1985 logo's own artwork — four polygons, cut horizontally
+  at the ends rather than square to the stroke, which is why it is not a stroked
+  path — and spends two gradients on one mark, because the color runs along it —
   blue at the short arm's tip, green at the joint, red at the top of the long
   one — and the joint being the lowest point but the middle color is not
   something a single linear gradient can say.

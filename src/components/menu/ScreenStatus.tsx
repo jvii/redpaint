@@ -65,47 +65,43 @@ const stretchIcon = (
 // segment is the way into the requester that changes it. Resolution and colors
 // share a segment because one requester owns both.
 
-// The Amiga tick: two chevrons with the rainbow running up them, blue at the
-// short arm through green at the joint to red at the top. Drawn as two stroked
-// polylines rather than filled outlines, so the thickness is one number and the
-// two are the same shape offset.
+// The Amiga tick (the 1985 logo's checkmark), traced from its own artwork: two
+// chevrons, each an up arm and a down arm, cut horizontally at the ends rather
+// than square to the stroke — which is why these are polygons and not a stroked
+// path. Coordinates are the logo's, moved to the origin.
 //
-// The only place in the app that spends more than the four theme inks, as the
-// rainbow "ON" it replaces did: many colors is precisely what it reports.
+// The only spectrum in the app (docs/style-guide.md), and it takes two
+// gradients because the color runs along the stroke: blue at a short arm's tip,
+// green where the arms meet, red at the top of the long one. The joint is the
+// lowest point but the middle color, which no single linear gradient can say.
+// Both are objectBoundingBox, so one pair serves all four arms.
 const amigaCheck = (
   <svg
     className="screen-status__check"
-    viewBox="0 0 44 40"
-    fill="none"
+    viewBox="0 0 138.4 96.2"
     aria-hidden="true"
     focusable="false"
   >
     <defs>
-      {/* Two gradients, because the color follows the stroke and not any
-          straight line: blue at the short arm's tip, green where the arms
-          meet, red at the top of the long one. A single linear gradient
-          cannot do that — the joint is the lowest point but the middle
-          color. */}
-      <linearGradient id="amiga-check-short" x1="0" y1="0" x2="0.6" y2="1">
-        <stop offset="0" stopColor="#0044ff" />
-        <stop offset="1" stopColor="#00c060" />
+      <linearGradient id="amiga-check-short" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0.06" stopColor="#53b848" />
+        <stop offset="0.55" stopColor="#65ccec" />
+        <stop offset="0.79" stopColor="#4d92cd" />
+        <stop offset="1" stopColor="#4682c4" />
       </linearGradient>
-      <linearGradient id="amiga-check-long" x1="0" y1="1" x2="0.5" y2="0">
-        <stop offset="0" stopColor="#00c060" />
-        <stop offset="0.35" stopColor="#7ad000" />
-        <stop offset="0.6" stopColor="#e8e800" />
-        <stop offset="0.8" stopColor="#ff8800" />
-        <stop offset="1" stopColor="#ee0000" />
+      <linearGradient id="amiga-check-long" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stopColor="#6ebe44" />
+        <stop offset="0.25" stopColor="#bcda20" />
+        <stop offset="0.51" stopColor="#fff200" />
+        <stop offset="0.68" stopColor="#f79a11" />
+        <stop offset="0.86" stopColor="#f1581f" />
+        <stop offset="1" stopColor="#ef4223" />
       </linearGradient>
     </defs>
-    {/* Each arm overshoots the joint by half a stroke, so the two meet solid
-        rather than leaving a notch on the outside of the angle. */}
-    <g strokeWidth="5.5" strokeLinecap="butt">
-      <path d="M3 25 L12.5 35.6" stroke="url(#amiga-check-short)" />
-      <path d="M10.6 33.4 L28 3.5" stroke="url(#amiga-check-long)" />
-      <path d="M17.5 25 L27 35.6" stroke="url(#amiga-check-short)" />
-      <path d="M25.1 33.4 L42.5 3.5" stroke="url(#amiga-check-long)" />
-    </g>
+    <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
+    <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
+    <polygon fill="url(#amiga-check-short)" points="21.7,45.2 39.8,45.2 74,96.2 56,96.2" />
+    <polygon fill="url(#amiga-check-long)" points="120.4,0 138.4,0 74.2,96.2 57,96.2" />
   </svg>
 );
 
