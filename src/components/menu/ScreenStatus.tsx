@@ -76,7 +76,18 @@ const stretchIcon = (
 // lowest point but the middle color, which no single linear gradient can say.
 // Both are objectBoundingBox, so one pair serves all four arms.
 const amigaCheck = (
-  <svg className="screen-status__check" viewBox="0 0 144 102" aria-hidden="true" focusable="false">
+  <svg
+    className="screen-status__check"
+    // Sized to the artwork exactly: the polygons reach x=148.7 and the shadow
+    // 6 further, so a shorter box clips the right chevron.
+    viewBox="0 0 154.7 96.2"
+    // Fills its box instead of fitting inside it. The default centres the
+    // artwork at whatever uniform scale fits, so the width in the CSS would be
+    // silently ignored — which is exactly what it was.
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    focusable="false"
+  >
     <defs>
       <linearGradient id="amiga-check-short" x1="0" y1="1" x2="0" y2="0">
         <stop offset="0.06" stopColor="#53b848" />
@@ -103,14 +114,14 @@ const amigaCheck = (
         <feDropShadow dx="6" dy="0" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
       </filter>
     </defs>
-    {/* The second chevron is the logo's own shape moved 28 units right rather
+    {/* The second chevron is the logo's own shape moved 32 units right rather
         than its 21.7: at readout size the true spacing closes up, and the two
         need daylight between them to read as two. */}
     <g filter="url(#amiga-check-shadow)">
       <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
       <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
-      <polygon fill="url(#amiga-check-short)" points="28,45.2 46.2,45.2 80.3,96.2 62.3,96.2" />
-      <polygon fill="url(#amiga-check-long)" points="126.7,0 144.7,0 80.5,96.2 63.4,96.2" />
+      <polygon fill="url(#amiga-check-short)" points="32,45.2 50.2,45.2 84.3,96.2 66.3,96.2" />
+      <polygon fill="url(#amiga-check-long)" points="130.7,0 148.7,0 84.5,96.2 67.4,96.2" />
     </g>
   </svg>
 );
