@@ -94,9 +94,11 @@ const amigaCheck = (
       </linearGradient>
       {/* The logo's own offset shadow, hard-edged: without it the yellow band
           dissolves into the paper the readout sits on. stdDeviation 0 keeps it
-          a copy rather than a blur, which is the rule everywhere else here. */}
-      <filter id="amiga-check-shadow" x="0" y="0" width="120%" height="120%">
-        <feDropShadow dx="5" dy="5" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
+          a copy rather than a blur, which is the rule everywhere else here.
+          Sideways only, and narrower than the 3.5 units between the chevrons:
+          a wider one fills that gap and the two read as one shape. */}
+      <filter id="amiga-check-shadow" x="0" y="0" width="115%" height="100%">
+        <feDropShadow dx="3" dy="0" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
       </filter>
     </defs>
     <g filter="url(#amiga-check-shadow)">
