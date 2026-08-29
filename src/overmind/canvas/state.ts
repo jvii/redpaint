@@ -78,17 +78,25 @@ export function resolveScreenFormat(
   return { ...format, ...format.dimensions[standard] };
 }
 
-// Finds the standard format whose exact pixel dimensions match, to auto-select
-// one for an image that happens to be a standard Amiga size (beginIlbmLoad).
-// Checks both standards, so an NTSC-sized image selects NTSC.
-export function findMatchingScreenFormat(
+// The screen an indexed picture is shown on: the smallest standard format the
+// image fits inside. An image that is a standard Amiga size gets that format
+// exactly, since an exact size is the tightest fit there is; anything else gets
+// the first screen with room for it, so an indexed picture lands on a simulated
+// Amiga screen rather than on Native.
+//
+// Formats are tried in the order they are declared and NTSC before PAL, which
+// is shortest-first within a format: the two differ only in height.
+//
+// null when the image is larger than every format, which leaves Native as the
+// only honest answer.
+export function findFittingScreenFormat(
   width: number,
   height: number
 ): { id: ScreenFormatId; standard: VideoStandard } | null {
   for (const format of Object.values(screenFormats)) {
-    for (const standard of ['PAL', 'NTSC'] as const) {
+    for (const standard of ['NTSC', 'PAL'] as const) {
       const dims = format.dimensions[standard];
-      if (dims.width === width && dims.height === height) {
+      if (dims.width >= width && dims.height >= height) {
         return { id: format.id, standard };
       }
     }

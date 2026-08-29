@@ -20,6 +20,7 @@ import { LoadPreview } from './LoadPreview';
 import { drawLoadPreview } from './drawLoadPreview';
 import { plainPalette } from '../../algorithm/imageColors';
 import { undoLevelsForCanvas, MAX_UNDO_ENTRIES } from '../../overmind/undo/UndoBuffer';
+import { findFittingScreenFormat } from '../../overmind/canvas/state';
 
 // How the loaded image's colors are treated (the image always loads at its
 // own size; resizing is the screen format's business):
@@ -166,6 +167,18 @@ function ImageLoadDialogOpen(): JSX.Element {
       height: image.height,
       recordUndoPoint: false,
     });
+
+    // The color choice picks the screen too, on the same rule an ILBM load
+    // follows: indexed pixels belong on the smallest Amiga screen they fit,
+    // true-color ones on Native, which is the only screen that is not
+    // pretending to be an Amiga. Either way the format is set rather than left
+    // describing the document that was open before.
+    const fit = mode === 'true' ? null : findFittingScreenFormat(image.width, image.height);
+    actions.canvas.setScreenFormat({ formatId: fit?.id ?? null });
+    if (fit) {
+      actions.canvas.setVideoStandard(fit.standard);
+    }
+
     actions.app.clearImageLoadInfo();
     actions.dialog.close();
   };

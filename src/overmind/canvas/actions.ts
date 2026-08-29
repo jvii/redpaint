@@ -145,9 +145,9 @@ export const setScreenFormat = (context: Context, { formatId }: SetScreenFormatP
 };
 
 // Which broadcast standard the 4 named formats' dimensions resolve to. Set
-// directly by an ILBM load auto-matching a standard Amiga size, which is
-// cosmetic. The canvas is already that size. The requester instead commits it
-// through applyScreenFormat, as part of one choice.
+// directly by a picture load fitting itself to a format, which is cosmetic: the
+// canvas keeps the picture's own size. The requester instead commits it through
+// applyScreenFormat, as part of one choice.
 export const setVideoStandard = (context: Context, standard: VideoStandard): void => {
   context.state.canvas.videoStandard = standard;
 };

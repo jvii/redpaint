@@ -14,7 +14,7 @@ import {
   DEFAULT_SCREEN_FORMAT_ID,
   DEFAULT_TRUE_COLOR_ENABLED,
   DEFAULT_VIDEO_STANDARD,
-  findMatchingScreenFormat,
+  findFittingScreenFormat,
   nativeCanvasSize,
 } from '../canvas/state';
 import {
@@ -120,15 +120,13 @@ export const beginIlbmLoad = async (context: Context, file: File): Promise<void>
       recordUndoPoint: false,
     });
 
-    // If the image happens to be an exact standard Amiga screen size, select
-    // that screen format (cosmetic only; the canvas is already that exact size,
-    // so no resize/palette conform is needed, unlike the requester's own OK). A
-    // non-matching size (or an arbitrary previous document's format) falls back
-    // to Native rather than leaving a stale format set.
-    const match = findMatchingScreenFormat(image.width, image.height);
-    context.actions.canvas.setScreenFormat({ formatId: match?.id ?? null });
-    if (match) {
-      context.actions.canvas.setVideoStandard(match.standard);
+    // An indexed picture belongs on a simulated Amiga screen, so it takes the
+    // smallest format it fits (Native only when it fits none). Cosmetic: the
+    // canvas keeps the image's own size, which the format need not match.
+    const fit = findFittingScreenFormat(image.width, image.height);
+    context.actions.canvas.setScreenFormat({ formatId: fit?.id ?? null });
+    if (fit) {
+      context.actions.canvas.setVideoStandard(fit.standard);
     }
   } catch (error) {
     alert(
@@ -170,12 +168,11 @@ export const beginGifLoad = async (context: Context, file: File): Promise<void> 
       recordUndoPoint: false,
     });
 
-    // Same cosmetic screen-format match as an ILBM load: an image that happens
-    // to be a standard Amiga size selects that format, anything else Native.
-    const match = findMatchingScreenFormat(image.width, image.height);
-    context.actions.canvas.setScreenFormat({ formatId: match?.id ?? null });
-    if (match) {
-      context.actions.canvas.setVideoStandard(match.standard);
+    // Same screen-format fit as an ILBM load, a GIF being indexed too.
+    const fit = findFittingScreenFormat(image.width, image.height);
+    context.actions.canvas.setScreenFormat({ formatId: fit?.id ?? null });
+    if (fit) {
+      context.actions.canvas.setVideoStandard(fit.standard);
     }
   } catch (error) {
     alert(
