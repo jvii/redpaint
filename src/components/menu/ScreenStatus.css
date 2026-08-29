@@ -74,8 +74,8 @@
    a square box made it stand taller than the digits beside it. */
 .screen-status__check {
   display: block;
-  height: 22px;
-  width: 31.6px;
+  height: 18px;
+  width: 25.4px;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption

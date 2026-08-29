@@ -76,12 +76,7 @@ const stretchIcon = (
 // lowest point but the middle color, which no single linear gradient can say.
 // Both are objectBoundingBox, so one pair serves all four arms.
 const amigaCheck = (
-  <svg
-    className="screen-status__check"
-    viewBox="0 0 138.4 96.2"
-    aria-hidden="true"
-    focusable="false"
-  >
+  <svg className="screen-status__check" viewBox="0 0 144 102" aria-hidden="true" focusable="false">
     <defs>
       <linearGradient id="amiga-check-short" x1="0" y1="1" x2="0" y2="0">
         <stop offset="0.06" stopColor="#53b848" />
@@ -97,11 +92,19 @@ const amigaCheck = (
         <stop offset="0.86" stopColor="#f1581f" />
         <stop offset="1" stopColor="#ef4223" />
       </linearGradient>
+      {/* The logo's own offset shadow, hard-edged: without it the yellow band
+          dissolves into the paper the readout sits on. stdDeviation 0 keeps it
+          a copy rather than a blur, which is the rule everywhere else here. */}
+      <filter id="amiga-check-shadow" x="0" y="0" width="120%" height="120%">
+        <feDropShadow dx="5" dy="5" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
+      </filter>
     </defs>
-    <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
-    <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
-    <polygon fill="url(#amiga-check-short)" points="21.7,45.2 39.8,45.2 74,96.2 56,96.2" />
-    <polygon fill="url(#amiga-check-long)" points="120.4,0 138.4,0 74.2,96.2 57,96.2" />
+    <g filter="url(#amiga-check-shadow)">
+      <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
+      <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
+      <polygon fill="url(#amiga-check-short)" points="21.7,45.2 39.8,45.2 74,96.2 56,96.2" />
+      <polygon fill="url(#amiga-check-long)" points="120.4,0 138.4,0 74.2,96.2 57,96.2" />
+    </g>
   </svg>
 );
 
