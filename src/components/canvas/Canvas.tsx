@@ -258,7 +258,10 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
     'canvas' + (usePreciseCursor || showResizeCursor ? '' : ' canvas--native-crosshair-cursor');
 
   return (
-    <>
+    // The painting canvas and everything registered to its pixels: the overlay
+    // canvas and the crop box both position against this box rather than the
+    // pane, so they follow the canvas when it is centered in one.
+    <div className={'canvas-stack' + (isZoomCanvas ? '' : ' canvas-stack--centered')}>
       <canvas
         className={canvasClassName}
         ref={paintingCanvasRef}
@@ -345,6 +348,6 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
           style={{ backgroundImage: RESIZE_CURSOR_ICON }}
         />
       )}
-    </>
+    </div>
   );
 }

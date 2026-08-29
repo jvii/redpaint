@@ -83,6 +83,24 @@
   overflow: auto; /* show scrollbar when required */
   min-width: 0; /* the divider may drag this pane down to its own minimum */
   flex-grow: 1; /* fill whatever the zoom pane's sized flex-basis leaves */
+  display: flex; /* so the stack's auto margins have free space to divide */
+}
+
+/* Wraps the canvas and the layers registered to its pixels, shrink-wrapped to
+   it, so those layers position against the canvas rather than the pane. */
+.canvas-stack {
+  position: relative;
+  width: fit-content;
+  flex: none; /* a flex item shrinks by default; this one is the canvas's size */
+}
+
+/* Centered in the pane when the pane has room to spare - the margin an aspect
+   fit leaves, or a picture smaller than the screen - and pinned to the corner
+   when it does not, since auto margins take only positive free space. Doing
+   this with justify/align-content instead would center it while it fits and
+   then make the overflow unreachable past the start edge. */
+.canvas-stack--centered {
+  margin: auto;
 }
 
 /* Pasteboard: a dark checker fills the area around the canvas so the margin
