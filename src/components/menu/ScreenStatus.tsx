@@ -95,17 +95,22 @@ const amigaCheck = (
       {/* The logo's own offset shadow, hard-edged: without it the yellow band
           dissolves into the paper the readout sits on. stdDeviation 0 keeps it
           a copy rather than a blur, which is the rule everywhere else here.
-          Sideways only, and narrower than the 3.5 units between the chevrons:
-          a wider one fills that gap and the two read as one shape. */}
+          Sideways only, and narrower than the gap between the chevrons: a
+          wider one fills it and the two read as one shape. Widening that gap
+          past the logo's own is what buys the shadow enough room to stay a
+          hard edge at this size. */}
       <filter id="amiga-check-shadow" x="0" y="0" width="115%" height="100%">
-        <feDropShadow dx="3" dy="0" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
+        <feDropShadow dx="6" dy="0" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
       </filter>
     </defs>
+    {/* The second chevron is the logo's own shape moved 28 units right rather
+        than its 21.7: at readout size the true spacing closes up, and the two
+        need daylight between them to read as two. */}
     <g filter="url(#amiga-check-shadow)">
       <polygon fill="url(#amiga-check-short)" points="0,45.2 18.2,45.2 52.3,96.2 34.3,96.2" />
       <polygon fill="url(#amiga-check-long)" points="98.7,0 116.7,0 52.5,96.2 35.4,96.2" />
-      <polygon fill="url(#amiga-check-short)" points="21.7,45.2 39.8,45.2 74,96.2 56,96.2" />
-      <polygon fill="url(#amiga-check-long)" points="120.4,0 138.4,0 74.2,96.2 57,96.2" />
+      <polygon fill="url(#amiga-check-short)" points="28,45.2 46.2,45.2 80.3,96.2 62.3,96.2" />
+      <polygon fill="url(#amiga-check-long)" points="126.7,0 144.7,0 80.5,96.2 63.4,96.2" />
     </g>
   </svg>
 );

@@ -75,9 +75,9 @@
 .screen-status__check {
   display: block;
   height: 18px;
-  /* Wider than the logo's own 1.5:1 by a few percent: the extra width flattens
-     the diagonals a little, which downscales more cleanly than the true shape. */
-  width: 29px;
+  /* Wider than the shape's own proportions: the extra width flattens the
+     diagonals, which downscales more cleanly than the true angles. */
+  width: 32px;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
