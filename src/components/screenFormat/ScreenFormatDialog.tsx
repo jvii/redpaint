@@ -33,7 +33,10 @@ function formatOptions(videoStandard: VideoStandard) {
         // segment is laid out as a flex row in CSS)
         label: (
           <>
-            <span className="screen-format__format-name">{format.name}</span>
+            {/* Every entry below Native is an Amiga format; the word lives
+                here rather than in each name so the status readout can leave
+                it out. */}
+            <span className="screen-format__format-name">Amiga {format.name}</span>
             <span className="screen-format__format-res toggle-detail">
               {width}×{height}
             </span>

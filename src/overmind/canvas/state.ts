@@ -18,6 +18,9 @@ type ScreenFormatDimensions = { width: number; height: number };
 
 export type ScreenFormat = {
   id: ScreenFormatId;
+  // What distinguishes this format, without the "Amiga" every one of them
+  // shares: the status readout has no room to repeat it, and the requester
+  // adds it back where there is space and Native to tell them apart from.
   name: string;
   aspectX: number;
   aspectY: number;
@@ -27,28 +30,28 @@ export type ScreenFormat = {
 export const screenFormats: { [id in ScreenFormatId]: ScreenFormat } = {
   loRes: {
     id: 'loRes',
-    name: 'Amiga Lo-Res',
+    name: 'Lo-Res',
     aspectX: 1,
     aspectY: 1,
     dimensions: { PAL: { width: 320, height: 256 }, NTSC: { width: 320, height: 200 } },
   },
   medRes: {
     id: 'medRes',
-    name: 'Amiga Med-Res',
+    name: 'Med-Res',
     aspectX: 0.5,
     aspectY: 1,
     dimensions: { PAL: { width: 640, height: 256 }, NTSC: { width: 640, height: 200 } },
   },
   interlace: {
     id: 'interlace',
-    name: 'Amiga Interlace',
+    name: 'Interlace',
     aspectX: 1,
     aspectY: 0.5,
     dimensions: { PAL: { width: 320, height: 512 }, NTSC: { width: 320, height: 400 } },
   },
   hiRes: {
     id: 'hiRes',
-    name: 'Amiga Hi-Res',
+    name: 'Hi-Res',
     aspectX: 0.5,
     aspectY: 0.5,
     dimensions: { PAL: { width: 640, height: 512 }, NTSC: { width: 640, height: 400 } },
