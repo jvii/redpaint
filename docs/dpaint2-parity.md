@@ -42,11 +42,12 @@ a background that painting leaves alone.
 movement keys, brushes drawn in perspective. Self-contained, and the only DPaint
 II feature with a genuinely different interaction model.
 
-**Grid.** A toolbox toggle with its own spacing requester on right-click and `g`
-as its key, snapping coordinates to an 8x8 grid by default. It keeps a grid
-origin that shifts when the grid is toggled, so turning it on does not move the
-brush you are holding. Not to be confused with Perspective's grid, which is a
-different thing that happens to share the word.
+**Grid.** A toolbox toggle with its own spacing requester on right-click,
+snapping coordinates to an 8x8 grid by default. Two keys, not one: `g` toggles,
+`G` toggles and shifts the grid origin so the held brush does not move. Not to
+be confused with Perspective's grid, which is a different thing that happens to
+share the word. Design note, including where the gadget goes and whether the
+grid is drawn: docs/grid.md.
 
 **Spacing requester.** Command-click the line or dotted freehand tool to set
 splat spacing — absolute (pixels between splats) or relative (splats per line).

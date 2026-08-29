@@ -207,10 +207,15 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
 - [ ] **Fix / Free Background.** The stencil's companion: freeze the picture as
       a background painting leaves alone.
 
-- [ ] **Grid.** A toolbox toggle, right-click for spacing, `g` to toggle,
-      snapping to 8x8 by default. Keeps a grid origin that shifts on toggle so
-      the held brush does not move (DPaint's CHPROC.C does this deliberately).
-      Separate from Perspective's grid.
+- [ ] **Grid.** A toolbox toggle, right-click for spacing, snapping to 8x8 by
+      default. `g` toggles; `G` toggles and shifts the grid origin so the held
+      brush does not move. Separate from Perspective's grid.
+
+      Designed in docs/grid.md, which settles the two questions DPaint does not
+      answer for us: the toolbox has no free slot (restoring the omitted zoom
+      in/out gadget alongside it is the recommendation), and whether to draw a
+      visual grid at all (yes, as a DOM layer in .canvas-stack, on its own
+      toggle separate from snapping).
 
 - [ ] **Spacing requester.** Right-click the line or dotted freehand tool for
       splat spacing, absolute (pixels between) or relative (splats per line).
