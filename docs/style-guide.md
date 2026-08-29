@@ -58,9 +58,14 @@ parentheses around either — the treatment already sets the figure apart.
 
 Semantic exceptions, deliberately scarce:
 
-- **One rainbow, ever.** The TRUE COLOR `ON` gradient is the only gradient
-  in the app. Its whole job is being the lone spectrum in a flat-color
-  world; a second gradient anywhere kills it.
+- **One rainbow, ever.** The Amiga tick, shown beside TRUE COLOR while it is
+  on (`ScreenStatus`), is the only spectrum in the app, and the only mark drawn
+  outside the theme inks. Reporting that the picture can hold colors a palette
+  cannot is exactly what a rainbow is for; a second one anywhere kills it. It
+  spends two gradients on one mark, because the color runs along the stroke —
+  blue at the short arm's tip, green at the joint, red at the top of the long
+  one — and the joint being the lowest point but the middle color is not
+  something a single linear gradient can say.
 - Red is the menubar title's paint dot and error/live signals, not an
   accent.
 - **Transparency checkerboard**, `#e8e8e8`/`#cfcfcf` in 12px squares, on any
@@ -405,13 +410,6 @@ Consistency is judged within each control type, not across them:
     place, and a chord nobody can find is worse than a slightly busier
     gadget. Only gadgets that actually have a binding show one, so the File
     row's Open and Save still carry nothing.
-
-- **The Amiga tick** (ScreenStatus) is the one mark drawn outside the four
-  theme inks, as the rainbow "ON" it replaced was: reporting that the picture
-  can hold colors a palette cannot is exactly what the rainbow is for. Two
-  stroked chevrons, each arm carrying its own gradient, because the color runs
-  along the stroke — blue at the short arm's tip, green at the joint, red at
-  the top — which no single linear gradient can express.
 
 ## Interaction
 
