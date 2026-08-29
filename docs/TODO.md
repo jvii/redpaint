@@ -212,10 +212,10 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       brush does not move. Separate from Perspective's grid.
 
       Designed in docs/grid.md, which settles the two questions DPaint does not
-      answer for us: the toolbox has no free slot (restoring the omitted zoom
-      in/out gadget alongside it is the recommendation), and whether to draw a
-      visual grid at all (yes, as a DOM layer in .canvas-stack, on its own
-      toggle separate from snapping).
+      answer for us: the toolbox has no free slot (a colour picker gadget is
+      the recommended eighteenth, filling it with what the toolbox is most
+      obviously missing), and whether to draw a visual grid at all (yes, as a
+      DOM layer in .canvas-stack, on its own toggle separate from snapping).
 
 - [ ] **Spacing requester.** Right-click the line or dotted freehand tool for
       splat spacing, absolute (pixels between) or relative (splats per line).

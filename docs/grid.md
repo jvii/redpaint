@@ -96,40 +96,81 @@ we dropped both and pulled the magnifier up a row to fill the gap:
 
 So Grid does not need a new slot invented for it. It needs its own slot back,
 which displaces the magnifier back down, which re-opens the zoom-in/out hole.
-Seventeen gadgets do not tile two columns. The options:
+Seventeen gadgets do not tile two columns. Either an eighteenth gadget earns
+its place, or the block stops being a clean 2xN.
 
-**A. Restore the zoom-in/out gadget too.** Back to DPaint's 18, every gadget
-where DPaint put it, no layout question left. The cost is that it duplicates
-controls the zoom pane already carries — `ZoomCanvas.tsx` has its own `+`/`−`
-buttons and Alt+wheel, which is why it was left out. A duplicate that matches
-the original is not the worst thing in a program whose point is being that
-program, and the toolbox gadget works before the zoom pane is open, where the
-pane's own buttons do not exist yet. *This is the recommendation.*
+**A. A colour picker gadget.** Recommended. It fills the cell with the thing
+this toolbox is most obviously missing rather than with the thing DPaint
+happened to put there.
 
-**B. Leave the eighteenth cell empty.** Honest about the omission, and a hole
-in a 2×9 block of gadgets reads as a bug rather than as a decision.
+The pick tool already exists (`ColorSelectorTool`, DPaint's `IM_readPix`) and
+is the least discoverable thing in the app: two 20-pixel click targets inside
+the colour indicator, and a `,` key nobody guesses. Every editor a user has
+met puts an eyedropper in the toolbar, and it is a selector tool, so it fits
+the gadget vocabulary already there beside brush-select and magnify. It is a
+second door onto a tool we ship, not a new tool, which is why it costs parity
+almost nothing even though DPaint II has no such gadget.
 
-**C. Re-pair the bottom rows** so seventeen fit with one row of one. Every
-pairing below row 6 changes, including undo/clr, which is the one pairing users
-build muscle memory on fastest.
+That gives:
 
-**D. Span a cell across both columns.** The container is
+| Row | redpaint, with Grid |
+|-----|---------------------|
+| 6 | brush select, text |
+| 7 | **grid**, symmetry |
+| 8 | magnify, **colour picker** |
+| 9 | undo, clr |
+
+Grid lands exactly where DPaint had it, undo/clr — the pairing muscle memory
+finds fastest — is untouched, and the new row is coherent on its own terms:
+both of its gadgets arm a mode, wait for one canvas click, and disarm.
+
+**B. Restore the zoom-in/out gadget.** DPaint's own 18, every gadget where it
+put them. But it duplicates the zoom pane's `+`/`-` and Alt+wheel, and it is
+dead weight whenever the zoom pane is closed, which is most of the time. Faithful
+and not useful.
+
+**C. Leave the eighteenth cell empty.** A hole in a 2xN block of gadgets reads
+as a bug rather than as a decision.
+
+**D. Re-pair the bottom rows** so seventeen fit with one row of one. Every
+pairing below row 6 moves, undo/clr included.
+
+**E. Span a cell across both columns.** The container is
 `grid-template-columns: 40px 1px 40px`, and `BuiltInBrushes` above and
 `ColorIndicator` below are already full-width, so the idiom exists in the
-sidebar. But it does not exist *inside* the gadget block, and a double-width
-gadget would read as more important than its neighbours rather than as a
-space-filler.
+sidebar — but not inside the gadget block, and a double-width gadget reads as
+more important than its neighbours rather than as a space-filler.
 
-**E. Fold zoom-in/out into the magnifier gadget** as its right-click (right =
-zoom out, or right-click opens a magnification requester). Keeps 18 cells' worth
-of function in 17 — except it does not, it keeps it in 16 plus Grid, which is
-the tiling problem again. Only helps combined with B.
+### One pick mode or two
 
-Under A, the icon needs drawing: one new `<symbol>` pair in
-`src/resources/toolbar.svg` for Grid (plus one for zoom-in/out), following the
+Worth settling with the gadget, because the gadget has to be one or the other.
+
+DPaint has **one** PICK mode: clicking the colour indicator (or `,`) arms it,
+and then the button used *on the canvas* decides — left picks a foreground
+colour, right a background one (DP2 Handbuch 4-38, `CTRPAN.C:403-405`).
+
+We have **two** modes, `foregroundColorSelectorTool` and
+`backgroundColorSelectorTool`, chosen by which part of the colour indicator was
+clicked, with the canvas click always meaning the one already chosen. That is
+what makes the indicator two small targets with no visible difference in
+meaning, and it is the discoverability problem as much as the missing gadget
+is.
+
+The gadget wants DPaint's single mode: one cell cannot carry two arming
+gestures without inventing an upper/lower split for something DPaint splits by
+canvas button instead. Collapsing the two tools into one — canvas left-click
+sets foreground, right-click background — fixes the indicator at the same time
+and deletes state rather than adding it. The background must stay
+palette-indexed either way (it doubles as the clear colour and the brush
+transparency marker), so a right-click on a true-colour pixel goes on doing
+nothing.
+
+Under A, two icons need drawing: one new `<symbol>` pair in
+`src/resources/toolbar.svg` for Grid and one for the picker, following the
 sheet's convention — 26.458-unit viewBox, a `-view` and a `-active-view` entry,
 `<use>` placement 30 units apart. DPaint's own grid icon is a 3×3 lattice of
-lines; that reads at 26 units and is what the gadget should be.
+lines, which reads at 26 units and is what the gadget should be. The picker is
+an eyedropper everywhere it appears; there is no reason to be clever.
 
 ## Drawing the grid
 
