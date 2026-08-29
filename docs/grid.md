@@ -124,18 +124,32 @@ Grid lands exactly where DPaint had it, undo/clr — the pairing muscle memory
 finds fastest — is untouched, and the new row is coherent on its own terms:
 both of its gadgets arm a mode, wait for one canvas click, and disarm.
 
-**B. Restore the zoom-in/out gadget.** DPaint's own 18, every gadget where it
+**B. Colour cycling.** The other genuine candidate, and a bigger feature than
+the picker. It loses on the same test that wins it for the picker: cycling
+already has a labelled gadget with its shortcut printed on it in the Picture
+drawer, and `Tab`, which is DPaint's own key. The picker has neither — no
+labelled control anywhere in the app, and a `,` key with nothing to suggest it.
+The free cell should go to the thing with no door, not to the thing with two.
+
+It is also the odd one out in that block by kind. Every gadget there either
+selects a drawing tool, arms a mode that changes what a canvas click does, or
+acts (undo, clr). Cycling animates the palette and paints nothing; if it wants
+a second door, the palette strip directly below it is the truer place for one.
+
+Not a closed question, though — see "what comes after eighteen".
+
+**C. Restore the zoom-in/out gadget.** DPaint's own 18, every gadget where it
 put them. But it duplicates the zoom pane's `+`/`-` and Alt+wheel, and it is
 dead weight whenever the zoom pane is closed, which is most of the time. Faithful
 and not useful.
 
-**C. Leave the eighteenth cell empty.** A hole in a 2xN block of gadgets reads
+**D. Leave the eighteenth cell empty.** A hole in a 2xN block of gadgets reads
 as a bug rather than as a decision.
 
-**D. Re-pair the bottom rows** so seventeen fit with one row of one. Every
+**E. Re-pair the bottom rows** so seventeen fit with one row of one. Every
 pairing below row 6 moves, undo/clr included.
 
-**E. Span a cell across both columns.** The container is
+**F. Span a cell across both columns.** The container is
 `grid-template-columns: 40px 1px 40px`, and `BuiltInBrushes` above and
 `ColorIndicator` below are already full-width, so the idiom exists in the
 sidebar — but not inside the gadget block, and a double-width gadget reads as
@@ -156,14 +170,22 @@ what makes the indicator two small targets with no visible difference in
 meaning, and it is the discoverability problem as much as the missing gadget
 is.
 
-The gadget wants DPaint's single mode: one cell cannot carry two arming
+**Decided: collapse to DPaint's single mode.** One cell cannot carry two arming
 gestures without inventing an upper/lower split for something DPaint splits by
-canvas button instead. Collapsing the two tools into one — canvas left-click
-sets foreground, right-click background — fixes the indicator at the same time
-and deletes state rather than adding it. The background must stay
-palette-indexed either way (it doubles as the clear colour and the brush
-transparency marker), so a right-click on a true-colour pixel goes on doing
-nothing.
+canvas button instead, and the two-mode split is the indicator's
+discoverability problem as much as the missing gadget is. So:
+`foregroundColorSelectorTool` and `backgroundColorSelectorTool` become one
+`colorSelectorTool`; on the canvas, left-click sets the foreground and
+right-click the background. Both halves of the colour indicator then arm the
+same one mode, as DPaint's does. This deletes state rather than adding it.
+
+The background stays palette-indexed either way — it doubles as the clear
+colour and the brush transparency marker — so a right-click on a true-colour
+pixel goes on doing nothing.
+
+`onContextMenu` currently only calls `preventDefault`, so the right-click path
+is free. `colorIndicatorHint` and `docs/keyboard.md` both describe the two-mode
+behaviour and need updating with it.
 
 Under A, two icons need drawing: one new `<symbol>` pair in
 `src/resources/toolbar.svg` for Grid and one for the picker, following the
@@ -171,6 +193,17 @@ sheet's convention — 26.458-unit viewBox, a `-view` and a `-active-view` entry
 `<use>` placement 30 units apart. DPaint's own grid icon is a 3×3 lattice of
 lines, which reads at 26 units and is what the gadget should be. The picker is
 an eyedropper everywhere it appears; there is no reason to be clever.
+
+### What comes after eighteen
+
+Stencil, Fix/Free Background and Perspective are all on the backlog
+(`docs/dpaint2-parity.md`), and any of them may want a gadget. The block tiles
+in twos, so the question recurs at every odd one, and whichever candidate loses
+a round is first in line for the next. Colour cycling is that candidate now.
+
+None of those three is a toolbox gadget in DPaint — all are menu features —
+so none forces the issue. Worth deciding one at a time rather than reserving
+cells for features that have not been designed.
 
 ## Drawing the grid
 
