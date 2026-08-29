@@ -77,7 +77,7 @@
   height: 18px;
   /* Wider than the shape's own proportions: the extra width flattens the
      diagonals, which downscales more cleanly than the true angles. */
-  width: 32px;
+  width: 36px;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
