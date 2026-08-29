@@ -104,14 +104,16 @@ const amigaCheck = (
         <stop offset="1" stopColor="#ef4223" />
       </linearGradient>
       {/* The logo's own offset shadow, hard-edged: without it the yellow band
-          dissolves into the paper the readout sits on. stdDeviation 0 keeps it
-          a copy rather than a blur, which is the rule everywhere else here.
+          dissolves into the paper the readout sits on. Darker than the logo's
+          own grey, which is a shadow on white at poster size and barely reads
+          as an edge at 18px. stdDeviation 0 keeps it a copy rather than a blur,
+          which is the rule everywhere else here.
           Sideways only, and narrower than the gap between the chevrons: a
           wider one fills it and the two read as one shape. Widening that gap
           past the logo's own is what buys the shadow enough room to stay a
           hard edge at this size. */}
       <filter id="amiga-check-shadow" x="0" y="0" width="115%" height="100%">
-        <feDropShadow dx="6" dy="0" stdDeviation="0" floodColor="#767273" floodOpacity="1" />
+        <feDropShadow dx="6" dy="0" stdDeviation="0" floodColor="#3a3839" floodOpacity="1" />
       </filter>
     </defs>
     {/* The second chevron is the logo's own shape moved 32 units right rather
