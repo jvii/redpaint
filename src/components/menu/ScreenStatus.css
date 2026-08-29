@@ -141,7 +141,8 @@
 /* The pressed gadget everywhere else (.wb-gadget--on): Workbench blue, orange
    label, deep blue inset. Its own black border and drop shadow are what keep it
    off the panel's blue, so it needs no darker ground of its own. */
-.view-scaling--on {
+.view-scaling--on,
+.view-scaling--on:hover {
   background-color: var(--wb-blue);
   color: var(--wb-orange);
   box-shadow:
@@ -149,8 +150,3 @@
     4px 4px 0 0 black;
 }
 
-/* the active state keeps its colors on hover — the shadow already reads pressed */
-.view-scaling--on:hover {
-  background-color: var(--wb-deep-blue);
-  color: var(--wb-orange);
-}
