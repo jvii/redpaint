@@ -48,25 +48,35 @@ polygon, text, brush pickup.
   by the difference between where the pointer is and where it would snap to,
   so the held brush does not move. The grid arrives *under* the cursor.
 
-`docs/keyboard.md` has this right. `docs/dpaint2-parity.md` and `docs/TODO.md`
-describe the origin shift as if it were what `g` does; they need correcting
-either way.
+`docs/keyboard.md` has this right. The DP2 Handbuch (4-36) confirms both keys
+survived into II: "g - Raster ein; SHIFT&G - Raster ein und Schnappen auf
+Pinselposition".
 
-**The spacing requester is not a requester.** Right-clicking the gadget enters
-`IM_gridSpec` (`MODES.C:298-343`), a modal drawing interaction: the first click
-sets the origin, the drag sizes the cell, and a 4×4 patch of grid is drawn in
-XOR under the pointer the whole time, live. Spacing comes out as
-`(mx - grXorg)/4` — you drag out four cells and it divides. The coordinate
-readout is repurposed to show the origin, then the spacing.
+**The source is DPaint I** (`docs/dpaint-versions.md`), so it is evidence for
+what II inherited, not for what II is. Where the manual and the source disagree
+the manual wins, and on the requester below they do.
 
-That is a lovely interaction and it is also the only place in DPaint where
-setting a number is done by dragging it out on the canvas. We have a requester
-idiom (`SymmetrySettings`, `FontSettings`, `FillStyleSettings`) that every
-other right-click in the toolbox uses, and it is the one a user of this app
-will expect. **Recommendation: a normal requester**, with the drag-it-out
-interaction noted here as a possible extra rather than the only way in. It
-would be worth building later precisely because it is charming, not because it
-is needed.
+**The spacing requester, and Adjust.** Right-clicking the gadget opens the Grid
+requester: X-spacing and Y-spacing as typed numbers in pixels, OK and Cancel
+(DP2 Handbuch 2-9, Abbildung 2.1). Beside them is **Adjust**, which closes the
+requester and hands you the canvas with a live grid matrix under the cursor —
+drag with the button held and release when the cells are the size and shape you
+want, or move it and click to reposition the grid's points without resizing
+(2-10, 4-36).
+
+Adjust is the interaction the vendored DPaint I source calls `IM_gridSpec`
+(`MODES.C:298-343`): a 4×4 patch of grid drawn in XOR under the pointer, the
+first click setting the origin, the drag sizing the cell as `(mx - grXorg)/4`,
+with the coordinate readout repurposed to show the origin and then the spacing.
+In DPaint I that modal drag is the *only* way to set the spacing; DPaint II put
+a numeric requester in front of it and kept the drag behind a button.
+**We follow DPaint II**: the requester is the way in, matching every other
+toolbox right-click (`SymmetrySettings`, `FontSettings`, `FillStyleSettings`),
+and Adjust is the second phase.
+
+In Perspective mode the same requester grows a Z spacing, a From Brush button
+setting X and Y to the current brush's dimensions, and the brush's rotation
+angle per axis (4-36). That belongs to Perspective, not here.
 
 ## Where the gadget goes
 
@@ -221,16 +231,20 @@ nothing to re-rasterize, so there is nothing for a decorator to buy.
    unnecessary — it is arithmetic), the opt-out flag, state in `canvas`, the
    `g`/`G` keys, and the coordinate readout showing snapped values. No gadget
    yet; the keys are enough to use and to test.
-2. **Gadget.** The toolbox slot per option A above, both icons, right-click to
-   the spacing requester, and the requester itself (spacing X/Y, origin,
-   and the drawn-grid toggle).
+2. **Gadget and requester.** The toolbox slot per option A above, both icons,
+   right-click to the requester, and the requester itself: X and Y spacing as
+   typed numbers, the drawn-grid toggle, OK/Cancel, and **Adjust**.
 3. **Drawn grid.** The DOM layer, the visibility floor, and the zoom pane.
+   Before Adjust, which needs a grid to show: Adjust is a selector tool
+   (`ZoomInitialPointSelectorTool` is the closest existing shape) that draws
+   the grid live while the pointer sizes it.
 4. **ExclBrush** (`docs/TODO.md:198`), which is gated on Grid: with the grid
    on, brush pickup drops the right and bottom edge so a pattern tiled from the
    brush keeps a single-width border rather than a doubled one.
 
-The drag-out spacing interaction from `IM_gridSpec` is a possible fifth step
-and belongs in the backlog, not the plan.
+DPaint I's Adjust set the origin on the first click and the spacing on the
+drag. DPaint II's does one or the other per invocation — drag to resize, or
+move and click to reposition. The second is the one to build.
 
 ## Not to be confused with
 
