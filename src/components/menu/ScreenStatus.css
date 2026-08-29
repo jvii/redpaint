@@ -75,9 +75,9 @@
 .screen-status__check {
   display: block;
   height: 18px;
-  /* Wider than the shape's own proportions: the extra width flattens the
-     diagonals, which downscales more cleanly than the true angles. */
-  width: 36px;
+  /* Well past the shape's own 1.57:1: the readout has the horizontal room,
+     and the width is what gives the arms and the gap definition at 18px. */
+  width: 40px;
 }
 
 /* Press Start 2P only reads crisply at multiples of 8, so the small caption
