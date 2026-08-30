@@ -47,6 +47,46 @@ of them also says command-click where DPaint says right-click.
 II, so `MODES.C`'s `IMVect`/`IMCurve` draw solid lines with no thinning
 anywhere. The manuals are the only reference.
 
+## Why it was cheap there and is not here
+
+Very cheap, and the reason is one architectural difference.
+
+Every DPaint primitive comes in a `...With` form that takes a **function and
+calls it once per pixel, in path order**: `PLineWith` (`GEOM.C:20`),
+`PCircWith` (`GEOM.C:103`), `PEllpsWith` and `PCurve` (`CONIC.C:193, 160`).
+`Conic` (`CONIC.C:106`) is a general conic tracer that walks the curve one step
+at a time, rolling `curoct` through the octants as it goes, calling `(*func)(x,y)`
+at each. Drawing a solid line is `PLineWith(..., CurPWritePix)`; drawing into
+the magnified view is the same call with `SplatOp()` instead (`MAGOPS.C:64-104`).
+
+Against that, spacing is **a counter inside the proc**. Stamp on every Nth
+call, ignore the rest. No array, no ordering question, no allocation, and every
+tool that draws through a `...With` gets it at once. That is why a feature
+touching six tools could appear in a point release.
+
+We return `Point[]` from the shape functions instead. That is a deliberate
+trade and mostly the better one here — it is what makes `src/algorithm/` pure
+and fixture-testable, and WebGL wants a batch of points per draw call, not a
+callback per pixel. What it gives up is exactly the guarantee spacing needs,
+because a rasterizer that is only ever going to fill or outline has no reason
+to emit in path order, and two of ours do not.
+
+**DPaint had half the same problem.** `PCircWith` only takes the traced path
+when pixels are non-square, where it defers to `PEllpsWith` and `Conic`. On
+square pixels it uses `PCircOct` + `octpts` (`GEOM.C:76, 90`), which generates
+one octant and mirrors each point into eight — the same octant scatter as our
+`unfilledCircle`, arrived at the same way and for the same reason. Whether
+DPaint II's spacing produced a scattered circle on Lo-Res, or whether it
+re-routed through `Conic`, is not answerable from the DPaint I source. So this
+is not somewhere we are doing worse than the original; it is a problem the
+original either shared or solved out of sight.
+
+**And the trade is not one-directional.** A streaming proc cannot know how long
+the path is until it has walked it, so DPaint's *N Total* mode needs a counting
+pass before the drawing pass. With the whole path already in an array, N Total
+is `points.length / n` and costs nothing. Each architecture makes one of the two
+modes free.
+
 ## Where it hooks in
 
 Every unfilled primitive in both brushes has the same shape:
