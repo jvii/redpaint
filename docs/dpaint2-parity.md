@@ -49,9 +49,12 @@ be confused with Perspective's grid, which is a different thing that happens to
 share the word. Design note, including where the gadget goes and whether the
 grid is drawn: docs/grid.md.
 
-**Spacing requester.** Command-click the line or dotted freehand tool to set
-splat spacing — absolute (pixels between splats) or relative (splats per line).
-Small, and the dotted freehand tool is already there to want it.
+**Spacing requester.** Right-click the line or curve tool to set splat spacing —
+absolute (pixels between splats) or relative (splats per line), plus on/off. The
+setting also governs the unfilled shape tools, though in DPaint II their own
+right-click opens Fill Type instead, so it cannot be reached from them; DPaint
+III added that door and we should too. Not the dotted freehand tool, whose
+spacing is mouse speed. docs/spacing.md.
 
 **MultiCycle.** A Prefs flag, but not an oddment: it decides what Cycle mode
 does with a multi-color brush. Off, the brush cycles as one color (the

@@ -217,9 +217,17 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       obviously missing), and whether to draw a visual grid at all (yes, as a
       DOM layer in .canvas-stack, on its own toggle separate from snapping).
 
-- [ ] **Spacing requester.** Right-click the line or dotted freehand tool for
-      splat spacing, absolute (pixels between) or relative (splats per line).
-      Small, and the dotted freehand tool already wants it.
+- [ ] **Spacing requester.** Right-click the line or curve tool for splat
+      spacing, absolute (pixels between) or relative (splats per line), plus
+      on/off. It governs the unfilled shapes too, and DPaint III put the door on
+      their gadgets as well, which is worth following. Not the dotted freehand
+      tool, whose spacing is mouse speed.
+
+      Designed in docs/spacing.md. Not as small as this entry assumed: it is a
+      BrushInterface decorator inside symmetryBrush, but unfilledCircle and
+      unfilledEllipse emit points in rasterizer order rather than along the
+      path, so thinning them by index scatters the dots. They need a
+      path-ordered traversal first.
 
 - [ ] **Perspective.** A 3D grid with its own spacing and movement keys, brushes
       drawn in perspective. The last of the three real DPaint II gaps: large,
