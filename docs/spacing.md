@@ -230,6 +230,77 @@ The default must be off, and "off" has to mean the current continuous
 behaviour exactly — not spacing 1, which would route today's drawing through
 the thinning path for no reason.
 
+## Shape of the change
+
+### New files
+
+| File | ~Lines | What |
+|------|--------|------|
+| `src/algorithm/spacing.ts` | 40 | `thin(points, mode, n)`. Pure arithmetic. |
+| `test/algorithm/spacing.test.ts` | 60 | Both modes, the edge cases (n larger than the path, a one-point path). |
+| `src/brush/SpacingBrush.ts` | 130 | The decorator. Six methods thin, six pass through. |
+| `src/overmind/spacing/{state,actions,index}.ts` | 60 | Mode, number, on/off, settings open/snapshot. Modelled on `overmind/fillStyle`. |
+| `src/components/spacing/SpacingSettings.{tsx,css}` | 150 | The requester. `SymmetrySettings` (84 + 47 lines) is the closest size and shape. |
+
+### Files touched
+
+- `src/algorithm/shape.ts` — path order for `unfilledCircle` and
+  `unfilledEllipse`, plus a perimeter join for `unfilledRect`. **The only risky
+  part; see below.**
+- `src/brush/SymmetryBrush.ts` — one line, at the singleton: the inner brush
+  becomes the spacing brush rather than `brushRecall.current`.
+- `src/components/toolbox/Toolbox.tsx` — six right-click handlers: line, curve,
+  and the unfilled half of rectangle, circle, ellipse, polygon.
+- `src/components/toolbox/buttons/ToolboxDualToggleButton.tsx` — an
+  `onUpperHalfRightClick`, symmetric with the `onLowerHalfRightClick` the filled
+  halves already use. Five lines.
+- `src/components/toolbox/toolboxHints.ts` — a `rightClick` line on those six.
+- `src/components/App.tsx`, `src/overmind/index.ts` — mount the dialog, register
+  the module.
+- `test/algorithm/shape.test.ts` — path-order assertions (consecutive points
+  adjacent, no duplicates).
+- `docs/TODO.md`, `docs/dpaint2-parity.md` — tick it off.
+
+Roughly 450 new lines and ten files touched, most of them one-liners.
+
+### What is already true and does not need doing
+
+- **`drawPoints` is behaviour-preserving.** Both brushes route every unfilled
+  primitive through the same `stampOrPoints` / `stamp`, effect-draw branch
+  included (`PixelBrush.tsx:122`, `CustomBrush.tsx:232`). So collapsing a
+  primitive into a `drawPoints` call keeps Smooth, Shade, Blend and the rest
+  working with no special case.
+- **The handle commutes.** `CustomBrush.adjustHandle` is an integer translation
+  (`CustomBrush.tsx:227`), so thinning before it and thinning after it give the
+  same pixels — the decorator can hand raw points down and let the brush offset
+  them.
+- **Previews come free.** Tools already draw their overlay through the same
+  brush, so a spaced line previews spaced without a line of extra code.
+- **Symmetry composes.** `SymmetryBrush` takes its inner brush from a thunk, so
+  inserting a decorator underneath it is a change to one expression.
+
+### The risk is in one place
+
+`unfilledCircle` is cheap — PyDPainter's octant buckets, about fifteen lines
+changed in a loop that already emits the eight points together.
+
+`unfilledEllipse` is the awkward one. It is two axis scans producing duplicate
+points, so there is no bucket trick; either sort by parametric angle in the
+ellipse's own frame and dedupe, or rebuild it the way PyDPainter does, out of
+Bezier segments. Both are more than a tweak, and both move a rasterizer that
+the shape fixtures pin, so expect to regenerate and eyeball those PNGs.
+
+### Which is why it splits
+
+**Phase 1 — line, curve, rectangle, polygon.** All four are already in path
+order or (the rectangle) one trivial join away. Everything above except the
+`shape.ts` row: no rasterizer moves, no fixture regenerates, no risk. Around
+350 lines, and it is four of the six tools.
+
+**Phase 2 — circle and ellipse.** The circle is a small win; the ellipse is the
+real work. Deferrable indefinitely, and visibly incomplete in the meantime,
+which is the argument against splitting.
+
 ## What to build
 
 1. **The thinning**, in `src/algorithm/spacing.ts` — pure, a `Point[]` in and
