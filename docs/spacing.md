@@ -138,25 +138,66 @@ Neither is a bug. Both are drawing a continuous outline, where the order pixels
 are emitted in cannot matter. It only starts to matter when something wants to
 walk the outline.
 
-Three ways out, in order of preference:
+### How PyDPainter solves it
 
-1. **Sort by angle about the centre, for the spacing path only.** A circle's
-   points and an ellipse's both have an exact parametric angle, so this is a
-   sort plus a dedupe on a few hundred points — nothing, at these sizes. The
-   existing rasterizers and their PNG fixtures do not move.
-2. **Rewrite the two rasterizers to emit in path order.** Cleaner in the
-   abstract, and it means regenerating the shape fixtures and re-checking every
-   caller that assumed nothing about order.
-3. **Resample the shape parametrically** instead of thinning the rasterized
-   list — N points at even *arc length* rather than even pixel-index. Arguably
-   more correct for N Total, since a Bresenham circle emits more pixels per unit
-   arc in the shallow octants, so index-thinning bunches the dots there. But it
-   is not what DPaint did, and matching DPaint is the objective.
+PyDPainter (`libs/prim.py`) is worth reading here, because it took our
+architecture — arrays of coordinates, not a callback per pixel — and hit
+exactly this problem.
 
-`unfilledRect` needs its four segments concatenated into one perimeter in
-corner order, so the phase carries around the corners rather than restarting at
-each. Cheap, and worth a note in the code, since the natural implementation of
-"apply spacing to a `Line[]`" is per-line and silently wrong.
+Its thinning is a `CoordList.draw` pre-pass (`prim.py:1284-1338`), and it is
+what you would guess:
+
+```python
+if spacing == DrawMode.EVERY_N:
+    coords = coordsall[::every_n_value]
+elif spacing == DrawMode.N_TOTAL:
+    for i in range(n_total_value):
+        coords.append(coordsall[(numpoints-1) * i // (n_total_value-1)])
+```
+
+A stride for Every Nth, an index interpolation for N Total. Both need the array
+in path order, and the interesting part is how `drawcircle` gets it
+(`prim.py:1729-1770`). It is the same midpoint algorithm as ours, emitting the
+same eight mirrored points per iteration — but into **eight separate lists, one
+per octant**, appending to the even ones and *prepending* to the odd ones:
+
+```python
+cl = CoordList(8)
+cl.append (0, (x0 + y, y0 + x));  cl.prepend(1, (x0 + x, y0 + y))
+cl.append (2, (x0 - x, y0 + y));  cl.prepend(3, (x0 - y, y0 + x))
+cl.append (4, (x0 - y, y0 - x));  cl.prepend(5, (x0 - x, y0 - y))
+cl.append (6, (x0 + x, y0 - y));  cl.prepend(7, (x0 + y, y0 - x))
+```
+
+Concatenating lists 0 through 7 (`prim.py:1266-1269`) then walks the circle
+once around, continuously: the prepends are what reverse every other octant so
+its end meets the next one's start. Same loop, same arithmetic, same cost —
+eight buckets instead of one, and the traversal order falls out.
+
+**That is the fix to take**, in preference to anything below. It is O(n) with no
+sort and no dedupe, it is exact rather than approximate, and it drops into our
+existing `unfilledCircle` loop, which already emits its eight points in one
+place (`shape.ts:165-173`). For the ellipse, PyDPainter sidesteps the question
+entirely: `drawellipse` builds the outline from twelve Bezier segments
+(`calc_ellipse_curves`), each rasterized by `drawcurve`, so it is in path order
+by construction — a bigger change for us than the circle, but the same idea.
+
+The alternatives, now only worth recording:
+
+- **Sort by angle about the centre**, spacing path only. Works, but it is a
+  sort and a dedupe to recover an order the loop could simply have produced.
+- **Resample parametrically** — N points at even *arc length* rather than even
+  pixel index. Arguably truer for N Total, since a Bresenham circle emits more
+  pixels per unit arc in the shallow octants, so index-thinning bunches the
+  dots there. But neither DPaint nor PyDPainter does it, and matching DPaint is
+  the objective.
+
+**On the rectangle, PyDPainter has the bug.** `drawrect` delegates to
+`drawpoly`, which calls `drawline` once per edge (`prim.py:3050`), and each
+call runs its own thinning pass — so the dot phase restarts at every corner. A
+spaced rectangle there has four independent dotted edges rather than one dotted
+perimeter. Ours should concatenate the four segments before thinning, which is
+what the `CoordList(8)`/`CoordList(12)` shape is for and what `drawrect` skips.
 
 ## The gadget gestures are free
 
