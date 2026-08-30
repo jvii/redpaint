@@ -194,16 +194,25 @@ sheet's convention — 26.458-unit viewBox, a `-view` and a `-active-view` entry
 lines, which reads at 26 units and is what the gadget should be. The picker is
 an eyedropper everywhere it appears; there is no reason to be clever.
 
-### What comes after eighteen
+### This is the only time this decision gets made
 
-Stencil, Fix/Free Background and Perspective are all on the backlog
-(`docs/dpaint2-parity.md`), and any of them may want a gadget. The block tiles
-in twos, so the question recurs at every odd one, and whichever candidate loses
-a round is first in line for the next. Colour cycling is that candidate now.
+**The DPaint toolbox never changed.** II, III, IV and V ship the same eighteen
+gadgets in the same nine rows, down to the pairing. The DP4 manual's Toolbox
+index and DP5's figure 8.1 both list left column dotted freehand, straight line, fill,
+rectangle, ellipse, brush selector, **grid**, **magnify**, undo — right column
+continuous freehand, curve, airbrush, circle, polygon, text, **symmetry**,
+**zoom**, clear. That is `CTRPAN.C`'s order exactly, twelve years and three
+major versions later. Everything those versions added — Stencil, perspective,
+gradients, textures, animation, ARexx — arrived on menus and requesters.
 
-None of those three is a toolbox gadget in DPaint — all are menu features —
-so none forces the issue. Worth deciding one at a time rather than reserving
-cells for features that have not been designed.
+So there is no later version to defer to, and no second cell coming. Stencil,
+Fix/Free Background and Perspective are all on the backlog and none of them is
+a toolbox gadget in DPaint, so none will ask for one. This cell is the whole
+budget, now and permanently, which argues for spending it on the highest-value
+thing rather than the most faithful one — the faithful choice being a gadget
+whose two functions the app already offers twice over.
+
+Colour cycling stays the runner-up on that reasoning, not a reservation.
 
 ## Drawing the grid
 

@@ -77,6 +77,20 @@ or a different program.
 - ○ **Gradient translucency** controls, better dithering in all modes.
 - ○ Picture previews, DeluxePlayer, printing and interface work.
 
+## The toolbox never changed
+
+Worth stating once, because it settles a question that otherwise comes up per
+feature. All four versions ship the **same eighteen gadgets in the same nine
+rows**, in `CTRPAN.C`'s order: dotted freehand, continuous freehand, straight
+line, curve, fill, airbrush, rectangle, circle, ellipse, polygon, brush
+selector, text, grid, symmetry, magnify, zoom, undo, clear. Confirmed against
+DP2's Handbuch, DP3's reference contents, DP4's Toolbox index and DP5's figure
+8.1 — identical, down to which gadget pairs with which.
+
+Everything the later versions added arrived on menus and requesters. So a
+feature's version says nothing about whether it deserves a toolbox gadget: none
+of them ever did.
+
 ## Where the line sits
 
 **The objective is DPaint II parity.** Everything below that line is the measure;
