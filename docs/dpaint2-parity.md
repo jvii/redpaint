@@ -30,13 +30,18 @@ taken it from the IIGS manual text (`PLATFORM_NOTE.md`).
 
 ## Missing
 
-**Stencil.** The largest gap, and it is a system rather than a menu item: lock
-chosen colors so painting cannot touch them, with make/free/reverse/toggle, plus
-Lock Foreground. It also changes what other tools do — in III it constrains brush
-pickup, and fills respect it throughout.
+**Stencil.** The largest gap: lock chosen colors so painting cannot touch them,
+with make/remake/free/reverse/on-off, plus Lock Foreground and an `S` in the
+menubar while one is active. The stencil is a frozen raster taken at Make, not a
+live color rule — recoloring the palette leaves it intact, and newly painted
+pixels are unprotected until Remake. Designed in docs/stencil.md, which makes it
+smaller than "a system": draw-then-repair puts it in two places rather than
+through every draw path. Brush pickup respecting it is DPaint III.
 
 **Fix / Free Background.** The stencil's companion: freeze the current picture as
-a background that painting leaves alone.
+a background that painting leaves alone. CLR then erases only what was painted
+since, and Lock FG turns that into an area-based stencil. Shares the stencil's
+frozen-copy machinery entirely — docs/stencil.md.
 
 **Perspective.** The second large one: a 3D grid with its own spacing and
 movement keys, brushes drawn in perspective. Self-contained, and the only DPaint

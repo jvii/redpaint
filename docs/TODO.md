@@ -200,9 +200,16 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       brush keeps a single-width border. Waits on Grid, which gates it.
 
 - [ ] **Stencil.** Lock chosen colors so painting cannot touch them:
-      make/free/reverse/toggle, plus Lock Foreground. A system rather than a
-      menu item — it constrains fills, and in DPaint III brush pickup as well.
-      The largest DPaint II gap (docs/dpaint2-parity.md).
+      make/remake/free/reverse/on-off, plus Lock Foreground. The largest DPaint
+      II gap (docs/dpaint2-parity.md).
+
+      Designed in docs/stencil.md. Smaller than "a system rather than a menu
+      item" suggested: the stencil is a frozen raster, not a live color rule,
+      so it is draw-then-repair (PyDPainter's model) rather than a mask threaded
+      through every draw path. Two hooks — a branch in DrawImageRenderer's
+      shader for the live view, and a repair pass before the undo snapshot read
+      — and nothing in src/tools/ or src/brush/ changes. The requester is the
+      biggest single piece.
 
 - [ ] **Fix / Free Background.** The stencil's companion: freeze the picture as
       a background painting leaves alone.
