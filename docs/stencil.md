@@ -195,14 +195,17 @@ docs and a test that pins it.
 - `src/canvas/paintingCanvas/PaintingCanvasController.ts` — upload the stencil
   texture; run the repair pass.
 - `src/overmind/undo/actions.ts` — repair before the snapshot read.
-- `src/components/menu/PictureMenu.tsx` — a `GadgetCluster head="Stencil"`.
+- `src/components/menu/Menu.tsx`, `src/overmind/app/state.ts` — a fourth
+  drawer. See below.
+- `src/components/menu/EffectsMenu.tsx` — new, the drawer's contents.
+- `src/components/menu/pixelIcons.tsx` — an `effects` icon for the tab.
 - `src/components/menu/Menubar.tsx` — the `S` indicator, in the existing
   `menubar__indicators` cluster beside the Color Fill Box.
 - `src/components/GlobalHotkeyManager.tsx`, `docs/keyboard.md` — `-` for
   on/off. Currently unbound.
 - `src/overmind/undo/UndoBuffer.ts` — count the stencil against the budget.
 
-Around 500 new lines and eight files touched. **The requester is the largest
+Around 550 new lines and eleven files touched, the Effects drawer included. **The requester is the largest
 single piece**, and most of the rest is small because the two hooks (a shader
 branch, a pass before the undo read) are the whole mechanism.
 
@@ -211,6 +214,43 @@ branch, a pass before the undo read) are the whole mechanism.
 Nothing in `src/tools/`, nothing in `src/brush/`, and none of the six indexers.
 That is the payoff of draw-then-repair, and the reason to prefer it even though
 mask-each-write is the more obvious reading of "locks colours".
+
+## Where it goes: the Effects menu
+
+DPaint II has six menus — Picture, Brush, Mode, **Effects**, Font, Prefs. We
+have three drawers (Picture, Brush, Prefs) because Mode became the menu's
+always-visible row and Font became the text tool's right-click requester, both
+better homes than a menu. **Effects is the one genuinely missing**, and it is
+missing for a simple reason: it holds three items and we have built none of
+them.
+
+Its whole contents, per the Handbuch's own summary (4-20) — "masks, freezing
+the background, and defining planes for perspective drawing":
+
+| Item | Submenu | Us |
+|------|---------|-----|
+| **Stencil** | Make, Remake, Lock FG, Reverse, On/Off, Free, Load, Save, Delete | this note |
+| **Background** | Fix, Off | parity backlog, step 4 below |
+| **Perspective** | Do, Center, and its own Anti-Alias and Rotation settings | backlog, optional, large |
+
+(DPaint II's Anti-Alias is perspective-only, sharpening the rotated brush's
+edges. The general three-level Antialias that `docs/dpaint-versions.md` records
+is a DPaint III feature and a different thing sharing the name.)
+
+So the drawer arrives with Stencil, gains Background at step 4, and has room for
+Perspective if that is ever built. Two of three is enough to justify it; one
+would not be, which is an argument for building Background alongside rather than
+much later.
+
+The cost is small — the `Drawer` union in `overmind/app/state.ts` gains
+`'effects'`, `Menu.tsx` gains a fourth `Gadget` in the existing `GadgetGroup`
+and a fourth conditional render, and `pixelIcons.tsx` gains one icon map. The
+rail is already a radio group of three and takes a fourth without changing shape.
+
+**Check the menubar width first.** Four drawer tabs sit beside `ScreenStatus`
+in `menu__status`, and the tick and screen-name compaction earlier this year
+were done because that row was tight. If a fourth tab does not fit, that is a
+layout decision to make before the drawer, not after.
 
 ## Phasing
 
@@ -221,12 +261,14 @@ mask-each-write is the more obvious reading of "locks colours".
 2. **Commit.** The repair pass before the undo read, so a saved file and the
    undo history agree with the screen. Together with (1) this is a working
    feature reachable only from the keyboard.
-3. **The requester and the menu.** Make, Remake, Reverse, On/Off, Free, the `S`
-   indicator, `-`.
+3. **The Effects drawer and the requester.** The fourth drawer, then Make,
+   Remake, Reverse, On/Off, Free inside it, the `S` indicator, and `-`.
 4. **Fix Background**, which is a separate item on the parity list but shares
    the frozen-copy machinery entirely: the same class holding a different
    raster, with CLR consulting it. **Lock FG** then falls out, and only then —
-   it is meaningless without a fixed background.
+   it is meaningless without a fixed background. Worth doing close behind (3),
+   since it is the drawer's second of three items and a drawer holding one
+   thing is hard to justify.
 
 Load / Save / Delete of stencil *files* is DPaint II behaviour we can skip: it
 existed because a 1988 machine could not hold much, and a stencil today is
