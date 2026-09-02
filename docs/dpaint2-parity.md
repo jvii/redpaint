@@ -66,13 +66,6 @@ does with a multi-color brush. Off, the brush cycles as one color (the
 foreground); on, every color in it cycles, each within whichever range it
 belongs to.
 
-**Non-square pixels.** Not a DPaint menu item — DPaint corrects for these
-unconditionally, and we do not correct at all, so circles, the airbrush and
-symmetry come out wrong on Med-Res and Interlace. The display half is done: a screen
-format now shows the pixel shape it names, at any window shape. What remains is
-the four drawing sites, which still take a raster circle for a round one. Amiga
-formats only — Native is uniform by construction. docs/pixel-aspect.md.
-
 **ExclBrush.** With Grid on, brush pickup drops the right and bottom edge of
 the one-pixel border, so a pattern made from the brush keeps a single-width
 border instead of a doubled one. Waits on Grid.
@@ -98,10 +91,26 @@ different problem.
 
 ## Order
 
-Stencil next: the one whose absence other features keep running into, and what
-makes Fix Background mean anything. Grid after it, with Spacing and ExclBrush
-behind it — both attach to it. MultiCycle whenever Cycle mode is next open.
-Perspective last: large, self-contained, and the least reached for.
+**Grid first**, though Stencil is the larger gap. Three reasons, none of them
+about Grid itself:
 
-Non-square pixels sit outside that order: it is a correctness bug rather than a
-missing feature, and the four sites are independent of everything above.
+- It brings the eighteenth toolbox gadget with it (docs/grid.md), and that is
+  the **only** remaining decision about the toolbox — every other item here is
+  menus and canvas. Settling it first means the toolbox stops being a question.
+- Its snapping is a per-tool opt-out on the `Tool` interface, DPaint's `NOGR`.
+  Spacing wants the same shape for the same reason, so Grid establishes the
+  pattern Spacing then reuses.
+- It gates ExclBrush.
+
+**Spacing** next, riding that pattern. Its phase 1 (line, curve, rectangle,
+polygon) touches no rasterizer; phase 2 (circle, ellipse) is the disproportionate
+half and can wait indefinitely — docs/spacing.md.
+
+**Stencil and Fix Background together**, as one piece of work: they share the
+frozen-copy machinery entirely, and Stencil brings an Effects drawer that would
+otherwise hold one item (docs/stencil.md). **ExclBrush** falls out once both
+exist.
+
+**MultiCycle** whenever Cycle mode is next open — small and attached to nothing.
+
+**Perspective** last: large, self-contained, and the least reached for.

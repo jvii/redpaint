@@ -238,7 +238,7 @@ window is a viewing condition, and belongs to the display layer above.
 
   The residue is odd-diameter rounding. Before, Med-Res gave a 121x121 raster
   and 0.5 roundness.
-- [x] **Airbrush** — done. `SPRAY_RADIUS` is a screen distance now, divided
+- [x] **Airbrush** — done. The spray radius is a screen distance, divided
   back out per axis, so the spray is round and the same size on every format.
   Measured roundness 1.009 on Med-Res and 1.045 on Interlace; Lo-Res and
   Hi-Res divide by 1 and are unchanged. The residue is the measurement, not

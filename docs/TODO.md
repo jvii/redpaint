@@ -187,13 +187,12 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       off, a multi-color brush in Cycle mode cycles as the foreground color
       alone; on, every color in it cycles within whichever range it belongs to.
 
-- [ ] **Non-square pixels.** A correctness bug rather than a missing feature:
-      Med-Res and Interlace display a 2:1 pixel, and nothing in the drawing
-      pipeline knows. Circles, the airbrush, symmetry and the built-in round
-      brushes all come out 2:1 wrong there. DPaint corrected this
-      unconditionally by converting at the tool boundary, which is the shape
-      the fix should take — `algorithm/` stays pure. Four sites, the original's
-      six, and why Be Square is a different thing: docs/pixel-aspect.md.
+- [x] **Non-square pixels** — done, display and drawing both. A screen format
+      shows the pixel shape it names at any window shape, and the five drawing
+      sites convert at the tool boundary as DPaint does, leaving `algorithm/`
+      pure: circle tool, airbrush, symmetry, the built-in brush presets, and the
+      built-in size drag. Measured roundness per format, and why Be Square is a
+      different thing: docs/pixel-aspect.md.
 
 - [ ] **ExclBrush**, the last Prefs item. With Grid on, brush pickup drops the
       right and bottom edge of the one-pixel border so a pattern made from the
