@@ -46,6 +46,7 @@ export class SizeBuiltInBrushTool implements Tool {
     }
     const size = dragSize(anchor, getMousePos(event));
     overmind.actions.tool.sizeBuiltInBrushStart(null);
+    overmind.actions.tool.sizeBuiltInBrushSize(null);
     overmind.actions.brush.resizeBuiltInBrushTo(size);
     overmind.actions.toolbox.exitSizeBuiltInBrushMode();
   }
@@ -69,6 +70,12 @@ export class SizeBuiltInBrushTool implements Tool {
     }
     const size = dragSize(anchor, mousePos);
     const preview = createSizedBuiltInBrush(brush.builtInFamily, size.width, size.height);
+    // The preview brush's own dimensions, not the dragged size: the generators
+    // round, so this is the only figure that cannot disagree with the result.
+    overmind.actions.tool.sizeBuiltInBrushSize({
+      width: preview.width,
+      height: preview.heigth,
+    });
     preview.applyMode(overmind.state.brush.mode);
     preview.drawPoints(
       [{ x: anchor.x + size.width / 2, y: anchor.y + size.height / 2 }],

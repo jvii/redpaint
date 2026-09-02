@@ -47,11 +47,13 @@ export function Menubar(): JSX.Element {
   // weights (see Menubar.css): the name is the loud part, the number is a
   // value, and this app writes values in blue.
   const selectorId = state.toolbox.selectedSelectorToolId;
+  const resizeSize = state.tool.sizeBuiltInBrushTool.size;
+  const sizeReadout = resizeSize ? `${resizeSize.width}\u00d7${resizeSize.height}` : undefined;
   const armedTransform: { name: string; value?: string } | null =
     selectorId === 'brushStretchTool'
       ? { name: 'Stretch' }
       : selectorId === 'sizeBuiltInBrushTool'
-        ? { name: 'Resize' }
+        ? { name: 'Resize', value: sizeReadout }
         : selectorId === 'brushShearTool'
           ? { name: 'Shear' }
           : selectorId === 'brushRotateTool'

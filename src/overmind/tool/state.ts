@@ -41,8 +41,9 @@ export type State = {
   // anchor = the dragged brush's fixed top-left corner (null while not dragging)
   brushStretchTool: { anchor: Point | null };
   // same drag shape as brushStretchTool, but for right-click-resizing a
-  // built-in brush (SizeBuiltInBrushTool) rather than stretching a custom one
-  sizeBuiltInBrushTool: { anchor: Point | null };
+  // built-in brush (SizeBuiltInBrushTool) rather than stretching a custom one.
+  // size = the live readout, in pixels the brush will actually come out as
+  sizeBuiltInBrushTool: { anchor: Point | null; size: { width: number; height: number } | null };
   brushShearTool: { anchor: Point | null };
   // center = rotation pivot (null while not dragging); startAngle = the
   // pointer's angle at press; angle = live readout in whole degrees
@@ -74,7 +75,7 @@ export const state: State = {
   textTool: { text: '', start: null, lineStart: null },
   brushSelectorTool: { start: null },
   brushStretchTool: { anchor: null },
-  sizeBuiltInBrushTool: { anchor: null },
+  sizeBuiltInBrushTool: { anchor: null, size: null },
   brushShearTool: { anchor: null },
   brushRotateTool: { center: null, startAngle: 0, angle: 0 },
   brushBendTool: { origin: null },

@@ -61,6 +61,13 @@ export const enterSizeBuiltInBrushMode = (context: Context): void => {
     return;
   }
   context.state.toolbox.selectedSelectorToolId = 'sizeBuiltInBrushTool';
+  // The readout, here rather than in the tool's onInit: re-targeting from one
+  // preset to another leaves the active tool unchanged, so onInit does not run
+  // again and the size would stand at the preset armed first.
+  context.actions.tool.sizeBuiltInBrushSize({
+    width: brushRecall.current.width,
+    height: brushRecall.current.heigth,
+  });
 };
 
 export const exitSizeBuiltInBrushMode = (context: Context): void => {

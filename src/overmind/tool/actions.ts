@@ -161,6 +161,13 @@ export const sizeBuiltInBrushStart = (context: Context, anchor: Point | null): v
   context.state.tool.sizeBuiltInBrushTool.anchor = anchor;
 };
 
+export const sizeBuiltInBrushSize = (
+  context: Context,
+  size: { width: number; height: number } | null
+): void => {
+  context.state.tool.sizeBuiltInBrushTool.size = size;
+};
+
 export const brushShearStart = (context: Context, anchor: Point | null): void => {
   context.state.tool.brushShearTool.anchor = anchor;
 };
