@@ -74,6 +74,17 @@ export const exitSizeBuiltInBrushMode = (context: Context): void => {
   context.state.toolbox.selectedSelectorToolId = null;
 };
 
+// Right-click on the airbrush gadget, DPaint's SizeAirBrush (CTRPAN.C case 5).
+// Selects the airbrush, as a left click does, then arms the drag on canvas.
+export const enterSizeAirbrushMode = (context: Context): void => {
+  context.state.toolbox.selectedDrawingToolId = 'airbrush';
+  context.state.toolbox.selectedSelectorToolId = 'sizeAirbrushTool';
+};
+
+export const exitSizeAirbrushMode = (context: Context): void => {
+  context.state.toolbox.selectedSelectorToolId = null;
+};
+
 export const toggleForegroundColorSelectionMode = (context: Context): void => {
   const isSelected = context.state.toolbox.selectedSelectorToolId === 'foregroundColorSelectorTool';
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'foregroundColorSelectorTool';

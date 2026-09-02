@@ -445,6 +445,8 @@ function useBrushTransformHotkeys(): void {
           // The built-in resize leaves by its own action, not
           // toggleBrushTransformMode, whose guard rejects built-in brushes.
           actions.toolbox.exitSizeBuiltInBrushMode();
+        } else if (armed === 'sizeAirbrushTool') {
+          actions.toolbox.exitSizeAirbrushMode();
         } else {
           return;
         }

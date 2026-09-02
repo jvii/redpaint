@@ -51,8 +51,12 @@ export function Toolbox(): JSX.Element {
       <ToolboxToggleButton
         buttonClass="airbrush"
         hint={toolboxHints.airbrush}
-        isSelected={state.toolbox.activeToolId === 'airbrush'}
+        isSelected={
+          state.toolbox.activeToolId === 'airbrush' ||
+          state.toolbox.activeToolId === 'sizeAirbrushTool'
+        }
         onClick={(): void => actions.toolbox.setSelectedDrawingTool('airbrush')}
+        onRightClick={(): void => actions.toolbox.enterSizeAirbrushMode()}
       />
       <ToolboxDualToggleButton
         buttonClass="rectangle"

@@ -8,6 +8,7 @@ import { SymmetryCenterSelectorTool } from '../../tools/SymmetryCenterSelectorTo
 import { BrushSelector } from '../../tools/BrushSelector';
 import { StretchBrushTool } from '../../tools/StretchBrushTool';
 import { SizeBuiltInBrushTool } from '../../tools/SizeBuiltInBrushTool';
+import { SizeAirbrushTool } from '../../tools/SizeAirbrushTool';
 import { ShearBrushTool } from '../../tools/ShearBrushTool';
 import { RotateBrushTool } from '../../tools/RotateBrushTool';
 import { BendBrushTool } from '../../tools/BendBrushTool';
@@ -51,6 +52,7 @@ const selectorTools = {
   brushSelectorTool: new BrushSelector(),
   brushStretchTool: new StretchBrushTool(),
   sizeBuiltInBrushTool: new SizeBuiltInBrushTool(),
+  sizeAirbrushTool: new SizeAirbrushTool(),
   brushShearTool: new ShearBrushTool(),
   brushRotateTool: new RotateBrushTool(),
   brushBendHorizontalTool: new BendBrushTool(true),

@@ -224,6 +224,30 @@ A modal drag on the canvas, DPaint-style:
   its only cue was the pointer changing to the text "SIZE". The box is
   better, so it stays a deliberate deviation.
 
+### Sizing the airbrush
+
+The same feature again, on a different subject. Right-clicking the **airbrush**
+gadget sizes its spray (`CTRPAN.C:229` case 5: left button enters
+`IM_airBrush`, any other calls `SizeAirBrush`), and `SizeAirBrush` shares every
+line of `SizePen` but the last — the same `IM_sizePen` mode, the same
+anchor/drag/`siz` scalar — differing only in `szSet`, where a `sizingAirB` flag
+sends the result to `SetAirBRad` instead of to the pen (`MODES.C:359-421`).
+
+`SizeAirbrushTool` mirrors that: the same interaction as
+`SizeBuiltInBrushTool`, sharing its `dragSize` (`tools/util/sizeDrag.ts`), and
+on release it sets `tool.airbrushTool.radius` rather than replacing the brush.
+
+- **The preview is a solid circle**, not a spray. DPaint sized with
+  `pnType = ROUND_B`, and the manual calls it "the solid circle, which
+  represents the spray area" — a cloud of random dots has no edge to size
+  against. Ours is `createSizedBuiltInBrush('round', d, d)`, so a sized spray
+  previews as the same kind of circle a sized brush does.
+- **The drag reaches the spray's edge**, so its extent is the radius and the
+  circle is twice it. That is DPaint's `SetAirBRad(VMapY(siz))` on the same
+  scalar `SizePen` takes for a pen's size.
+- **The radius is a screen distance**, as the spray itself is, so it means the
+  same thing at any pixel shape (docs/pixel-aspect.md).
+
 ### Sizing a built-in brush
 
 A second, separate DPaint feature, easy to miss because it lives outside the
@@ -324,3 +348,6 @@ Key differences from Stretch, all preserved in redpaint:
   above. A separate DPaint feature from Stretch, not a variant of it — see
   that section for why the two don't share code beyond the drag interaction
   shape.
+- **Phase G — sizing the airbrush.** ✅ Done. `SizeAirbrushTool`, entered by
+  right-clicking the airbrush gadget, sharing the drag with Phase F and setting
+  the spray radius on release. See "Sizing the airbrush" above.

@@ -42,6 +42,10 @@ export const curveToolReset = (context: Context): void => {
 
 // airbrush
 
+export const airbrushRadius = (context: Context, radius: number): void => {
+  context.state.tool.airbrushTool.radius = radius;
+};
+
 export const airbrushToolPosition = (context: Context, point: Point | null): void => {
   context.state.tool.airbrushTool.position = point;
 };
@@ -166,6 +170,17 @@ export const sizeBuiltInBrushSize = (
   size: { width: number; height: number } | null
 ): void => {
   context.state.tool.sizeBuiltInBrushTool.size = size;
+};
+
+export const sizeAirbrushStart = (context: Context, anchor: Point | null): void => {
+  context.state.tool.sizeAirbrushTool.anchor = anchor;
+};
+
+export const sizeAirbrushSize = (
+  context: Context,
+  size: { width: number; height: number } | null
+): void => {
+  context.state.tool.sizeAirbrushTool.size = size;
 };
 
 export const brushShearStart = (context: Context, anchor: Point | null): void => {

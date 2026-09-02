@@ -142,12 +142,13 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
   //
   // Skipped entirely for a captured or loaded brush, which is usually large
   // enough that exact hotspot alignment barely matters: no per-mousemove work,
-  // and the native pointer shows instead. Suppressed while SizeBuiltInBrushTool
-  // is armed too. SelectedBuiltInBrushId stays set through that drag, but the
+  // and the native pointer shows instead. Suppressed while either resize drag
+  // is armed too. SelectedBuiltInBrushId stays set through those, but the
   // resize cursor is what should show.
   const usePreciseCursor =
     state.brush.selectedBuiltInBrushId !== null &&
-    state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool';
+    state.toolbox.selectedSelectorToolId !== 'sizeBuiltInBrushTool' &&
+    state.toolbox.selectedSelectorToolId !== 'sizeAirbrushTool';
   // Positioned by mutating the DOM through this ref, not React state: a
   // setState would re-render the whole Canvas on every mousemove, and left/top
   // trigger layout. Both add latency a native cursor never pays, and it reads
@@ -205,7 +206,8 @@ export function Canvas({ isZoomCanvas, displayScale = { x: 1, y: 1 } }: Props): 
   const showResizeCursor =
     !state.app.isLoading &&
     (state.toolbox.selectedSelectorToolId === 'brushStretchTool' ||
-      state.toolbox.selectedSelectorToolId === 'sizeBuiltInBrushTool');
+      state.toolbox.selectedSelectorToolId === 'sizeBuiltInBrushTool' ||
+      state.toolbox.selectedSelectorToolId === 'sizeAirbrushTool');
   const resizeCursorRef = useRef<HTMLDivElement>(null);
   const updateResizeCursorPos = (event: React.MouseEvent<HTMLCanvasElement>): void => {
     if (!showResizeCursor || !resizeCursorRef.current) {

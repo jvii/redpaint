@@ -48,6 +48,7 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   airbrush: {
     name: 'Airbrush',
     use: 'Hold to keep spraying.',
+    rightClick: 'Resize the spray, by dragging on the canvas',
   },
   rectangle: {
     name: 'Rectangle',

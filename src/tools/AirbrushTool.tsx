@@ -7,9 +7,6 @@ import { paintingCanvasController } from '../canvas/paintingCanvas/PaintingCanva
 import { overlayCanvasController } from '../canvas/overlayCanvas/OverlayCanvasController';
 import { Point } from 'src/types';
 
-// How far the spray reaches, as a distance on screen.
-const SPRAY_RADIUS = 30;
-
 export class AirbrushTool implements Tool {
   // TODO fix
   private timeout: any = 0;
@@ -44,7 +41,7 @@ export class AirbrushTool implements Tool {
       const aspect = formatPixelAspect(overmind.state.canvas.screenFormatId);
       for (let i = 50; i--; ) {
         const angle = getRandomFloat(0, Math.PI * 2);
-        const radius = getRandomFloat(0, SPRAY_RADIUS);
+        const radius = getRandomFloat(0, overmind.state.tool.airbrushTool.radius);
         if (overmind.state.tool.airbrushTool.position) {
           points.push({
             x: overmind.state.tool.airbrushTool.position.x + (radius * Math.cos(angle)) / aspect.x,
