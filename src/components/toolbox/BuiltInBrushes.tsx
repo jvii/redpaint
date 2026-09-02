@@ -1,11 +1,22 @@
 import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { BuiltInBrushId } from '../../overmind/brush/state';
+import { useGadgetHint } from './useGadgetHint';
+import { builtInBrushesHint } from './toolboxHints';
 import './BuiltInBrushes.css';
 
 export function BuiltInBrushes(): JSX.Element {
+  // On the strip, not the presets: mouseover bubbles, so one panel covers all
+  // ten and moving between them does not swap it for a near-identical one.
+  const { hintRef, showHint, hideHint, hintPanel } = useGadgetHint(builtInBrushesHint);
   return (
-    <div className="built-in-brushes-container">
+    <div
+      ref={hintRef}
+      className="built-in-brushes-container"
+      onMouseOver={showHint}
+      onMouseLeave={hideHint}
+      onMouseDown={hideHint}
+    >
       <div className="built-in-brushes built-in-brushes-dots">
         <BrushButton svg={dot1x1} brushId={1} />
         <BrushButton svg={dot3x3} brushId={2} />
@@ -22,6 +33,7 @@ export function BuiltInBrushes(): JSX.Element {
         <BrushButton svg={dither3x3} brushId={9} />
         <BrushButton svg={dither7x6} brushId={10} />
       </div>
+      {hintPanel}
     </div>
   );
 }

@@ -129,6 +129,15 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   },
 };
 
+// The ten preset brushes above the toolbox. One hint for the strip rather than
+// ten near-identical ones: what a preset does is its own picture, and the two
+// gestures are the same on every one of them.
+export const builtInBrushesHint: GadgetHint = {
+  name: 'Built-in Brushes',
+  use: 'Click a shape to paint with it. Four round, four square, two dithered.',
+  rightClick: 'Resize, by dragging on the canvas',
+};
+
 // The Color Indicator below the toolbox
 export const colorIndicatorHint: GadgetHint = {
   name: 'Color Indicator',
