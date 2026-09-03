@@ -23,20 +23,28 @@ polygon — "although right-clicking those icons does not bring up the Spacing
 dialog" (2-24). Those gadgets open the Fill Type requester instead, so in
 DPaint II the setting reaches them but the door does not.
 
-**DPaint III** fixed exactly that: "a right-button click on any of these tools"
-— straight line, curve, *and the unfilled shapes* — "brings up the Spacing
-requester" (DP3 4-60). It also renamed the two modes to what they mean and
-added a third option:
+**DPaint III** rebuilt it, and then it froze: IV and V ship III's requester
+unchanged (DP4 figure 3.6, DP5 figure 3.6, both "N Total | Every Nth dot |
+Airbrush | Continuous | Cancel | Ok"). Four changes from II:
 
-| DPaint II | DPaint III |
-|-----------|------------|
-| Relative | **N Total** — total splats along the path |
-| Absolute | **Every Nth dot** — pixels between splats |
+| DPaint II | DPaint III onward |
+|-----------|-------------------|
+| Relative | **N Total** — renamed to what it means: total splats along the path |
+| Absolute | **Every Nth dot** — renamed: pixels between splats |
+| On / Off toggle | **Continuous** — no spacing becomes a fourth mode rather than a switch beside the other two |
 | — | **Airbrush** — spray the airbrush N times at each point along the path |
+| line and curve only | **also the unfilled shapes**, closing II's gap |
 
-Airbrush spacing is a III feature and out of scope here, but it is a good
-reminder of what the setting is: not a line style, but a *rule for choosing
-which points along a path get a brush stamp*.
+The renames are worth taking whether or not the rest is: "Absolute" and
+"Relative" name the *kind* of number, where "Every Nth dot" and "N Total" name
+what it does. Folding Off into the mode list is worth taking too — it is one
+control instead of two, and it removes the state where a spacing is set but not
+applied.
+
+Airbrush spacing is the only one of the four that is a feature rather than a
+tidy-up, and it is out of scope here — but it is a good reminder of what the
+setting is: not a line style, but a *rule for choosing which points along a
+path get a brush stamp*.
 
 **Not the dotted freehand tool.** Its spacing is the speed you move the mouse,
 in II (4-31) and still in III (9-3179). Both of our backlog entries name the
@@ -356,12 +364,14 @@ which is the argument against splitting.
 1. **The thinning**, in `src/algorithm/spacing.ts` — pure, a `Point[]` in and
    a `Point[]` out, with the two modes. Tested directly; it is arithmetic, not
    pixels, so it needs no fixtures.
-2. **Path order for circle and ellipse**, per option 1 above, with its own
-   tests asserting that consecutive points are adjacent.
+2. **Path order for circle and ellipse**, per PyDPainter's octant buckets
+   above, with tests asserting that consecutive points are adjacent.
 3. **`SpacingBrush`**, the decorator, wired inside `symmetryBrush`.
 4. **The requester and the gadget right-clicks**, following
    `FillStyleSettings` — it is the same kind of dialog opened the same way from
-   the same gadgets.
+   the same gadgets. Three mode buttons and a number: **Continuous**,
+   **Every Nth dot**, **N Total**, taking DPaint III's names and its folding of
+   Off into the mode list, per the table above.
 
 Airbrush spacing (DPaint III) is not part of this and would attach at step 3 if
 it were ever wanted.
