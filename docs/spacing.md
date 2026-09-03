@@ -373,5 +373,38 @@ which is the argument against splitting.
    **Every Nth dot**, **N Total**, taking DPaint III's names and its folding of
    Off into the mode list, per the table above.
 
-Airbrush spacing (DPaint III) is not part of this and would attach at step 3 if
-it were ever wanted.
+### Airbrush spacing is cheaper than the rest of it
+
+Worth reconsidering as part of the first version rather than "out of scope", on
+two counts.
+
+**It reuses code we already have.** PyDPainter's `airbrush_coords`
+(`config.py:1531`) is our `AirbrushTool` spray loop line for line — a random
+angle, a random radius, divided per axis for the pixel shape. Extract that into
+`tools/util/spray.ts` the way `dragSize` was extracted, and Airbrush mode is a
+branch beside the other two:
+
+```
+every Nth  → thin the path
+N total    → thin the path
+airbrush   → for each point on the path, N jittered points near it
+```
+
+Then one `drawPoints` call with the lot, where PyDPainter loops per stamp
+(`prim.py:1377`). Its spray radius is already ours to read
+(`tool.airbrushTool.radius`, sized by right-clicking the gadget), so "the
+spraying size defined by a right-click on the Airbrush tool is supported" comes
+free.
+
+**And it needs no path order at all.** It does not thin — every rasterized
+point contributes, and their order is irrelevant because each one is jittered
+independently. So Airbrush works on the **circle and the ellipse immediately**,
+where Every Nth and N Total have to wait for the octant buckets and the ellipse
+rewrite. It is the one mode phase 1 could ship on all six tools.
+
+The cost is point count: a 200-pixel path at DPaint III's default of 16 sprays
+per point is 3,200 points in one batched call. That is one buffer upload, not
+3,200 draws, but it is worth a look at the largest shape someone might drag.
+
+If it goes in, it is a fourth button and a count field in the requester, which
+is DPaint III's own layout — so the requester does not change shape later.
