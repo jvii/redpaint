@@ -87,6 +87,56 @@ pass before the drawing pass. With the whole path already in an array, N Total
 is `points.length / n` and costs nothing. Each architecture makes one of the two
 modes free.
 
+## PyDPainter's "Brush Trails", and where it came from
+
+PyDPainter's requester is this one — its own contents page says "Brush Trails
+–formerly Spacing", `spacing_req()` builds a requester titled Brush Trails, and
+it opens from the same right-clicks (`tools.py:118, 432, 817, 1045` — line,
+curve, unfilled shapes). Its first four buttons are DPaint III's four exactly.
+Below them it adds three things DPaint's spacing requester never had at any
+version:
+
+- **Ease In / Out**, with an exponent 1–10 and a live curve graph, so the stamps
+  bunch at one end of the path or both.
+- **Size**, start → end percentage: the brush scales along the path.
+- **Rotate**, start → end degrees: the brush turns along the path.
+
+**Those are DPaint's, but from the Move requester**, which is animation. DPaint
+III's Move (Anim menu) has Ease Out and Ease In fields — "a number of frames
+over which you want the brush to accelerate or decelerate" (DP3 7-133) — beside
+X/Y/Z distance, per-axis rotation and Count. And **Trails is a button in that
+same requester**: "you tell DeluxePaint to carry the cumulative effect of each
+frame forward as it draws, so the brush leaves a trail as it moves through
+three-dimensional space" (DP5 8-153). So both the name and the parameters are
+lifted from Move.
+
+What PyDPainter did was **merge the two**: the same code takes a path and
+distributes stamps along it, whether that path is a line on one canvas or a
+brush's journey across forty frames. Its own doc says so — the ease settings
+work "either by drawing on a static canvas or by animpainting across multiple
+frames" — and `prim.py:1245` is the join, auto-switching CONTINUOUS to N_TOTAL
+with `n = num_frames` when an animation key is held.
+
+**For us that merge is the interesting part, because it separates cleanly.**
+Animation is out of scope (`docs/dpaint-versions.md`), but ease, size and rotate
+along a path are the *static* half of it and need no frames at all — PyDPainter
+illustrates them with pseudo-3D text on a single canvas. They would be a
+DPaint III+ painting addition of the kind the scope allows one at a time, not
+animation smuggled in.
+
+They are not free, though, and the cost is not in the interpolation. Every stamp
+would be a differently sized and rotated brush, and each one is a fresh
+`CustomBrush` (`transform()` allocates a new backing array by contract), where
+today a whole spaced path shares one. PyDPainter pays exactly this
+(`config.brush.size = ...` per coordinate) and gets away with it because a
+Python loop was never going to be the bottleneck. Worth measuring before
+promising, and worth keeping out of the first version either way.
+
+**Not to be confused with DPaint III's Ctrl-drag "traces"** (DP3 9-162):
+holding Ctrl while dragging a line leaves the intermediate shapes behind
+instead of erasing each preview. A third thing again, and nothing to do with
+either requester.
+
 ## Where it hooks in
 
 Every unfilled primitive in both brushes has the same shape:

@@ -229,7 +229,13 @@ What is left for DPaint II parity, which is the objective: docs/dpaint2-parity.m
       their gadgets as well, which is worth following. Not the dotted freehand
       tool, whose spacing is mouse speed.
 
-      Designed in docs/spacing.md. Not as small as this entry assumed: it is a
+      Designed in docs/spacing.md, which also settles what PyDPainter's "Brush
+      Trails" is: this requester renamed, plus ease/size/rotate lifted from
+      DPaint's animation Move requester. Those three are the static half of an
+      animation feature and would work without frames, but each stamp becomes
+      its own transformed brush - a later question, not part of this.
+
+      Not as small as this entry assumed: it is a
       BrushInterface decorator inside symmetryBrush, but unfilledCircle and
       unfilledEllipse emit points in rasterizer order rather than along the
       path, so thinning them by index scatters the dots. They need a
