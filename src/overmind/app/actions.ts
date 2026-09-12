@@ -9,6 +9,7 @@ import { decodeGif, GifError } from '../../fileformat/gif';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { stencil } from '../../canvas/Stencil';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import {
   DEFAULT_SCREEN_FORMAT_ID,
@@ -334,6 +335,9 @@ export const newPicture = (context: Context): void => {
   // that picture's pixels, indexed into that picture's palette. Before the
   // palette below, so nothing is left pointing into the outgoing one.
   context.actions.brush.resetBrushes();
+  // Cut from the outgoing picture's pixels, like the brushes above.
+  stencil.free();
+  paintingCanvasController.updateStencil();
 
   // Palette next: the GL textures index into it, and the snapshot taken below
   // records whichever palette is current.

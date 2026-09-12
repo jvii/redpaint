@@ -3,6 +3,7 @@ import { DrawImageIndexer } from './program/DrawImageIndexer';
 import { EffectIndexer } from './program/EffectIndexer';
 import { GradientGeometricIndexer } from './program/GradientGeometricIndexer';
 import { PatternGeometricIndexer } from './program/PatternGeometricIndexer';
+import { StencilIndexer } from './program/StencilIndexer';
 import { PaintColor, Point } from '../../types';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { bindFramebuffer } from '../util/webglUtil';
@@ -28,6 +29,7 @@ export class ColorIndexer {
   private effectIndexer: EffectIndexer;
   private gradientIndexer: GradientGeometricIndexer;
   private patternIndexer: PatternGeometricIndexer;
+  private stencilIndexer: StencilIndexer;
 
   constructor(gl: WebGLRenderingContext, buffers: GLBuffers) {
     this.gl = gl;
@@ -40,6 +42,7 @@ export class ColorIndexer {
     this.effectIndexer = new EffectIndexer(gl, buffers);
     this.gradientIndexer = new GradientGeometricIndexer(gl, buffers.colorIndexFramebuffer);
     this.patternIndexer = new PatternGeometricIndexer(gl, buffers.colorIndexFramebuffer);
+    this.stencilIndexer = new StencilIndexer(gl, buffers.colorIndexFramebuffer);
   }
 
   /**
@@ -65,6 +68,10 @@ export class ColorIndexer {
     if (this.patternIndexer) {
       this.patternIndexer.dispose();
       this.patternIndexer = null;
+    }
+    if (this.stencilIndexer) {
+      this.stencilIndexer.dispose();
+      this.stencilIndexer = null;
     }
   }
 
@@ -98,6 +105,10 @@ export class ColorIndexer {
 
   endEffectStroke(): void {
     this.effectIndexer.endEffectStroke();
+  }
+
+  commitStencil(): void {
+    this.stencilIndexer.indexStencil();
   }
 
   getIndex(): CanvasColorIndex {

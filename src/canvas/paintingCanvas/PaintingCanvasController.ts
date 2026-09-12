@@ -150,6 +150,17 @@ export class PaintingCanvasController implements CanvasController {
     this.colorIndexer?.endEffectStroke();
   }
 
+  // Writes the stencil's protected pixels back into the stored index, so what
+  // is snapshotted and saved is what the shader has been showing. No-op when
+  // no stencil is active.
+  commitStencil(): void {
+    if (!stencil.active) {
+      return;
+    }
+    this.colorIndexer?.commitStencil();
+    this.render();
+  }
+
   render(): void {
     this.mainCanvasRenderer?.renderCanvas();
     this.renderZoomCanvas();

@@ -12,6 +12,9 @@ import { plainPalette } from '../../algorithm/imageColors';
 export const setUndoPoint = (context: Context): void => {
   // every committed stroke ends here: also the effect chains' reset point
   paintingCanvasController.endEffectStroke();
+  // Before the read: a stroke paints under the stencil as freely as anywhere,
+  // and this is where the damage is undone (docs/stencil.md).
+  paintingCanvasController.commitStencil();
   newGradientSeed(); // next gradient fill gets fresh dither speckle
   const colorIndex = paintingCanvasController.getCanvasColorIndex();
   if (!colorIndex) {
