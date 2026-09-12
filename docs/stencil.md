@@ -126,17 +126,37 @@ sampler holding the frozen picture, with **alpha 0 meaning "not protected"**:
 
 ```glsl
 vec4 st = texture2D(u_stencil, uv);
-vec4 pixel = (u_stencilOn && st.a > 0.0) ? st : texture2D(u_image, uv);
+vec4 pixel = mix(texture2D(u_image, uv), st, step(0.5, st.a) * u_stencilOn);
 ```
 
-One texture read on a full-screen quad. The mask needs no separate storage —
-it is the alpha channel of the frozen copy — and the existing `isTrueColor`
-branch below keeps working unchanged, because a stencil pixel is an ordinary
-pixel in the same encoding.
+The mask needs no separate storage — it is the alpha channel of the frozen copy
+— and the existing `isTrueColor` branch below keeps working unchanged, because
+a stencil pixel is an ordinary pixel in the same encoding.
 
 This gives the live half for free: no per-stroke work, no clearing, no
 interaction with the overlay canvas, and the zoom view (which mirrors the main
 canvas) gets it too.
+
+**What it costs, since this is the hottest shader there is.** Three things get
+conflated under "a branch in the common shader":
+
+- `u_stencilOn` is **uniform across the draw**, so no warp diverges on it and
+  it costs nothing.
+- `st.a > 0.0` is per-pixel and *would* diverge, at the stencil's edges, where
+  the cost is executing both sides. Both sides are only "which vec4 do I use",
+  so `mix`/`step` above avoids the question entirely.
+- The real cost is **the extra texture sample**, not the branch: one more
+  fetch per fragment, around 555k per full-screen pass at a typical window.
+
+That is nothing in absolute terms, and it matters here only because
+`renderCanvas()` runs on **every brush stamp** rather than once per frame —
+the bottleneck dirty-rect rendering is meant to fix — so anything added is
+multiplied by stamps per second.
+
+**If it measures badly, compile two variants** of the same source behind a
+`#define STENCIL` and bind by whether a stencil exists: no sampler, no uniform,
+no branch in the common case, at the price of one more `createProgram` at init.
+Start with the single program and measure with `__redpaintBench` first.
 
 ### Commit: one GPU pass before the undo snapshot
 

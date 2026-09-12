@@ -1,5 +1,6 @@
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
+import { STENCIL_TEXTURE_UNIT } from '../../util/stencilTexture';
 
 /**
  * DrawImageRenderer is responsible for rendering the main canvas using WebGL.
@@ -34,6 +35,7 @@ export class DrawImageRenderer {
   // location looked up once: getAttribLocation is a driver round-trip, too
   // slow for per-draw-call use
   private a_position: number;
+  private u_stencilOn: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -43,6 +45,15 @@ export class DrawImageRenderer {
     // (0 = color indices, 1 = palette), so the samplers can be set once
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_image'), 0);
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
+    gl.uniform1i(gl.getUniformLocation(this.program, 'u_stencil'), STENCIL_TEXTURE_UNIT);
+    this.u_stencilOn = gl.getUniformLocation(this.program, 'u_stencilOn');
+  }
+
+  // 1 while a stencil is active. Uniform across the draw, so it costs no
+  // divergence; the sampler is read either way (docs/stencil.md).
+  public setStencilOn(on: boolean): void {
+    activateProgram(this.gl, this.program);
+    this.gl.uniform1f(this.u_stencilOn, on ? 1 : 0);
   }
 
   /**
@@ -100,10 +111,17 @@ export class DrawImageRenderer {
     varying vec2 v_texcoord;
     uniform sampler2D u_image;    // Color index texture
     uniform sampler2D u_palette;  // Palette texture
+    uniform sampler2D u_stencil;  // Frozen pixels, transparent where unprotected
+    uniform float u_stencilOn;
 
     void main() {
       // We flip Y coordinate (1.0 - v_texcoord.y) since WebGL texture coordinates are flipped
-      vec4 pixel = texture2D(u_image, vec2(v_texcoord.x, 1.0 - v_texcoord.y));
+      vec2 uv = vec2(v_texcoord.x, 1.0 - v_texcoord.y);
+
+      // Branchless so the per-pixel test cannot diverge at the stencil's edges.
+      vec4 stencilPixel = texture2D(u_stencil, uv);
+      float restore = (1.0 - float(isTransparent(stencilPixel))) * u_stencilOn;
+      vec4 pixel = mix(texture2D(u_image, uv), stencilPixel, restore);
 
       if (isTrueColor(pixel)) {
         // true-color pixel: the literal RGB color

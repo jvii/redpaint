@@ -8,6 +8,8 @@ import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { LineV } from '../../domain/LineV';
 import { LineH } from '../../domain/LineH';
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+import { stencil } from '../Stencil';
+import { clearStencilTexture, uploadStencilTexture } from '../util/stencilTexture';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
 import { createPaletteTexture, uploadPaletteTexture } from '../util/paletteTexture';
 import { GradientFillStyle } from '../../algorithm/gradientFill';
@@ -151,6 +153,24 @@ export class PaintingCanvasController implements CanvasController {
   render(): void {
     this.mainCanvasRenderer?.renderCanvas();
     this.renderZoomCanvas();
+  }
+
+  // Pushes the stencil raster to its texture and turns the shader's use of it
+  // on or off. The texture is per-context and the shader samples it every
+  // frame, so it is given a transparent texel when no stencil exists.
+  updateStencil(): void {
+    const gl = this.gl;
+    if (!gl) {
+      return;
+    }
+    const raster = stencil.active;
+    if (raster) {
+      uploadStencilTexture(gl, raster);
+    } else {
+      clearStencilTexture(gl);
+    }
+    this.mainCanvasRenderer?.setStencilOn(raster !== null);
+    this.render();
   }
 
   // Copying the canvas into the zoom view costs a full-canvas blit per draw

@@ -1,0 +1,59 @@
+import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
+
+// The stencil raster both canvas stacks sample to leave protected pixels
+// looking as they were (docs/stencil.md). Unit 3: 0, 1 and 2 are the color
+// index, the palette and the brush bitmap, and 7-9 belong to the pattern and
+// row-span textures.
+export const STENCIL_TEXTURE_UNIT = 3;
+
+// One per context, for the reason paletteTexture.ts keeps its own: texImage2D
+// writes to whatever is bound, not to a unit.
+const stencilTextures = new WeakMap<WebGLRenderingContext, WebGLTexture>();
+
+export function uploadStencilTexture(gl: WebGLRenderingContext, stencil: CanvasColorIndex): void {
+  const texture = stencilTextures.get(gl) ?? createStencilTexture(gl);
+  if (!texture) {
+    return;
+  }
+  gl.activeTexture(gl.TEXTURE0 + STENCIL_TEXTURE_UNIT);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    stencil.width,
+    stencil.height,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    stencil.indexArray
+  );
+}
+
+// A single transparent texel, so the sampler has something bound whenever no
+// stencil exists. Sampling an incomplete texture is undefined, and the shader
+// reads the stencil on every fragment whether or not one is active.
+export function clearStencilTexture(gl: WebGLRenderingContext): void {
+  const texture = stencilTextures.get(gl) ?? createStencilTexture(gl);
+  if (!texture) {
+    return;
+  }
+  gl.activeTexture(gl.TEXTURE0 + STENCIL_TEXTURE_UNIT);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
+}
+
+function createStencilTexture(gl: WebGLRenderingContext): WebGLTexture | null {
+  gl.activeTexture(gl.TEXTURE0 + STENCIL_TEXTURE_UNIT);
+  const texture = gl.createTexture();
+  if (!texture) {
+    return null;
+  }
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  stencilTextures.set(gl, texture);
+  return texture;
+}
