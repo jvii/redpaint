@@ -3,13 +3,8 @@ import { GadgetHint } from './GadgetHint';
 
 const FILL_STYLE = 'Fill Style settings';
 
-// DPaint's Fill Type dialog, which every gadget that fills can reach, and it is
-// Shift-F from all of them
 const FILL_STYLE_KEYS = ['F'];
 
-// Both halves of a shape gadget, with DPaint's pair of keys: the plain letter
-// picks the unfilled shape and the shifted one the filled shape. Passed the
-// letter rather than repeated four times, since the pattern is the point.
 const shapeHalves = (letter: string): { gesture: string; does: string; keys: string[] }[] => [
   { gesture: 'top half', does: 'Unfilled', keys: [letter] },
   { gesture: 'bottom half', does: 'Filled', keys: [letter.toUpperCase()] },
@@ -43,8 +38,6 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     rightClick: FILL_STYLE,
     rightClickKeys: FILL_STYLE_KEYS,
   },
-  // No key: DPaint gave Airbrush and Polygon none, and the letters left over
-  // are ones it spent elsewhere.
   airbrush: {
     name: 'Airbrush',
     use: 'Hold to keep spraying.',
@@ -74,7 +67,6 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   polygon: {
     name: 'Polygon',
     use: 'Click each corner. Right-click on the canvas, or click the first corner, to close.',
-    // Spelled out rather than shapeHalves(): there is no letter, see Airbrush.
     parts: [
       { gesture: 'top half', does: 'Unfilled' },
       { gesture: 'bottom half', does: 'Filled' },
@@ -86,21 +78,16 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     name: 'Brush Selector',
     keys: ['b'],
     use: 'Drag a box to pick that piece of the canvas up as the brush.',
-    // One gesture, two senses, as DPaint had it: which one depends on the
-    // brush in hand, so the label names the outcome rather than the branch.
     rightClick: 'Undo brush transformations, or recall the previous custom brush',
     rightClickKeys: ['B'],
   },
   text: {
     name: 'Text',
     use: 'Click where the text should start, then type. Return begins a new line, Escape finishes.',
-    // Not shapeHalves(): the plain letter is the filled text here, the shifted
-    // one the unfilled (see SHAPE_KEYS in GlobalHotkeyManager).
     parts: [
       { gesture: 'top half', does: 'Unfilled', keys: ['T'] },
       { gesture: 'bottom half', does: 'Filled', keys: ['t'] },
     ],
-    // Either half: the font is the same font whichever way it is drawn.
     rightClick: 'Font',
   },
   zoom: {
@@ -114,9 +101,6 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     use: 'Mirrors and repeats every stroke around a center point.',
     rightClick: 'Symmetry settings',
   },
-  // One idiom per platform, not the union: every chord works everywhere, but a
-  // Mac user has no use for Ctrl-Y nor a Windows user for the Command key. 'u'
-  // is DPaint's own and belongs to neither.
   undo: {
     name: 'Undo',
     keys: ['u', `${MOD_KEY}Z`],
@@ -127,23 +111,17 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
   clr: {
     name: 'Clear',
     keys: ['K'],
-    // No key for the right-click: a new page is this app's, not DPaint's,
-    // which had no New at all (its File menu begins at Load Picture).
     use: 'Covers the canvas with the background color.',
     rightClick: 'Clear all and start over.',
   },
 };
 
-// The ten preset brushes above the toolbox. One hint for the strip rather than
-// ten near-identical ones: what a preset does is its own picture, and the two
-// gestures are the same on every one of them.
 export const builtInBrushesHint: GadgetHint = {
   name: 'Built-in Brushes',
   use: 'Click a shape to paint with it. Four round, four square, two dithered.',
   rightClick: 'Resize, by dragging on the canvas',
 };
 
-// The Color Indicator below the toolbox
 export const colorIndicatorHint: GadgetHint = {
   name: 'Color Indicator',
   keys: [','],

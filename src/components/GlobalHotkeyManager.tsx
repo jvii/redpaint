@@ -420,9 +420,6 @@ function useBrushTransformHotkeys(): void {
         actions.brush.doubleBrushVertical();
         break;
       case 'B':
-        // DPaint's UserBr, the same chain the Brush Selector's right-click
-        // walks: from a built-in it recalls the custom brush, on a custom one
-        // it undoes the transforms.
         actions.brush.restoreBrush();
         break;
       case 'Z':

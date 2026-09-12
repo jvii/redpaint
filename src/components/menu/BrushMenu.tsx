@@ -405,10 +405,6 @@ export function BrushMenu({ onOpenFile }: { onOpenFile: () => void }): JSX.Eleme
                 ? 'Cannot restore a built-in brush'
                 : 'Restore the brush as it was before these transforms'
             }
-            // No shortcut cap: `B` does this and more — from a built-in it
-            // recalls Previous, which this gadget refuses — so printing the key
-            // here would overstate what the gadget does. The Brush Selector's
-            // right-click is the gesture for the pair (docs/brush-slots.md).
             disabled={usingBuiltInBrush || !state.brush.hasOriginalBrush}
             onClick={instant(actions.brush.restoreOriginalBrush)}
           />
