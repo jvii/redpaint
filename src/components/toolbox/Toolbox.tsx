@@ -113,6 +113,7 @@ export function Toolbox(): JSX.Element {
         hint={toolboxHints.brushSelect}
         isSelected={state.toolbox.activeToolId === 'brushSelectorTool'}
         onClick={(): void => actions.toolbox.toggleBrushSelectionMode()}
+        onRightClick={(): void => actions.brush.restoreBrush()}
       />
       <div className="toolbox-button-divider"></div>
       <ToolboxDualToggleButton

@@ -28,6 +28,13 @@ original. There was no unsaved-brush storage feature. What it had instead:
   re-activates the custom brush after you've been on a built-in. Because the
   untransformed original was kept internally, the DPaint II manual (§4.16)
   also documents it as the way to get the pre-Halve/pre-transform brush back.
+  **Also the brush-selector gadget's right-click** (`CTRPAN.C:240` case 10, and
+  DP2 4-35: "right-click the brush selector or press Shift-B"), which is the
+  same call — so DPaint reached one command three ways, and III added a fourth
+  by putting Restore in the Brush menu. Its own wording shows the two senses
+  welded together: right-clicking "would restore you to the previous custom
+  brush" after modifications, and "this feature is *also* useful if you create
+  a custom brush and then select a built-in one" (DP3 4-60).
 - **The spare page** (`j` swaps two full screens): the actual stash idiom.
   Artists stamped brushes onto the spare screen as a scratch board and
   re-grabbed them with the brush selector. Slots existed socially, not as a
@@ -162,6 +169,19 @@ row already.
   on a built-in.
 - **Phase B — slots.** ✅ Done. Model + actions + thumbnail strip in the
   menu, plus the automatic Previous slot (addendum above).
+- **Phase B addendum 2 — the selector's right-click.** ✅ Done. DPaint's
+  `UserBr` gesture, restored as the chain Phase A removed but bound to the
+  gadget instead of to Restore: on a built-in it recalls Previous, on a custom
+  brush it undoes the transforms (`brush.restoreBrush`). The objection to the
+  chain was that a control **labelled** "Restore" reactivating a brush is
+  lying; an unlabelled right-click promises nothing but "give me my brush
+  back", which is what DPaint called it. Restore and Previous each keep their
+  single meaning, and the gesture is the shortcut across both.
+
+  **`B` walks the same chain**, as DPaint's did — it is the other way into
+  `UserBr`. The menu's Restore gadget therefore stopped printing `B` as its
+  shortcut: the key does that and more, and a cap on a gadget that refuses
+  built-ins would overstate it.
 - **Phase C (maybe) — persistence** once slots prove out.
 
 ## A new picture empties them

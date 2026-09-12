@@ -176,6 +176,23 @@ export const restoreOriginalBrush = (context: Context): void => {
   context.actions.brush.setMode(context.state.brush.mode);
 };
 
+// Right-clicking the brush selector gadget, DPaint's UserBr (CTRPAN.C:240 case
+// 10, DP2 4-35). One gesture for both senses the original welded together, in
+// the order DPaint's own manual lists them: on a built-in it brings the custom
+// brush back, on a custom one it undoes the transforms.
+//
+// The chain lives here rather than on the menu's Restore, which was tried and
+// removed (docs/brush-slots.md, Phase A): a gadget labelled "Restore" that
+// switches brushes is lying, where an unlabelled right-click promises nothing
+// but "give me my brush back".
+export const restoreBrush = (context: Context): void => {
+  if (context.state.brush.usingBuiltInBrush) {
+    context.actions.brush.recallPreviousBrush();
+    return;
+  }
+  context.actions.brush.restoreOriginalBrush();
+};
+
 // DPaint's Brush > Change Color (docs/brush-palette.md). Recolors rather than
 // reshapes, but goes through transformBrush all the same: it banks the
 // pre-change brush for Restore, which is what these need too.

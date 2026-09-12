@@ -86,6 +86,10 @@ export const toolboxHints: { [key: string]: GadgetHint } = {
     name: 'Brush Selector',
     keys: ['b'],
     use: 'Drag a box to pick that piece of the canvas up as the brush.',
+    // One gesture, two senses, as DPaint had it: which one depends on the
+    // brush in hand, so the label names the outcome rather than the branch.
+    rightClick: 'Undo brush transformations, or recall the previous custom brush',
+    rightClickKeys: ['B'],
   },
   text: {
     name: 'Text',

@@ -25,6 +25,11 @@ or a different program.
 - ◐ **Brush handle** in any corner *or* an arbitrary offset. Ours is II's
   centre/corner toggle (docs/brush-handle.md); III generalises it.
 - ○ **Edge** — add or remove a one-pixel brush outline.
+- ✅ **Restore joins the Brush menu** (III's reference contents, p.195: Load,
+  Save, Restore, Size, Flip, Edge, Rotate, Change Color, Bend, Handle — Delete
+  gone, Restore and Edge added). In II the command exists but only as the
+  brush-selector right-click and `B`. We have the menu item; see
+  docs/brush-slots.md for why ours means only half of what DPaint's does.
 - ○ **Stencils affect pickup**: the brush selector takes only what the stencil
   has not locked.
 - ○ **AutoTransp** — if a selection's four corners share a color, that is the

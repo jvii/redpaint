@@ -78,7 +78,7 @@ still grow: `g`/`G` grid, `j` spare page, `D` freehand with a one-pixel brush.
 | `z` | rotate 90° |
 | `h` / `H` | halve / double |
 | `X` / `Y` | double horizontally / vertically |
-| `B` | restore the last custom brush |
+| `B` | get the custom brush back: on a built-in, recall Previous; on a custom brush, undo its transforms |
 | `Z` | Stretch (arms a drag) |
 | `S` | Shear (arms a drag) |
 | `Escape` | cancel an armed drag transform |
