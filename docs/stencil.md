@@ -349,10 +349,14 @@ layout decision to make before the drawer, not after.
    the moment a requester is involved — a borrowed grid, or a requester's own —
    since neither is choosing paint colors.
 
-   The lock marks stay in the requester's own grid: showing them in the toolbox
-   copy would mean turning its column dividers on for as long as the requester
-   is up (the mark lives in the gap, and that grid is otherwise gapless), and
-   the requester is on screen showing them anyway.
+   The lock marks stay in the requester's own grid, where each swatch keeps a
+   gutter to its right and a locked color puts a black half circle into it, as
+   DPaint and PyDPainter both mark them (PyDPainter draws a stepped tab, and
+   gives the gutter a permanent quarter of every column - `menureq.py`'s
+   `PPstencil`). The grid there is a fixed box the swatches divide, so a
+   256-color palette shrinks its rows to fit instead of growing the requester
+   past the screen; the marks shrink with the rows, down to a few pixels at that
+   depth.
 
 Load / Save / Delete of stencil *files* is DPaint II behaviour we can skip: it
 existed because a 1988 machine could not hold much, and a stencil today is

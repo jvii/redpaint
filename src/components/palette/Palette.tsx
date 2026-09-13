@@ -10,8 +10,8 @@ type Props = {
   // selectedColorId instead of the foreground color.
   selectedColorId?: string;
   onSelectColor?: (colorId: string) => void;
-  // The Stencil requester's locked colors: each gets a mark in the column gap
-  // on its right, the range bracket's mirror. Needs columnDividers for the gap.
+  // The Stencil requester's locked colors: each gets a half circle in the
+  // gutter beside its swatch (Palette.css), which asking for this turns on.
   lockedColorIds?: readonly string[];
   // The currently active color-cycling/gradient range (palette editor only):
   // draws DPaint's bracket marker over its member swatches.
@@ -33,7 +33,11 @@ type Props = {
 // widen to 8 for the deep palettes: Personal Paint style (256 = 8x32). The same
 // grid renders in the toolbox and the palette editor so a swatch's position
 // never shifts between the two.
-function columnCountFor(colorCount: number): number {
+export function paletteRowCount(colorCount: number): number {
+  return Math.ceil(colorCount / paletteColumnCount(colorCount));
+}
+
+export function paletteColumnCount(colorCount: number): number {
   if (colorCount <= 8) return 1;
   if (colorCount <= 16) return 2;
   if (colorCount <= 64) return 4;
@@ -61,7 +65,7 @@ function Palette({
   const actions = useActions();
 
   const colorCount = state.palette.paletteArray.length;
-  const columns = columnCountFor(colorCount);
+  const columns = paletteColumnCount(colorCount);
   const rows = Math.ceil(colorCount / columns);
 
   // Which requester currently owns this grid's clicks, replacing or narrowing
@@ -153,7 +157,10 @@ function Palette({
         // the one exception to that dialog blocking the whole app, rather than
         // punching a hole in the catcher itself and re-blocking every other
         // surface (canvas, menubar, toolbox, ...) by hand.
-        (borrowedBy === 'fillStyle' ? ' palette--above-modal' : '')
+        (borrowedBy === 'fillStyle' ? ' palette--above-modal' : '') +
+        // the lock marks need their gutter (Palette.css); only the requester
+        // that shows them asks for it
+        (lockedColorIds ? ' palette--lock-gutters' : '')
       }
       style={gridStyle}
     >

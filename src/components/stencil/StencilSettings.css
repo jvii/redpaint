@@ -6,6 +6,9 @@
   color: black;
   display: flex;
   align-items: flex-start;
+  /* the palette against the body's right inset, where the footer's last button
+     also sits, so the two line up */
+  justify-content: space-between;
   gap: 26px;
   /* Tighter than the 28px the other requesters use: the palette is 8 rows of
      35px and the pair only clears a short window's modal cap at this. */
@@ -14,10 +17,13 @@
 }
 
 .stencil-settings__actions {
+  /* dropped to where the swatches start, clearing the "Locked:" label beside
+     them: the label's own line box plus the gap under it */
+  padding-top: calc(16px * 1.5 + 8px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 24px;
 }
 
 .stencil-settings__locked {
@@ -32,19 +38,19 @@
   line-height: 1.5;
 }
 
-/* Shrink-wrapped to the capped column width the way the palette editor's grid
-   is, so the grid's black ground frames the swatches rather than sitting beside
-   them. The right padding is the last column's share of the gutter every other
-   column gets from the grid's own gap: without it a lock mark on that column
-   has nowhere to paint. */
+/* A fixed box the swatches divide between them, however many there are: a
+   256-color palette shrinks its rows to fit rather than growing the requester
+   past the screen, which is what DPaint and PyDPainter do with the space too.
+   No black ground here, unlike the palette editor's grid: the lock marks are
+   black tabs in the gutter beside each swatch (Palette.css) and need the
+   requester's own light ground to read against. The gutters separate the
+   columns on their own, so there are no dividers to draw either. */
 .stencil-settings__palette {
   display: flex;
   flex: none;
-  width: fit-content;
-  max-width: 151px;
-  padding-right: 3px;
-  background-color: black;
-  border: 2px solid black;
+  /* Both dimensions come from the component: the columns keep their width
+     whatever the palette's depth, and the rows want the palette editor's swatch
+     height and settle for less when there are too many to fit the screen. */
 }
 
 .stencil-settings__note {

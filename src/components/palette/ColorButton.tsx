@@ -18,8 +18,8 @@ interface Props {
   isRangeMember?: boolean;
   isRangeStart?: boolean;
   isRangeEnd?: boolean;
-  // The Stencil requester's lock mark: the range bracket's mirror, filling the
-  // column gap on the swatch's right.
+  // The Stencil requester's lock mark: a half circle in the gutter the grid
+  // keeps to the right of every swatch (Palette.css).
   isLocked?: boolean;
   // Toolbox usage: fill the (non-square) grid cell instead of staying a
   // fixed square sized off the width.
@@ -58,14 +58,6 @@ export function ColorButton({
     // exactly the column gap to its left
     buttonStyle.boxShadow = `-${MARK_WIDTH}px 0 0 0 white`;
   }
-  if (isLocked) {
-    // the same trick on the other side. Written after the range branch so a
-    // swatch that is both keeps both marks.
-    buttonStyle.boxShadow = [buttonStyle.boxShadow, `${MARK_WIDTH}px 0 0 0 white`]
-      .filter(Boolean)
-      .join(', ');
-  }
-
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     onRightClick(event);
     event.preventDefault();
@@ -73,7 +65,11 @@ export function ColorButton({
 
   return (
     <button
-      className={'ColorButton' + (fillCell ? ' ColorButton--fill' : '')}
+      className={
+        'ColorButton' +
+        (fillCell ? ' ColorButton--fill' : '') +
+        (isLocked ? ' ColorButton--locked' : '')
+      }
       onClick={onClick}
       onContextMenu={handleRightClick}
       style={buttonStyle}

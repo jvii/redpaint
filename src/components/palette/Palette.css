@@ -83,3 +83,44 @@
 .ColorButton__range-end-cap {
   bottom: 0;
 }
+
+/* The Stencil requester's lock mark, following DPaint and PyDPainter: every
+   swatch gives up part of its cell, permanently, and a locked color puts a mark
+   into that gutter. A shape beside the swatch rather than ink on it, so it
+   reads against any color and needs no second color of its own; the gutter is
+   there whether or not anything is locked, so nothing shifts as colors are
+   ticked. */
+.palette--lock-gutters {
+  /* the tabs are black, so the gutter they stand in cannot be: this grid drops
+     the black ground the others use and sits on the requester's own */
+  background-color: transparent;
+}
+
+/* No frame: this grid sits on the requester's own ground, and it fills the box
+   the requester sizes for it (StencilSettings.css). */
+.palette--lock-gutters.palette--fill {
+  border: none;
+}
+
+.palette--lock-gutters .ColorButton {
+  width: 65%;
+}
+
+/* The lock mark itself: a half circle bulging out of the swatch's right edge.
+   Sized off the row height with a 1:2 box, so it stays a circle rather than
+   stretching with the cell, at any palette depth. */
+.ColorButton--locked::after {
+  content: '';
+  position: absolute;
+  left: 100%;
+  top: 15%;
+  height: 70%;
+  aspect-ratio: 1 / 2;
+  /* a true half disc: the corner radii are the full width horizontally and half
+     the height vertically, which in a 1:2 box are the same length. Equal
+     percentages would leave a straight run down the middle of the right edge,
+     reading as a rectangle with a rounded end. */
+  border-radius: 0 100% 100% 0 / 0 50% 50% 0;
+  background-color: black;
+  pointer-events: none;
+}
