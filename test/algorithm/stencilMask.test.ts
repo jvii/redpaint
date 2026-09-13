@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  refreshedStencil,
   reversedStencil,
   stencilFromColors,
   stencilFromPainted,
@@ -112,5 +113,22 @@ describe('reversedStencil', () => {
     const canvas = indexed(1, 2, 3, 2);
     const reversed = reversedStencil(stencilFromColors(canvas, locked(2)), canvas);
     expect(colorNumbers(reversed)).toEqual([1, 1, 3, 1]); // unprotected zeroed to 1
+  });
+});
+
+describe('refreshedStencil', () => {
+  it('keeps the mask and takes the pixels from the canvas as it is now', () => {
+    const original = indexed(1, 2, 3, 2);
+    const stencil = stencilFromColors(original, locked(2));
+    // painted through while the stencil was suspended
+    const painted = indexed(9, 7, 9, 7);
+    const refreshed = refreshedStencil(stencil, painted);
+    expect(protectedPixels(refreshed)).toEqual(protectedPixels(stencil));
+    expect(colorNumbers(refreshed)).toEqual([1, 7, 1, 7]); // unprotected zeroed to 1
+  });
+
+  it('protects nothing when the stencil protected nothing', () => {
+    const stencil = stencilFromColors(indexed(1, 2), locked());
+    expect(protectedPixels(refreshedStencil(stencil, indexed(9, 9)))).toEqual([false, false]);
   });
 });

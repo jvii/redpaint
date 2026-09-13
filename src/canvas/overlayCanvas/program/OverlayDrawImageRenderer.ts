@@ -2,6 +2,13 @@ import { CustomBrush } from '../../../brush/CustomBrush';
 import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftPoint } from '../../util/util';
 import { Point } from '../../../types';
 import { createProgram, activateProgram } from '../../util/webglUtil';
+import { stencil } from '../../Stencil';
+import { STENCIL_TEXTURE_UNIT } from '../../util/stencilTexture';
+import {
+  STENCIL_DISCARD_LIB,
+  STENCIL_UV_ASSIGN,
+  STENCIL_UV_VERTEX_LIB,
+} from '../../util/stencilShaderLib';
 import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 
 type GLBuffers = {
@@ -37,6 +44,8 @@ export class OverlayDrawImageRenderer {
     this.uniformLocations = {
       u_image: gl.getUniformLocation(this.program, 'u_image')!,
       u_palette: gl.getUniformLocation(this.program, 'u_palette')!,
+      u_stencil: gl.getUniformLocation(this.program, 'u_stencil')!,
+      u_stencilOn: gl.getUniformLocation(this.program, 'u_stencilOn')!,
     };
   }
 
@@ -90,6 +99,8 @@ export class OverlayDrawImageRenderer {
     // Set uniforms using cached locations
     gl.uniform1i(this.uniformLocations.u_palette, 1);
     gl.uniform1i(this.uniformLocations.u_image, 2);
+    gl.uniform1i(this.uniformLocations.u_stencil, STENCIL_TEXTURE_UNIT);
+    gl.uniform1f(this.uniformLocations.u_stencilOn, stencil.active ? 1 : 0);
 
     // Ensure we have enough capacity
     this.ensureCapacity(pointsCount);
@@ -170,9 +181,11 @@ export class OverlayDrawImageRenderer {
     attribute vec2 a_texCoord;
 
     varying vec2 v_texCoord;
+    ${STENCIL_UV_VERTEX_LIB}
 
     void main () {
       gl_Position = a_position;
+      ${STENCIL_UV_ASSIGN}
 
       // Pass the texture coordinate to the fragment shader.
       v_texCoord = a_texCoord;
@@ -186,8 +199,12 @@ export class OverlayDrawImageRenderer {
     uniform sampler2D u_image;
     uniform sampler2D u_palette;
     varying vec2 v_texCoord;
+    ${STENCIL_DISCARD_LIB}
 
     void main () {
+      if (stencilBlocks()) {
+        discard;
+      }
       vec4 pixel = texture2D(u_image, v_texCoord);
 
       if (isTransparent(pixel)) {

@@ -151,6 +151,11 @@ export function Menubar(): JSX.Element {
           and out with the cursor, sits after it where it can't shove the
           Color Fill Box sideways as it appears. */}
       <div className="menubar__indicators">
+        {state.stencil.enabled && (
+          <div className="menubar__stencil" title="A stencil is active">
+            S
+          </div>
+        )}
         {state.fillStyle.effectiveMode !== 'solid' && <ColorFillBox />}
         {floodFillHoverSwatchColor && (
           <div className="menubar__floodfill-indicator">

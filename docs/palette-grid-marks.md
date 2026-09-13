@@ -36,6 +36,16 @@ how each is actually built.
   range mark wins outright — the divider does not also show through or
   alongside it.
 
+## Lock mark
+
+- The Stencil requester only. Every locked color gets a white mark on its
+  **right** edge — the Range bracket's mirror, same thickness, filling the
+  column gap on that side.
+- The rightmost column has no gap of its own, so the grid's container adds a
+  trailing one: without it a lock mark on that column has nowhere to paint.
+- A swatch can carry a range mark and a lock mark at once; they are on
+  opposite edges and both show.
+
 ## Selection ring
 
 - The currently-selected color gets a ring around all four sides.

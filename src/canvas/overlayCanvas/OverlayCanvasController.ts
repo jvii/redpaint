@@ -6,6 +6,8 @@ import { ZoomCanvasRenderer } from '../ZoomCanvasRenderer';
 import { shiftPoint } from '../util/util';
 import { OverlayMainCanvasRenderer } from './OverlayMainCanvasRenderer';
 import { createPaletteTexture, uploadPaletteTexture } from '../util/paletteTexture';
+import { stencil } from '../Stencil';
+import { clearStencilTexture, uploadStencilTexture } from '../util/stencilTexture';
 import { GradientFillStyle } from '../../algorithm/gradientFill';
 import { FillShape } from '../../algorithm/fillShape';
 import { BrushColorIndex } from '../../domain/BrushColorIndex';
@@ -199,6 +201,21 @@ class OverlayCanvasController implements CanvasController {
     }
 
     uploadPaletteTexture(gl);
+  }
+
+  // Its own copy: the stencil texture is per-context, and the overlay's
+  // renderers read it to drop previews over protected pixels.
+  updateStencil(): void {
+    const gl = this.gl;
+    if (!gl) {
+      return;
+    }
+    const raster = stencil.active;
+    if (raster) {
+      uploadStencilTexture(gl, raster);
+    } else {
+      clearStencilTexture(gl);
+    }
   }
 
   private initPaletteTexture(): void {

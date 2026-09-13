@@ -1,0 +1,53 @@
+/* Padding here rather than on .modal__body, which every requester supplies its
+   own. Palette on the right, as DPaint had it. */
+.stencil-settings__container {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  color: black;
+  display: flex;
+  align-items: flex-start;
+  gap: 26px;
+  /* Tighter than the 28px the other requesters use: the palette is 8 rows of
+     35px and the pair only clears a short window's modal cap at this. */
+  padding: 16px 30px;
+  text-align: left;
+}
+
+.stencil-settings__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.stencil-settings__locked {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  gap: 8px;
+}
+
+.stencil-settings__label {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Shrink-wrapped to the capped column width the way the palette editor's grid
+   is, so the grid's black ground frames the swatches rather than sitting beside
+   them. The right padding is the last column's share of the gutter every other
+   column gets from the grid's own gap: without it a lock mark on that column
+   has nowhere to paint. */
+.stencil-settings__palette {
+  display: flex;
+  flex: none;
+  width: fit-content;
+  max-width: 151px;
+  padding-right: 3px;
+  background-color: black;
+  border: 2px solid black;
+}
+
+.stencil-settings__note {
+  margin: 0;
+  max-width: 24ch;
+}

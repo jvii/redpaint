@@ -42,6 +42,17 @@ export function stencilFromPainted(
   );
 }
 
+// The same protected pixels, taken from the picture as it is now. Turning a
+// stencil back on after painting through it has to do this: the mask says which
+// coordinates are protected, but the pixels beside it are the ones that will be
+// put back, and those went stale the moment painting was allowed through.
+export function refreshedStencil(
+  stencil: CanvasColorIndex,
+  canvas: CanvasColorIndex
+): CanvasColorIndex {
+  return stencilFrom(canvas, (_source, i) => stencil.indexArray[i + 3] !== ALPHA_TRANSPARENT);
+}
+
 // Swaps protected for unprotected, retaking the pixels that were dropped from
 // the canvas the stencil was made against. The canvas has to be passed back in
 // because a stencil does not keep what it did not protect.

@@ -338,6 +338,7 @@ export const newPicture = (context: Context): void => {
   // Cut from the outgoing picture's pixels, like the brushes above.
   stencil.free();
   paintingCanvasController.updateStencil();
+  overlayCanvasController.updateStencil();
 
   // Palette next: the GL textures index into it, and the snapshot taken below
   // records whichever palette is current.

@@ -11,7 +11,7 @@ import { BrushSaveFormat } from '../../components/menu/brushSaveFormats';
 export const UNTITLED_DOCUMENT = 'Untitled';
 
 // The menu's drawers (Menu.tsx): mutually exclusive, one panel each.
-export type Drawer = 'picture' | 'brush' | 'prefs';
+export type Drawer = 'picture' | 'brush' | 'effects' | 'prefs';
 
 export type State = {
   pasteBufferImageObjectURL: string;

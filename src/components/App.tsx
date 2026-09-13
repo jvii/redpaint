@@ -12,6 +12,7 @@ import { BuiltInBrushes } from './toolbox/BuiltInBrushes';
 import { GlobalHotKeyManager } from './GlobalHotkeyManager';
 import { DialogManager } from './dialog/DialogManager';
 import { PaletteEditor } from './paletteEditor/PaletteEditor';
+import { StencilSettings } from './stencil/StencilSettings';
 import { ScreenFormatDialog } from './screenFormat/ScreenFormatDialog';
 import { ImageLoadDialog } from './imageLoad/ImageLoadDialog';
 import { CanvasSizeDialog } from './canvasSize/CanvasSizeDialog';
@@ -62,6 +63,7 @@ function App(): JSX.Element {
         </div>
       </div>
       <PaletteEditor></PaletteEditor>
+      <StencilSettings />
       <ScreenFormatDialog></ScreenFormatDialog>
       <ImageLoadDialog></ImageLoadDialog>
       <CanvasSizeDialog></CanvasSizeDialog>

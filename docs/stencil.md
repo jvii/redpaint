@@ -153,10 +153,33 @@ That is nothing in absolute terms, and it matters here only because
 the bottleneck dirty-rect rendering is meant to fix — so anything added is
 multiplied by stamps per second.
 
-**If it measures badly, compile two variants** of the same source behind a
-`#define STENCIL` and bind by whether a stencil exists: no sampler, no uniform,
-no branch in the common case, at the price of one more `createProgram` at init.
-Start with the single program and measure with `__redpaintBench` first.
+**Measured, and it does not.** `__redpaintBench(300, 100, 9)` — 300 stamps of a
+100x100 brush, which is the full-canvas re-render the main shader sits on:
+
+| build | min | median |
+|-------|-----|--------|
+| before any stencil work | 93.1 ms | 100.0 ms |
+| main shader sampling the stencil | 91.0 ms | 99.6 ms |
+| main and both overlay shaders sampling it | 96.8 ms | 99.8 ms |
+
+`__redpaintBenchOverlay(400, 100, 15)` for the preview path, which runs per
+pointer move rather than per stamp:
+
+| build | min | ms/preview |
+|-------|-----|------------|
+| overlay shaders without the stencil | 9.6 ms | 0.024 |
+| overlay shaders sampling it | 8.6 ms | 0.021 |
+
+Medians land within half a millisecond across every build, and the sampling
+ones come out *faster* on the mins — the signature of noise, not of a cost.
+Read the mins: the overlay's medians are bimodal (~12 ms and ~38 ms), which is
+the read-back sync the harness uses to flush the GL queue, not the shader.
+
+So the two-variant split is **not worth building**. If a later change makes
+these shaders hotter, it is still available: compile the same source twice
+behind a `#define STENCIL` and bind by whether a stencil exists — no sampler,
+no uniform, no branch in the common case, for one more `createProgram` at
+init.
 
 ### Commit: one GPU pass before the undo snapshot
 
@@ -281,8 +304,12 @@ layout decision to make before the drawer, not after.
 2. **Commit.** The repair pass before the undo read, so a saved file and the
    undo history agree with the screen. Together with (1) this is a working
    feature reachable only from the keyboard.
-3. **The Effects drawer and the requester.** The fourth drawer, then Make,
-   Remake, Reverse, On/Off, Free inside it, the `S` indicator, and `-`.
+3. **The Effects drawer and the requester.** ✅ Done. The fourth drawer
+   (`EffectsMenu.tsx`, the Workbench balloon for its tab), Make / Remake /
+   Reverse / On / Free inside it, the requester (`StencilSettings.tsx`, the
+   palette grid with Clear and Invert), the `S` in the menubar, and `-`. The
+   reactive mirror is `overmind/stencil`; the raster stays in `canvas/Stencil`.
+   Lock FG waits on Fix Background, which is what makes it mean anything.
 4. **Fix Background**, which is a separate item on the parity list but shares
    the frozen-copy machinery entirely: the same class holding a different
    raster, with CLR consulting it. **Lock FG** then falls out, and only then —

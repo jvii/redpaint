@@ -261,3 +261,14 @@
     transform: scale(1);
   }
 }
+
+/* DPaint's S, shown while a stencil is active (docs/stencil.md). Joins the
+   transient indicator cluster: it is state the picture carries, and the letter
+   is the whole indicator, as the original had it. */
+.menubar__stencil {
+  font-family: 'Press Start 2P';
+  -webkit-font-smoothing: none;
+  font-size: 16px;
+  color: var(--wb-orange);
+  align-self: center;
+}

@@ -2,6 +2,7 @@ import { CanvasColorIndex } from '../domain/CanvasColorIndex';
 import {
   LockedColors,
   reversedStencil,
+  refreshedStencil,
   stencilFromColors,
   stencilFromPainted,
 } from '../algorithm/stencilMask';
@@ -62,7 +63,12 @@ class Stencil {
     this.lockedColors = this.lockedColors.map((locked) => !locked);
   }
 
-  setEnabled(enabled: boolean): void {
+  // Turning it back on retakes the protected pixels from the picture as it is
+  // now, keeping the mask: anything painted while it was off stays painted.
+  setEnabled(enabled: boolean, canvas: CanvasColorIndex | null): void {
+    if (enabled && this.raster && canvas) {
+      this.raster = refreshedStencil(this.raster, canvas);
+    }
     this.on = enabled;
   }
 

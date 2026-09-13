@@ -1,10 +1,15 @@
 import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 
 // The stencil raster both canvas stacks sample to leave protected pixels
-// looking as they were (docs/stencil.md). Unit 3: 0, 1 and 2 are the color
-// index, the palette and the brush bitmap, and 7-9 belong to the pattern and
-// row-span textures.
-export const STENCIL_TEXTURE_UNIT = 3;
+// looking as they were (docs/stencil.md).
+//
+// Unit 4, and it must stay clear of every other unit in the overlay context in
+// particular: 0, 1 and 2 are the color index, the palette and the brush bitmap,
+// 3 is OverlaySelectionIndicatorRenderer's copy of the main canvas, and 7-9 are
+// the pattern and row-span textures. A unit shared with any of them is bound to
+// whatever drew last, which shows up as the preview being masked by the wrong
+// texture from the second stroke on.
+export const STENCIL_TEXTURE_UNIT = 4;
 
 // One per context, for the reason paletteTexture.ts keeps its own: texImage2D
 // writes to whatever is bound, not to a unit.

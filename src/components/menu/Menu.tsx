@@ -9,6 +9,7 @@ import { icons, PixelIcon } from './pixelIcons';
 import { ScreenStatus } from './ScreenStatus';
 import { BrushMenu } from './BrushMenu';
 import { PictureMenu } from './PictureMenu';
+import { EffectsMenu } from './EffectsMenu';
 import { PreferencesMenu } from './PreferencesMenu';
 import { isIlbmHeader } from '../../fileformat/ilbm';
 import { isGifHeader } from '../../fileformat/gif';
@@ -148,6 +149,13 @@ export function Menu(): JSX.Element {
                     onClick={(): void => actions.app.toggleDrawer('brush')}
                   />
                   <Gadget
+                    icon={<PixelIcon map={icons.effects} scale={2} />}
+                    label="Effects"
+                    title="Open Effects menu"
+                    on={state.app.openDrawer === 'effects'}
+                    onClick={(): void => actions.app.toggleDrawer('effects')}
+                  />
+                  <Gadget
                     icon={<PixelIcon map={icons.prefs} scale={2} />}
                     label="Prefs"
                     title="Open Prefs menu"
@@ -187,6 +195,7 @@ export function Menu(): JSX.Element {
               </div>
               {state.app.openDrawer === 'picture' && <PictureMenu onOpenFile={imageOpener.open} />}
               {state.app.openDrawer === 'brush' && <BrushMenu onOpenFile={brushOpener.open} />}
+              {state.app.openDrawer === 'effects' && <EffectsMenu />}
               {state.app.openDrawer === 'prefs' && <PreferencesMenu />}
             </div>
             <div className="menu__close">

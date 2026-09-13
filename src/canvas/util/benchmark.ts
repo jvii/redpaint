@@ -1,3 +1,4 @@
+import { overlayCanvasController } from '../overlayCanvas/OverlayCanvasController';
 import { paintingCanvasController } from '../paintingCanvas/PaintingCanvasController';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { Point } from '../../types';
@@ -86,10 +87,58 @@ function showResultOverlay(text: string): void {
   document.body.appendChild(overlay);
 }
 
+// The overlay's own cost, measured the way the preview is actually driven: one
+// clear plus one stamp per pointer move, not a batch. Both of its renderers
+// sample the stencil (docs/stencil.md), so this is what that has to be weighed
+// against.
+function benchmarkOverlayPreview(moves = 300, brushSize = 100, reps = 9): void {
+  const { width, height } = paintingCanvasController.mainCanvas;
+  if (width < brushSize || height < brushSize) {
+    alert(`canvas smaller than ${brushSize}x${brushSize}, use a smaller brush size`);
+    return;
+  }
+  const brush = CustomBrush.fromCanvasArea({ x: 0, y: 0 }, brushSize, brushSize);
+  const points: Point[] = [];
+  for (let i = 0; i < moves; i++) {
+    points.push({
+      x: (i * 7) % Math.max(1, width - brushSize),
+      y: (i * 13) % Math.max(1, height - brushSize),
+    });
+  }
+
+  const runOnce = (count: number): number => {
+    const start = performance.now();
+    for (let i = 0; i < count; i++) {
+      overlayCanvasController.clear();
+      overlayCanvasController.beginFrame();
+      overlayCanvasController.drawImage([points[i % points.length]], brush);
+    }
+    // a read forces the GL queue to finish, so the GPU work is in the number
+    paintingCanvasController.getCanvasColorIndex();
+    return performance.now() - start;
+  };
+
+  runOnce(50);
+  const times: number[] = [];
+  for (let r = 0; r < reps; r++) {
+    times.push(runOnce(moves));
+  }
+  times.sort((a, b): number => a - b);
+  showResultOverlay(
+    `${moves} overlay previews of ${brushSize}x${brushSize} brush, ${reps} reps:\n` +
+      `min ${times[0].toFixed(1)} ms (${(times[0] / moves).toFixed(3)} ms/preview)\n` +
+      `median ${times[Math.floor(times.length / 2)].toFixed(1)} ms\n` +
+      `all: ${times.map((t) => t.toFixed(0)).join(', ')} ms`
+  );
+  overlayCanvasController.clear();
+}
+
 declare global {
   interface Window {
     __redpaintBench: typeof benchmarkBrushStamps;
+    __redpaintBenchOverlay: typeof benchmarkOverlayPreview;
   }
 }
 
 window.__redpaintBench = benchmarkBrushStamps;
+window.__redpaintBenchOverlay = benchmarkOverlayPreview;

@@ -97,7 +97,12 @@ function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
   if (state.dialog.activeDialog !== '') {
     return true;
   }
-  if (state.paletteEditor.isOpen || state.symmetry.settingsOpen || state.font.settingsOpen) {
+  if (
+    state.paletteEditor.isOpen ||
+    state.symmetry.settingsOpen ||
+    state.font.settingsOpen ||
+    state.stencil.requesterOpen
+  ) {
     return true;
   }
   // An armed crop owns the keyboard: the overlay takes Enter and Escape.
@@ -421,6 +426,9 @@ function useBrushTransformHotkeys(): void {
         break;
       case 'B':
         actions.brush.restoreBrush();
+        break;
+      case '-':
+        actions.stencil.toggleEnabled();
         break;
       case 'Z':
         actions.toolbox.toggleBrushTransformMode('brushStretchTool');

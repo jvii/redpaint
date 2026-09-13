@@ -51,6 +51,7 @@ convention, since that is what you would grep for.
 | `Escape` | leave the Text tool, back to Freehand | manual ("Press ESC ... to exit Text mode") |
 | `m` | Magnify | manual |
 | `/` | Symmetry | manual |
+| `-` | Stencil on/off | manual ("Tilde (-) Schablone ein/aus") |
 | `K` | Clear page | manual |
 | `,` | pick a foreground color off the canvas | manual ("Select Color cursor") |
 | `p` | Palette editor | manual ("Palette Window") — opens only, see below |

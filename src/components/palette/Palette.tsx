@@ -10,6 +10,9 @@ type Props = {
   // selectedColorId instead of the foreground color.
   selectedColorId?: string;
   onSelectColor?: (colorId: string) => void;
+  // The Stencil requester's locked colors: each gets a mark in the column gap
+  // on its right, the range bracket's mirror. Needs columnDividers for the gap.
+  lockedColorIds?: readonly string[];
   // The currently active color-cycling/gradient range (palette editor only):
   // draws DPaint's bracket marker over its member swatches.
   activeRange?: { start: string; end: string } | null;
@@ -49,12 +52,13 @@ const EDITOR_MAX_CELL_PX = 35;
 function Palette({
   selectedColorId,
   onSelectColor,
+  lockedColorIds,
   activeRange,
   fillHeight,
   columnDividers,
 }: Props = {}): JSX.Element {
-  const state = useAppState()
-  const actions = useActions()
+  const state = useAppState();
+  const actions = useActions();
 
   const colorCount = state.palette.paletteArray.length;
   const columns = columnCountFor(colorCount);
@@ -71,9 +75,9 @@ function Palette({
   const isSelected = (id: string): boolean =>
     onSelectColor
       ? id === selectedColorId
-      // no slot is highlighted while an RGB foreground (picked from a
-      // true-color pixel) is active
-      : !state.palette.foregroundRgb && id === state.palette.foregroundColorId;
+      : // no slot is highlighted while an RGB foreground (picked from a
+        // true-color pixel) is active
+        !state.palette.foregroundRgb && id === state.palette.foregroundColorId;
 
   const createColorButton = (index: number): JSX.Element => {
     const colorId = index.toString();
@@ -96,6 +100,7 @@ function Palette({
         isRangeMember={isRangeMember}
         isRangeStart={isRangeMember && colorId === activeRange?.start}
         isRangeEnd={isRangeMember && colorId === activeRange?.end}
+        isLocked={lockedColorIds?.includes(colorId) ?? false}
         fillCell={fillHeight}
         key={index}
       />

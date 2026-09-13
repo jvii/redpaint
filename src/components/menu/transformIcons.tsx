@@ -455,3 +455,51 @@ export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
     </svg>
   );
 }
+
+// The stencil glyphs. A stencil is a sheet with a hole cut in it, so each one
+// is that sheet: a frame at the box's full extent, the cut shown by what is
+// missing from it.
+
+// The sheet with its cut-out, the plain identity for Make.
+export function StencilIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" />
+      <rect x="7" y="7" width="10" height="10" strokeDasharray="3 2" />
+    </svg>
+  );
+}
+
+// Make again from the picture as it is now: the sheet with the cycle arrows
+// inside, rather than beside, so it reads as the cut being recut.
+export function StencilRemakeIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" />
+      <polyline points="10,7 7,10 10,13" />
+      <path d="M7 10h5a4 4 0 0 1 4 4" />
+      <polyline points="14,17 17,14 14,11" />
+    </svg>
+  );
+}
+
+// Inside and outside change places: the same sheet with the fill inverted,
+// shown as the cut-out filled and the border hollow.
+export function StencilReverseIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" />
+      <rect x="7" y="7" width="10" height="10" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+// Discarded: the sheet struck through.
+export function StencilFreeIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" />
+      <line x1="2" y1="22" x2="22" y2="2" />
+    </svg>
+  );
+}

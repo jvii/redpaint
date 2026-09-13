@@ -56,6 +56,7 @@ export const setResolution = (
   stencil.dropIfSized(width, height);
   paintingCanvasController.init();
   paintingCanvasController.updateStencil();
+  overlayCanvasController.updateStencil();
   if (recordUndoPoint) {
     context.actions.undo.setUndoPoint();
   }

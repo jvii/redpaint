@@ -3,6 +3,14 @@ import { canvasToWebGLCoordY, canvasToWebGLCoordX, shiftLine, shiftPoint } from 
 import { Line, PaintColor, Point } from '../../../types';
 import { createProgram, activateProgram } from '../../util/webglUtil';
 import { overmind } from '../../..';
+import { stencil } from '../../Stencil';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
+import { STENCIL_TEXTURE_UNIT } from '../../util/stencilTexture';
+import {
+  STENCIL_DISCARD_LIB,
+  STENCIL_UV_ASSIGN,
+  STENCIL_UV_VERTEX_LIB,
+} from '../../util/stencilShaderLib';
 
 export class OverlayGeometricRenderer {
   private gl: WebGLRenderingContext;
@@ -10,6 +18,8 @@ export class OverlayGeometricRenderer {
   // locations looked up once: getUniformLocation/getAttribLocation are driver
   // round-trips, too slow for per-draw-call use
   private a_position: number;
+  private u_stencil: WebGLUniformLocation | null;
+  private u_stencilOn: WebGLUniformLocation | null;
   private u_color: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
@@ -17,6 +27,15 @@ export class OverlayGeometricRenderer {
     this.program = this.createProgram();
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
     this.u_color = gl.getUniformLocation(this.program, 'u_color');
+    this.u_stencil = gl.getUniformLocation(this.program, 'u_stencil');
+    this.u_stencilOn = gl.getUniformLocation(this.program, 'u_stencilOn');
+  }
+
+  // Set per draw rather than once: the stencil can be made, suspended or freed
+  // between any two previews.
+  private updateStencilUniforms(): void {
+    this.gl.uniform1i(this.u_stencil, STENCIL_TEXTURE_UNIT);
+    this.gl.uniform1f(this.u_stencilOn, stencil.active ? 1 : 0);
   }
 
   // The preview draws in the final display color, resolved on the JS side
@@ -31,6 +50,7 @@ export class OverlayGeometricRenderer {
             b: 0,
           });
     this.gl.uniform4f(this.u_color, rgb.r / 255, rgb.g / 255, rgb.b / 255, 1);
+    this.updateStencilUniforms();
   }
 
   /**
@@ -129,20 +149,27 @@ export class OverlayGeometricRenderer {
   private createProgram(): WebGLProgram {
     const vertexShader = `
     attribute vec4 a_position;
+    ${STENCIL_UV_VERTEX_LIB}
 
     void main () {
       gl_Position = a_position;
+      ${STENCIL_UV_ASSIGN}
       gl_PointSize = 1.0;
     }
     `;
 
     const fragmentShader = `
     precision mediump float;
+    ${ALPHA_TAG_LIB}
+    ${STENCIL_DISCARD_LIB}
 
     // Final display color, resolved on the JS side
     uniform vec4 u_color;
 
     void main() {
+      if (stencilBlocks()) {
+        discard;
+      }
       gl_FragColor = u_color;
     }
     `;
