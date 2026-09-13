@@ -16,13 +16,13 @@ function sync(context: Context): void {
 export const openRequester = (context: Context): void => {
   context.state.stencil.lockedColorsSnapshot = [...context.state.stencil.lockedColors];
   context.state.stencil.requesterOpen = true;
-  context.actions.toolbox.enterStencilColorSelectionMode();
+  context.actions.toolbox.enterCanvasPickMode('stencilColorSelectorTool');
 };
 
 export const closeRequester = (context: Context): void => {
   context.state.stencil.requesterOpen = false;
   context.state.stencil.lockedColorsSnapshot = null;
-  context.actions.toolbox.exitStencilColorSelectionMode();
+  context.actions.toolbox.exitCanvasPickMode();
 };
 
 export const cancelRequester = (context: Context): void => {

@@ -336,8 +336,11 @@ layout decision to make before the drawer, not after.
 
    The requester's overlay has to stop swallowing clicks for this, which is
    `Modal.tsx`'s `canvasPickable`. The chrome goes inert instead
-   (`.app--stencil-picking`, mirroring how an armed crop does it), so the
-   requester stays modal to everything except the picture.
+   (`.app--canvas-picking`, mirroring how an armed crop does it), so the
+   requester stays modal to everything except the picture. The palette editor
+   picks its edited color the same way, through the same three pieces:
+   `toolbox.enterCanvasPickMode` stashes and restores whatever selector tool was
+   armed, so either requester can borrow the canvas without losing it.
 
 Load / Save / Delete of stencil *files* is DPaint II behaviour we can skip: it
 existed because a 1988 machine could not hold much, and a stencil today is

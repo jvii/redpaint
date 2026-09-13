@@ -1,5 +1,5 @@
 import { Context } from '../../overmind';
-import { DrawingToolId } from './state';
+import { DrawingToolId, SelectorToolId } from './state';
 import { brushRecall } from '../../brush/BrushRecall';
 import { CustomBrush } from '../../brush/CustomBrush';
 import { isBuiltInBrush } from '../brush/state';
@@ -95,17 +95,16 @@ export const toggleBackgroundColorSelectionMode = (context: Context): void => {
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'backgroundColorSelectorTool';
 };
 
-// Clicking the picture picks a stencil color while its requester is open.
-export const enterStencilColorSelectionMode = (context: Context): void => {
-  context.state.toolbox.selectorToolBeforeStencilPick =
-    context.state.toolbox.selectedSelectorToolId;
-  context.state.toolbox.selectedSelectorToolId = 'stencilColorSelectorTool';
+// A requester that picks its color off the picture takes the canvas over for as
+// long as it is open (Stencil, the palette editor).
+export const enterCanvasPickMode = (context: Context, toolId: SelectorToolId): void => {
+  context.state.toolbox.selectorToolBeforeCanvasPick = context.state.toolbox.selectedSelectorToolId;
+  context.state.toolbox.selectedSelectorToolId = toolId;
 };
 
-export const exitStencilColorSelectionMode = (context: Context): void => {
-  context.state.toolbox.selectedSelectorToolId =
-    context.state.toolbox.selectorToolBeforeStencilPick;
-  context.state.toolbox.selectorToolBeforeStencilPick = null;
+export const exitCanvasPickMode = (context: Context): void => {
+  context.state.toolbox.selectedSelectorToolId = context.state.toolbox.selectorToolBeforeCanvasPick;
+  context.state.toolbox.selectorToolBeforeCanvasPick = null;
 };
 
 export const toggleSymmetryMode = (context: Context): void => {

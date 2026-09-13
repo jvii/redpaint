@@ -21,6 +21,7 @@ import { PolygonTool } from '../../tools/PolygonTool';
 import { TextTool } from '../../tools/TextTool';
 import { ColorSelectorTool } from '../../tools/ColorSelectorTool';
 import { StencilColorSelectorTool } from '../../tools/StencilColorSelectorTool';
+import { PaletteEditorColorSelectorTool } from '../../tools/PaletteEditorColorSelectorTool';
 
 const filled = true;
 const noFill = false;
@@ -61,6 +62,7 @@ const selectorTools = {
   foregroundColorSelectorTool: new ColorSelectorTool(foregroundColor),
   backgroundColorSelectorTool: new ColorSelectorTool(backgroundColor),
   stencilColorSelectorTool: new StencilColorSelectorTool(),
+  paletteEditorColorSelectorTool: new PaletteEditorColorSelectorTool(),
 };
 
 export type DrawingToolId = keyof typeof drawingTools;
@@ -73,9 +75,10 @@ export type State = {
   readonly activeTool: Tool;
   zoomModeOn: boolean;
   symmetryModeOn: boolean;
-  // What was selected when the stencil requester took the canvas over, put back
-  // when it closes: opening it must not silently disarm a brush transform.
-  selectorToolBeforeStencilPick: SelectorToolId | null;
+  // What was selected when a requester took the canvas over for picking, put
+  // back when it closes: opening one must not silently disarm a brush
+  // transform.
+  selectorToolBeforeCanvasPick: SelectorToolId | null;
 };
 
 export const state: State = {
@@ -92,5 +95,5 @@ export const state: State = {
   },
   zoomModeOn: false,
   symmetryModeOn: false,
-  selectorToolBeforeStencilPick: null,
+  selectorToolBeforeCanvasPick: null,
 };

@@ -45,12 +45,12 @@
   pointer-events: none;
 }
 
-/* The Stencil requester takes its colors off the picture (Modal.tsx's
-   canvasPickable), which means its overlay cannot swallow clicks the way every
-   other requester's does. The chrome goes inert instead, so the requester stays
-   modal to everything but the canvas. */
-.app--stencil-picking .menubar,
-.app--stencil-picking .menu,
-.app--stencil-picking .toolbox-container {
+/* A requester that takes its color off the picture (Modal.tsx's canvasPickable)
+   cannot have its overlay swallow clicks the way every other requester's does.
+   The chrome goes inert instead, so it stays modal to everything but the
+   canvas. */
+.app--canvas-picking .menubar,
+.app--canvas-picking .menu,
+.app--canvas-picking .toolbox-container {
   pointer-events: none;
 }

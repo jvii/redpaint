@@ -78,7 +78,7 @@ export function PaletteEditor(): JSX.Element | null {
   // requester's right edge (see .palette-editor__callout). A scrolling body
   // would clip it. This requester is short enough not to need the scroll.
   return (
-    <Modal header="Color Palette" width={700} overflowingBody>
+    <Modal header="Color Palette" width={700} overflowingBody canvasPickable>
       <div className="palette-editor__container">
         {/* DPaint's Palette Window layout: sliders on the left, swatch grid
             on the right */}

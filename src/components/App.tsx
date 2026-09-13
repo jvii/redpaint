@@ -41,7 +41,7 @@ function App(): JSX.Element {
       className={
         'app' +
         (state.crop.rect ? ' app--cropping' : '') +
-        (state.stencil.requesterOpen ? ' app--stencil-picking' : '')
+        (state.stencil.requesterOpen || state.paletteEditor.isOpen ? ' app--canvas-picking' : '')
       }
       // While a crop is armed the chrome takes no pointer events (App.css), so
       // the menubar's own handler (the one that normally suppresses the browser

@@ -29,6 +29,7 @@ export const open = (context: Context): void => {
   context.state.paletteEditor.activeRangeIndex = 0; // Range 1 preselected
   context.state.paletteEditor.armedAction = null;
   context.state.paletteEditor.isOpen = true;
+  context.actions.toolbox.enterCanvasPickMode('paletteEditorColorSelectorTool');
 };
 
 // Keep the live edits and close. A session that changed the palette commits one
@@ -45,6 +46,7 @@ export const close = (context: Context): void => {
   context.state.paletteEditor.isOpen = false;
   context.state.paletteEditor.paletteSnapshot = null;
   context.state.paletteEditor.rangesSnapshot = null;
+  context.actions.toolbox.exitCanvasPickMode();
 };
 
 function paletteEqualsSnapshot(
