@@ -342,6 +342,18 @@ layout decision to make before the drawer, not after.
    `toolbox.enterCanvasPickMode` stashes and restores whatever selector tool was
    armed, so either requester can borrow the canvas without losing it.
 
+   The toolbox palette is borrowed for as long as either requester is open too
+   (`Palette.tsx`'s `borrowedBy`, which the Fill Style dialog now goes through
+   as well): a click there toggles a lock, or moves the color being edited,
+   instead of setting the paint color. Right click does nothing on any swatch
+   the moment a requester is involved — a borrowed grid, or a requester's own —
+   since neither is choosing paint colors.
+
+   The lock marks stay in the requester's own grid: showing them in the toolbox
+   copy would mean turning its column dividers on for as long as the requester
+   is up (the mark lives in the gap, and that grid is otherwise gapless), and
+   the requester is on screen showing them anyway.
+
 Load / Save / Delete of stencil *files* is DPaint II behaviour we can skip: it
 existed because a 1988 machine could not hold much, and a stencil today is
 better re-made from the picture than carried in a file. Worth recording as a

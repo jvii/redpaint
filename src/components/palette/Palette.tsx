@@ -64,20 +64,45 @@ function Palette({
   const columns = columnCountFor(colorCount);
   const rows = Math.ceil(colorCount / columns);
 
-  // While the Fill Style dialog is open, DPaint only let the FG color change
-  // (that's what picks the gradient range). Everything else in the app
-  // (including this same grid's own BG pick) stays behind the modal's usual
-  // full-page click-catcher (Modal.tsx). Doesn't apply when this grid is
-  // embedded elsewhere with its own onSelectColor (e.g. the palette editor,
-  // which never renders while Fill Style is up anyway).
-  const isFillStyleException = !onSelectColor && state.fillStyle.settingsOpen;
+  // Which requester currently owns this grid's clicks, replacing or narrowing
+  // its ordinary job for as long as it is open (docs/stencil.md). Only the
+  // toolbox copy is ever borrowed: the copy inside a requester passes its own
+  // onSelectColor. They stay reachable by different means - Fill Style lifts
+  // this grid over its own click-catcher (.palette--above-modal), the other two
+  // let the canvas through and make the rest of the chrome inert instead.
+  const borrowedBy: 'stencil' | 'paletteEditor' | 'fillStyle' | null = onSelectColor
+    ? null
+    : state.stencil.requesterOpen
+      ? 'stencil'
+      : state.paletteEditor.isOpen
+        ? 'paletteEditor'
+        : state.fillStyle.settingsOpen
+          ? 'fillStyle'
+          : null;
+
+  const select = (colorId: string): void => {
+    switch (borrowedBy) {
+      case 'stencil':
+        actions.stencil.toggleColor(Number(colorId));
+        break;
+      case 'paletteEditor':
+        actions.paletteEditor.selectEditedColor(colorId);
+        break;
+      // Fill Style picks its gradient off the foreground color, which is this
+      // grid's ordinary job: borrowing it only takes the background pick away.
+      default:
+        actions.palette.setForegroundColor(colorId);
+    }
+  };
 
   const isSelected = (id: string): boolean =>
     onSelectColor
       ? id === selectedColorId
-      : // no slot is highlighted while an RGB foreground (picked from a
-        // true-color pixel) is active
-        !state.palette.foregroundRgb && id === state.palette.foregroundColorId;
+      : borrowedBy === 'paletteEditor'
+        ? id === state.paletteEditor.editedColorId
+        : // no slot is highlighted while an RGB foreground (picked from a
+          // true-color pixel) is active
+          !state.palette.foregroundRgb && id === state.palette.foregroundColorId;
 
   const createColorButton = (index: number): JSX.Element => {
     const colorId = index.toString();
@@ -87,13 +112,12 @@ function Palette({
       <ColorButton
         colorId={colorId}
         isSelected={isSelected(colorId)}
-        onClick={(): void =>
-          onSelectColor ? onSelectColor(colorId) : actions.palette.setForegroundColor(colorId)
-        }
+        onClick={(): void => (onSelectColor ? onSelectColor(colorId) : select(colorId))}
         onRightClick={(): void => {
-          if (onSelectColor) {
-            onSelectColor(colorId);
-          } else if (!isFillStyleException) {
+          // The background pick, and only where this grid is doing its own job:
+          // a requester's grid, or one borrowed by a requester, is not choosing
+          // paint colors, and right click does nothing there.
+          if (!onSelectColor && !borrowedBy) {
             actions.palette.setBackgroundColor(colorId);
           }
         }}
@@ -129,7 +153,7 @@ function Palette({
         // the one exception to that dialog blocking the whole app, rather than
         // punching a hole in the catcher itself and re-blocking every other
         // surface (canvas, menubar, toolbox, ...) by hand.
-        (isFillStyleException ? ' palette--above-modal' : '')
+        (borrowedBy === 'fillStyle' ? ' palette--above-modal' : '')
       }
       style={gridStyle}
     >

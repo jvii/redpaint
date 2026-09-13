@@ -54,3 +54,9 @@
 .app--canvas-picking .toolbox-container {
   pointer-events: none;
 }
+
+/* Except the palette, which such a requester borrows as well (Palette.tsx):
+   DPaint lets the colors be picked there as readily as off the picture. */
+.app--canvas-picking .toolbox-container .palette {
+  pointer-events: auto;
+}
