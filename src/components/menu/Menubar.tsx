@@ -156,6 +156,11 @@ export function Menubar(): JSX.Element {
             S
           </div>
         )}
+        {state.background.fixed && (
+          <div className="menubar__stencil" title="The background is fixed">
+            B
+          </div>
+        )}
         {state.fillStyle.effectiveMode !== 'solid' && <ColorFillBox />}
         {floodFillHoverSwatchColor && (
           <div className="menubar__floodfill-indicator">

@@ -178,9 +178,7 @@ export function RestoreIcon({ size = 24 }: IconProps): JSX.Element {
 // neighbours. Every coordinate is a whole unit, so a 2px stroke lands on pixel
 // boundaries at 24px and any multiple of it.
 
-// The page frame with the two opposed arrows that mean swap, kept two units
-// apart so the heads do not meet. Each is shifted one unit the way it points,
-// not two: a mitred tip already puts ink ~1.4 units past its vertex.
+// The page frame with the two opposed arrows that mean swap
 export function SwapPageIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -216,9 +214,7 @@ export function DeletePageIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// Two overlapping pages, the one in front saying which way the merge goes; the
-// spare is the top right one in both. The overlap interrupts the page behind
-// rather than filling the one in front, every glyph here being unfilled.
+// Two overlapping pages
 export function MergeFrontIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
@@ -366,10 +362,7 @@ export function SwapColorsIcon({ size = 24 }: IconProps): JSX.Element {
 }
 
 // A color hopping from the first palette slot to the last, which is what
-// re-indexing is; an arrow into the strip would say installing a palette, as
-// From Brush and Default do. A true semicircle, so it meets the strip square
-// and the head needs no tilt, and both ends drop to matching stems — the head
-// hangs below one, and without the other's stem the shape is lopsided.
+// re-indexing is
 export function RemapIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg {...base} {...paletteGlyphBox(size)} aria-hidden="true" focusable="false">
@@ -460,32 +453,8 @@ export function LabelArrow({ both = false }: { both?: boolean }): JSX.Element {
 // is that sheet: a frame at the box's full extent, the cut shown by what is
 // missing from it.
 
-// The sheet with its cut-out, the plain identity for Make.
+// The sheet with its cut-out, the plain identity for Make
 export function StencilIcon({ size = 24 }: IconProps): JSX.Element {
-  return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="2" y="2" width="20" height="20" />
-      <rect x="7" y="7" width="10" height="10" strokeDasharray="3 2" />
-    </svg>
-  );
-}
-
-// Make again from the picture as it is now: the sheet with the cycle arrows
-// inside, rather than beside, so it reads as the cut being recut.
-export function StencilRemakeIcon({ size = 24 }: IconProps): JSX.Element {
-  return (
-    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <rect x="2" y="2" width="20" height="20" />
-      <polyline points="10,7 7,10 10,13" />
-      <path d="M7 10h5a4 4 0 0 1 4 4" />
-      <polyline points="14,17 17,14 14,11" />
-    </svg>
-  );
-}
-
-// Inside and outside change places: the same sheet with the fill inverted,
-// shown as the cut-out filled and the border hollow.
-export function StencilReverseIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
       <rect x="2" y="2" width="20" height="20" />
@@ -494,12 +463,61 @@ export function StencilReverseIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
-// Discarded: the sheet struck through.
+// Make again from the picture as it is now. Standard Refresh symbol
+export function StencilRemakeIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <path d="M20.69 14.33A9 9 0 0 1 5.26 17.94L3 15" />
+      <polyline points="3,21 3,15 9,15" />
+      <path d="M3.31 9.67A9 9 0 0 1 18.74 6.06L21 9" />
+      <polyline points="21,3 21,9 15,9" />
+    </svg>
+  );
+}
+
+// Inside and outside change places: Make's sheet with the ink moved to the
+// other side of it, so the pair reads as one shape and its negative.
+export function StencilReverseIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <path
+        d="M2 2h20v20H2z M7 7v10h10V7z"
+        fill="currentColor"
+        fillRule="evenodd"
+        stroke="none"
+      />
+    </svg>
+  );
+}
+
+// Discarded: the sheet struck through. Serves both Frees - the stencil's and
+// the background's - which discard the same kind of thing.
 export function StencilFreeIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
       <rect x="2" y="2" width="20" height="20" />
       <line x1="2" y1="22" x2="22" y2="2" />
+    </svg>
+  );
+}
+
+// Fix Background: the sheet filled, the picture frozen as a ground rather than
+// cut into.
+export function BackgroundFixIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" fill="currentColor" stroke="none" />
+      <rect x="2" y="2" width="20" height="20" />
+    </svg>
+  );
+}
+
+// Lock FG: a padlock at the box's full extent
+export function StencilLockFgIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="4" y="11" width="16" height="11" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
     </svg>
   );
 }

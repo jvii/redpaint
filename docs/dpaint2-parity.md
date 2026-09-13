@@ -30,19 +30,6 @@ taken it from the IIGS manual text (`PLATFORM_NOTE.md`).
 
 ## Missing
 
-**Stencil.** The largest gap: lock chosen colors so painting cannot touch them,
-with make/remake/free/reverse/on-off, plus Lock Foreground and an `S` in the
-menubar while one is active. The stencil is a frozen raster taken at Make, not a
-live color rule — recoloring the palette leaves it intact, and newly painted
-pixels are unprotected until Remake. Designed in docs/stencil.md, which makes it
-smaller than "a system": draw-then-repair puts it in two places rather than
-through every draw path. Brush pickup respecting it is DPaint III.
-
-**Fix / Free Background.** The stencil's companion: freeze the current picture as
-a background that painting leaves alone. CLR then erases only what was painted
-since, and Lock FG turns that into an area-based stencil. Shares the stencil's
-frozen-copy machinery entirely — docs/stencil.md.
-
 **Perspective.** The second large one: a 3D grid with its own spacing and
 movement keys, brushes drawn in perspective. Self-contained, and the only DPaint
 II feature with a genuinely different interaction model.
@@ -106,10 +93,12 @@ about Grid itself:
 polygon) touches no rasterizer; phase 2 (circle, ellipse) is the disproportionate
 half and can wait indefinitely — docs/spacing.md.
 
-**Stencil and Fix Background together**, as one piece of work: they share the
-frozen-copy machinery entirely, and Stencil brings an Effects drawer that would
-otherwise hold one item (docs/stencil.md). **ExclBrush** falls out once both
-exist.
+**Stencil and Fix Background** are built (docs/stencil.md), which is what the
+Effects drawer holds. **ExclBrush** falls out once Grid exists.
+
+Not taken from either: stencil Load/Save/Delete as files, which existed because
+a 1988 machine could not hold much; and DPaint's refusal to pick a color
+matching a fixed background.
 
 **MultiCycle** whenever Cycle mode is next open — small and attached to nothing.
 

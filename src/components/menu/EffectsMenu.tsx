@@ -2,8 +2,10 @@ import React, { JSX } from 'react';
 import { useActions, useAppState } from '../../overmind';
 import { Gadget, GadgetCluster, GadgetGroup } from './MenuGadgets';
 import {
+  BackgroundFixIcon,
   StencilIcon,
   StencilFreeIcon,
+  StencilLockFgIcon,
   StencilRemakeIcon,
   StencilReverseIcon,
 } from './transformIcons';
@@ -16,6 +18,8 @@ export function EffectsMenu(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
   const { exists, enabled } = state.stencil;
+  const backgroundFixed = state.background.fixed;
+  const colorCount = state.palette.paletteArray.length;
 
   const instant = (action: () => void) => (): void => {
     action();
@@ -48,16 +52,29 @@ export function EffectsMenu(): JSX.Element {
               onClick={instant(actions.stencil.remake)}
             />
             <Gadget
+              icon={<StencilLockFgIcon />}
+              label="Lock FG"
+              stacked
+              title={
+                backgroundFixed
+                  ? 'Lock everything painted since the background was fixed'
+                  : 'Fix the background first: this locks what was painted after it'
+              }
+              disabled={!backgroundFixed}
+              onClick={instant(actions.stencil.lockPainted)}
+            />
+            <Gadget
               icon={<StencilReverseIcon />}
               label="Reverse"
               stacked
               title={exists ? 'Lock what is unlocked, and the other way round' : 'No stencil yet'}
               disabled={!exists}
-              onClick={instant(actions.stencil.reverse)}
+              onClick={instant((): void => actions.stencil.reverse(colorCount))}
             />
           </GadgetGroup>
           <GadgetGroup>
-            {/* Stays open so the pressed state is visible (docs/style-guide.md). */}
+            {/* These two stay open: On so its pressed state is visible, Free so the
+                gadgets it disables can be seen going dim (docs/style-guide.md). */}
             <Gadget
               icon={<StencilIcon />}
               label="On"
@@ -74,7 +91,27 @@ export function EffectsMenu(): JSX.Element {
               stacked
               title={exists ? 'Discard the stencil' : 'No stencil to free'}
               disabled={!exists}
-              onClick={instant(actions.stencil.free)}
+              onClick={(): void => actions.stencil.free()}
+            />
+          </GadgetGroup>
+        </GadgetCluster>
+        <GadgetCluster head="Background">
+          <GadgetGroup>
+            <Gadget
+              icon={<BackgroundFixIcon />}
+              label="Fix"
+              stacked
+              on={backgroundFixed}
+              title="Freeze the picture as a background: CLR then erases only what is painted after it"
+              onClick={(): void => actions.background.fix()}
+            />
+            <Gadget
+              icon={<StencilFreeIcon />}
+              label="Free"
+              stacked
+              title={backgroundFixed ? 'Release the background' : 'No fixed background'}
+              disabled={!backgroundFixed}
+              onClick={(): void => actions.background.free()}
             />
           </GadgetGroup>
         </GadgetCluster>

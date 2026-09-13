@@ -60,6 +60,10 @@ Fix Background shows.
 
 - **CLR** then erases only what has been painted *since* the fix, instead of
   the whole page.
+- The command that releases it is **Off** in the DP2 Handbuch (4-22) and
+  **Free** from DPaint III on (DP3 3-38, "just choose Background>Free"). Free is
+  the one to use: it is where the line ended up, and it matches the Stencil
+  submenu's own Free right beside it.
 - The right mouse button paints "without fearing for the background".
 - **Colours cannot be picked** that match the background colour while fixed.
 - **Lock FG** is only meaningful with it: it makes a stencil out of everything
@@ -310,12 +314,16 @@ layout decision to make before the drawer, not after.
    palette grid with Clear and Invert), the `S` in the menubar, and `-`. The
    reactive mirror is `overmind/stencil`; the raster stays in `canvas/Stencil`.
    Lock FG waits on Fix Background, which is what makes it mean anything.
-4. **Fix Background**, which is a separate item on the parity list but shares
-   the frozen-copy machinery entirely: the same class holding a different
-   raster, with CLR consulting it. **Lock FG** then falls out, and only then —
-   it is meaningless without a fixed background. Worth doing close behind (3),
-   since it is the drawer's second of three items and a drawer holding one
-   thing is hard to justify.
+4. **Fix Background.** ✅ Done. `canvas/Background.ts` holds the frozen picture,
+   `overmind/background` mirrors the flag, CLR restores it instead of erasing,
+   and **Lock FG** masks by difference from it — an area rather than a color,
+   so a pixel repainted in the same color number but as true color still counts.
+   `B` joins the `S` in the menubar. Both are dropped on a new picture and on a
+   resize that changes the size.
+
+   Not done: DPaint II also refuses to pick a color matching the background
+   while it is fixed (4-22). A narrow detail that would put a background check
+   inside the color picker.
 
 Load / Save / Delete of stencil *files* is DPaint II behaviour we can skip: it
 existed because a 1988 machine could not hold much, and a stencil today is

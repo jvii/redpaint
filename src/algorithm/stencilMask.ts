@@ -29,16 +29,21 @@ export function stencilFromColors(
   });
 }
 
-// Everything that is not the background color, whatever color it is: DPaint's
-// Lock FG, which locks what has been painted since the background was fixed.
-export function stencilFromPainted(
+// DPaint's Lock FG: everything painted since the background was fixed, whatever
+// color it is. A pixel counts as painted when it differs from the frozen
+// background, which is what makes this mask an area rather than a color.
+export function stencilFromChanges(
   canvas: CanvasColorIndex,
-  backgroundColorNumber: number
+  background: CanvasColorIndex
 ): CanvasColorIndex {
-  const background = backgroundColorNumber - 1; // stored 0-based
+  const frozen = background.indexArray;
   return stencilFrom(
     canvas,
-    (source, i) => source[i + 3] === ALPHA_TRUECOLOR || source[i] !== background
+    (source, i) =>
+      source[i] !== frozen[i] ||
+      source[i + 1] !== frozen[i + 1] ||
+      source[i + 2] !== frozen[i + 2] ||
+      source[i + 3] !== frozen[i + 3]
   );
 }
 

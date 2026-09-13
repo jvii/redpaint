@@ -265,10 +265,17 @@
 /* DPaint's S, shown while a stencil is active (docs/stencil.md). Joins the
    transient indicator cluster: it is state the picture carries, and the letter
    is the whole indicator, as the original had it. */
+/* The letter reversed out of a black box, as DPaint and PyDPainter show it.
+   The padding is uneven on both axes because the glyph is not centred in its
+   own advance: measured at 24px, its ink is 21x21 inside a 24px box with the
+   whole side bearing to the right and below. Equal padding leaves the letter
+   high and to the left; these four values put the ink 7px from every edge. */
 .menubar__stencil {
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;
-  font-size: 16px;
-  color: var(--wb-orange);
+  font-size: 24px;
+  color: white;
+  background-color: black;
+  padding: 7px 4px 4px 7px;
   align-self: center;
 }

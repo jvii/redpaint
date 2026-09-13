@@ -3,8 +3,8 @@ import {
   LockedColors,
   reversedStencil,
   refreshedStencil,
+  stencilFromChanges,
   stencilFromColors,
-  stencilFromPainted,
 } from '../algorithm/stencilMask';
 
 // The one stencil, held outside Overmind for the reason BrushSlots is: a
@@ -49,18 +49,22 @@ class Stencil {
     this.on = true;
   }
 
-  lockPainted(canvas: CanvasColorIndex, backgroundColorNumber: number): void {
+  // No color selection behind this one: the mask is an area, so Remake, which
+  // re-derives from colors, has nothing to work from.
+  lockPainted(canvas: CanvasColorIndex, background: CanvasColorIndex): void {
     this.lockedColors = [];
-    this.raster = stencilFromPainted(canvas, backgroundColorNumber);
+    this.raster = stencilFromChanges(canvas, background);
     this.on = true;
   }
 
-  reverse(canvas: CanvasColorIndex): void {
+  // The mask itself flips; the color set comes in already inverted, since only
+  // the caller knows how many colors the palette has.
+  reverse(canvas: CanvasColorIndex, locked: LockedColors): void {
     if (!this.raster) {
       return;
     }
     this.raster = reversedStencil(this.raster, canvas);
-    this.lockedColors = this.lockedColors.map((locked) => !locked);
+    this.lockedColors = [...locked];
   }
 
   // Turning it back on retakes the protected pixels from the picture as it is

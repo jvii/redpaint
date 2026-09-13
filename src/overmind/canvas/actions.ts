@@ -1,6 +1,7 @@
 import { Context } from '../../overmind';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { stencil } from '../../canvas/Stencil';
+import { background } from '../../canvas/Background';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import {
   hasPendingCanvasContent,
@@ -54,6 +55,8 @@ export const setResolution = (
   context.state.canvas.resolution = { width, height };
   // A stencil holds coordinates into the picture it was made against.
   stencil.dropIfSized(width, height);
+  background.dropIfSized(width, height);
+  context.state.background.fixed = background.fixed;
   paintingCanvasController.init();
   paintingCanvasController.updateStencil();
   overlayCanvasController.updateStencil();

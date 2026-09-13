@@ -10,6 +10,7 @@ import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 import { setPendingCanvasContent } from '../../canvas/pendingCanvasContent';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { stencil } from '../../canvas/Stencil';
+import { background } from '../../canvas/Background';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import {
   DEFAULT_SCREEN_FORMAT_ID,
@@ -285,7 +286,18 @@ export const markDocumentClean = (context: Context): void => {
 // document's name or mark it clean, which would make it half a new page (that
 // is `newPicture` below).
 export const clearPage = (context: Context): void => {
-  paintingCanvasController.clear();
+  // With a fixed background, CLR erases only what has been painted since the
+  // fix (docs/stencil.md) - the ground goes back, rather than the page going
+  // to the background color.
+  const frozen = background.frozen;
+  if (frozen) {
+    paintingCanvasController.setCanvasColorIndex(frozen);
+    // setCanvasColorIndex only uploads and re-attaches; clear() below repaints
+    // on its own, so this branch has to.
+    paintingCanvasController.render();
+  } else {
+    paintingCanvasController.clear();
+  }
   context.actions.undo.setUndoPoint();
 };
 
@@ -337,6 +349,8 @@ export const newPicture = (context: Context): void => {
   context.actions.brush.resetBrushes();
   // Cut from the outgoing picture's pixels, like the brushes above.
   stencil.free();
+  background.free();
+  context.state.background.fixed = false;
   paintingCanvasController.updateStencil();
   overlayCanvasController.updateStencil();
 

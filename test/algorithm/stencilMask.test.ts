@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   refreshedStencil,
   reversedStencil,
+  stencilFromChanges,
   stencilFromColors,
-  stencilFromPainted,
 } from '../../src/algorithm/stencilMask';
 import {
   ALPHA_INDEXED,
@@ -86,9 +86,11 @@ describe('stencilFromColors', () => {
   });
 });
 
-describe('stencilFromPainted', () => {
-  it('protects everything that is not the background color', () => {
-    expect(protectedPixels(stencilFromPainted(indexed(1, 2, 1, 3), 1))).toEqual([
+describe('stencilFromChanges', () => {
+  it('protects what differs from the frozen background', () => {
+    const background = indexed(1, 1, 1, 1);
+    const painted = indexed(1, 2, 1, 3);
+    expect(protectedPixels(stencilFromChanges(painted, background))).toEqual([
       false,
       true,
       false,
@@ -96,9 +98,19 @@ describe('stencilFromPainted', () => {
     ]);
   });
 
-  it('protects true-color pixels, which were painted whatever their color', () => {
-    const canvas = trueColorAt(indexed(1, 1, 1), 1, 0);
-    expect(protectedPixels(stencilFromPainted(canvas, 1))).toEqual([false, true, false]);
+  it('protects a pixel repainted in the same color number but as true color', () => {
+    const background = indexed(1, 1);
+    const painted = trueColorAt(indexed(1, 1), 1, 0);
+    expect(protectedPixels(stencilFromChanges(painted, background))).toEqual([false, true]);
+  });
+
+  it('protects nothing on an untouched picture', () => {
+    const background = indexed(1, 2, 3);
+    expect(protectedPixels(stencilFromChanges(indexed(1, 2, 3), background))).toEqual([
+      false,
+      false,
+      false,
+    ]);
   });
 });
 

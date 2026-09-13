@@ -1,5 +1,6 @@
 import { Context } from '../../overmind';
 import { stencil } from '../../canvas/Stencil';
+import { background } from '../../canvas/Background';
 import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
 import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 
@@ -45,12 +46,19 @@ export const clearColors = (context: Context): void => {
 // DPaint's Invert: the tick marks flip, which is how "lock everything except
 // this one" is four clicks rather than thirty-one.
 export const invertColors = (context: Context, colorCount: number): void => {
-  const locked = [...context.state.stencil.lockedColors];
-  for (let n = 1; n <= colorCount; n++) {
-    locked[n] = !locked[n];
-  }
-  context.state.stencil.lockedColors = locked;
+  context.state.stencil.lockedColors = inverted(context.state.stencil.lockedColors, colorCount);
 };
+
+// Over the whole palette, not over the array: the ticks are sparse, so mapping
+// it would visit only the colors already touched and leave every one above the
+// highest of them unlocked.
+function inverted(locked: readonly boolean[], colorCount: number): boolean[] {
+  const out: boolean[] = [];
+  for (let n = 1; n <= colorCount; n++) {
+    out[n] = !locked[n];
+  }
+  return out;
+}
 
 export const make = (context: Context): void => {
   const canvas = paintingCanvasController.getCanvasColorIndex();
@@ -73,13 +81,27 @@ export const remake = (context: Context): void => {
   sync(context);
 };
 
-export const reverse = (context: Context): void => {
+export const reverse = (context: Context, colorCount: number): void => {
   const canvas = paintingCanvasController.getCanvasColorIndex();
   if (!canvas) {
     return;
   }
-  stencil.reverse(canvas);
-  context.state.stencil.lockedColors = [...stencil.colors];
+  const locked = inverted(context.state.stencil.lockedColors, colorCount);
+  stencil.reverse(canvas, locked);
+  context.state.stencil.lockedColors = locked;
+  sync(context);
+};
+
+// DPaint's Lock FG: lock everything painted since the background was fixed,
+// whatever color it is. Needs a fixed background to measure against.
+export const lockPainted = (context: Context): void => {
+  const canvas = paintingCanvasController.getCanvasColorIndex();
+  const frozen = background.frozen;
+  if (!canvas || !frozen) {
+    return;
+  }
+  stencil.lockPainted(canvas, frozen);
+  context.state.stencil.lockedColors = [];
   sync(context);
 };
 

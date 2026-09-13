@@ -17,6 +17,7 @@ import * as brush from './brush';
 import * as tool from './tool';
 import * as symmetry from './symmetry';
 import * as stencil from './stencil';
+import * as background from './background';
 import * as fillStyle from './fillStyle';
 import * as font from './font';
 import * as crop from './crop';
@@ -34,6 +35,7 @@ export const config = namespaced({
   brush,
   symmetry,
   stencil,
+  background,
   fillStyle,
   font,
   crop,
