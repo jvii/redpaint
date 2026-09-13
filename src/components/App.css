@@ -44,3 +44,13 @@
 .app--cropping .toolbox-container {
   pointer-events: none;
 }
+
+/* The Stencil requester takes its colors off the picture (Modal.tsx's
+   canvasPickable), which means its overlay cannot swallow clicks the way every
+   other requester's does. The chrome goes inert instead, so the requester stays
+   modal to everything but the canvas. */
+.app--stencil-picking .menubar,
+.app--stencil-picking .menu,
+.app--stencil-picking .toolbox-container {
+  pointer-events: none;
+}

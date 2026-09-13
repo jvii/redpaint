@@ -10,6 +10,16 @@
   align-items: center;
 }
 
+/* See Modal.tsx's canvasPickable. The window has to take its own pointer events
+   back, since none is inherited through a `none` ancestor. */
+.modal__overlay-invisible--pickable {
+  pointer-events: none;
+}
+
+.modal__overlay-invisible--pickable .modal__window {
+  pointer-events: auto;
+}
+
 .modal__window {
   font-family: 'Press Start 2P';
   -webkit-font-smoothing: none;

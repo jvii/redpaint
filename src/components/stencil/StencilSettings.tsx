@@ -6,7 +6,8 @@ import { RetroButton } from '../ui/RetroButton';
 import Palette from '../palette/Palette';
 
 // DPaint's Stencil requester (docs/stencil.md): tick the colors to lock, then
-// Make freezes the mask from the picture as it is now.
+// Make freezes the mask from the picture as it is now. The ticks can also be
+// set by clicking the picture itself, which is what canvasPickable is for.
 export function StencilSettings(): JSX.Element | null {
   const state = useAppState();
   const actions = useActions();
@@ -21,7 +22,7 @@ export function StencilSettings(): JSX.Element | null {
   );
 
   return (
-    <Modal header="Stencil">
+    <Modal header="Stencil" canvasPickable>
       <div className="stencil-settings__container">
         <div className="stencil-settings__actions">
           <RetroButton variant="secondary" onClick={actions.stencil.clearColors}>
@@ -34,7 +35,8 @@ export function StencilSettings(): JSX.Element | null {
             Invert
           </RetroButton>
           <p className="supporting-text stencil-settings__note">
-            Painting cannot touch the pixels holding a locked color.
+            Painting cannot touch the pixels holding a locked color. Click the picture to lock the
+            color you point at.
           </p>
         </div>
         <div className="stencil-settings__locked">

@@ -325,6 +325,20 @@ layout decision to make before the drawer, not after.
    while it is fixed (4-22). A narrow detail that would put a background check
    inside the color picker.
 
+5. **Picking the colors off the picture.** ✅ Done. While the requester is open,
+   clicking the canvas toggles the color under the pointer, as DPaint and
+   PyDPainter both allow; right click does nothing. `StencilColorSelectorTool`
+   is an ordinary selector tool, armed by `openRequester` and put back by
+   `closeRequester` (whatever was selected before it is restored, so opening the
+   requester cannot silently disarm a brush transform). True-color pixels are
+   ignored — they hold no color number, and the stencil is built from the
+   palette.
+
+   The requester's overlay has to stop swallowing clicks for this, which is
+   `Modal.tsx`'s `canvasPickable`. The chrome goes inert instead
+   (`.app--stencil-picking`, mirroring how an armed crop does it), so the
+   requester stays modal to everything except the picture.
+
 Load / Save / Delete of stencil *files* is DPaint II behaviour we can skip: it
 existed because a 1988 machine could not hold much, and a stencil today is
 better re-made from the picture than carried in a file. Worth recording as a

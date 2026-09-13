@@ -14,6 +14,11 @@ interface Props {
   // below, so only use it when the requester is short enough that it was never
   // going to need it.
   overflowingBody?: boolean;
+  // Lets clicks reach the picture behind the requester, for the one that asks
+  // you to point at it (Stencil picks its colors off the canvas). The window
+  // itself still takes its own clicks; everything else on screen is live too,
+  // which is the price of it.
+  canvasPickable?: boolean;
 }
 
 // How much of the header (the only drag handle; there's no other way to move a
@@ -45,7 +50,13 @@ function splitFooter(children: React.ReactNode): {
   return { body: items.slice(0, start), footer: items.slice(start) };
 }
 
-export function Modal({ header, children, width, overflowingBody }: Props): JSX.Element | null {
+export function Modal({
+  header,
+  children,
+  width,
+  overflowingBody,
+  canvasPickable,
+}: Props): JSX.Element | null {
   // The UI scale (#2) is a `zoom` on the window itself, so the drag offset
   // (computed from pointer coordinates, which are unzoomed) has to be divided
   // back out before it goes into a transform inside that zoomed box.
@@ -104,7 +115,9 @@ export function Modal({ header, children, width, overflowingBody }: Props): JSX.
 
   return (
     <div
-      className="modal__overlay-invisible"
+      className={
+        'modal__overlay-invisible' + (canvasPickable ? ' modal__overlay-invisible--pickable' : '')
+      }
       // The overlay already swallows clicks on the app behind it, but a right
       // click still raised the browser's own context menu. Over UI that's
       // blocked while the requester is up, and over the requester itself, where

@@ -95,6 +95,19 @@ export const toggleBackgroundColorSelectionMode = (context: Context): void => {
   context.state.toolbox.selectedSelectorToolId = isSelected ? null : 'backgroundColorSelectorTool';
 };
 
+// Clicking the picture picks a stencil color while its requester is open.
+export const enterStencilColorSelectionMode = (context: Context): void => {
+  context.state.toolbox.selectorToolBeforeStencilPick =
+    context.state.toolbox.selectedSelectorToolId;
+  context.state.toolbox.selectedSelectorToolId = 'stencilColorSelectorTool';
+};
+
+export const exitStencilColorSelectionMode = (context: Context): void => {
+  context.state.toolbox.selectedSelectorToolId =
+    context.state.toolbox.selectorToolBeforeStencilPick;
+  context.state.toolbox.selectorToolBeforeStencilPick = null;
+};
+
 export const toggleSymmetryMode = (context: Context): void => {
   const isSelected = context.state.toolbox.symmetryModeOn;
   context.state.toolbox.symmetryModeOn = isSelected ? false : true;

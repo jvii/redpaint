@@ -38,7 +38,11 @@ function App(): JSX.Element {
 
   return (
     <div
-      className={'app' + (state.crop.rect ? ' app--cropping' : '')}
+      className={
+        'app' +
+        (state.crop.rect ? ' app--cropping' : '') +
+        (state.stencil.requesterOpen ? ' app--stencil-picking' : '')
+      }
       // While a crop is armed the chrome takes no pointer events (App.css), so
       // the menubar's own handler (the one that normally suppresses the browser
       // menu there) never runs, and a right-click anywhere off the canvas
