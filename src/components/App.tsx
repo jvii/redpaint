@@ -36,21 +36,24 @@ function App(): JSX.Element {
   useDocumentAutosave();
   useLayoutEffect((): void => applyUiScale(uiScale), [uiScale]);
 
+  // The chrome takes no pointer events in either of these (App.css), so its own
+  // handlers - the ones that normally suppress the browser's menu there - never
+  // run, and a right-click off the canvas raises the OS menu instead.
+  const canvasPicking = state.stencil.requesterOpen || state.paletteEditor.isOpen;
+  const inertChrome = !!state.crop.rect || canvasPicking;
+
   return (
     <div
       className={
         'app' +
         (state.crop.rect ? ' app--cropping' : '') +
-        (state.stencil.requesterOpen || state.paletteEditor.isOpen ? ' app--canvas-picking' : '')
+        (canvasPicking ? ' app--canvas-picking' : '')
       }
-      // While a crop is armed the chrome takes no pointer events (App.css), so
-      // the menubar's own handler (the one that normally suppresses the browser
-      // menu there) never runs, and a right-click anywhere off the canvas
-      // raises the OS menu instead. Right-click is the crop's commit gesture,
-      // so that is exactly the button someone will be pressing. Suppressed at
-      // the root, which is the whole viewport; the overlay's own handler has
-      // already run and committed by the time this bubbles.
-      onContextMenu={state.crop.rect ? (event): void => event.preventDefault() : undefined}
+      // Suppressed at the root, which is the whole viewport. Nothing below loses
+      // its own right click: every handler that wants one has run by the time
+      // this bubbles - an armed crop commits on it, and the picking requesters
+      // take it on the canvas.
+      onContextMenu={inertChrome ? (event): void => event.preventDefault() : undefined}
     >
       <Menubar />
       <Menu />
