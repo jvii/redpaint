@@ -250,7 +250,7 @@ export function ScreenStatus(): JSX.Element {
           aria-pressed={state.canvas.scaleMode === 'stretch'}
           aria-label="Stretch"
           onClick={actions.canvas.toggleScaleMode}
-          title="Stretch the screen to fill the window, taking the window's proportions. Turn off to keep the format's own aspect ratio."
+          title="Stretch the canvas area to fill the window. Turn off to keep the screen format's aspect ratio."
         >
           {stretchIcon}
         </button>
