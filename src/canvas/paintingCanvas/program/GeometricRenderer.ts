@@ -2,6 +2,8 @@ import { Line, Point } from '../../../types';
 import { canvasToWebGLCoordX, canvasToWebGLCoordY, shiftLine, shiftPoint } from '../../util/util';
 import { createProgram, activateProgram, bindFramebuffer } from '../../util/webglUtil';
 import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
+import { stencil } from '../../Stencil';
+import { STENCIL_TEXTURE_UNIT } from '../../util/stencilTexture';
 
 export class GeometricRenderer {
   private gl: WebGLRenderingContext;
@@ -10,16 +12,27 @@ export class GeometricRenderer {
   // round-trips, too slow for per-draw-call use
   private a_position: number;
   private u_resolution: WebGLUniformLocation | null;
+  private u_stencil: WebGLUniformLocation | null;
+  private u_stencilOn: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
     this.program = this.createProgram();
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
     this.u_resolution = gl.getUniformLocation(this.program, 'resolution');
+    this.u_stencil = gl.getUniformLocation(this.program, 'u_stencil');
+    this.u_stencilOn = gl.getUniformLocation(this.program, 'u_stencilOn');
     // createProgram leaves the program bound; the texture units never change
     // (0 = color indices, 1 = palette), so the samplers can be set once
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_colorIndexTexture'), 0);
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
+  }
+
+  // Set per draw rather than once: the stencil can be made, suspended or freed
+  // between any two strokes.
+  private updateStencilUniforms(): void {
+    this.gl.uniform1i(this.u_stencil, STENCIL_TEXTURE_UNIT);
+    this.gl.uniform1f(this.u_stencilOn, stencil.active ? 1 : 0);
   }
 
   /**
@@ -54,6 +67,7 @@ export class GeometricRenderer {
     }
 
     this.gl.uniform2f(this.u_resolution, gl.canvas.width, gl.canvas.height);
+    this.updateStencilUniforms();
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.POINTS, 0, points.length);
@@ -83,6 +97,7 @@ export class GeometricRenderer {
     }
 
     this.gl.uniform2f(this.u_resolution, gl.canvas.width, gl.canvas.height);
+    this.updateStencilUniforms();
 
     this.gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
     this.gl.drawArrays(gl.LINES, 0, 2 * lines.length);
@@ -105,10 +120,20 @@ export class GeometricRenderer {
     uniform vec2 resolution;
     uniform sampler2D u_colorIndexTexture;
     uniform sampler2D u_palette;
+    uniform sampler2D u_stencil;
+    uniform float u_stencilOn;
 
     void main() {
       vec2 position = vec2((gl_FragCoord.x) / (resolution.x), (gl_FragCoord.y / (resolution.y)));
       vec4 pixel = texture2D(u_colorIndexTexture, position);
+
+      // This pass paints single pixels straight to the screen, skipping the
+      // full redraw that composites the stencil (DrawImageRenderer), so it has
+      // to honour the stencil itself: the color index already holds the new
+      // paint, which the repair pass undoes later.
+      vec4 stencilPixel = texture2D(u_stencil, position);
+      float restore = (1.0 - float(isTransparent(stencilPixel))) * u_stencilOn;
+      pixel = mix(pixel, stencilPixel, restore);
 
       if (isTrueColor(pixel)) {
         // true-color pixel: the literal RGB color
