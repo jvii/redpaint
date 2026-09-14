@@ -117,3 +117,22 @@ export const free = (context: Context): void => {
   context.state.stencil.lockedColors = [];
   sync(context);
 };
+
+// A page swap: the stencil is a mask over a picture and the picture just
+// changed, so it applies only where the arriving page left it applying. No
+// canvas passed, so the raster keeps the pixels it froze: the page arriving is
+// the one it was suspended on, and its picture cannot have been painted since.
+export const setEnabledForPage = (context: Context, on: boolean): void => {
+  if (stencil.enabled === on) {
+    return;
+  }
+  stencil.setEnabled(on, null);
+  sync(context);
+};
+
+// A stencil and a fixed background are both cut from the pixels of the picture
+// that was open, so neither means anything against the one replacing it.
+export const dropForNewPicture = (context: Context): void => {
+  context.actions.stencil.free();
+  context.actions.background.free();
+};

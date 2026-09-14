@@ -163,6 +163,7 @@ export function useCanvasContentUpload(): void {
       actions.app.setDocumentName(pending.documentName);
       forgetFileHandles();
       actions.brush.dropBuiltInBrush();
+      actions.stencil.dropForNewPicture();
       if (pending.documentModified) {
         actions.app.markDocumentModified();
       } else {
