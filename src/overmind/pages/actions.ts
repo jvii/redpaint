@@ -36,6 +36,7 @@ export const swap = (context: Context): void => {
     scrollFocusPoint: context.state.canvas.scrollFocusPoint
       ? { ...context.state.canvas.scrollFocusPoint }
       : null,
+    stencilOn: context.state.stencil.enabled,
   });
   if (!nextPage()) {
     addPage(blankPage(context));
@@ -190,6 +191,9 @@ export const restoreOffScreenPage = (
     size: { width: restored.width, height: restored.height },
     backgroundColorId: restored.backgroundColorId,
     scrollFocusPoint: null,
+    // History is session state and so is this: a restored page starts with the
+    // stencil off, as it starts with no history.
+    stencilOn: false,
   };
   if (restored.before) {
     insertPageBefore(page);
@@ -233,6 +237,9 @@ function showCurrentPage(context: Context, target: Page): void {
   context.state.toolbox.zoomModeOn = false;
   context.state.canvas.zoomFocusPoint = null;
   context.state.canvas.scrollFocusPoint = target.scrollFocusPoint;
+  // The stencil is the document's and travels with it; only whether it applies
+  // is the page's, so a swap away and back leaves it as you had it.
+  context.actions.stencil.setEnabledForPage(target.stencilOn);
   context.actions.canvas.setResolution({ ...target.size, recordUndoPoint: false });
 }
 
@@ -281,5 +288,7 @@ function blankPage(context: Context): Page {
     size: { width, height },
     backgroundColorId,
     scrollFocusPoint: null,
+    // A page nobody has painted on has nothing for a stencil to protect.
+    stencilOn: false,
   };
 }

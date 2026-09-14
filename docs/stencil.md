@@ -318,8 +318,15 @@ layout decision to make before the drawer, not after.
    `overmind/background` mirrors the flag, CLR restores it instead of erasing,
    and **Lock FG** masks by difference from it — an area rather than a color,
    so a pixel repainted in the same color number but as true color still counts.
-   `B` joins the `S` in the menubar. Both are dropped on a new picture and on a
-   resize that changes the size.
+   `B` joins the `S` in the menubar. Both are dropped on a new picture, on a
+   loaded one, and on a resize that changes the size.
+
+   A page swap neither drops nor suspends it outright: the stencil belongs to
+   the document and is shared, but **whether it applies is per page**
+   (`Page.stencilOn`), so swapping away to cut a brush and back leaves it as you
+   had it, while a page you have not turned it on for shows none. DPaint shares
+   one stencil the same way; PyDPainter instead gives every project its own
+   (`menus.py`'s swap, which copies a whole `Stencil` per project).
 
    Not done: DPaint II also refuses to pick a color matching the background
    while it is fixed (4-22). A narrow detail that would put a background check

@@ -34,6 +34,10 @@ export type Page = {
   // as transparent, so it has to travel with the page rather than the document.
   backgroundColorId: string;
   scrollFocusPoint: Point | null;
+  // Whether the stencil applies while this page is showing. The stencil itself
+  // belongs to the document and is shared; only its on/off state is per page,
+  // so swapping away to cut a brush and back leaves it as you had it.
+  stencilOn: boolean;
 };
 
 // What park() writes back: everything in a Page except its history, which the
@@ -49,6 +53,7 @@ const pages: Page[] = [
     currentIndex: null,
     size: { width: 0, height: 0 },
     backgroundColorId: '0',
+    stencilOn: false,
     scrollFocusPoint: null,
   },
 ];
