@@ -1,6 +1,10 @@
 import { GradientFillStyle, gradientFillUniforms } from '../../../algorithm/gradientFill';
 import { FillShape } from '../../../algorithm/fillShape';
 import { createProgram, activateProgram } from '../../util/webglUtil';
+import { stencil } from '../../Stencil';
+import { STENCIL_TEXTURE_UNIT } from '../../util/stencilTexture';
+import { STENCIL_DISCARD_FRAGCOORD_LIB } from '../../util/stencilShaderLib';
+import { ALPHA_TAG_LIB } from '../../util/alphaTagShaderLib';
 import {
   applyGradientUniforms,
   GRADIENT_LIB,
@@ -33,7 +37,13 @@ export class OverlayGradientRenderer {
     this.program = this.createProgram();
     this.a_position = gl.getAttribLocation(this.program, 'a_position');
     this.uniforms = {};
-    for (const name of [...GRADIENT_UNIFORM_NAMES, 'u_palette']) {
+    for (const name of [
+      'u_stencil',
+      'u_stencilOn',
+      'u_stencilSize',
+      ...GRADIENT_UNIFORM_NAMES,
+      'u_palette',
+    ]) {
       this.uniforms[name] = gl.getUniformLocation(this.program, name);
     }
     gl.uniform1i(this.uniforms['u_rowSpans'], ROW_SPAN_TEXTURE_UNIT);
@@ -61,16 +71,32 @@ export class OverlayGradientRenderer {
     }
     gl.uniform1i(this.uniforms['u_palette'], 1); // palette texture unit
 
+    this.updateStencilUniforms();
+
     drawShapeQuad(gl, this.a_position, u);
+  }
+
+  // Set per draw rather than once: the stencil can be made, suspended or freed
+  // between any two previews.
+  private updateStencilUniforms(): void {
+    const gl = this.gl;
+    gl.uniform1i(this.uniforms['u_stencil'], STENCIL_TEXTURE_UNIT);
+    gl.uniform1f(this.uniforms['u_stencilOn'], stencil.active ? 1 : 0);
+    gl.uniform2f(this.uniforms['u_stencilSize'], gl.canvas.width, gl.canvas.height);
   }
 
   private createProgram(): WebGLProgram {
     const fragmentShader = `
     ${GRADIENT_LIB}
+    ${ALPHA_TAG_LIB}
 
     uniform sampler2D u_palette;
+    ${STENCIL_DISCARD_FRAGCOORD_LIB}
 
     void main () {
+      if (stencilBlocks()) {
+        discard;
+      }
       float index = gradientStorageIndex();
       gl_FragColor = texture2D(u_palette, vec2((index + 0.5) / 256.0, 0.5));
     }

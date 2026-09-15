@@ -28,3 +28,18 @@ export const STENCIL_DISCARD_LIB = `
       return u_stencilOn > 0.5 && !isTransparent(texture2D(u_stencil, v_stencilUv));
     }
     `;
+
+// For the shape-fill programs, whose vertex shader is shared with the painting
+// canvas's own writers and must stay as it is. Their fragments already work in
+// canvas pixels, so the stencil coordinate comes from gl_FragCoord rather than
+// a varying. Needs ALPHA_TAG_LIB embedded before it, as above.
+export const STENCIL_DISCARD_FRAGCOORD_LIB = `
+    uniform sampler2D u_stencil;
+    uniform float u_stencilOn;
+    uniform vec2 u_stencilSize; // drawing buffer size in pixels
+
+    bool stencilBlocks() {
+      return u_stencilOn > 0.5 &&
+        !isTransparent(texture2D(u_stencil, gl_FragCoord.xy / u_stencilSize));
+    }
+    `;

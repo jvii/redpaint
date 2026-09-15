@@ -5,6 +5,7 @@ import { PaletteRange } from '../../overmind/palette/state';
 import { OverlayGeometricRenderer } from '../../canvas/overlayCanvas/program/OverlayGeometricRenderer';
 import { OverlayGradientRenderer } from '../../canvas/overlayCanvas/program/OverlayGradientRenderer';
 import { OverlayPatternRenderer } from '../../canvas/overlayCanvas/program/OverlayPatternRenderer';
+import { clearStencilTexture } from '../../canvas/util/stencilTexture';
 
 // Shared scaffolding for the two off-canvas fill-style previews: the Fill Style
 // requester's big ellipse swatch (useFillStylePreview) and the menubar's Color
@@ -58,6 +59,13 @@ export function useFillPreviewGL(
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    // The overlay renderers drop fragments the stencil protects, and they read
+    // its texture from whichever context they were built in. This one is a
+    // swatch, not the picture, so it gets the empty stencil permanently: an
+    // unbound sampler would read undefined, and the real stencil would punch
+    // the picture's locked shapes through the preview.
+    clearStencilTexture(gl);
 
     glRef.current = {
       gl,
