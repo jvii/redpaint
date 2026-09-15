@@ -3,13 +3,17 @@ import { CanvasColorIndex } from '../../domain/CanvasColorIndex';
 // The stencil raster both canvas stacks sample to leave protected pixels
 // looking as they were (docs/stencil.md).
 //
-// Unit 4, and it must stay clear of every other unit in the overlay context in
-// particular: 0, 1 and 2 are the color index, the palette and the brush bitmap,
-// 3 is OverlaySelectionIndicatorRenderer's copy of the main canvas, and 7-9 are
-// the pattern and row-span textures. A unit shared with any of them is bound to
-// whatever drew last, which shows up as the preview being masked by the wrong
-// texture from the second stroke on.
-export const STENCIL_TEXTURE_UNIT = 4;
+// Unit 10, which is past everything else either context binds: 0, 1 and 2 are
+// the color index, the palette and the brush bitmap; 3 to 6 are EffectIndexer's
+// work, save, mask and shape (and 3 again is OverlaySelectionIndicatorRenderer's
+// copy of the main canvas); 7 to 9 are the pattern and row-span textures. A unit
+// shared with any of them is bound to whatever drew last, which showed up as the
+// preview being masked by the wrong texture, and as an effect mode painting the
+// stencil's pixels into its own working copy.
+//
+// WebGL guarantees only 8 combined units, so this needs a machine with more.
+// Every desktop GPU reports at least 16, and the pattern fills already assume 10.
+export const STENCIL_TEXTURE_UNIT = 10;
 
 // One per context, for the reason paletteTexture.ts keeps its own: texImage2D
 // writes to whatever is bound, not to a unit.
