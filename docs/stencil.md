@@ -372,3 +372,82 @@ deliberate omission in `docs/dpaint2-parity.md` rather than a gap.
 
 Brush pickup respecting the stencil (DPaint III) is one line in
 `BrushSelector` once the mask exists, and is the cheapest thing on this page.
+
+## Open: the effect modes read what is under the stencil
+
+A locked pixel cannot be painted, but today it can still be *read*: drag Smear
+across a locked shape and its color comes out the other side, smeared over the
+unlocked pixels around it. The shape itself survives - the repair pass puts it
+back - so nothing is damaged, but color has escaped from under the stencil,
+which is not what a frisket does.
+
+DPaint II does not allow it. Neither reference settles why:
+
+- The vendored DPaint source is DPaint I, which has no stencil at all (nothing
+  in the tree matches `stencil`). DPaint II's source is not public.
+- The DP2 manual states only the write rule - "when you have a stencil for a
+  particular set of colors, you cannot paint over those colors until you turn
+  the stencil off" (3.19) - and its Smear entry says nothing about stencils.
+- PyDPainter has our behaviour, by the same mechanism: `prim.py`'s smear never
+  consults the stencil, and `config.save_undo` repairs afterwards
+  (`config.py:1499`, `stencil.draw(pixel_canvas)`) exactly where we call
+  `commitStencil`.
+
+The one read PyDPainter *does* mask is brush pickup (`prim.py:450`): grabbing a
+brush with a stencil on sets every locked pixel in the grabbed image to the
+background color, so it comes out transparent. That is DPaint III's documented
+behaviour, and it is a plausible guess at how DPaint II got the effect: a smear
+brush picking up through the stencil carries nothing from the locked pixels.
+
+### The rule
+
+**A protected pixel is absent, not just read-only.** An effect that samples the
+picture sees a hole where the stencil is, and composes its result from the
+pixels it can see.
+
+Per mode, on what each one reads (docs/reference/effects.md):
+
+| Mode | Reads | Under the stencil |
+| --- | --- | --- |
+| Smear | the previous stamp's pixels (`save`) | absent: those pixels do not travel |
+| Smooth | the 3x3 neighbourhood (`work`) | absent: dropped from the average, which renormalizes over the rest |
+| Blend | `save` averaged with `work` | see below |
+| Shade | the pixel it is about to write | nothing to decide: that pixel is protected, and the repair already restores it |
+| Matte, Color, Repl, Cycle | nothing | unaffected |
+
+Blend is the one to check against the original before deciding: DPaint II
+appears to do *something* with a stencil up rather than nothing, and "absent"
+has two readings for a two-sided average - drop the protected side and write
+the other side unchanged, or skip the pixel entirely. Try both against DPaint II
+before choosing; the table's other rows are not in doubt.
+
+### The mechanism
+
+Two places it can go. Both need the canvas-space coordinate the stencil is
+indexed by, which the effect passes do not carry today: they render into the
+stamp's rect on the color-index framebuffer, so `gl_FragCoord.xy` over a new
+`u_canvasSize` gives it, the way `GeometricRenderer` already samples the stencil.
+
+1. **Knock the holes into the scratch copies.** After `work` is filled by
+   `copyTexSubImage2D` (and when `save` is taken), run a pass that writes
+   `ALPHA_TRANSPARENT` wherever the stencil is not transparent. One extra pass
+   per stamp, and every effect shader then needs to treat a transparent source
+   texel as absent - which Smear and Blend must learn anyway, since their
+   `save` already has out-of-bounds regions they skip.
+2. **Sample the stencil inside each effect shader.** No extra pass, and each
+   mode spells out its own "absent": Smear discards the write, Smooth drops the
+   sample and divides by the count it actually used, Blend does whichever the
+   check above decides.
+
+(2) is the better fit. The three modes that care need different behaviour at a
+hole, so a shared "make it transparent" pass would only hand them the same
+question one indirection later, and the sample is a texture read they are
+already paying for on the same units.
+
+### Phasing
+
+One piece of work: `u_canvasSize` plus the stencil sampler into the effect
+programs, then Smear and Smooth, then Blend once its behaviour is pinned down.
+Verification is the same shape as the smear check that found this: a locked band
+against an unlocked one, drag across the boundary, and confirm no color from the
+locked band appears outside it.
