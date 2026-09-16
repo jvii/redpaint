@@ -451,3 +451,61 @@ programs, then Smear and Smooth, then Blend once its behaviour is pinned down.
 Verification is the same shape as the smear check that found this: a locked band
 against an unlocked one, drag across the boundary, and confirm no color from the
 locked band appears outside it.
+
+## Open: showing the stencil
+
+A made stencil is invisible. You find out where it is by painting and seeing
+what refuses to take paint, which is a poor way to check that the mask caught
+what you meant - especially its edges, where a locked color meets a near-identical
+unlocked one.
+
+**Highlight the locked areas, do not dim the rest.** Dimming fails on the
+picture that needs it most: a black background does not dim. And it is the wrong
+metaphor - a real stencil is a sheet laid over the picture, hiding the part it
+protects, so the marked area should be the protected one.
+
+### What it looks like
+
+- **A translucent striped sheet over the locked pixels.** Translucent because
+  the color underneath is exactly what you are trying to judge; striped because
+  a flat tint over a picture of flat colors reads as more picture. Diagonal
+  stripes, in **screen space** (from `gl_FragCoord`, not canvas pixels) so they
+  stay the same width at any zoom and never look like something painted.
+- **An edge, drawn.** The boundary is the part you are checking, and a stripe
+  pattern alone leaves it soft. Four neighbour samples of the stencil texture in
+  the same shader: where a neighbour's protection differs from this fragment's,
+  draw the line color.
+- **Animated, optionally.** Marching stripes (or ants along the edge) make it
+  unmistakably chrome rather than picture. It needs a repaint per frame, which
+  this app otherwise does only on demand - a small driver like
+  `canvas/CycleDriver.ts`, running only while the toggle is on, bumping a phase
+  uniform and asking for a render. Worth doing after the static version reads
+  well, not before.
+
+### How it behaves
+
+A **toggle**, not a peek: it stays on while you paint, which is the point - you
+watch the stencil hold the line as the stroke goes over it. That makes it
+display state, not a mode: no undo point, no change to the raster, nothing the
+requester needs to know.
+
+Two things it must not leak into:
+
+- **Saved files and the autosave**, which capture the drawing buffer. Color
+  cycling has the same problem and solves it with
+  `CycleDriver.withBaseColors(fn)`, holding the base palette around the capture;
+  this needs the same guard, turning the sheet off for the duration.
+- **Brush pickup**, which reads the canvas rather than the drawing buffer, so it
+  is safe as it stands - worth a check rather than an assumption.
+
+The overlay is not involved: the sheet belongs to the picture's own display
+pass, and previews are transient things drawn on top of it.
+
+### Where it goes
+
+`DrawImageRenderer`'s existing stencil branch, which already samples the stencil
+texel for this fragment. It gains `u_stencilShow` (and later a phase), the four
+neighbour samples for the edge, and the stripe function - all inside the branch
+that only runs where the stencil protects. The zoom view mirrors the main
+canvas's output, so it follows for nothing. A **Show** gadget in the Effects
+drawer's Stencil cluster drives it, beside `On`.
