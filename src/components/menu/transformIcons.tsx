@@ -463,6 +463,17 @@ export function StencilIcon({ size = 24 }: IconProps): JSX.Element {
   );
 }
 
+// The stencil shown on the picture: the same frame as StencilIcon, its middle
+// filled with the sheet's own stripes rather than solid.
+export function StencilShowIcon({ size = 24 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
+      <rect x="2" y="2" width="20" height="20" />
+      <path d="M7 12l5-5M7 17l10-10M12 17l5-5" />
+    </svg>
+  );
+}
+
 // Make again from the picture as it is now. Standard Refresh symbol
 export function StencilRemakeIcon({ size = 24 }: IconProps): JSX.Element {
   return (
@@ -480,12 +491,7 @@ export function StencilRemakeIcon({ size = 24 }: IconProps): JSX.Element {
 export function StencilReverseIcon({ size = 24 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} {...base} aria-hidden="true" focusable="false">
-      <path
-        d="M2 2h20v20H2z M7 7v10h10V7z"
-        fill="currentColor"
-        fillRule="evenodd"
-        stroke="none"
-      />
+      <path d="M2 2h20v20H2z M7 7v10h10V7z" fill="currentColor" fillRule="evenodd" stroke="none" />
     </svg>
   );
 }

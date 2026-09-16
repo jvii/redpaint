@@ -16,17 +16,21 @@ function sync(context: Context): void {
 
 export const openRequester = (context: Context): void => {
   context.state.stencil.lockedColorsSnapshot = [...context.state.stencil.lockedColors];
+  stencil.saveForCancel();
   context.state.stencil.requesterOpen = true;
   context.actions.toolbox.enterCanvasPickMode('stencilColorSelectorTool');
 };
 
 export const closeRequester = (context: Context): void => {
+  stencil.dropSaved();
   context.state.stencil.requesterOpen = false;
   context.state.stencil.lockedColorsSnapshot = null;
   context.actions.toolbox.exitCanvasPickMode();
 };
 
 export const cancelRequester = (context: Context): void => {
+  stencil.restoreSaved();
+  sync(context);
   const snapshot = context.state.stencil.lockedColorsSnapshot;
   if (snapshot) {
     // A copy: the snapshot is state of its own, and assigning it back puts one
@@ -40,16 +44,31 @@ export const toggleColor = (context: Context, colorNumber: number): void => {
   const locked = [...context.state.stencil.lockedColors];
   locked[colorNumber] = !locked[colorNumber];
   context.state.stencil.lockedColors = locked;
+  remakeDraft(context);
 };
 
 export const clearColors = (context: Context): void => {
   context.state.stencil.lockedColors = [];
+  remakeDraft(context);
 };
+
+// The requester's ticks make the stencil as they go, rather than at OK: with
+// Show on, the picture answers what a color catches while you are choosing.
+// Cancel puts back whatever was there (canvas/Stencil's saveForCancel).
+function remakeDraft(context: Context): void {
+  const canvas = paintingCanvasController.getCanvasColorIndex();
+  if (!canvas) {
+    return;
+  }
+  stencil.make(canvas, context.state.stencil.lockedColors);
+  sync(context);
+}
 
 // DPaint's Invert: the tick marks flip, which is how "lock everything except
 // this one" is four clicks rather than thirty-one.
 export const invertColors = (context: Context, colorCount: number): void => {
   context.state.stencil.lockedColors = inverted(context.state.stencil.lockedColors, colorCount);
+  remakeDraft(context);
 };
 
 // Over the whole palette, not over the array: the ticks are sparse, so mapping
@@ -106,6 +125,13 @@ export const lockPainted = (context: Context): void => {
   stencil.lockPainted(canvas, frozen);
   context.state.stencil.lockedColors = [];
   sync(context);
+};
+
+// Showing the stencil is a view, not a change: it survives painting, records no
+// undo point, and the shader gates it on the stencil being active anyway.
+export const toggleVisible = (context: Context): void => {
+  context.state.stencil.visible = !context.state.stencil.visible;
+  paintingCanvasController.setStencilShow(context.state.stencil.visible);
 };
 
 export const toggleEnabled = (context: Context): void => {

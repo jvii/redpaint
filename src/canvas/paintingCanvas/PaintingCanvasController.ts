@@ -184,6 +184,28 @@ export class PaintingCanvasController implements CanvasController {
     this.render();
   }
 
+  // The locked areas drawn as a striped sheet, for as long as it is on
+  // (docs/stencil.md). Display only: no undo point, nothing in the picture.
+  setStencilShow(on: boolean): void {
+    this.mainCanvasRenderer?.setStencilShow(on);
+    this.render();
+  }
+
+  // Takes the sheet down for the duration of fn, for the save paths that
+  // capture the drawing buffer and would otherwise write the stripes into the
+  // file. The same guard color cycling needs (CycleDriver.withBaseColors).
+  async withoutStencilShow<T>(fn: () => Promise<T> | T): Promise<T> {
+    if (!overmind.state.stencil.visible) {
+      return await fn();
+    }
+    this.setStencilShow(false);
+    try {
+      return await fn();
+    } finally {
+      this.setStencilShow(true);
+    }
+  }
+
   // Copying the canvas into the zoom view costs a full-canvas blit per draw
   // call, so skip it while the zoom view is hidden. useRefreshZoomCanvas
   // re-renders when zoom mode is turned on.

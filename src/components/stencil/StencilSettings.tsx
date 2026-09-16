@@ -53,6 +53,10 @@ export function StencilSettings(): JSX.Element | null {
             Select the colors to lock. You can also click the picture to lock the color you point
             at.
           </p>
+          <p className="supporting-text stencil-settings__note">
+            Press <kbd className="wb-gadget__keycap stencil-settings__key">_</kbd> to show the
+            stencil on the picture.
+          </p>
         </div>
         <div className="stencil-settings__locked">
           <span className="stencil-settings__label">Locked:</span>

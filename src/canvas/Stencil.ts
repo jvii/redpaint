@@ -19,6 +19,12 @@ class Stencil {
   private lockedColors: LockedColors = [];
   private origin: StencilKind = 'colors';
   private on = false;
+  private saved: {
+    raster: CanvasColorIndex | null;
+    lockedColors: LockedColors;
+    on: boolean;
+    origin: StencilKind;
+  } | null = null;
 
   // Non-null only while a stencil exists and is not suspended, which is exactly
   // when anything should consult it.
@@ -91,6 +97,34 @@ class Stencil {
     this.raster = null;
     this.lockedColors = [];
     this.on = false;
+  }
+
+  // The requester remakes the stencil on every tick, so the picture shows what
+  // the colors catch as they are chosen. What was there before is kept whole
+  // for Cancel: the rasters are never written in place, so holding the old one
+  // costs a reference rather than a copy.
+  saveForCancel(): void {
+    this.saved = {
+      raster: this.raster,
+      lockedColors: this.lockedColors,
+      on: this.on,
+      origin: this.origin,
+    };
+  }
+
+  restoreSaved(): void {
+    if (!this.saved) {
+      return;
+    }
+    this.raster = this.saved.raster;
+    this.lockedColors = this.saved.lockedColors;
+    this.on = this.saved.on;
+    this.origin = this.saved.origin;
+    this.saved = null;
+  }
+
+  dropSaved(): void {
+    this.saved = null;
   }
 
   // A stencil holds coordinates into the picture it was made against, so it

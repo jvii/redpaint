@@ -52,6 +52,7 @@ convention, since that is what you would grep for.
 | `m` | Magnify | manual |
 | `/` | Symmetry | manual |
 | `-` | Stencil on/off | manual ("Tilde (-) Schablone ein/aus") |
+| `_` | Show the stencil over the picture | ours (the shifted half of `-`) |
 | `K` | Clear page | manual |
 | `,` | pick a foreground color off the canvas | manual ("Select Color cursor") |
 | `p` | Palette editor | manual ("Palette Window") — opens only, see below |

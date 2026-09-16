@@ -40,6 +40,10 @@ export class MainCanvasRenderer {
     this.drawImageRenderer.setStencilOn(on);
   }
 
+  setStencilShow(on: boolean): void {
+    this.drawImageRenderer.setStencilShow(on);
+  }
+
   points(points: Point[]): void {
     this.geometricRenderer.renderPoints(points);
   }

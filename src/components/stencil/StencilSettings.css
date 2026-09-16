@@ -53,6 +53,12 @@
      height and settle for less when there are too many to fit the screen. */
 }
 
+/* stepped down to the note's own size, the way the menubar's hint caps are */
+.stencil-settings__key {
+  font-size: 12px;
+  padding: 2px 5px;
+}
+
 .stencil-settings__note {
   margin: 0;
   max-width: 24ch;

@@ -36,6 +36,8 @@ export class DrawImageRenderer {
   // slow for per-draw-call use
   private a_position: number;
   private u_stencilOn: WebGLUniformLocation | null;
+  private u_stencilShow: WebGLUniformLocation | null;
+  private u_stencilTexel: WebGLUniformLocation | null;
 
   public constructor(gl: WebGLRenderingContext) {
     this.gl = gl;
@@ -47,6 +49,8 @@ export class DrawImageRenderer {
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_palette'), 1);
     gl.uniform1i(gl.getUniformLocation(this.program, 'u_stencil'), STENCIL_TEXTURE_UNIT);
     this.u_stencilOn = gl.getUniformLocation(this.program, 'u_stencilOn');
+    this.u_stencilShow = gl.getUniformLocation(this.program, 'u_stencilShow');
+    this.u_stencilTexel = gl.getUniformLocation(this.program, 'u_stencilTexel');
   }
 
   // 1 while a stencil is active. Uniform across the draw, so it costs no
@@ -54,6 +58,13 @@ export class DrawImageRenderer {
   public setStencilOn(on: boolean): void {
     activateProgram(this.gl, this.program);
     this.gl.uniform1f(this.u_stencilOn, on ? 1 : 0);
+  }
+
+  // 1 while the locked areas are shown as a striped sheet (docs/stencil.md).
+  // Display only: nothing it draws reaches the picture.
+  public setStencilShow(on: boolean): void {
+    activateProgram(this.gl, this.program);
+    this.gl.uniform1f(this.u_stencilShow, on ? 1 : 0);
   }
 
   /**
@@ -64,6 +75,10 @@ export class DrawImageRenderer {
     const gl = this.gl;
 
     activateProgram(gl, this.program);
+
+    // One stencil texel in uv, for the sheet's edge test. Per draw: the texture
+    // is the canvas, and the canvas is re-sized under this program.
+    gl.uniform2f(this.u_stencilTexel, 1 / gl.canvas.width, 1 / gl.canvas.height);
 
     // Render directly to the canvas (not to a framebuffer)
     bindFramebuffer(gl, null);
@@ -113,6 +128,30 @@ export class DrawImageRenderer {
     uniform sampler2D u_palette;  // Palette texture
     uniform sampler2D u_stencil;  // Frozen pixels, transparent where unprotected
     uniform float u_stencilOn;
+    uniform float u_stencilShow;  // draw the locked areas as a striped sheet
+    uniform vec2 u_stencilTexel;  // one stencil texel in uv
+
+    // The sheet: stripes across the locked areas, in picture pixels so they
+    // scale with the picture the way a sheet laid over it would, and a solid
+    // line along the boundary, which is the part worth checking.
+    const float STRIPE_PERIOD = 8.0;
+    const float SHEET_ALPHA = 0.45;
+    const vec3 SHEET_INK = vec3(0.0);
+    const vec3 SHEET_PAPER = vec3(1.0);
+
+    vec3 displayColor(vec4 pixel) {
+      if (isTrueColor(pixel)) {
+        return pixel.rgb; // true-color pixel: the literal RGB color
+      }
+      // Indexed pixel: the red channel holds the 0-based palette position. The
+      // 0.5s land on the texel center of the 256x1 palette texture.
+      float paletteIndex = pixel.r * 255.0;
+      return texture2D(u_palette, vec2((paletteIndex + 0.5) / 256.0, 0.5)).rgb;
+    }
+
+    float isProtected(vec2 at) {
+      return 1.0 - float(isTransparent(texture2D(u_stencil, at)));
+    }
 
     void main() {
       // We flip Y coordinate (1.0 - v_texcoord.y) since WebGL texture coordinates are flipped
@@ -120,23 +159,37 @@ export class DrawImageRenderer {
 
       // Branchless so the per-pixel test cannot diverge at the stencil's edges.
       vec4 stencilPixel = texture2D(u_stencil, uv);
-      float restore = (1.0 - float(isTransparent(stencilPixel))) * u_stencilOn;
-      vec4 pixel = mix(texture2D(u_image, uv), stencilPixel, restore);
+      float here = isProtected(uv);
+      vec4 pixel = mix(texture2D(u_image, uv), stencilPixel, here * u_stencilOn);
+      vec3 color = displayColor(pixel);
 
-      if (isTrueColor(pixel)) {
-        // true-color pixel: the literal RGB color
-        gl_FragColor = vec4(pixel.rgb, 1.0);
-        return;
-      }
+      float show = u_stencilShow * u_stencilOn;
+      float stripe = step(0.5, fract((gl_FragCoord.x + gl_FragCoord.y) / STRIPE_PERIOD));
+      vec3 sheet = mix(SHEET_INK, SHEET_PAPER, stripe);
+      color = mix(color, sheet, show * here * SHEET_ALPHA);
 
-      // Indexed pixel: the red channel contains the 0-based palette position.
-      // Multiply by 255 to convert from 0-1 range to 0-255 range.
-      float paletteIndex = pixel.r * 255.0;
+      // The inner edge: a protected pixel with an unprotected neighbour, dotted
+      // one pixel on and one off in the two sheet colors (either color alone
+      // disappears against a picture of that color).
+      //
+      // The dots alternate along the boundary rather than across the screen: a
+      // screen-space pattern has a direction it lines up with, and every edge
+      // running that way comes out solid instead of dotted - a 45 degree edge
+      // against x + y, a vertical one against x. Which way this bit of boundary
+      // runs comes free from the samples: an unprotected neighbour to the side
+      // means the edge runs up and down here, so step along y, and the other way
+      // round. A staircase has both, and either axis dots it evenly.
+      float left = isProtected(uv - vec2(u_stencilTexel.x, 0.0));
+      float right = isProtected(uv + vec2(u_stencilTexel.x, 0.0));
+      float below = isProtected(uv - vec2(0.0, u_stencilTexel.y));
+      float above = isProtected(uv + vec2(0.0, u_stencilTexel.y));
+      float edge = 1.0 - left * right * below * above;
+      float sideways = step(0.5, (1.0 - left) + (1.0 - right));
+      float along = mix(gl_FragCoord.x, gl_FragCoord.y, sideways);
+      vec3 edgeColor = mix(SHEET_INK, SHEET_PAPER, mod(floor(along), 2.0));
+      color = mix(color, edgeColor, show * here * edge);
 
-      // Look up the actual color from the palette texture
-      // We add 0.5 and divide by 256 to get the correct texel center
-      // The 0.5 Y coordinate accesses the middle of the 1-pixel high palette texture
-      gl_FragColor = texture2D(u_palette, vec2((paletteIndex + 0.5) / 256.0, 0.5));
+      gl_FragColor = vec4(color, 1.0);
     }
     `;
 

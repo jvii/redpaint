@@ -92,11 +92,13 @@ export function blobMakerFor(
 ): BlobMaker | null {
   if (format === 'png') {
     return () =>
-      cycleDriver.withBaseColors(async (): Promise<Blob | null> => {
-        // preserveDrawingBuffer is on, but render once to be sure it is current
-        paintingCanvasController.render();
-        return canvasPngBlob(paintingCanvasController.mainCanvas)();
-      });
+      paintingCanvasController.withoutStencilShow(() =>
+        cycleDriver.withBaseColors(async (): Promise<Blob | null> => {
+          // preserveDrawingBuffer is on, but render once to be sure it is current
+          paintingCanvasController.render();
+          return canvasPngBlob(paintingCanvasController.mainCanvas)();
+        })
+      );
   }
 
   // Read the canvas now, so the refusal happens before any requester goes up:

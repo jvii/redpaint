@@ -8,6 +8,7 @@ import {
   StencilLockFgIcon,
   StencilRemakeIcon,
   StencilReverseIcon,
+  StencilShowIcon,
 } from './transformIcons';
 import { shortcutCap } from '../ui/shortcutCap';
 import './DrawerMenu.css';
@@ -17,7 +18,7 @@ import './DrawerMenu.css';
 export function EffectsMenu(): JSX.Element {
   const actions = useActions();
   const state = useAppState();
-  const { exists, enabled } = state.stencil;
+  const { exists, enabled, visible } = state.stencil;
   const backgroundFixed = state.background.fixed;
   const colorCount = state.palette.paletteArray.length;
 
@@ -84,6 +85,17 @@ export function EffectsMenu(): JSX.Element {
               title={exists ? 'Suspend the stencil, keeping it' : 'No stencil yet'}
               disabled={!exists}
               onClick={(): void => actions.stencil.toggleEnabled()}
+            />
+            <Gadget
+              icon={<StencilShowIcon />}
+              label="Show"
+              stacked
+              shortcut={shortcutCap('_')}
+              on={visible}
+              // Settable whether or not a stencil exists: it decides what to do
+              // with the next one as readily as with the one showing.
+              title="Visualize the stencil over the picture. Locked areas are highlighted with a striped pattern."
+              onClick={(): void => actions.stencil.toggleVisible()}
             />
             <Gadget
               icon={<StencilFreeIcon />}

@@ -81,15 +81,19 @@ function useCopyHotkey(): void {
 
 // Hotkeys belong to the canvas, so they are suspended whenever keystrokes mean
 // something else. Takes just the `target`, so it works for mouse events too.
-function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
+function typingTarget(event: { target: EventTarget | null }): boolean {
   const target = event.target as HTMLElement | null;
-  if (
+  return !!(
     target &&
     (target.tagName === 'INPUT' ||
       target.tagName === 'TEXTAREA' ||
       target.tagName === 'SELECT' ||
       target.isContentEditable)
-  ) {
+  );
+}
+
+function hotkeysSuspended(event: { target: EventTarget | null }): boolean {
+  if (typingTarget(event)) {
     return true;
   }
 
@@ -399,7 +403,19 @@ function useBrushTransformHotkeys(): void {
   }
 
   function handleKey(event: KeyboardEvent): void {
-    if (event.ctrlKey || event.metaKey || event.altKey || hotkeysSuspended(event)) {
+    if (event.ctrlKey || event.metaKey || event.altKey) {
+      return;
+    }
+    // Before the suspension check, and only this key: the Stencil requester
+    // claims the keyboard like any requester, but showing the stencil is the
+    // view for the very thing it is making, and with it up you can watch a
+    // color take effect as you tick it.
+    if (event.key === '_' && overmind.state.stencil.requesterOpen && !typingTarget(event)) {
+      event.preventDefault();
+      actions.stencil.toggleVisible();
+      return;
+    }
+    if (hotkeysSuspended(event)) {
       return;
     }
     switch (event.key) {
@@ -429,6 +445,12 @@ function useBrushTransformHotkeys(): void {
         break;
       case '-':
         actions.stencil.toggleEnabled();
+        break;
+      // The shifted half of the same key, as the shape tools pair their two
+      // halves: '-' decides whether the stencil applies, '_' whether you can
+      // see it.
+      case '_':
+        actions.stencil.toggleVisible();
         break;
       case 'Z':
         actions.toolbox.toggleBrushTransformMode('brushStretchTool');
