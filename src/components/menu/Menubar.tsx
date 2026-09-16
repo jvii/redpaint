@@ -152,7 +152,14 @@ export function Menubar(): JSX.Element {
           Color Fill Box sideways as it appears. */}
       <div className="menubar__indicators">
         {state.stencil.enabled && (
-          <div className="menubar__stencil" title="A stencil is active">
+          <div
+            className="menubar__stencil"
+            title={
+              state.stencil.kind === 'painted'
+                ? 'A stencil is locking everything painted since the background was fixed'
+                : 'A stencil is locking the colors you chose'
+            }
+          >
             S
           </div>
         )}

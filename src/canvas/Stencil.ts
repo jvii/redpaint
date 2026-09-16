@@ -7,12 +7,17 @@ import {
   stencilFromColors,
 } from '../algorithm/stencilMask';
 
+// What the mask was made from. Not derivable from the locked colors, which
+// Reverse fills in for a Lock FG stencil as readily as for any other.
+export type StencilKind = 'colors' | 'painted';
+
 // The one stencil, held outside Overmind for the reason BrushSlots is: a
 // canvas-sized raster has no business behind a reactive proxy. What the UI
 // needs is mirrored into overmind/stencil. docs/stencil.md.
 class Stencil {
   private raster: CanvasColorIndex | null = null;
   private lockedColors: LockedColors = [];
+  private origin: StencilKind = 'colors';
   private on = false;
 
   // Non-null only while a stencil exists and is not suspended, which is exactly
@@ -33,8 +38,13 @@ class Stencil {
     return this.lockedColors;
   }
 
+  get kind(): StencilKind {
+    return this.origin;
+  }
+
   make(canvas: CanvasColorIndex, locked: LockedColors): void {
     this.lockedColors = [...locked];
+    this.origin = 'colors';
     this.raster = stencilFromColors(canvas, this.lockedColors);
     this.on = true;
   }
@@ -53,6 +63,7 @@ class Stencil {
   // re-derives from colors, has nothing to work from.
   lockPainted(canvas: CanvasColorIndex, background: CanvasColorIndex): void {
     this.lockedColors = [];
+    this.origin = 'painted';
     this.raster = stencilFromChanges(canvas, background);
     this.on = true;
   }

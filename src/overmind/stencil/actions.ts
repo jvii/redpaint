@@ -11,6 +11,7 @@ function sync(context: Context): void {
   overlayCanvasController.updateStencil();
   context.state.stencil.exists = stencil.exists;
   context.state.stencil.enabled = stencil.enabled;
+  context.state.stencil.kind = stencil.kind;
 }
 
 export const openRequester = (context: Context): void => {
