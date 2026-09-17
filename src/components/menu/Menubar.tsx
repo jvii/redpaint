@@ -156,8 +156,8 @@ export function Menubar(): JSX.Element {
             className="menubar__stencil"
             title={
               state.stencil.kind === 'painted'
-                ? 'A stencil is locking everything painted since the background was fixed'
-                : 'A stencil is locking the colors you chose'
+                ? 'A stencil is active (foreground locked)'
+                : 'A stencil is active (selected colors locked)'
             }
           >
             S
