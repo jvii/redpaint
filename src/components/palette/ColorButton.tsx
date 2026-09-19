@@ -3,7 +3,9 @@ import { useAppState } from '../../overmind';
 import { colorToRGBString } from '../../algorithm/color';
 
 // One shared thickness for the column divider (the grid's column gap, see
-// Palette.tsx), the range bracket and the selection ring.
+// Palette.tsx), the range bracket and the selection ring. The marks read it as
+// --mark-width, which Palette thins for a grid whose rows are too short to give
+// 3px away on each side.
 export const MARK_WIDTH = 3;
 
 interface Props {
@@ -48,7 +50,7 @@ export function ColorButton({
     backgroundColor: colorToRGBString(useAppState().palette.displayPalette[colorId]),
   };
   if (isSelected) {
-    buttonStyle.outline = `${MARK_WIDTH}px solid white`;
+    buttonStyle.outline = 'var(--mark-width) solid white';
     buttonStyle.outlineOffset = 0;
     // paint above later DOM siblings (the below/right neighbors), which
     // would otherwise cover the ring where it overlaps them
@@ -56,7 +58,7 @@ export function ColorButton({
   } else if (isRangeMember) {
     // only the part of the shadow outside the swatch's own box is visible:
     // exactly the column gap to its left
-    buttonStyle.boxShadow = `-${MARK_WIDTH}px 0 0 0 white`;
+    buttonStyle.boxShadow = 'calc(-1 * var(--mark-width)) 0 0 0 white';
   }
   const handleRightClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void => {
     onRightClick(event);

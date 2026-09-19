@@ -16,9 +16,9 @@ type Props = {
   // The currently active color-cycling/gradient range (palette editor only):
   // draws DPaint's bracket marker over its member swatches.
   activeRange?: { start: string; end: string } | null;
-  // Toolbox usage: stretch to fill the sidebar's remaining height, rows
-  // sized to divide that height evenly (not necessarily square). Omitted in
-  // the palette editor, where cells stay square and sized off the width.
+  // Take the frame and the stretch that go with filling a box the caller sized
+  // (Palette.css). Every grid does divide its box - the rows are 1fr either way
+  // - so this only picks the styling.
   fillHeight?: boolean;
   // Palette editor only: a persistent black rule between each of the 4 columns,
   // like DPaint's requester (the toolbox palette stays undivided). The rules
@@ -44,15 +44,6 @@ export function paletteColumnCount(colorCount: number): number {
   return 8;
 }
 
-// Palette editor only: cap the square swatch at roughly the 32-color size (the
-// 148px grid split into 4 columns). Without a cap a low-column palette (8
-// colors = 1 column) would blow each swatch up to the full grid width and make
-// the grid (and the sliders stretched to match it) many times too tall. Wider
-// palettes already have >4 columns, so their cells fall below the cap and
-// shrink to fit as before; height then tracks the row count, not the column
-// scarcity.
-const EDITOR_MAX_CELL_PX = 35;
-
 function Palette({
   selectedColorId,
   onSelectColor,
@@ -67,6 +58,11 @@ function Palette({
   const colorCount = state.palette.paletteArray.length;
   const columns = paletteColumnCount(colorCount);
   const rows = Math.ceil(colorCount / columns);
+  // The marks are drawn at the swatch's edge, so a deep palette's rows - which
+  // divide a box the caller fixes - cannot afford the full 3px: past 8 rows a
+  // row is under 20px, and a ring on both sides of it leaves a sliver of color
+  // between them while painting over the neighbors.
+  const markWidth = rows > 8 ? 2 : MARK_WIDTH;
 
   // Which requester currently owns this grid's clicks, replacing or narrowing
   // its ordinary job for as long as it is open (docs/stencil.md). Only the
@@ -139,12 +135,10 @@ function Palette({
   // matching DPaint's numbering (ids 1..rows are column 1, and so on)
   const gridStyle = {
     gridAutoFlow: 'column',
-    gridTemplateColumns: fillHeight
-      ? `repeat(${columns}, 1fr)`
-      : `repeat(${columns}, minmax(0, ${EDITOR_MAX_CELL_PX}px))`,
-    gridTemplateRows: `repeat(${rows}, ${fillHeight ? '1fr' : 'auto'})`,
-    columnGap: columnDividers ? MARK_WIDTH : 0,
-    '--mark-width': `${MARK_WIDTH}px`,
+    gridTemplateColumns: `repeat(${columns}, 1fr)`,
+    gridTemplateRows: `repeat(${rows}, 1fr)`,
+    columnGap: columnDividers ? markWidth : 0,
+    '--mark-width': `${markWidth}px`,
   } as React.CSSProperties;
 
   return (

@@ -1,4 +1,5 @@
 import { JSX } from 'react';
+import { colorToRGBString } from '../../algorithm/color';
 import './PaletteEditor.css';
 import { useActions, useAppState } from '../../overmind';
 import { Color } from '../../types';
@@ -44,17 +45,6 @@ export function PaletteEditor(): JSX.Element | null {
     actions.paletteEditor.cancel();
     paintingCanvasController.updatePalette();
     overlayCanvasController.updatePalette();
-  }
-
-  function handleSelectColor(colorId: string): void {
-    const armed = state.paletteEditor.armedAction;
-    actions.paletteEditor.selectEditedColor(colorId);
-    // a completed copy/swap/spread recolored palette slots: refresh the GL
-    // palettes (range endpoint picks don't change colors)
-    if (armed === 'copy' || armed === 'swap' || armed === 'spread') {
-      paintingCanvasController.updatePalette();
-      overlayCanvasController.updatePalette();
-    }
   }
 
   const activeRangeIndex = state.paletteEditor.activeRangeIndex;
@@ -131,24 +121,54 @@ export function PaletteEditor(): JSX.Element | null {
             />
           </div>
         </div>
-        <div className="palette-editor__palette-container">
-          <Palette
-            selectedColorId={state.paletteEditor.editedColorId}
-            onSelectColor={handleSelectColor}
-            activeRange={activeRange}
-            columnDividers
-          />
-          {/* armed action's instruction: a callout pointing at the palette
+        <div className="palette-editor__palette-column">
+          {/* Where the edited color is: the picture with every other color
+              dropped to the background color, which answers it exactly rather
+              than marking the pixels and competing with what is already
+              there. */}
+          <div className="palette-editor__show-row">
+            {/* DPaint's swatch above the palette: the color being edited, big
+                enough to judge, since a slider move is hard to read off one
+                swatch in the grid. */}
+            <span
+              className="palette-editor__edited-swatch"
+              style={{ backgroundColor: colorToRGBString(editedColor) }}
+            />
+            <RetroToggle
+              variant="column"
+              options={[
+                {
+                  value: 'show',
+                  label: 'Show',
+                  title:
+                    'Show where the edited color is used: the picture with every other color in the background color',
+                },
+              ]}
+              selectedValues={state.paletteEditor.highlight ? ['show'] : []}
+              onChange={actions.paletteEditor.toggleHighlight}
+            />
+          </div>
+          <div className="palette-editor__palette-container">
+            <Palette
+              fillHeight
+              selectedColorId={state.paletteEditor.editedColorId}
+              onSelectColor={actions.paletteEditor.selectEditedColor}
+              activeRange={activeRange}
+              columnDividers
+            />
+            {/* armed action's instruction: a callout pointing at the palette
               grid, where the next click belongs; overflows the requester */}
-          {state.paletteEditor.armedAction && (
-            <span className="wb-callout wb-callout--points-left palette-editor__callout">
-              {state.paletteEditor.armedAction === 'copy' && 'Select the color to copy to'}
-              {state.paletteEditor.armedAction === 'swap' && 'Select the color to swap with'}
-              {state.paletteEditor.armedAction === 'spread' &&
-                'Select the last color of the spread'}
-              {state.paletteEditor.armedAction === 'range' && 'Select the last color of the range'}
-            </span>
-          )}
+            {state.paletteEditor.armedAction && (
+              <span className="wb-callout wb-callout--points-left palette-editor__callout">
+                {state.paletteEditor.armedAction === 'copy' && 'Select the color to copy to'}
+                {state.paletteEditor.armedAction === 'swap' && 'Select the color to swap with'}
+                {state.paletteEditor.armedAction === 'spread' &&
+                  'Select the last color of the spread'}
+                {state.paletteEditor.armedAction === 'range' &&
+                  'Select the last color of the range'}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -160,6 +180,7 @@ export function PaletteEditor(): JSX.Element | null {
           {/* DPaint's order: Spread first, then the slot-surgery pair */}
           <RetroButton
             variant={state.paletteEditor.armedAction === 'spread' ? 'secondary' : 'basic'}
+            title="A spread of shades between two colors: click Spread, then the color to end on"
             onClick={(): void => actions.paletteEditor.armAction('spread')}
           >
             {state.paletteEditor.armedAction === 'spread' ? 'Cancel Spread' : 'Spread'}
@@ -167,12 +188,14 @@ export function PaletteEditor(): JSX.Element | null {
           <span className="palette-editor__action-group">
             <RetroButton
               variant={state.paletteEditor.armedAction === 'swap' ? 'secondary' : 'basic'}
+              title="Swap this color's place with another: the picture keeps its color numbers, so what is painted in the two changes places"
               onClick={(): void => actions.paletteEditor.armAction('swap')}
             >
               {state.paletteEditor.armedAction === 'swap' ? 'Cancel Swap' : 'Swap'}
             </RetroButton>
             <RetroButton
               variant={state.paletteEditor.armedAction === 'copy' ? 'secondary' : 'basic'}
+              title="Copy this color into another place in the palette"
               onClick={(): void => actions.paletteEditor.armAction('copy')}
             >
               {state.paletteEditor.armedAction === 'copy' ? 'Cancel Copy' : 'Copy'}

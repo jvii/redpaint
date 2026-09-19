@@ -4,6 +4,8 @@ import './RetroButton.css';
 type Props = {
   variant?: 'primary' | 'secondary' | 'basic';
   disabled?: boolean;
+  // Tooltip, for gadgets whose label is a verb the manual has a sentence about.
+  title?: string;
   onClick: () => void;
   children: React.ReactNode;
 };
@@ -14,6 +16,7 @@ type Props = {
 export function RetroButton({
   variant = 'basic',
   disabled = false,
+  title,
   onClick,
   children,
 }: Props): JSX.Element {
@@ -21,6 +24,7 @@ export function RetroButton({
     <button
       className={`retro-button retro-button--${variant}`}
       disabled={disabled}
+      title={title}
       onClick={onClick}
       type="button"
     >

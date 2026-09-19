@@ -44,6 +44,10 @@ export class MainCanvasRenderer {
     this.drawImageRenderer.setStencilShow(on);
   }
 
+  setColorHighlight(colorNumber: number | null, backgroundColorNumber: number): void {
+    this.drawImageRenderer.setColorHighlight(colorNumber, backgroundColorNumber);
+  }
+
   points(points: Point[]): void {
     this.geometricRenderer.renderPoints(points);
   }

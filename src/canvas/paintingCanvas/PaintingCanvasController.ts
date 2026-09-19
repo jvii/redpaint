@@ -191,6 +191,13 @@ export class PaintingCanvasController implements CanvasController {
     this.render();
   }
 
+  // One palette color shown alone, for the palette editor: everything else drops
+  // to the background color (docs/stencil.md).
+  setColorHighlight(colorNumber: number | null, backgroundColorNumber: number): void {
+    this.mainCanvasRenderer?.setColorHighlight(colorNumber, backgroundColorNumber);
+    this.render();
+  }
+
   // Takes the sheet down for the duration of fn, for the save paths that
   // capture the drawing buffer and would otherwise write the stripes into the
   // file. The same guard color cycling needs (CycleDriver.withBaseColors).

@@ -1,4 +1,6 @@
 import { Context } from '../../overmind';
+import { paintingCanvasController } from '../../canvas/paintingCanvas/PaintingCanvasController';
+import { overlayCanvasController } from '../../canvas/overlayCanvas/OverlayCanvasController';
 import { Color } from '../../types';
 import { PaletteRange } from '../palette/state';
 
@@ -30,7 +32,33 @@ export const open = (context: Context): void => {
   context.state.paletteEditor.armedAction = null;
   context.state.paletteEditor.isOpen = true;
   context.actions.toolbox.enterCanvasPickMode('paletteEditorColorSelectorTool');
+  // Never carried between sessions: it takes the picture away, so it starts off
+  // every time and is asked for when it is wanted.
+  context.state.paletteEditor.highlight = false;
+  // The stencil's sheet comes down for the duration: it stripes the picture the
+  // highlight is emptying, and the two together answer neither question.
+  context.state.paletteEditor.stencilVisibleBefore = context.state.stencil.visible;
+  if (context.state.stencil.visible) {
+    context.actions.stencil.toggleVisible();
+  }
+  syncHighlight(context);
 };
+
+// Shows the edited color alone, everything else dropped to the background
+// color. Off by default: it takes the picture away, which is a lot to have
+// happen unasked on a swatch click.
+export const toggleHighlight = (context: Context): void => {
+  context.state.paletteEditor.highlight = !context.state.paletteEditor.highlight;
+  syncHighlight(context);
+};
+
+function syncHighlight(context: Context): void {
+  const { isOpen, highlight, editedColorId } = context.state.paletteEditor;
+  paintingCanvasController.setColorHighlight(
+    isOpen && highlight ? Number(editedColorId) : null,
+    Number(context.state.palette.backgroundColorId)
+  );
+}
 
 // Keep the live edits and close. A session that changed the palette commits one
 // undo point, so the main UNDO reverts the whole editing session (the job
@@ -47,6 +75,10 @@ export const close = (context: Context): void => {
   context.state.paletteEditor.paletteSnapshot = null;
   context.state.paletteEditor.rangesSnapshot = null;
   context.actions.toolbox.exitCanvasPickMode();
+  syncHighlight(context);
+  if (context.state.paletteEditor.stencilVisibleBefore && !context.state.stencil.visible) {
+    context.actions.stencil.toggleVisible();
+  }
 };
 
 function paletteEqualsSnapshot(
@@ -108,6 +140,14 @@ export const selectEditedColor = (context: Context, colorId: string): void => {
   }
   context.state.paletteEditor.armedAction = null;
   context.state.paletteEditor.editedColorId = colorId;
+  if (armed === 'copy' || armed === 'swap' || armed === 'spread') {
+    // Those three recolored palette slots, and the GL palettes do not watch
+    // Overmind. Here rather than at the requester's own grid: the click can also
+    // land on the toolbox palette it borrows, or on a pixel of the picture.
+    paintingCanvasController.updatePalette();
+    overlayCanvasController.updatePalette();
+  }
+  syncHighlight(context);
 };
 
 // Arms a two-color action (or disarms it when it's already armed: the button

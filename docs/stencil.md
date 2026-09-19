@@ -517,6 +517,58 @@ Two things it must not leak into:
 The overlay is not involved: the sheet belongs to the picture's own display
 pass, and previews are transient things drawn on top of it.
 
+### The same machinery, for a palette color
+
+The display shader already samples the color index, so answering "where is this
+color used" needs no mask at all - a `u_highlightIndex` uniform and a comparison.
+That is the palette editor's **Show** (`paletteEditor.highlight`), which follows
+the swatch being edited.
+
+It does not mark the color: it **shows it alone**, dropping every other pixel to
+the background color. A mark over the picture answers the question only as well
+as the picture lets it - a striped sheet, a dotted outline and a checker of the
+color against itself were each tried, and each has to compete with whatever is
+already there. Blanking the rest answers it exactly, which is what the question
+was. The one case that needs care is a ground that cannot be told from what is being
+shown, where dropping everything to it would hide the answer along with the
+rest; there the ground falls back to black or white, whichever it is not. Judged
+by color rather than by slot: two slots hold the same color as readily as one,
+after a Copy, in a quantized palette, or when cycling brings them together.
+
+Off by default: it takes the picture away, which is a lot to have happen unasked
+on a swatch click. The stencil's own sheet comes down while the editor is open
+and goes back up on the way out.
+
+Both sit behind their own uniform test in the shader. A uniform is the same for
+every fragment in the draw, so the branch costs no divergence, and the common
+case - neither showing - pays for neither one's work.
+
+### What the mark can and cannot reach
+
+It is drawn in the display pass, after everything that decides pixels, so the
+question for any feature is only whether it reads the **drawing buffer** or the
+**color index**. Every reader was checked:
+
+- **Color index** (never sees it): `ColorIndexer.getIndex` and
+  `getAreaFromIndex` both bind `colorIndexFramebuffer`, which is the undo
+  snapshot, the flood fill, the color picker and the flood-fill hover swatch
+  (`getPaintColorForPoint` goes through `getIndex`), brush pickup, the autosave
+  and every indexed save format. `EffectIndexer.copyCanvasRect` binds the same
+  framebuffer, so Smear and the rest read the picture, not the sheet.
+- **Drawing buffer** (sees it): the PNG save, which takes
+  `withoutStencilShow` around its capture; the zoom view, which mirrors the main
+  canvas by design and should show it; and
+  `OverlaySelectionIndicatorRenderer`, which uploads `mainCanvas` as a texture
+  and inverts it, so a selection marquee over a marked area inverts the sheet's
+  colors rather than the picture's. Cosmetic, and the marquee stays visible
+  either way - and since that texture is cached on the last undo point,
+  toggling the mark does not even refresh it until the next stroke.
+
+A **separate overlay layer** would put the marks outside the painted content
+altogether, which is the tidier architecture and the same piece of work that
+would let them be drawn in screen pixels rather than picture pixels (see the
+note on crispness above). Worth doing together, if either is wanted.
+
 ### Where it goes
 
 ✅ Done, less the animation. `DrawImageRenderer`'s existing stencil branch, which already samples the stencil

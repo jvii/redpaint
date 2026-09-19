@@ -17,6 +17,13 @@ export type State = {
   // against the currently edited color (DPaint's sticky Copy/Ex/Spread/ Range
   // modes), for 'range', selected color = start, clicked = end.
   armedAction: 'copy' | 'swap' | 'spread' | 'range' | null;
+  // Shows the edited color alone on the picture, everything else dropped to the
+  // background color. Reset on every open: state so the toggle can render from
+  // it and so selectEditedColor knows whether to follow, not to be remembered.
+  highlight: boolean;
+  // The stencil's own view, suspended while the editor is open - it draws over
+  // the picture the highlight is emptying - and put back on the way out.
+  stencilVisibleBefore: boolean;
 };
 
 export const state: State = {
@@ -26,4 +33,6 @@ export const state: State = {
   rangesSnapshot: null,
   activeRangeIndex: null,
   armedAction: null,
+  highlight: false,
+  stencilVisibleBefore: false,
 };
